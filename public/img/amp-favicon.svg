@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Orange outer border -->
+  <path d="M90,10H10C4.5,10,0,14.5,0,20v60c0,5.5,4.5,10,10,10h80c5.5,0,10-4.5,10-10V20C100,14.5,95.5,10,90,10z" fill="#F15A29"/>
+  
+  <!-- Gold inner border -->
+  <path d="M85,17H15c-3.3,0-6,2.7-6,6v54c0,3.3,2.7,6,6,6h70c3.3,0,6-2.7,6-6V23C91,19.7,88.3,17,85,17z" fill="#C69C6D"/>
+  
+  <!-- Black background -->
+  <path d="M82,23H18c-1.7,0-3,1.3-3,3v48c0,1.7,1.3,3,3,3h64c1.7,0,3-1.3,3-3V26C85,24.3,83.7,23,82,23z" fill="#231F20"/>
+  
+  <!-- AMP letters -->
+  <path d="M35,40l-8,20h-4l-8-20h6l4,10l4-10H35z" fill="#C69C6D"/>
+  <path d="M56,40l-8,20h-4l4-10h-8l-3,10h-4l8-20H56z" fill="#C69C6D"/>
+  <path d="M63,40h5c5,0,8,4,8,10s-3,10-8,10h-5V40z" fill="#C69C6D"/>
+</svg> 

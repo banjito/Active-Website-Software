@@ -81,6 +81,20 @@ async function createJobManually(
   if (!userId) {
     throw new Error('Cannot create job: user ID is missing');
   }
+  
+  // Determine if this is a NETA Technician job for Calibration, Armadillo, or Scavenger
+  const isSpecialDivision = ['calibration', 'armadillo', 'scavenger'].includes(
+    opportunity.amp_division?.toLowerCase()
+  );
+  
+  // Set portal type based on division
+  let portalType = 'neta'; // Default portal type
+  if (opportunity.amp_division?.toLowerCase() === 'calibration' || 
+      opportunity.amp_division?.toLowerCase() === 'armadillo') {
+    portalType = 'lab';
+  } else if (opportunity.amp_division?.toLowerCase() === 'scavenger') {
+    portalType = 'scavenger';
+  }
 
   // Get a unique job number from neta_ops schema
   const { data: maxJobNumber } = await supabase
@@ -113,7 +127,9 @@ async function createJobManually(
       notes: (opportunity.notes || '') + '\n\nConverted from opportunity: ' + opportunity.quote_number,
       job_number: 'JOB-' + nextJobNumber.toString().padStart(4, '0'),
       priority: 'medium',
-      division: opportunity.amp_division === 'Decatur' ? 'north_alabama' : opportunity.amp_division
+      division: opportunity.amp_division === 'Decatur' ? 'north_alabama' : opportunity.amp_division,
+      job_type: isSpecialDivision ? 'neta_technician' : 'standard',
+      portal_type: portalType
     })
     .select()
     .single();

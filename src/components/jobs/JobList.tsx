@@ -174,7 +174,10 @@ export default function JobList() {
       // Create a new object with processed data
       const jobData = {
         ...formData,
-        budget: formData.budget ? parseFloat(formData.budget) : null,
+        // For Calibration and Armadillo divisions, always set budget to null
+        budget: (division === 'calibration' || division === 'armadillo') 
+          ? null 
+          : (formData.budget ? parseFloat(formData.budget) : null),
         amount_paid: 0,
         user_id: user.id,
         division: division,
@@ -290,6 +293,18 @@ export default function JobList() {
             A list of all the jobs in the selected division.
           </p>
         </div>
+        
+        {/* Only show Add Job button for Lab divisions: calibration, armadillo, and scavenger */}
+        {['calibration', 'armadillo', 'scavenger'].includes(division || '') && (
+          <div>
+            <button
+              onClick={() => setIsOpen(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <Plus className="h-5 w-5 mr-2" /> Add New Job
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="mt-8">
@@ -425,6 +440,200 @@ export default function JobList() {
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Job Creation Form Dialog */}
+      <Dialog
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        className="fixed inset-0 z-10 overflow-y-auto"
+      >
+        <div className="flex items-center justify-center min-h-screen">
+          <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+
+          <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-xl w-full mx-auto p-6 shadow-xl">
+            <div className="absolute top-0 right-0 pt-4 pr-4">
+              <button
+                type="button"
+                className="text-gray-400 hover:text-gray-500"
+                onClick={() => setIsOpen(false)}
+              >
+                <span className="sr-only">Close</span>
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              Create New Job
+            </Dialog.Title>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label htmlFor="customer_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Customer *
+                  </label>
+                  <div className="mt-1">
+                    <select
+                      id="customer_id"
+                      name="customer_id"
+                      required
+                      value={formData.customer_id}
+                      onChange={handleInputChange}
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                    >
+                      <option value="">Select a customer</option>
+                      {customers.map(customer => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.company_name || customer.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Job Title *
+                  </label>
+                  <div className="mt-1">
+                    <input
+                      type="text"
+                      name="title"
+                      id="title"
+                      required
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                    />
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Description
+                  </label>
+                  <div className="mt-1">
+                    <textarea
+                      id="description"
+                      name="description"
+                      rows={3}
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Status
+                  </label>
+                  <div className="mt-1">
+                    <select
+                      id="status"
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="completed">Completed</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Priority
+                  </label>
+                  <div className="mt-1">
+                    <select
+                      id="priority"
+                      name="priority"
+                      value={formData.priority}
+                      onChange={handleInputChange}
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="start_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Start Date
+                  </label>
+                  <div className="mt-1">
+                    <input
+                      type="date"
+                      name="start_date"
+                      id="start_date"
+                      value={formData.start_date}
+                      onChange={handleInputChange}
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="due_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Due Date
+                  </label>
+                  <div className="mt-1">
+                    <input
+                      type="date"
+                      name="due_date"
+                      id="due_date"
+                      value={formData.due_date}
+                      onChange={handleInputChange}
+                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                    />
+                  </div>
+                </div>
+
+                {/* Only show budget field for divisions that aren't Calibration or Armadillo */}
+                {!(division === 'calibration' || division === 'armadillo') && (
+                  <div>
+                    <label htmlFor="budget" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Budget
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        type="number"
+                        name="budget"
+                        id="budget"
+                        step="0.01"
+                        value={formData.budget}
+                        onChange={handleInputChange}
+                        className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-5 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Create Job
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </Dialog>

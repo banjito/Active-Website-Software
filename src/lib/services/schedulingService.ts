@@ -10,7 +10,9 @@ import {
   TechnicianMatch,
   CalendarEvent, 
   PortalType,
-  AssignmentStatus
+  AssignmentStatus,
+  TimeOffRequest,
+  TimeOffStatus
 } from '../types/scheduling';
 import { PostgrestError } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
@@ -556,5 +558,152 @@ export const schedulingService = {
       default:
         return '#90a4ae'; // Light blue-grey
     }
-  }
+  },
+
+  /**
+   * Fetch all time-off requests for a technician or for approval
+   */
+  async getTimeOffRequests(options: {
+    technicianId?: string;
+    portalType: PortalType;
+    division?: string;
+    status?: TimeOffStatus;
+    startDate?: string;
+    endDate?: string;
+    forApproval?: boolean;
+  }): Promise<{
+    data: TimeOffRequest[] | null;
+    error: PostgrestError | null;
+  }> {
+    let query = supabase
+      .from(SCHEMAS.TECH_TIME_OFF)
+      .select(`
+        *,
+        user:user_id(
+          id,
+          email,
+          user_metadata
+        ),
+        approver:approver_id(
+          id,
+          email,
+          user_metadata
+        )
+      `)
+      .eq('portal_type', options.portalType);
+    
+    if (options.technicianId) {
+      query = query.eq('user_id', options.technicianId);
+    }
+    
+    if (options.division) {
+      query = query.eq('division', options.division);
+    }
+    
+    if (options.status) {
+      query = query.eq('status', options.status);
+    }
+    
+    if (options.startDate && options.endDate) {
+      // Find any requests that overlap with the specified date range
+      query = query.or(`start_date.lte.${options.endDate},end_date.gte.${options.startDate}`);
+    }
+
+    // If for approval, get only pending requests that the current user can approve
+    if (options.forApproval) {
+      query = query.eq('status', 'pending');
+    }
+    
+    // Sort by start date (most recent first) and status (pending first)
+    return query
+      .order('status', { ascending: true })
+      .order('start_date', { ascending: false });
+  },
+
+  /**
+   * Create a new time-off request
+   */
+  async createTimeOffRequest(request: Omit<TimeOffRequest, 'id' | 'created_at' | 'updated_at' | 'user' | 'approver'>): Promise<{
+    data: TimeOffRequest | null;
+    error: PostgrestError | null;
+  }> {
+    return supabase
+      .from(SCHEMAS.TECH_TIME_OFF)
+      .insert(request)
+      .select(`
+        *,
+        user:user_id(
+          id,
+          email,
+          user_metadata
+        )
+      `)
+      .single();
+  },
+
+  /**
+   * Update time-off request status (approve/reject)
+   */
+  async updateTimeOffRequestStatus(
+    requestId: string,
+    status: TimeOffStatus,
+    approverId: string,
+    notes?: string
+  ): Promise<{
+    data: TimeOffRequest | null;
+    error: PostgrestError | null;
+  }> {
+    return supabase
+      .from(SCHEMAS.TECH_TIME_OFF)
+      .update({
+        status,
+        approver_id: approverId,
+        notes: notes || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', requestId)
+      .select(`
+        *,
+        user:user_id(
+          id,
+          email,
+          user_metadata
+        ),
+        approver:approver_id(
+          id,
+          email,
+          user_metadata
+        )
+      `)
+      .single();
+  },
+
+  /**
+   * Cancel a time-off request
+   */
+  async cancelTimeOffRequest(requestId: string): Promise<{
+    data: null;
+    error: PostgrestError | null;
+  }> {
+    return supabase
+      .from(SCHEMAS.TECH_TIME_OFF)
+      .update({
+        status: 'cancelled',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', requestId);
+  },
+
+  /**
+   * Delete a time-off request (for administrators only)
+   */
+  async deleteTimeOffRequest(requestId: string): Promise<{
+    data: null;
+    error: PostgrestError | null;
+  }> {
+    return supabase
+      .from(SCHEMAS.TECH_TIME_OFF)
+      .delete()
+      .eq('id', requestId);
+  },
 }; 

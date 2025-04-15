@@ -11,6 +11,8 @@ import { useDivision } from '@/App'; // Import from App.tsx instead of DivisionC
 import { useParams, useNavigate } from 'react-router-dom';
 import { PortalType } from '@/lib/types/scheduling';
 import { TechnicianCalendar } from '@/components/scheduling/TechnicianCalendar';
+import { TechnicianScheduleManagement } from '@/components/scheduling/TechnicianScheduleManagement';
+import { JobAssignmentManagement } from '@/components/scheduling/JobAssignmentManagement';
 
 interface TechCalendarProps {
   portalType: PortalType;
@@ -165,16 +167,10 @@ export default function SchedulingPage() {
           </TabsContent>
           
           <TabsContent value="technicians" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Technician Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-500 dark:text-gray-400">
-                  Manage technician skills, certifications, and availability.
-                </p>
-              </CardContent>
-            </Card>
+            <TechnicianScheduleManagement 
+              portalType={portalType}
+              division={division}
+            />
           </TabsContent>
           
           <TabsContent value="skills" className="mt-6">
@@ -191,16 +187,10 @@ export default function SchedulingPage() {
           </TabsContent>
           
           <TabsContent value="assignments" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Job Assignments</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-500 dark:text-gray-400">
-                  View and manage all job assignments across technicians.
-                </p>
-              </CardContent>
-            </Card>
+            <JobAssignmentManagement 
+              portalType={portalType}
+              division={division}
+            />
           </TabsContent>
         </Tabs>
       </div>

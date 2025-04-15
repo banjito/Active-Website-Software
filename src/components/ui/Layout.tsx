@@ -13,7 +13,8 @@ import {
   Settings,
   Eye,
   Calendar,
-  Building
+  Building,
+  Wrench
 } from "lucide-react"
 import { Button } from './Button';
 import { ThemeToggle } from '../theme/theme-toggle';
@@ -200,6 +201,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               >
                 <Calendar className="mr-2 h-4 w-4" />
                 Scheduling
+              </Button>
+            </Link>
+            <Link to={`${basePath}/equipment`}>
+              <Button 
+                variant="ghost" 
+                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                  location.pathname.endsWith('/equipment') ? 'bg-black/5 dark:bg-dark-50' : ''
+                }`}
+              >
+                <Wrench className="mr-2 h-4 w-4" />
+                Equipment
               </Button>
             </Link>
           </div>

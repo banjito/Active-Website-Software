@@ -14,7 +14,8 @@ export type Portal =
   | 'lab'
   | 'hr'
   | 'office'
-  | 'engineering';
+  | 'engineering'
+  | 'scavenger';
 
 export interface RolePermissions {
   portals: Portal[];
@@ -37,7 +38,7 @@ export const ROLES: Record<Role, RolePermissions> = {
     canViewAllData: false
   },
   'Scav': {
-    portals: [],
+    portals: ['scavenger'],
     canManageUsers: false,
     canManageContent: false,
     canViewAllData: false
@@ -67,7 +68,7 @@ export const ROLES: Record<Role, RolePermissions> = {
     canViewAllData: false
   },
   'Admin': {
-    portals: ['sales', 'neta', 'lab', 'hr', 'office', 'engineering'],
+    portals: ['sales', 'neta', 'lab', 'hr', 'office', 'engineering', 'scavenger'],
     canManageUsers: true,
     canManageContent: true,
     canViewAllData: true

@@ -27,6 +27,8 @@ import LiquidFilledTransformerReport from './components/reports/LiquidFilledTran
 import OilInspectionReport from './components/reports/OilInspectionReport';
 import TwelveSetsLowVoltageCableTestForm from './components/reports/12setslowvoltagecables';
 import ProfileSetup from './pages/ProfileSetup';
+import TechnicianProfilesPage from './pages/TechnicianProfilesPage';
+import ReportsPage from './app/[division]/reports/page';
 import AdminDashboard from './app/admin-dashboard/page';
 import { ChatWindowProvider } from './context/ChatWindowContext';
 import ChatWindowManager from './components/chat/ChatWindowManager';
@@ -36,6 +38,14 @@ import NewGoalPage from './app/(dashboard)/sales/goals/new/page';
 import EditGoalPage from './app/(dashboard)/sales/goals/[id]/edit/page';
 import GoalsDashboardPage from './app/(dashboard)/sales/goals/dashboard/page';
 import GoalManagementPage from './app/(dashboard)/sales/goals/management/page';
+import EngineeringPage from './app/engineering/page';
+
+// Import Lab Portal components
+import { EquipmentCalibration } from './components/lab/EquipmentCalibration';
+import { TestingProcedures } from './components/lab/TestingProcedures';
+import { CertificateGenerator } from './components/lab/CertificateGenerator';
+import { QualityMetrics } from './components/lab/QualityMetrics';
+import { LabDashboard } from './components/lab/LabDashboard';
 
 // Import division-specific dashboards
 import NorthAlabamaDashboard from './app/dashboards/NorthAlabamaDashboard';
@@ -45,6 +55,11 @@ import InternationalDashboard from './app/dashboards/InternationalDashboard';
 import CalibrationDashboard from './app/dashboards/CalibrationDashboard';
 import ArmadilloDashboard from './app/dashboards/ArmadilloDashboard';
 import ScavengerDashboard from './app/dashboards/ScavengerDashboard';
+
+// Import Equipment Management
+import EquipmentPage from './app/[division]/equipment/page';
+// Import Maintenance Management
+import MaintenancePage from './app/[division]/maintenance/page';
 
 // Add territory management imports
 import TerritoryManagement from './components/sales/TerritoryManagement';
@@ -127,6 +142,16 @@ function App() {
                 <Route path="/debug" element={<RequireAuth><Layout><DebugTableCheck /></Layout></RequireAuth>} />
                 <Route path="/chat-debug" element={<RequireAuth><Layout><ChatDebug /></Layout></RequireAuth>} />
 
+                {/* === Lab Portal Routes === */}
+                <Route path="/lab" element={<RequireAuth><Layout><LabDashboard /></Layout></RequireAuth>} />
+                <Route path="/lab/equipment" element={<RequireAuth><Layout><EquipmentCalibration /></Layout></RequireAuth>} />
+                <Route path="/lab/procedures" element={<RequireAuth><Layout><TestingProcedures /></Layout></RequireAuth>} />
+                <Route path="/lab/certificates" element={<RequireAuth><Layout><CertificateGenerator /></Layout></RequireAuth>} />
+                <Route path="/lab/quality-metrics" element={<RequireAuth><Layout><QualityMetrics /></Layout></RequireAuth>} />
+                
+                {/* === Engineering Portal Route === */}
+                <Route path="/engineering" element={<RequireAuth><Layout><EngineeringPage /></Layout></RequireAuth>} />
+                
                 {/* === Sales Dashboard Routes === */}
                 <Route path="/sales-dashboard" element={<RequireAuth><SalesLayout><SalesDashboard /></SalesLayout></RequireAuth>} />
                 <Route path="/sales-dashboard/customers" element={<RequireAuth><SalesLayout><CustomerList /></SalesLayout></RequireAuth>} />
@@ -170,6 +195,14 @@ function App() {
                 <Route path="/:division/contacts/:id" element={<RequireAuth><Layout><ContactDetail /></Layout></RequireAuth>} />
                 {/* Scheduling */}
                 <Route path="/:division/scheduling" element={<RequireAuth><Layout><SchedulingPage /></Layout></RequireAuth>} />
+                {/* Equipment Management */}
+                <Route path="/:division/equipment" element={<RequireAuth><Layout><EquipmentPage /></Layout></RequireAuth>} />
+                {/* Equipment Maintenance */}
+                <Route path="/:division/maintenance" element={<RequireAuth><Layout><MaintenancePage /></Layout></RequireAuth>} />
+                {/* Technician Profiles */}
+                <Route path="/:division/profiles" element={<RequireAuth><Layout><TechnicianProfilesPage /></Layout></RequireAuth>} />
+                {/* Reports Management */}
+                <Route path="/:division/reports" element={<RequireAuth><Layout><ReportsPage /></Layout></RequireAuth>} />
                 {/* Jobs & Reports (now explicitly division-based or generic) */}
                 <Route path="/jobs" element={<RequireAuth><Layout><JobList /></Layout></RequireAuth>} />
                 <Route path="/jobs/:id" element={<RequireAuth><Layout><JobDetail /></Layout></RequireAuth>} />

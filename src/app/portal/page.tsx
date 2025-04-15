@@ -97,7 +97,18 @@ export default function PortalLanding() {
       "HR Portal": "hr",
       "Office Admins Portal": "office",
       "Engineering Portal": "engineering",
-      "Scavenger Portal": "lab" // Assuming Scavenger portal is part of lab
+      "Scavenger Portal": "scavenger" // Scavenger portal has its own portal type
+    };
+
+    // Map portal names to their URLs
+    const portalUrls: Record<string, string> = {
+      "Sales Portal": "/sales",
+      "NETA Portal": "/neta",
+      "Lab Portal": "/lab",
+      "HR Portal": "/hr",
+      "Office Admins Portal": "/office",
+      "Engineering Portal": "/engineering",
+      "Scavenger Portal": "/scavenger"
     };
 
     const portalType = portalMap[portalName];
@@ -113,6 +124,8 @@ export default function PortalLanding() {
       } else {
         navigate(url);
       }
+    } else if (portalUrls[portalName]) {
+      navigate(portalUrls[portalName]);
     } else {
       setPopupContent(`${portalName} is currently in development`);
       setShowPopup(true);
@@ -131,7 +144,7 @@ export default function PortalLanding() {
         'international': 'neta',
         'calibration': 'lab',
         'armadillo': 'lab',
-        'scavenger': 'lab',
+        'scavenger': 'scavenger',
         'office_admin': 'office',
         'sales': 'sales',
         'engineering': 'engineering'

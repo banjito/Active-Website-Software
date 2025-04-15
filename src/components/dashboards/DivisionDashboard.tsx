@@ -24,7 +24,8 @@ import {
   Plug,
   Wrench,
   FileLineChart,
-  Gauge
+  Gauge,
+  Settings
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
@@ -474,6 +475,40 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                   <div>
                     <h3 className="font-medium text-gray-900">Technician Scheduling</h3>
                     <p className="text-sm text-gray-600">Manage schedules and availability</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-gray-400" />
+              </div>
+            </Link>
+          </Card>
+          
+          <Card className="hover:shadow-md hover:border-green-200 transition-all cursor-pointer">
+            <Link to={`/${division}/equipment`} className="block p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-50 rounded-full mr-3">
+                    <Wrench className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">Equipment Management</h3>
+                    <p className="text-sm text-gray-600">Track, assign, and maintain equipment</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-gray-400" />
+              </div>
+            </Link>
+          </Card>
+          
+          <Card className="hover:shadow-md hover:border-orange-200 transition-all cursor-pointer">
+            <Link to={`/${division}/maintenance`} className="block p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="p-2 bg-orange-50 rounded-full mr-3">
+                    <Wrench className="h-5 w-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">Equipment Maintenance</h3>
+                    <p className="text-sm text-gray-600">Schedule and track maintenance</p>
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-gray-400" />

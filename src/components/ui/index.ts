@@ -1,9 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { Database, FileText, Hash, Sigma } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Skeleton } from '@/components/ui/Skeleton';
-
 export { default as Button } from './Button';
 export { default as Card } from './Card';
 export { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './Card';
@@ -27,4 +21,6 @@ export {
   TableContainer,
   EmptyTableRow
 } from './Table';
-export { Skeleton } from './Skeleton'; 
+export { Skeleton } from './Skeleton';
+export { TextArea as Textarea } from './TextArea';
+export { toast } from './toast'; 

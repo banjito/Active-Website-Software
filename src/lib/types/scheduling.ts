@@ -174,4 +174,43 @@ export interface CalendarEvent {
   };
   editable: boolean;
   tooltip?: string;
+}
+
+/**
+ * Time-off request status
+ */
+export type TimeOffStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+
+/**
+ * Interface for technician time-off request
+ */
+export interface TimeOffRequest {
+  id: string;
+  user_id: string;
+  start_date: string; // YYYY-MM-DD
+  end_date: string; // YYYY-MM-DD
+  start_time?: string; // HH:MM:SS (if not full day)
+  end_time?: string; // HH:MM:SS (if not full day)
+  reason: string;
+  status: TimeOffStatus;
+  approver_id?: string;
+  notes?: string;
+  portal_type: PortalType;
+  division?: string;
+  created_at: string;
+  updated_at: string;
+  user?: {
+    id: string;
+    email: string;
+    user_metadata: {
+      name: string;
+    }
+  };
+  approver?: {
+    id: string;
+    email: string;
+    user_metadata: {
+      name: string;
+    }
+  };
 } 

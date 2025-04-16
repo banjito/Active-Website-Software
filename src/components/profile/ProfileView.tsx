@@ -6,12 +6,13 @@ import {
   Mail,
   Edit2,
   X,
-  Image
+  Image,
+  User
 } from "lucide-react";
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
-import { User } from '@supabase/supabase-js';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface ProfileViewProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ interface ProfileViewProps {
 }
 
 // Define the structure of user data
-interface UserData extends User {
+interface UserData extends SupabaseUser {
   user_metadata: {
     name?: string;
     role?: string;
@@ -64,6 +65,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [isPhotoEnlarged, setIsPhotoEnlarged] = useState(false);
   const [enlargedPhotoSrc, setEnlargedPhotoSrc] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!!userId);
+  const [attemptedMethods, setAttemptedMethods] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -73,54 +75,322 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         return;
       }
 
+      let methods: string[] = [];
       try {
         setIsLoading(true);
+        console.log(`Attempting to fetch profile for user ${userId}`);
+        
+        // Try all possible profile sources
+        let profileFound = false;
         
         // Try to get profile from profiles table
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-          
-        if (!profileError && profileData) {
-          const userData: UserData = {
-            id: userId,
-            email: profileData.email,
-            user_metadata: {
-              name: profileData.full_name,
-              role: profileData.role,
-              bio: profileData.bio,
-              division: profileData.division,
-              birthday: profileData.birthday,
-              profileImage: profileData.avatar_url,
-              coverImage: profileData.cover_image
+        try {
+          methods.push("profiles table (supabase client)");
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+            
+          if (!profileError && profileData) {
+            console.log(`Found user ${userId} in profiles table:`, profileData);
+            const userData: UserData = {
+              id: userId,
+              email: profileData.email,
+              user_metadata: {
+                name: profileData.full_name,
+                role: profileData.role,
+                bio: profileData.bio,
+                division: profileData.division,
+                birthday: profileData.birthday,
+                profileImage: profileData.avatar_url,
+                coverImage: profileData.cover_image
+              }
+            } as UserData;
+            setProfileUser(userData);
+            profileFound = true;
+          } else {
+            console.log(`Profile not found in profiles table: ${profileError?.message}`);
+            
+            // If the standard query fails, try a direct fetch
+            console.log('Trying direct fetch to profiles endpoint...');
+            try {
+              methods.push("profiles table (direct fetch)");
+              const response = await fetch(`https://vdxprdihmbqomwqfldpo.supabase.co/rest/v1/profiles?select=*&eq.id=${userId}`, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+                  'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || ''}`
+                }
+              });
+              
+              if (response.ok) {
+                const directData = await response.json();
+                console.log('Direct fetch profiles response:', directData);
+                
+                if (directData && directData.length > 0) {
+                  const profileData = directData[0];
+                  
+                  const userData: UserData = {
+                    id: userId,
+                    email: profileData.email,
+                    user_metadata: {
+                      name: profileData.full_name,
+                      role: profileData.role,
+                      bio: profileData.bio,
+                      division: profileData.division,
+                      birthday: profileData.birthday,
+                      profileImage: profileData.avatar_url,
+                      coverImage: profileData.cover_image
+                    }
+                  } as UserData;
+                  setProfileUser(userData);
+                  profileFound = true;
+                }
+              } else {
+                console.log('Direct fetch profiles failed:', await response.text());
+              }
+            } catch (fetchErr) {
+              console.error('Error with direct fetch profiles:', fetchErr);
             }
-          } as UserData;
-          setProfileUser(userData);
-          return;
+          }
+        } catch (profileErr) {
+          console.error('Error in profiles query:', profileErr);
         }
         
-        // Try RPC method as fallback
-        const { data, error } = await supabase.rpc('get_user_details', { user_id: userId });
-        
-        if (!error && data && data.length > 0) {
-          const userData: UserData = {
-            id: userId,
-            email: data[0].email,
-            user_metadata: {
-              name: data[0].name,
-              role: data[0].role,
-              profileImage: data[0].profile_image,
-              // Add other fields as needed
+        // Try RPC method as fallback if profile not found
+        if (!profileFound) {
+          console.log(`Trying RPC method for user ${userId}`);
+          // First try with the Supabase client
+          try {
+            methods.push("RPC method (Supabase client)");
+            const { data, error } = await supabase.rpc('get_user_details', {
+              user_id: userId 
+            });
+            
+            console.log('RPC response:', { data, error });
+            
+            if (!error && data) {
+              // Handle either array or single object response
+              const userData_rpc = Array.isArray(data) ? data[0] : data;
+              console.log(`Found user ${userId} via RPC:`, userData_rpc);
+              
+              const userData: UserData = {
+                id: userId,
+                email: userData_rpc.email,
+                user_metadata: {
+                  name: userData_rpc.name || userData_rpc.full_name,
+                  role: userData_rpc.role,
+                  bio: userData_rpc.bio,
+                  division: userData_rpc.division,
+                  birthday: userData_rpc.birthday,
+                  profileImage: userData_rpc.profile_image || userData_rpc.avatar_url,
+                  coverImage: userData_rpc.cover_image
+                }
+              } as UserData;
+              setProfileUser(userData);
+              profileFound = true;
+            } else {
+              console.log(`Profile not found via standard RPC: ${error?.message || 'No data returned'}`);
+              
+              // If the standard RPC fails, try a direct fetch call
+              console.log('Trying direct fetch to RPC endpoint...');
+              try {
+                methods.push("RPC method (direct fetch)");
+                const response = await fetch('https://vdxprdihmbqomwqfldpo.supabase.co/rest/v1/rpc/get_user_details', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+                    'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || ''}`
+                  },
+                  body: JSON.stringify({ user_id: userId })
+                });
+                
+                if (response.ok) {
+                  const directData = await response.json();
+                  console.log('Direct fetch RPC response:', directData);
+                  
+                  if (directData) {
+                    const directUserData = Array.isArray(directData) ? directData[0] : directData;
+                    
+                    const userData: UserData = {
+                      id: userId,
+                      email: directUserData.email,
+                      user_metadata: {
+                        name: directUserData.name || directUserData.full_name,
+                        role: directUserData.role,
+                        bio: directUserData.bio,
+                        division: directUserData.division,
+                        birthday: directUserData.birthday,
+                        profileImage: directUserData.profile_image || directUserData.avatar_url,
+                        coverImage: directUserData.cover_image
+                      }
+                    } as UserData;
+                    setProfileUser(userData);
+                    profileFound = true;
+                  }
+                } else {
+                  console.log('Direct fetch RPC failed:', await response.text());
+                }
+              } catch (fetchErr) {
+                console.error('Error with direct fetch RPC:', fetchErr);
+              }
             }
-          } as UserData;
-          setProfileUser(userData);
+          } catch (rpcErr) {
+            console.error('Error in RPC call:', rpcErr);
+          }
+        }
+        
+        // Last resort: Try to get basic user info from auth.users via admin_get_user_basic function
+        if (!profileFound) {
+          console.log(`Trying to get basic user info for ${userId}`);
+          
+          // Try using get_user_metadata RPC function
+          try {
+            methods.push("RPC method (get_user_metadata)");
+            const { data: metaData, error: metaError } = await supabase.rpc('get_user_metadata', { 
+              p_user_id: userId 
+            });
+            
+            if (!metaError && metaData) {
+              console.log(`Found user ${userId} metadata via RPC:`, metaData);
+              
+              const userData: UserData = {
+                id: userId,
+                email: metaData.email,
+                user_metadata: {
+                  name: metaData.name || metaData.full_name || `User ${userId.substring(0, 6)}`,
+                  role: metaData.role,
+                  bio: metaData.bio,
+                  division: metaData.division,
+                  birthday: metaData.birthday,
+                  profileImage: metaData.profile_image || metaData.avatar_url,
+                  coverImage: metaData.cover_image
+                }
+              } as UserData;
+              setProfileUser(userData);
+              profileFound = true;
+            } else {
+              console.log(`Failed to get user metadata: ${metaError?.message}`);
+              
+              // If RPC fails, try the direct API call
+              try {
+                methods.push("RPC method (direct fetch to metadata endpoint)");
+                console.log('Trying direct fetch to metadata endpoint...');
+                const response = await fetch('https://vdxprdihmbqomwqfldpo.supabase.co/rest/v1/rpc/get_user_metadata', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+                    'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || ''}`
+                  },
+                  body: JSON.stringify({ p_user_id: userId })
+                });
+                
+                if (response.ok) {
+                  const directData = await response.json();
+                  console.log('Direct fetch metadata response:', directData);
+                  
+                  if (directData) {
+                    const userData: UserData = {
+                      id: userId,
+                      email: directData.email,
+                      user_metadata: {
+                        name: directData.name || directData.full_name || `User ${userId.substring(0, 6)}`,
+                        role: directData.role,
+                        bio: directData.bio,
+                        division: directData.division,
+                        birthday: directData.birthday,
+                        profileImage: directData.profile_image || directData.avatar_url,
+                        coverImage: directData.cover_image
+                      }
+                    } as UserData;
+                    setProfileUser(userData);
+                    profileFound = true;
+                  }
+                } else {
+                  console.log('Direct fetch metadata failed:', await response.text());
+                  
+                  // Last resort - create minimal profile
+                  const userData = {
+                    id: userId,
+                    email: null,
+                    user_metadata: {
+                      name: `User ${userId.substring(0, 6)}`,
+                      role: null,
+                      profileImage: null,
+                      bio: null,
+                      division: null,
+                      birthday: null,
+                      coverImage: null
+                    }
+                  } as unknown as UserData;
+                  setProfileUser(userData);
+                }
+              } catch (fetchErr) {
+                console.error('Error with direct fetch metadata:', fetchErr);
+                
+                // Last resort - create minimal profile
+                const userData = {
+                  id: userId,
+                  email: null,
+                  user_metadata: {
+                    name: `User ${userId.substring(0, 6)}`,
+                    role: null,
+                    profileImage: null,
+                    bio: null,
+                    division: null,
+                    birthday: null,
+                    coverImage: null
+                  }
+                } as unknown as UserData;
+                setProfileUser(userData);
+              }
+            }
+          } catch (metaErr) {
+            console.error('Error getting user metadata:', metaErr);
+            
+            // Create a minimal user profile as last resort
+            const userData = {
+              id: userId,
+              email: null,
+              user_metadata: {
+                name: `User ${userId.substring(0, 6)}`,
+                role: null,
+                profileImage: null,
+                bio: null,
+                division: null,
+                birthday: null,
+                coverImage: null
+              }
+            } as unknown as UserData;
+            setProfileUser(userData);
+          }
         }
       } catch (err) {
         console.error('Error fetching user profile:', err);
+        // Create a minimal backup profile to display something
+        const userData = {
+          id: userId,
+          email: null,
+          user_metadata: {
+            name: `User ${userId.substring(0, 6)}`,
+            role: null,
+            bio: null,
+            division: null,
+            birthday: null,
+            profileImage: null,
+            coverImage: null
+          }
+        } as unknown as UserData;
+        setProfileUser(userData);
       } finally {
         setIsLoading(false);
+        
+        // Store methods attempted for debugging
+        setAttemptedMethods(methods);
       }
     };
 
@@ -156,9 +426,41 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   if (!profileUser) {
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div className="bg-white dark:bg-dark-100 rounded-xl p-8 text-center">
-          <p className="text-gray-600 dark:text-gray-300 mb-4">Profile not found</p>
-          <Button onClick={onClose}>Close</Button>
+        <div className="bg-white dark:bg-dark-100 rounded-xl p-8 text-center max-w-md">
+          <div className="flex flex-col items-center">
+            <div className="rounded-full bg-red-100 p-3 mb-4">
+              <User className="h-6 w-6 text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Profile Not Found</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              We couldn't find the user profile for ID: {userId ? userId.substring(0, 8) + '...' : 'Unknown'}. 
+              The user may have been deleted or you may not have permission to view this profile.
+            </p>
+            
+            {/* Debug information */}
+            <div className="text-left text-xs text-gray-500 border-t border-gray-200 pt-3 mt-2 mb-4 w-full">
+              <p className="font-medium mb-1">Debug Info (Attempted methods):</p>
+              {attemptedMethods.length > 0 ? (
+                <ul className="list-disc pl-5 space-y-1">
+                  {attemptedMethods.map((method, index) => (
+                    <li key={index}>{method}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No fetch methods were attempted</p>
+              )}
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline"
+              >
+                Refresh
+              </Button>
+              <Button onClick={onClose}>Close</Button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -175,6 +477,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     profileImage,
     coverImage,
   } = metadata;
+
+  // Log metadata for debugging
+  console.log("Profile metadata:", metadata);
+  console.log("Division value:", division);
 
   // Format birthday if available
   const formattedBirthday = birthday 
@@ -279,15 +585,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Personal Information</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {division && (
-                    <div className="flex items-center text-gray-700 dark:text-gray-300">
-                      <Briefcase className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">NETA Division</p>
-                        <p>{division}</p>
-                      </div>
+                  {/* Always display division section if it exists, even empty */}
+                  <div className="flex items-center text-gray-700 dark:text-gray-300">
+                    <Briefcase className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">NETA Division</p>
+                      <p>{division || 'Not specified'}</p>
                     </div>
-                  )}
+                  </div>
                   
                   {formattedBirthday && (
                     <div className="flex items-center text-gray-700 dark:text-gray-300">

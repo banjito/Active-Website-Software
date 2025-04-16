@@ -62,4 +62,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
 Textarea.displayName = 'Textarea';
 
+// Export as TextArea for backward compatibility
+export const TextArea = Textarea;
+
 export default Textarea; 

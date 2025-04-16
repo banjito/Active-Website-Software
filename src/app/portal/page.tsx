@@ -100,14 +100,14 @@ export default function PortalLanding() {
       "Scavenger Portal": "scavenger" // Scavenger portal has its own portal type
     };
 
-    // Map portal names to their URLs
+    // Map portal names to their URLs if not provided
     const portalUrls: Record<string, string> = {
-      "Sales Portal": "/sales",
+      "Sales Portal": "/sales-dashboard",
       "NETA Portal": "/neta",
       "Lab Portal": "/lab",
       "HR Portal": "/hr",
       "Office Admins Portal": "/office",
-      "Engineering Portal": "/engineering",
+      "Engineering Portal": "/engineering", // Updated to use the new engineering page
       "Scavenger Portal": "/scavenger"
     };
 
@@ -118,6 +118,18 @@ export default function PortalLanding() {
       return;
     }
 
+    // Update the division based on which portal is clicked
+    if (portalName === "Engineering Portal") {
+      setDivision("engineering");
+    } else if (portalName === "Sales Portal") {
+      setDivision("sales");
+    } else if (portalName === "Lab Portal") {
+      setDivision("lab");
+    } else if (portalType) {
+      setDivision(portalType);
+    }
+
+    // Navigate to the selected portal
     if (url) {
       if (url.startsWith('http')) {
         window.location.href = url;
@@ -707,7 +719,7 @@ export default function PortalLanding() {
                 <CardFooter className="px-6 pb-6 pt-0">
                   <Button 
                     className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm"
-                    onClick={() => handlePortalClick("HR Portal")}
+                    onClick={() => handlePortalClick("HR Portal", '/hr')}
                   >
                     Access Portal <span className="ml-1">›</span>
                   </Button>
@@ -747,7 +759,7 @@ export default function PortalLanding() {
                 <CardFooter className="px-6 pb-6 pt-0">
                   <Button 
                     className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm"
-                    onClick={() => handlePortalClick("Office Admins Portal")}
+                    onClick={() => handlePortalClick("Office Admins Portal", '/office')}
                   >
                     Access Portal <span className="ml-1">›</span>
                   </Button>
@@ -809,26 +821,28 @@ export default function PortalLanding() {
                   </div>
                   <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Engineering</Badge>
                 </CardHeader>
+                
                 <CardContent className="px-6">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-white">Project management</span>
-                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Projects</Badge>
+                      <span className="text-sm text-gray-600 dark:text-white">Design approval</span>
+                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Workflow</Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 dark:text-white">Technical documentation</span>
-                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Documents</Badge>
+                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Library</Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-white">Resource library</span>
-                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Technical</Badge>
+                      <span className="text-sm text-gray-600 dark:text-white">Standards compliance</span>
+                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Updates</Badge>
                     </div>
                   </div>
                 </CardContent>
+                
                 <CardFooter className="px-6 pb-6 pt-0">
                   <Button 
                     className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm"
-                    onClick={() => handlePortalClick("Engineering Portal")}
+                    onClick={() => handlePortalClick("Engineering Portal", '/engineering/dashboard')}
                   >
                     Access Portal <span className="ml-1">›</span>
                   </Button>
@@ -1200,7 +1214,7 @@ export default function PortalLanding() {
                 <CardFooter className="px-6 pb-6 pt-0">
                   <Button 
                     className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm"
-                    onClick={() => handlePortalClick("HR Portal")}
+                    onClick={() => handlePortalClick("HR Portal", '/hr')}
                   >
                     Access Portal <span className="ml-1">›</span>
                   </Button>
@@ -1240,7 +1254,7 @@ export default function PortalLanding() {
                 <CardFooter className="px-6 pb-6 pt-0">
                   <Button 
                     className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm"
-                    onClick={() => handlePortalClick("Office Admins Portal")}
+                    onClick={() => handlePortalClick("Office Admins Portal", '/office')}
                   >
                     Access Portal <span className="ml-1">›</span>
                   </Button>
@@ -1302,26 +1316,28 @@ export default function PortalLanding() {
                   </div>
                   <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Engineering</Badge>
                 </CardHeader>
+                
                 <CardContent className="px-6">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-white">Project management</span>
-                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Projects</Badge>
+                      <span className="text-sm text-gray-600 dark:text-white">Design approval</span>
+                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Workflow</Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 dark:text-white">Technical documentation</span>
-                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Documents</Badge>
+                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Library</Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-white">Resource library</span>
-                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Technical</Badge>
+                      <span className="text-sm text-gray-600 dark:text-white">Standards compliance</span>
+                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Updates</Badge>
                     </div>
                   </div>
                 </CardContent>
+                
                 <CardFooter className="px-6 pb-6 pt-0">
                   <Button 
                     className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm"
-                    onClick={() => handlePortalClick("Engineering Portal")}
+                    onClick={() => handlePortalClick("Engineering Portal", '/engineering/dashboard')}
                   >
                     Access Portal <span className="ml-1">›</span>
                   </Button>

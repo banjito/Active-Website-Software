@@ -1,4 +1,4 @@
-import React, { SelectHTMLAttributes, forwardRef } from 'react';
+import React, { SelectHTMLAttributes, forwardRef, createContext, useContext, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 export interface SelectOption {
@@ -103,5 +103,165 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 );
 
 Select.displayName = 'Select';
+
+// New enhanced select components
+
+// Create context for the select state
+type SelectContextType = {
+  value: string;
+  onValueChange: (value: string) => void;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+};
+
+const SelectContext = createContext<SelectContextType | undefined>(undefined);
+
+function useSelectContext() {
+  const context = useContext(SelectContext);
+  if (!context) {
+    throw new Error("Select components must be used within a SelectProvider");
+  }
+  return context;
+}
+
+interface EnhancedSelectProps {
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
+  children: React.ReactNode;
+  disabled?: boolean;
+}
+
+export const SelectRoot: React.FC<EnhancedSelectProps> = ({
+  value: controlledValue,
+  defaultValue = "",
+  onValueChange,
+  children,
+}) => {
+  const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
+  const [open, setOpen] = useState(false);
+  
+  const isControlled = controlledValue !== undefined;
+  const value = isControlled ? controlledValue : uncontrolledValue;
+  
+  const handleValueChange = (newValue: string) => {
+    if (!isControlled) {
+      setUncontrolledValue(newValue);
+    }
+    onValueChange?.(newValue);
+    setOpen(false);
+  };
+  
+  return (
+    <SelectContext.Provider value={{ value, onValueChange: handleValueChange, open, setOpen }}>
+      <div className="relative">
+        {children}
+      </div>
+    </SelectContext.Provider>
+  );
+};
+
+interface SelectTriggerProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
+  placeholder?: string;
+}
+
+export const SelectTrigger: React.FC<SelectTriggerProps> = ({
+  children,
+  placeholder,
+  className = "",
+  ...props
+}) => {
+  const { value, setOpen, open } = useSelectContext();
+  
+  return (
+    <div
+      className={`flex items-center justify-between w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 cursor-pointer text-gray-900 dark:text-gray-100 ${open ? 'ring-2 ring-blue-500 outline-none' : ''} ${className}`}
+      onClick={() => setOpen(!open)}
+      {...props}
+    >
+      {value ? children : placeholder || "Select an option"}
+      <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+    </div>
+  );
+};
+
+interface SelectValueProps {
+  placeholder?: string;
+}
+
+export const SelectValue: React.FC<SelectValueProps> = ({
+  placeholder
+}) => {
+  const { value } = useSelectContext();
+  
+  return <span>{value || placeholder || ""}</span>;
+};
+
+interface SelectContentProps {
+  children: React.ReactNode;
+  className?: string;
+  align?: 'start' | 'center' | 'end';
+}
+
+export const SelectContent: React.FC<SelectContentProps> = ({
+  children,
+  className = "",
+  align = 'start'
+}) => {
+  const { open } = useSelectContext();
+  
+  if (!open) return null;
+  
+  const alignClasses = {
+    start: "left-0",
+    center: "left-1/2 transform -translate-x-1/2",
+    end: "right-0"
+  };
+  
+  return (
+    <div
+      className={`absolute z-50 mt-1 w-full overflow-auto rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg max-h-60 py-1 ${alignClasses[align]} ${className}`}
+    >
+      {children}
+    </div>
+  );
+};
+
+interface SelectItemProps extends React.HTMLAttributes<HTMLDivElement> {
+  value: string;
+  disabled?: boolean;
+}
+
+export const SelectItem: React.FC<SelectItemProps> = ({
+  children,
+  value,
+  disabled = false,
+  className = "",
+  ...props
+}) => {
+  const { value: selectedValue, onValueChange } = useSelectContext();
+  const isSelected = selectedValue === value;
+  
+  const handleSelect = () => {
+    if (!disabled) {
+      onValueChange(value);
+    }
+  };
+  
+  return (
+    <div
+      className={`px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+        isSelected ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : ''
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      onClick={handleSelect}
+      data-selected={isSelected}
+      data-disabled={disabled}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
 
 export default Select; 

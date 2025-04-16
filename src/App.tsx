@@ -39,6 +39,7 @@ import EditGoalPage from './app/(dashboard)/sales/goals/[id]/edit/page';
 import GoalsDashboardPage from './app/(dashboard)/sales/goals/dashboard/page';
 import GoalManagementPage from './app/(dashboard)/sales/goals/management/page';
 import EngineeringPage from './app/engineering/page';
+import EngineeringDashboard from './app/engineering/dashboard/page';
 
 // Import Lab Portal components
 import { EquipmentCalibration } from './components/lab/EquipmentCalibration';
@@ -63,6 +64,18 @@ import MaintenancePage from './app/[division]/maintenance/page';
 
 // Add territory management imports
 import TerritoryManagement from './components/sales/TerritoryManagement';
+
+// Import Engineering components properly with the right casing
+import { DesignApprovalWorkflow } from './components/engineering/DesignApprovalWorkflow';
+import { TechnicalDocumentationLibrary } from './components/engineering/TechnicalDocumentationLibrary';
+import { StandardsComplianceUpdates } from './components/engineering/StandardsComplianceUpdates';
+import DrawingRepository from './components/engineering/DrawingRepository';
+
+// Import HR Portal component
+import HRPortal from './app/hr/page';
+
+// Import Office Administration Portal component
+import OfficeAdministrationPortal from './app/office/page';
 
 // --- Define Division Context --- Start
 interface DivisionContextType {
@@ -142,6 +155,12 @@ function App() {
                 <Route path="/debug" element={<RequireAuth><Layout><DebugTableCheck /></Layout></RequireAuth>} />
                 <Route path="/chat-debug" element={<RequireAuth><Layout><ChatDebug /></Layout></RequireAuth>} />
 
+                {/* === HR Portal Route === */}
+                <Route path="/hr" element={<RequireAuth><Layout><HRPortal /></Layout></RequireAuth>} />
+
+                {/* === Office Administration Portal Route === */}
+                <Route path="/office" element={<RequireAuth><Layout><OfficeAdministrationPortal /></Layout></RequireAuth>} />
+
                 {/* === Lab Portal Routes === */}
                 <Route path="/lab" element={<RequireAuth><Layout><LabDashboard /></Layout></RequireAuth>} />
                 <Route path="/lab/equipment" element={<RequireAuth><Layout><EquipmentCalibration /></Layout></RequireAuth>} />
@@ -149,8 +168,13 @@ function App() {
                 <Route path="/lab/certificates" element={<RequireAuth><Layout><CertificateGenerator /></Layout></RequireAuth>} />
                 <Route path="/lab/quality-metrics" element={<RequireAuth><Layout><QualityMetrics /></Layout></RequireAuth>} />
                 
-                {/* === Engineering Portal Route === */}
-                <Route path="/engineering" element={<RequireAuth><Layout><EngineeringPage /></Layout></RequireAuth>} />
+                {/* === Engineering Portal Routes === */}
+                <Route path="/engineering" element={<RequireAuth><Layout><EngineeringDashboard /></Layout></RequireAuth>} />
+                <Route path="/engineering/dashboard" element={<RequireAuth><Layout><EngineeringDashboard /></Layout></RequireAuth>} />
+                <Route path="/engineering/designs" element={<RequireAuth><Layout><DesignApprovalWorkflow /></Layout></RequireAuth>} />
+                <Route path="/engineering/documentation" element={<RequireAuth><Layout><TechnicalDocumentationLibrary /></Layout></RequireAuth>} />
+                <Route path="/engineering/standards" element={<RequireAuth><Layout><StandardsComplianceUpdates /></Layout></RequireAuth>} />
+                <Route path="/engineering/drawings" element={<RequireAuth><Layout><DrawingRepository /></Layout></RequireAuth>} />
                 
                 {/* === Sales Dashboard Routes === */}
                 <Route path="/sales-dashboard" element={<RequireAuth><SalesLayout><SalesDashboard /></SalesLayout></RequireAuth>} />
@@ -178,7 +202,7 @@ function App() {
                 <Route path="/north_alabama/dashboard" element={<RequireAuth><Layout><NorthAlabamaDashboard /></Layout></RequireAuth>} />
                 <Route path="/tennessee/dashboard" element={<RequireAuth><Layout><TennesseeDashboard /></Layout></RequireAuth>} />
                 <Route path="/georgia/dashboard" element={<RequireAuth><Layout><GeorgiaDashboard /></Layout></RequireAuth>} />
-                <Route path="/international/dashboard" element={<RequireAuth><Layout><InternationalDashboard /></Layout></RequireAuth>} />
+                <Route path="/engineering/dashboard" element={<RequireAuth><Layout><EngineeringDashboard /></Layout></RequireAuth>} />
                 <Route path="/calibration/dashboard" element={<RequireAuth><Layout><CalibrationDashboard /></Layout></RequireAuth>} />
                 <Route path="/armadillo/dashboard" element={<RequireAuth><Layout><ArmadilloDashboard /></Layout></RequireAuth>} />
                 <Route path="/scavenger/dashboard" element={<RequireAuth><Layout><ScavengerDashboard /></Layout></RequireAuth>} />

@@ -5,7 +5,7 @@ import {
   Textarea, toast 
 } from '@/components/ui';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { Calendar, Filter } from 'lucide-react';
+import { Calendar, Filter, Loader2 } from 'lucide-react';
 import engineeringService from '@/lib/services/engineeringService';
 import type { DesignMetrics } from '@/lib/services/engineeringService';
 
@@ -49,7 +49,11 @@ export interface DesignDocument {
   review_comments?: string;
 }
 
-export function DesignApprovalWorkflow() {
+interface DesignApprovalWorkflowProps {
+  refreshTrigger?: number;
+}
+
+export function DesignApprovalWorkflow({ refreshTrigger = 0 }: DesignApprovalWorkflowProps) {
   const { user } = useAuth();
   const [designs, setDesigns] = useState<DesignDocument[]>([]);
   const [filteredDesigns, setFilteredDesigns] = useState<DesignDocument[]>([]);
@@ -81,7 +85,7 @@ export function DesignApprovalWorkflow() {
     fetchDesigns();
     fetchMetrics();
     fetchFiltersOptions();
-  }, []);
+  }, [refreshTrigger]);
 
   useEffect(() => {
     filterDesigns();
@@ -257,7 +261,7 @@ export function DesignApprovalWorkflow() {
 
       {showFilters && (
         <Card className="p-4 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <div>
               <Select
                 label="Status"
@@ -325,10 +329,22 @@ export function DesignApprovalWorkflow() {
       )}
 
       {loading ? (
-        <div className="text-center py-8">Loading designs...</div>
+        <Card className="p-8">
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+            <p className="text-muted-foreground">Loading designs...</p>
+          </div>
+        </Card>
       ) : filteredDesigns.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No designs found matching your criteria.</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => { clearFilters(); fetchDesigns(); }}
+          >
+            Clear Filters & Reload
+          </Button>
         </Card>
       ) : (
         <div className="space-y-4">

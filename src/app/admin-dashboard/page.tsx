@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, UserMinus, ShieldCheck, Settings, Key, Users, ArrowLeft, FileText } from 'lucide-react';
+import { UserPlus, UserMinus, ShieldCheck, Settings, Users, ArrowLeft, FileText, Database, Sliders } from 'lucide-react';
 import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import AdminUserManagement from '@/components/admin/AdminUserManagement';
 import SystemHealthMonitoring from '@/components/admin/SystemHealthMonitoring';
 import { SystemLogsCard } from '@/components/admin/SystemLogsCard';
+import { PortalConfiguration } from '@/components/admin/PortalConfiguration';
+import { DataBackupControls } from '@/components/admin/DataBackupControls';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'userManagement' | 'systemHealth' | 'systemLogs'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'userManagement' | 'systemHealth' | 'systemLogs' | 'portalConfig' | 'dataBackup'>('dashboard');
 
   // Redirect non-admin users
   React.useEffect(() => {
@@ -50,7 +52,11 @@ export const AdminDashboard: React.FC = () => {
               ? 'User Management' 
               : currentView === 'systemHealth'
                 ? 'System Health'
-                : 'System Logs'}
+                : currentView === 'systemLogs'
+                  ? 'System Logs'
+                  : currentView === 'portalConfig'
+                    ? 'Portal Configuration'
+                    : 'Data Backup Controls'}
         </h1>
       </div>
 
@@ -154,16 +160,16 @@ export const AdminDashboard: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>API Keys</CardTitle>
+                <CardTitle>Portal Configuration</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="mb-4 text-gray-500 dark:text-gray-400">
-                  Manage API keys for third-party integrations.
+                  Customize portal appearance, features, and behavior.
                 </p>
                 <div className="flex space-x-2">
-                  <Button>
-                    <Key className="mr-2 h-4 w-4" />
-                    Manage Keys
+                  <Button onClick={() => setCurrentView('portalConfig')}>
+                    <Sliders className="mr-2 h-4 w-4" />
+                    Configure
                   </Button>
                 </div>
               </CardContent>
@@ -171,32 +177,16 @@ export const AdminDashboard: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Portal Access</CardTitle>
+                <CardTitle>Data Backup Controls</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="mb-4 text-gray-500 dark:text-gray-400">
-                  Manage access to different portals for user groups.
+                  Manage data backups, schedule automatic backups, and restore data.
                 </p>
                 <div className="flex space-x-2">
-                  <Button>
-                    <ShieldCheck className="mr-2 h-4 w-4" />
-                    Configure Access
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Audit Log</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-4 text-gray-500 dark:text-gray-400">
-                  View system activity and user actions.
-                </p>
-                <div className="flex space-x-2">
-                  <Button>
-                    View Log
+                  <Button onClick={() => setCurrentView('dataBackup')}>
+                    <Database className="mr-2 h-4 w-4" />
+                    Manage Backups
                   </Button>
                 </div>
               </CardContent>
@@ -207,8 +197,12 @@ export const AdminDashboard: React.FC = () => {
         <AdminUserManagement />
       ) : currentView === 'systemHealth' ? (
         <SystemHealthMonitoring />
-      ) : (
+      ) : currentView === 'systemLogs' ? (
         <SystemLogsCard />
+      ) : currentView === 'portalConfig' ? (
+        <PortalConfiguration />
+      ) : (
+        <DataBackupControls />
       )}
     </div>
   );

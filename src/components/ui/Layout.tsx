@@ -14,7 +14,12 @@ import {
   Eye,
   Calendar,
   Building,
-  Wrench
+  Wrench,
+  GraduationCap,
+  Award,
+  LineChart,
+  Heart,
+  ClipboardList
 } from "lucide-react"
 import { Button } from './Button';
 import { ThemeToggle } from '../theme/theme-toggle';
@@ -48,6 +53,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   
   // Determine the correct base path for list views based on context
   const basePath = division ? `/${division}` : '';
+  
+  // Check if currently in HR portal
+  const isHRPortal = location.pathname.startsWith('/hr');
 
   // Format division name for display
   function formatDivisionName(divisionValue: string | null): string {
@@ -62,7 +70,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       'calibration': 'Calibration Division',
       'armadillo': 'Armadillo Division',
       'scavenger': 'Scavenger Division',
-      'Decatur': 'North Alabama Division (Decatur)'
+      'engineering': 'Engineering Portal',
+      'Decatur': 'North Alabama Division (Decatur)',
+      'hr': 'HR Portal'
     };
     
     return divisionMap[divisionValue] || 'All Divisions';
@@ -81,7 +91,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       'calibration': 'Calibration',
       'armadillo': 'Armadillo',
       'scavenger': 'Scavenger',
-      'Decatur': 'North Alabama (Decatur)'
+      'engineering': 'Engineering Portal',
+      'Decatur': 'North Alabama (Decatur)',
+      'hr': 'HR Portal'
     };
     
     return dashboardMap[divisionValue] || divisionValue;
@@ -130,7 +142,174 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   // Set dashboard display name based on current division
-  const dashboardDisplayName = division ? `${formatDashboardName(division)} Dashboard` : 'NETA Tech Dashboard';
+  const dashboardDisplayName = isHRPortal ? 'HR Dashboard' : 
+    (division === 'engineering' ? 'Engineering Portal' : 
+    (division ? `${formatDashboardName(division)} Dashboard` : 'NETA Tech Dashboard'));
+
+  // Render the appropriate menu items based on whether we're in the HR portal
+  const renderMenuItems = () => {
+    if (isHRPortal) {
+      return (
+        <>
+          <Link to="/hr">
+            <Button
+              variant="ghost"
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                location.pathname === '/hr' && !location.hash ? 'bg-black/5 dark:bg-dark-50' : ''
+              }`}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              HR Dashboard
+            </Button>
+          </Link>
+          <Link to="/hr#employees">
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                location.hash === '#employees' ? 'bg-black/5 dark:bg-dark-50' : ''
+              }`}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Employee Records
+            </Button>
+          </Link>
+          <Link to="/hr#training">
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                location.hash === '#training' ? 'bg-black/5 dark:bg-dark-50' : ''
+              }`}
+            >
+              <GraduationCap className="mr-2 h-4 w-4" />
+              Training
+            </Button>
+          </Link>
+          <Link to="/hr#certifications">
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                location.hash === '#certifications' ? 'bg-black/5 dark:bg-dark-50' : ''
+              }`}
+            >
+              <Award className="mr-2 h-4 w-4" />
+              Certifications
+            </Button>
+          </Link>
+          <Link to="/hr#performance">
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                location.hash === '#performance' ? 'bg-black/5 dark:bg-dark-50' : ''
+              }`}
+            >
+              <LineChart className="mr-2 h-4 w-4" />
+              Performance Reviews
+            </Button>
+          </Link>
+          <Link to="/hr#benefits">
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                location.hash === '#benefits' ? 'bg-black/5 dark:bg-dark-50' : ''
+              }`}
+            >
+              <Heart className="mr-2 h-4 w-4" />
+              Benefits
+            </Button>
+          </Link>
+          <Link to="/hr#policies">
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                location.hash === '#policies' ? 'bg-black/5 dark:bg-dark-50' : ''
+              }`}
+            >
+              <ClipboardList className="mr-2 h-4 w-4" />
+              Policies
+            </Button>
+          </Link>
+        </>
+      );
+    } else {
+      // Check if user is Office Admin or if we're in the Office Administration Portal
+      const isOfficeAdmin = user?.user_metadata?.role === 'Office Admin';
+      const isOfficePortal = location.pathname.startsWith('/office');
+      const hideJobsAndScheduling = isOfficeAdmin || isOfficePortal;
+      
+      // Determine the appropriate dashboard path for Office Admins or Office Portal
+      const officeDashboardPath = '/office';
+      const currentDashboardPath = (isOfficeAdmin || isOfficePortal) ? officeDashboardPath : dashboardPath;
+      
+      // Default menu items for non-HR portals
+      return (
+        <>
+          <Link to={currentDashboardPath}>
+            <Button
+              variant="ghost"
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                (isOfficeAdmin || isOfficePortal) ? 
+                  location.pathname.startsWith('/office') ? 'bg-black/5 dark:bg-dark-50' : '' :
+                  location.pathname === dashboardPath ? 'bg-black/5 dark:bg-dark-50' : ''
+              }`}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              {isOfficeAdmin || isOfficePortal ? 'Office Dashboard' : dashboardDisplayName}
+            </Button>
+          </Link>
+          <Link to={`${basePath}/customers`}>
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                location.pathname.endsWith('/customers') ? 'bg-black/5 dark:bg-dark-50' : ''
+              }`}
+            >
+              <Building className="mr-2 h-4 w-4" />
+              Customers
+            </Button>
+          </Link>
+          <Link to={`${basePath}/contacts`}>
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                location.pathname.endsWith('/contacts') ? 'bg-black/5 dark:bg-dark-50' : ''
+              }`}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Contacts
+            </Button>
+          </Link>
+          
+          {/* Only show Jobs and Scheduling tabs if NOT Office Admin and NOT in Office Portal */}
+          {!hideJobsAndScheduling && (
+            <>
+              <Link to={`${basePath}/jobs`}>
+                <Button 
+                  variant="ghost" 
+                  className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                    location.pathname.endsWith('/jobs') ? 'bg-black/5 dark:bg-dark-50' : ''
+                  }`}
+                >
+                  <BriefcaseIcon className="mr-2 h-4 w-4" />
+                  Jobs
+                </Button>
+              </Link>
+              <Link to={`${basePath}/scheduling`}>
+                <Button 
+                  variant="ghost" 
+                  className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                    location.pathname.endsWith('/scheduling') ? 'bg-black/5 dark:bg-dark-50' : ''
+                  }`}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Scheduling
+                </Button>
+              </Link>
+            </>
+          )}
+        </>
+      );
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-background dark:bg-dark-background">
@@ -148,72 +327,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex flex-col gap-1 p-4 flex-grow">
           <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500">DASHBOARD MENU</h2>
           <div className="flex flex-col gap-1">
-            <Link to={dashboardPath}>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname === dashboardPath ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                {dashboardDisplayName}
-              </Button>
-            </Link>
-            <Link to={`${basePath}/customers`}>
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname.endsWith('/customers') ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                <Building className="mr-2 h-4 w-4" />
-                Customers
-              </Button>
-            </Link>
-            <Link to={`${basePath}/contacts`}>
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname.endsWith('/contacts') ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                <Users className="mr-2 h-4 w-4" />
-                Contacts
-              </Button>
-            </Link>
-            <Link to={`${basePath}/jobs`}>
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname.endsWith('/jobs') ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                <BriefcaseIcon className="mr-2 h-4 w-4" />
-                Jobs
-              </Button>
-            </Link>
-            <Link to={`${basePath}/scheduling`}>
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname.endsWith('/scheduling') ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                Scheduling
-              </Button>
-            </Link>
-            <Link to={`${basePath}/equipment`}>
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname.endsWith('/equipment') ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                <Wrench className="mr-2 h-4 w-4" />
-                Equipment
-              </Button>
-            </Link>
+            {renderMenuItems()}
           </div>
         </div>
       </div>

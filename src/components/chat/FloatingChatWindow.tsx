@@ -19,17 +19,6 @@ interface FloatingChatWindowProps {
   initialPosition?: Position;
 }
 
-interface UserProfile {
-  id: string;
-  name: string | null;
-  email: string | null;
-  profileImage: string | null;
-  role: string | null;
-  title?: string | null;
-  department?: string | null;
-  phone?: string | null;
-}
-
 const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({ 
   roomId, 
   onClose, 
@@ -52,8 +41,6 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isMinimized, setIsMinimized] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loadingProfile, setLoadingProfile] = useState(false);
   const [showRetentionNotice, setShowRetentionNotice] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   
@@ -217,133 +204,6 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     setIsMinimized(!isMinimized);
   };
 
-  // Helper function to get a fallback profile image from name
-  const getFallbackPhotoFromName = (name: string) => {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4f46e5&color=fff&size=128`;
-  };
-
-  const fetchUserProfile = async (userId: string) => {
-    if (userId === user?.id) {
-      // If it's the current user, use their data
-      setUserProfile({
-        id: user.id,
-        name: user.user_metadata?.name || user.user_metadata?.full_name || user.user_metadata?.username || user.email || 'You',
-        email: user.email || null,
-        profileImage: user.user_metadata?.profileImage || user.user_metadata?.avatar_url || getFallbackPhotoFromName(user.user_metadata?.name || user.email || 'You'),
-        role: user.user_metadata?.role || null,
-        title: user.user_metadata?.title || null,
-        department: user.user_metadata?.department || null,
-        phone: user.user_metadata?.phone || null
-      });
-      return;
-    }
-
-    try {
-      setLoadingProfile(true);
-      console.log(`Fetching full profile for user ${userId}...`);
-      
-      // Try all possible profile sources
-
-      // First: Try to get profile from profiles table
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-        
-      if (!profileError && profileData) {
-        console.log(`Found user ${userId} in profiles table:`, profileData);
-        const name = profileData.full_name || profileData.email || `User ${userId.substring(0, 6)}`;
-        setUserProfile({
-          id: userId,
-          name: name,
-          email: profileData.email || null,
-          profileImage: profileData.avatar_url || getFallbackPhotoFromName(name),
-          role: profileData.role || null,
-          title: profileData.title || null,
-          department: profileData.department || null,
-          phone: profileData.phone || null
-        });
-        return;
-      }
-      
-      // Second: Try RPC method
-      const { data, error } = await supabase.rpc('get_user_details', { user_id: userId });
-      
-      if (!error && data && data.length > 0) {
-        console.log(`Found user ${userId} via RPC:`, data[0]);
-        
-        // Also try to get additional profile info
-        const { data: additionalData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-        
-        const name = data[0].name || data[0].email || `User ${userId.substring(0, 6)}`;
-        setUserProfile({
-          id: userId,
-          name: name,
-          email: data[0].email || null,
-          profileImage: data[0].profile_image || getFallbackPhotoFromName(name),
-          role: additionalData?.role || null,
-          title: additionalData?.title || null,
-          department: additionalData?.department || null,
-          phone: additionalData?.phone || null
-        });
-        return;
-      }
-      
-      // Third: Try user_metadata RPC
-      const { data: metaData, error: metaError } = await supabase
-        .rpc('get_user_metadata', { p_user_id: userId });
-      
-      if (!metaError && metaData) {
-        console.log(`Found user ${userId} metadata via RPC:`, metaData);
-        const name = metaData.name || metaData.full_name || metaData.email || `User ${userId.substring(0, 6)}`;
-        setUserProfile({
-          id: userId,
-          name: name,
-          email: metaData.email || null,
-          profileImage: metaData.profile_image || metaData.avatar_url || getFallbackPhotoFromName(name),
-          role: metaData.role || null,
-          title: metaData.title || null,
-          department: metaData.department || null,
-          phone: metaData.phone || null
-        });
-        return;
-      }
-      
-      // As a last resort, generate a user profile with placeholder data
-      const defaultName = `User ${userId.substring(0, 6)}`;
-      console.log(`No profile data found, using generated profile for ${userId}`);
-      setUserProfile({
-        id: userId,
-        name: defaultName,
-        email: null,
-        profileImage: getFallbackPhotoFromName(defaultName),
-        role: null,
-        title: null,
-        department: null,
-        phone: null
-      });
-      
-    } catch (err) {
-      console.error('Error fetching user profile:', err);
-      // Set a minimal profile with just the ID
-      const defaultName = `User ${userId.substring(0, 6)}`;
-      setUserProfile({
-        id: userId,
-        name: defaultName,
-        email: null,
-        profileImage: getFallbackPhotoFromName(defaultName),
-        role: null
-      });
-    } finally {
-      setLoadingProfile(false);
-    }
-  };
-  
   const handleViewProfile = (userId: string) => {
     // Toggle profile view if same user clicked again
     if (showUserProfile === userId) {
@@ -351,7 +211,10 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
       return;
     }
     
+    // Set the user ID to show profile for
     setShowUserProfile(userId);
+    
+    // No need to manually fetch the profile here - the ProfileView component handles this
   };
   
   // If the room doesn't exist yet or we're on initial load with no messages, don't show "Loading..."

@@ -150,6 +150,20 @@ export default function JobDetail() {
       template_type: 'MTS'
     },
     {
+      id: 'low-voltage-cable-test-3sets-mts',
+      name: '3-Low Voltage Cable MTS',
+      file_url: `report:/jobs/${id}/low-voltage-cable-test-3sets?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
+      id: 'electrical-tan-delta-test-mts-form',
+      name: '4-Medium Voltage Cable VLF Tan Delta Test MTS',
+      file_url: `report:/jobs/${id}/electrical-tan-delta-test-mts-form?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
       id: 'switchgear-inspection-report',
       name: '1-Switchgear, Switchboard, Panelboard Inspection & Test Report ATS 21',
       file_url: `report:/jobs/${id}/switchgear-report?returnToAssets=true`,
@@ -309,7 +323,42 @@ export default function JobDetail() {
       file_url: `report:/jobs/${id}/two-small-dry-typer-xfmr-ats-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
-    }
+    },
+    {
+      id: 'medium-voltage-vlf-mts-report',
+      name: '4-Medium Voltage Cable VLF Test Report MTS',
+      file_url: `report:/jobs/${id}/medium-voltage-vlf-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
+      id: 'medium-voltage-cable-vlf-test-mts',
+      name: '4-Medium Voltage Cable VLF Test With Tan Delta MTS',
+      file_url: `report:/jobs/${id}/medium-voltage-cable-vlf-test-mts?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
+      id: 'low-voltage-circuit-breaker-electronic-trip-mts-report',
+      name: '8-Low Voltage Circuit Breaker Electronic Trip Unit MTS - Primary Injection',
+      file_url: `report:/jobs/${id}/low-voltage-circuit-breaker-electronic-trip-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
+      id: 'low-voltage-circuit-breaker-thermal-magnetic-mts-report',
+      name: '8-Low Voltage Circuit Breaker Thermal-Magnetic MTS',
+      file_url: `report:/jobs/${id}/low-voltage-circuit-breaker-thermal-magnetic-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
+      id: 'medium-voltage-circuit-breaker-mts-report',
+      name: '9-Medium Voltage Circuit Breaker Test Report MTS',
+      file_url: `report:/jobs/${id}/medium-voltage-circuit-breaker-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
   ];
 
   // Handle clicking outside the dropdown
@@ -747,6 +796,7 @@ export default function JobDetail() {
       'panelboard-report': 'panelboard-report',
       'low-voltage-switch-multi-device-test': 'low-voltage-switch-multi-device-test',
       'low-voltage-circuit-breaker-electronic-trip-ats-report': 'low-voltage-circuit-breaker-electronic-trip-ats-report',
+      'low-voltage-circuit-breaker-electronic-trip-mts-report': 'low-voltage-circuit-breaker-electronic-trip-mts-report',
       'automatic-transfer-switch-ats-report': 'automatic-transfer-switch-ats-report',
       'large-dry-type-transformer-mts-report': 'large-dry-type-transformer-mts-report',
       'large-dry-type-xfmr-mts-report': 'large-dry-type-xfmr-mts-report',
@@ -759,6 +809,7 @@ export default function JobDetail() {
       'oil-inspection': 'oil-inspection',
       'low-voltage-cable-test-12sets': 'low-voltage-cable-test-12sets',
       'low-voltage-cable-test-20sets': 'low-voltage-cable-test-20sets',
+      'low-voltage-cable-test-3sets': 'low-voltage-cable-test-3sets',
       'medium-voltage-vlf-tan-delta': 'medium-voltage-vlf-tan-delta',
       'medium-voltage-vlf': 'medium-voltage-vlf',
       'medium-voltage-cable-vlf-test': 'medium-voltage-cable-vlf-test',
@@ -767,6 +818,7 @@ export default function JobDetail() {
       'medium-voltage-switch-oil-report': 'medium-voltage-switch-oil-report',
       'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report': 'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report',
       'low-voltage-circuit-breaker-thermal-magnetic-ats-report': 'low-voltage-circuit-breaker-thermal-magnetic-ats-report',
+      'low-voltage-circuit-breaker-thermal-magnetic-mts-report': 'low-voltage-circuit-breaker-thermal-magnetic-mts-report',
       'low-voltage-panelboard-small-breaker-report': 'low-voltage-panelboard-small-breaker-report',
       'medium-voltage-circuit-breaker-report': 'medium-voltage-circuit-breaker-report',
       'current-transformer-test-ats-report': 'current-transformer-test-ats-report',
@@ -774,8 +826,11 @@ export default function JobDetail() {
       'oil-analysis-report': 'oil-analysis-report', // Added based on App.tsx routes
       'cable-hipot-test-report': 'cable-hipot-test-report', // Added based on App.tsx routes
       'relay-test-report': 'relay-test-report', // Added based on App.tsx routes
-      'two-small-dry-typer-xfmr-ats-report': 'two-small-dry-typer-xfmr-ats-report'
-      // ensure all slugs from defaultAssets and App.tsx routes are here
+      'two-small-dry-typer-xfmr-ats-report': 'two-small-dry-typer-xfmr-ats-report',
+      'medium-voltage-vlf-mts-report': 'medium-voltage-vlf-mts-report',
+      'electrical-tan-delta-test-mts-form': 'electrical-tan-delta-test-mts-form',
+      'medium-voltage-cable-vlf-test-mts': 'medium-voltage-cable-vlf-test-mts',
+      'medium-voltage-circuit-breaker-mts-report': 'medium-voltage-circuit-breaker-mts-report',
     };
 
     const mappedReportName = reportPathMap[reportNameSlug];

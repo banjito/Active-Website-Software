@@ -572,20 +572,52 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
   };
 
   const handleCelsiusChange = (celsius: number) => {
-    const roundedCelsius = Math.round(celsius);
-    const calculatedFahrenheit = (roundedCelsius * 9) / 5 + 32;
-    const roundedFahrenheit = Math.round(calculatedFahrenheit);
-    const tcf = getTCF(roundedCelsius);
-
+    const fahrenheit = (celsius * 9/5) + 32;
+    const tcf = getTCF(celsius);
+    
     setFormData(prev => ({
       ...prev,
       temperature: {
         ...prev.temperature,
-        celsius: roundedCelsius,
-        fahrenheit: roundedFahrenheit,
+        fahrenheit,
+        celsius,
         tcf
       }
     }));
+  };
+
+  // Calculate second amperes value using the Excel formula: =IF(G73="","",IF(G73="N/A", "N/A", G73*J73))
+  const calculateSecondAmperes = (firstAmperes: string, multiplier: string): string => {
+    if (!firstAmperes || firstAmperes === '') return '';
+    if (firstAmperes === 'N/A') return 'N/A';
+    
+    // For magnetic, just copy the first amperes value
+    if (multiplier === '-10% 10%') {
+      return firstAmperes;
+    }
+    
+    // For thermal, multiply by 3.0 (300%)
+    if (multiplier === '300%') {
+      const result = Number(firstAmperes) * 3.0;
+      return isNaN(result) ? '' : result.toString();
+    }
+    
+    return firstAmperes;
+  };
+
+  // Calculate tolerance values for magnetic row
+  // Min: =IF(G74="","",IF(N74="N/A", "N/A", (J74*N74)+N74)) where J74 is -0.1 (-10%)
+  // Max: =IF(G74="","",IF(N74="N/A", "N/A", (L74*N74)+N74)) where L74 is 0.1 (10%)
+  const calculateMagneticTolerance = (amperes2: string, isMin: boolean): string => {
+    if (!amperes2 || amperes2 === '') return '';
+    if (amperes2 === 'N/A') return 'N/A';
+    
+    const baseValue = Number(amperes2);
+    if (isNaN(baseValue)) return '';
+    
+    const tolerance = isMin ? -0.1 : 0.1; // -10% or +10%
+    const result = (tolerance * baseValue) + baseValue;
+    return result.toString();
   };
 
   // --- Insulation Resistance Calculation (Keep from Electronic) ---
@@ -1227,9 +1259,9 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                 <td className={tableStyles.cell}>
                   <input type="text" value={formData.primaryInjection.results.thermal.amperes1} onChange={(e) => handleChange('primaryInjection.results.thermal.amperes1', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                 </td>
-                <td className={`${tableStyles.cell} text-center`}>{formData.primaryInjection.results.thermal.multiplierTolerance}</td>
+                <td className={`${tableStyles.cell} text-center`}>300%</td>
                 <td className={tableStyles.cell}>
-                  <input type="text" value={formData.primaryInjection.results.thermal.amperes2} onChange={(e) => handleChange('primaryInjection.results.thermal.amperes2', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
+                  <input type="text" value={calculateSecondAmperes(formData.primaryInjection.results.thermal.amperes1, '300%')} readOnly className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`} />
                 </td>
                 <td className={tableStyles.cell}>
                   <input type="text" value={formData.primaryInjection.results.thermal.toleranceMin} onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMin', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
@@ -1237,24 +1269,9 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                 <td className={tableStyles.cell}>
                   <input type="text" value={formData.primaryInjection.results.thermal.toleranceMax} onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMax', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                 </td>
-                <td className={tableStyles.cell}>
-                  <div className="flex items-center justify-center space-x-1">
-                    <input type="text" value={formData.primaryInjection.results.thermal.pole1.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole1.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-16`} />
-                    <span>sec.</span>
-                  </div>
-                </td>
-                <td className={tableStyles.cell}>
-                  <div className="flex items-center justify-center space-x-1">
-                    <input type="text" value={formData.primaryInjection.results.thermal.pole2.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole2.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-16`} />
-                    <span>sec.</span>
-                  </div>
-                </td>
-                <td className={tableStyles.cell}>
-                   <div className="flex items-center justify-center space-x-1">
-                    <input type="text" value={formData.primaryInjection.results.thermal.pole3.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole3.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-16`} />
-                    <span>sec.</span>
-                  </div>
-                </td>
+                <td className={`${tableStyles.cell} text-center`}>sec.</td>
+                <td className={`${tableStyles.cell} text-center`}>sec.</td>
+                <td className={`${tableStyles.cell} text-center`}>sec.</td>
               </tr>
               {/* Magnetic Row */}
               <tr>
@@ -1262,35 +1279,19 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                  <td className={tableStyles.cell}>
                    <input type="text" value={formData.primaryInjection.results.magnetic.amperes1} onChange={(e) => handleChange('primaryInjection.results.magnetic.amperes1', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                  </td>
-                 <td className={`${tableStyles.cell} text-center`}>{formData.primaryInjection.results.magnetic.multiplierTolerance}</td>
+                 <td className={`${tableStyles.cell} text-center`}>-10% 10%</td>
                  <td className={tableStyles.cell}>
-                   <input type="text" value={formData.primaryInjection.results.magnetic.amperes2} onChange={(e) => handleChange('primaryInjection.results.magnetic.amperes2', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
+                   <input type="text" value={calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%')} readOnly className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`} />
                  </td>
                  <td className={tableStyles.cell}>
-                   <input type="text" value={formData.primaryInjection.results.magnetic.toleranceMin} onChange={(e) => handleChange('primaryInjection.results.magnetic.toleranceMin', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
+                   <input type="text" value={calculateMagneticTolerance(calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%'), true)} readOnly className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`} />
                  </td>
                  <td className={tableStyles.cell}>
-                   <input type="text" value={formData.primaryInjection.results.magnetic.toleranceMax} onChange={(e) => handleChange('primaryInjection.results.magnetic.toleranceMax', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
+                   <input type="text" value={calculateMagneticTolerance(calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%'), false)} readOnly className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`} />
                  </td>
-                <td className={tableStyles.cell}>
-                   <div className="flex items-center justify-center space-x-1">
-                    {/* Magnetic has no sec field based on image */}
-                    <input type="text" value={formData.primaryInjection.results.magnetic.pole1.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole1.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-16`} />
-                    <span>A</span>
-                  </div>
-                </td>
-                 <td className={tableStyles.cell}>
-                   <div className="flex items-center justify-center space-x-1">
-                    <input type="text" value={formData.primaryInjection.results.magnetic.pole2.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole2.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-16`} />
-                    <span>A</span>
-                  </div>
-                 </td>
-                 <td className={tableStyles.cell}>
-                   <div className="flex items-center justify-center space-x-1">
-                    <input type="text" value={formData.primaryInjection.results.magnetic.pole3.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole3.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-16`} />
-                    <span>A</span>
-                  </div>
-                </td>
+                <td className={`${tableStyles.cell} text-center`}>A</td>
+                 <td className={`${tableStyles.cell} text-center`}>A</td>
+                 <td className={`${tableStyles.cell} text-center`}>A</td>
               </tr>
             </tbody>
           </table>

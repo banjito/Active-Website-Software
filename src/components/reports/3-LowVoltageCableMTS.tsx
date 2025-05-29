@@ -337,7 +337,7 @@ const applyTCF = (reading: string, tcf: number): string => {
 };
 
 // Main component
-const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
+const ThreeLowVoltageCableMTSForm: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string, reportId?: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -369,12 +369,13 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
     length: "",
     inspectionResults: {
       "7.3.1.A.1": "Select One",
-      "7.3.1.A.2": "Select One",
-      "7.3.1.A.3.1": "Select One",
+      "7.3.1.A.2.1": "Select One",
+      "7.3.1.A.3": "Select One",
       "7.3.1.A.4": "Select One",
+      "7.3.1.A.5": "Select One"
     },
     testVoltage: "1000V",
-    testSets: Array(20).fill(null).map((_, index) => ({
+    testSets: Array(12).fill(null).map((_, index) => ({ // Changed from 3 to 12
       id: index + 1,
       from: "",
       to: "",
@@ -472,7 +473,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
       
       const { data, error } = await supabase
         .schema('neta_ops')
-        .from('low_voltage_cable_test_20sets_mts')
+        .from('low_voltage_cable_test_3sets') // Changed table name
         .select('*')
         .eq('id', reportId)
         .single();
@@ -556,7 +557,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
         setFormData(prev => ({ ...prev, testSets: updatedTestSets }));
     }
   // Dependency array: watch temp and the stringified readings of all sets
-  }, [formData.temperature, JSON.stringify(formData.testSets.map(s => s.readings)), tcf]); 
+  }, [formData.temperature, JSON.stringify(formData.testSets.map(s => s.readings))]); 
 
   // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -609,7 +610,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
     setError(null);
     try {
         // Log the schema and table name for debugging
-        console.log('Attempting to save to schema: neta_ops, table: low_voltage_cable_test_20sets_mts');
+        console.log('Attempting to save to schema: neta_ops, table: low_voltage_cable_test_3sets'); // Changed table name
         
         // Structure the data to be saved (assuming a 'data' column)
         const reportPayload = {
@@ -627,7 +628,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
             // Update existing report
             const { error: updateError } = await supabase
                 .schema('neta_ops')
-                .from('low_voltage_cable_test_20sets_mts')
+                .from('low_voltage_cable_test_3sets') // Changed table name
                 .update({ data: formData, updated_at: new Date() })
                 .eq('id', reportId);
             if (updateError) {
@@ -642,11 +643,12 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
             return;
         } else {
             // Create new report
+            // Try with direct SQL query if the regular way doesn't work
             try {
                 console.log('Trying regular insert...');
                 const { data: insertData, error: insertError } = await supabase
                     .schema('neta_ops')
-                    .from('low_voltage_cable_test_20sets_mts')
+                    .from('low_voltage_cable_test_3sets') // Changed table name
                     .insert(reportPayload)
                     .select('id')
                     .single();
@@ -659,8 +661,8 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                 
                 // Create an asset entry for the saved report
                 const assetData = {
-                    name: `3-Low Voltage Cable Test MTS (up to 20 sets) - ${formData.identifier || new Date().toLocaleDateString()}`,
-                    file_url: `report:/jobs/${jobId}/low-voltage-cable-test-20sets-mts/${savedReportId}`,
+                    name: `3-Set Low Voltage Cable MTS - ${formData.identifier || new Date().toLocaleDateString()}`, // Changed asset name
+                    file_url: `report:/jobs/${jobId}/low-voltage-cable-test-3sets/${savedReportId}`, // Changed asset URL
                     user_id: user?.id,
                     created_at: new Date().toISOString()
                 };
@@ -709,7 +711,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                 
                 // Try to check if we have SELECT access at least
                 const { data: checkData, error: checkError } = await supabase
-                    .from('neta_ops.low_voltage_cable_test_20sets_mts')
+                    .from('neta_ops.low_voltage_cable_test_3sets') // Changed table name
                     .select('id')
                     .limit(1);
                 
@@ -735,7 +737,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                     console.log('Fallback save result:', { data: fallbackData, error: fallbackError });
                     
                     if (!fallbackError) {
-                        alert("Fallback save successful. This indicates the low_voltage_cable_test_20sets_mts table has permission issues.");
+                        alert("Fallback save successful. This indicates the low_voltage_cable_test_3sets table has permission issues."); // Changed message
                         savedReportId = fallbackData.id;
                         
                         // Even with fallback, navigate back to job details
@@ -765,7 +767,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
     
     // Define the number of columns (From, To, Size, A-G, B-G, C-G, N-G, A-B, B-C, C-A, A-N, B-N, C-N, Cont., Results)
     const TOTAL_COLS = 15;
-    const TOTAL_ROWS = 20; // Number of test sets
+    const TOTAL_ROWS = 12; // Changed Number of test sets from 3 to 12
 
     // Prevent arrow keys from changing select values
     if (e.target instanceof HTMLSelectElement && 
@@ -831,7 +833,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
   const renderHeader = () => (
     <div className="flex justify-between items-center mb-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        3-Low Voltage Cable Test MTS (up to 20 sets)
+        Low Voltage Cable Test {/* Changed title */}
       </h1>
       <div className="flex gap-2">
         {/* Pass/Fail Button - Always visible, modifies state */}
@@ -871,19 +873,6 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
       </div>
     </div>
   );
-
-  // Define consistent input, select, and textarea class functions
-  const getInputClassName = (additionalClasses: string = "") => {
-    return `form-input ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''} ${additionalClasses}`;
-  };
-  
-  const getSelectClassName = (additionalClasses: string = "") => {
-    return `form-select ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''} ${additionalClasses}`;
-  };
-  
-  const getTextAreaClassName = (additionalClasses: string = "") => {
-    return `form-textarea resize-none ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''} ${additionalClasses}`;
-  };
 
   // Loading and Error States
   if (loading) {
@@ -1022,37 +1011,37 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
               <div className="mb-4">
                 <label htmlFor="customer" className="form-label inline-block w-32">Customer:</label>
                 <input id="customer" name="customer" type="text" value={formData.customer} onChange={handleChange} 
-                  className={getInputClassName()} readOnly={true} 
-                />
+                  className="form-input" readOnly={true} 
+                  style={{ backgroundColor: 'var(--dark-input-bg, #242424)', color: 'var(--dark-text-primary, #ffffff)' }} />
               </div>
               <div className="mb-4">
                 <label htmlFor="address" className="form-label inline-block w-32">Address:</label>
                 <input id="address" name="address" type="text" value={formData.address} onChange={handleChange} 
-                  className={getInputClassName()} readOnly={true} 
-                />
+                  className="form-input" readOnly={true} 
+                  style={{ backgroundColor: 'var(--dark-input-bg, #242424)', color: 'var(--dark-text-primary, #ffffff)' }} />
               </div>
               <div className="mb-4">
                 <label htmlFor="user" className="form-label inline-block w-32">User:</label>
-                <input id="user" name="user" type="text" value={formData.user} onChange={handleChange} className={getInputClassName()} readOnly={true} />
+                <input id="user" name="user" type="text" value={formData.user} onChange={handleChange} className="form-input" readOnly={true} />
               </div>
               <div className="mb-4">
                 <label htmlFor="date" className="form-label inline-block w-32">Date:</label>
-                <input id="date" name="date" type="date" value={formData.date} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="date" name="date" type="date" value={formData.date} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
               <div className="mb-4">
                 <label htmlFor="identifier" className="form-label inline-block w-32">Identifier:</label>
-                <input id="identifier" name="identifier" type="text" value={formData.identifier || ''} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="identifier" name="identifier" type="text" value={formData.identifier || ''} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
             </div>
             {/* Column 2 */}
             <div>
               <div className="mb-4">
                 <label htmlFor="jobNumber" className="form-label inline-block w-32">Job #:</label>
-                <input id="jobNumber" name="jobNumber" type="text" value={formData.jobNumber} onChange={handleChange} className={getInputClassName()} readOnly={true} />
+                <input id="jobNumber" name="jobNumber" type="text" value={formData.jobNumber} onChange={handleChange} className="form-input" readOnly={true} />
               </div>
               <div className="mb-4">
                 <label htmlFor="technicians" className="form-label inline-block w-32">Technicians:</label>
-                <input id="technicians" name="technicians" type="text" value={formData.technicians} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="technicians" name="technicians" type="text" value={formData.technicians} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
               <div className="mb-4 flex items-center">
                 <label htmlFor="temperature" className="form-label inline-block w-32">Temp:</label>
@@ -1062,7 +1051,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                   type="number" 
                   value={formData.temperature} 
                   onChange={handleChange} 
-                  className={getInputClassName('w-20')}
+                  className="form-input w-20"
                   readOnly={!isEditMode}
                 />
                 <span className="mx-2 text-gray-600 dark:text-gray-400">°F</span>
@@ -1079,18 +1068,18 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                   type="number" 
                   value={formData.humidity} 
                   onChange={handleChange} 
-                  className={getInputClassName('w-20')}
+                  className="form-input w-20"
                   readOnly={!isEditMode}
                 />
                 <span className="ml-2 text-gray-600 dark:text-gray-400">%</span>
               </div>
               <div className="mb-4">
                 <label htmlFor="substation" className="form-label inline-block w-32">Substation:</label>
-                <input id="substation" name="substation" type="text" value={formData.substation} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="substation" name="substation" type="text" value={formData.substation} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
               <div className="mb-4">
                 <label htmlFor="eqptLocation" className="form-label inline-block w-32">Eqpt. Location:</label>
-                <input id="eqptLocation" name="eqptLocation" type="text" value={formData.eqptLocation} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="eqptLocation" name="eqptLocation" type="text" value={formData.eqptLocation} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
             </div>
           </div>
@@ -1104,34 +1093,34 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
             <div>
               <div className="mb-4">
                 <label htmlFor="testedFrom" className="form-label inline-block w-32">Tested From:</label>
-                <input id="testedFrom" name="testedFrom" type="text" value={formData.testedFrom} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="testedFrom" name="testedFrom" type="text" value={formData.testedFrom} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
               <div className="mb-4">
                 <label htmlFor="manufacturer" className="form-label inline-block w-32">Manufacturer:</label>
-                <input id="manufacturer" name="manufacturer" type="text" value={formData.manufacturer} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="manufacturer" name="manufacturer" type="text" value={formData.manufacturer} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
               <div className="mb-4">
                 <label htmlFor="conductorMaterial" className="form-label inline-block w-32">Conductor Material:</label>
-                <input id="conductorMaterial" name="conductorMaterial" type="text" value={formData.conductorMaterial} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="conductorMaterial" name="conductorMaterial" type="text" value={formData.conductorMaterial} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
               <div className="mb-4">
                 <label htmlFor="insulationType" className="form-label inline-block w-32">Insulation Type:</label>
-                <input id="insulationType" name="insulationType" type="text" value={formData.insulationType} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="insulationType" name="insulationType" type="text" value={formData.insulationType} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
             </div>
             {/* Column 2 */}
             <div>
               <div className="mb-4">
                 <label htmlFor="systemVoltage" className="form-label inline-block w-32">System Voltage:</label>
-                <input id="systemVoltage" name="systemVoltage" type="text" value={formData.systemVoltage} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="systemVoltage" name="systemVoltage" type="text" value={formData.systemVoltage} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
               <div className="mb-4">
                 <label htmlFor="ratedVoltage" className="form-label inline-block w-32">Rated Voltage:</label>
-                <input id="ratedVoltage" name="ratedVoltage" type="text" value={formData.ratedVoltage} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="ratedVoltage" name="ratedVoltage" type="text" value={formData.ratedVoltage} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
               <div className="mb-4">
                 <label htmlFor="length" className="form-label inline-block w-32">Length:</label>
-                <input id="length" name="length" type="text" value={formData.length} onChange={handleChange} className={getInputClassName()} readOnly={!isEditMode} />
+                <input id="length" name="length" type="text" value={formData.length} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
               </div>
             </div>
           </div>
@@ -1151,10 +1140,11 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {Object.entries({
-                  "7.3.1.A.1": "Compare cable data with drawings and specifications.",
-                  "7.3.1.A.2": "Inspect exposed sections of cables for physical damage.",
-                  "7.3.1.A.3.1": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
-                  "7.3.1.A.4": "Inspect compression-applied connectors for correct cable match and indentation."
+                  "7.3.1.A.1": "Inspect exposed sections of cables and connectors for physical damage and evidence of degradation.",
+                  "7.3.1.A.2.1": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
+                  "7.3.1.A.3": "Inspect cable tray and cable supports.",
+                  "7.3.1.A.4": "If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed for operation of protective devices.",
+                  "7.3.1.A.5*": "Compare cable data with drawings and cable schedule. *Optional"
                 }).map(([section, description]) => (
                   <tr key={section} className="hover:bg-gray-50 dark:hover:bg-dark-200">
                     <td className="px-4 py-2 text-sm font-mono text-gray-900 dark:text-white">{section}</td>
@@ -1164,7 +1154,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                         id={`inspection-${section}`}
                         value={formData.inspectionResults[section]}
                         onChange={(e) => handleInspectionChange(section, e.target.value)}
-                        className={getSelectClassName('w-full text-sm')}
+                        className="form-select w-full text-sm"
                         disabled={!isEditMode}
                       >
                         {INSPECTION_RESULTS_OPTIONS.map(option => (
@@ -1191,7 +1181,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                 name="testVoltage"
                 value={formData.testVoltage}
                 onChange={handleChange}
-                className={getSelectClassName('text-sm')}
+                className="form-select text-sm"
                 disabled={!isEditMode}
               >
                 {TEST_VOLTAGES.map(voltage => (
@@ -1227,7 +1217,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {formData.testSets.slice(0, 20).map((set) => (
+                {formData.testSets.slice(0, 12).map((set) => ( // Changed from 3 to 12
                   <React.Fragment key={set.id}>
                     {/* Raw Readings Row */}
                     <tr className="hover:bg-gray-50 dark:hover:bg-dark-200">
@@ -1239,7 +1229,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                           value={set.from}
                           onChange={(e) => handleTestSetChange(set.id, 'from', e.target.value)}
                           onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 0 })}
-                          className={getInputClassName('text-xs py-1 px-1.5')}
+                          className="form-input text-xs py-1 px-1.5 text-gray-900 dark:text-white"
                           readOnly={!isEditMode}
                         />
                       </td>
@@ -1251,7 +1241,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                           value={set.to}
                           onChange={(e) => handleTestSetChange(set.id, 'to', e.target.value)}
                           onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 1 })}
-                          className={getInputClassName('text-xs py-1 px-1.5')}
+                          className="form-input text-xs py-1 px-1.5 text-gray-900 dark:text-white"
                           readOnly={!isEditMode}
                         />
                       </td>
@@ -1262,7 +1252,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                           value={set.size}
                           onChange={(e) => handleTestSetChange(set.id, 'size', e.target.value)}
                           onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 2 })}
-                          className={getSelectClassName('text-xs py-1 px-1.5')}
+                          className="form-select text-xs py-1 px-1.5 text-gray-900 dark:text-white"
                           disabled={!isEditMode}
                         >
                           <option value="">Select</option>
@@ -1281,7 +1271,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                             value={set.readings[key as keyof typeof set.readings]}
                             onChange={(e) => handleReadingChange(set.id, key as keyof TestSet['readings'], e.target.value)}
                             onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: idx + 3 })}
-                            className={getInputClassName('text-xs py-1 px-1.5 text-center w-full')}
+                            className="form-input text-xs py-1 px-1.5 text-center w-full text-gray-900 dark:text-white"
                             readOnly={!isEditMode}
                           />
                         </td>
@@ -1293,7 +1283,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                           value={set.readings.continuity || ''}
                           onChange={(e) => handleReadingChange(set.id, 'continuity', e.target.value)}
                           onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 13 })}
-                          className={getSelectClassName('text-xs py-1 px-1.5 text-center')}
+                          className="form-select text-xs py-1 px-1.5 text-center text-gray-900 dark:text-white"
                           disabled={!isEditMode}
                         >
                           <option value="">Select</option>
@@ -1305,7 +1295,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                         <select
                           data-position={`${set.id - 1}-14`}
                           aria-label={`Set ${set.id} Result`}
-                          className={getSelectClassName('text-xs py-1 px-1.5')}
+                          className="form-select text-xs py-1 px-1.5 text-gray-900 dark:text-white"
                           value={set.result || ''}
                           onChange={(e) => handleTestSetChange(set.id, 'result', e.target.value)}
                           onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 14 })}
@@ -1356,7 +1346,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                     megohmmeter: e.target.value
                   }
                 }))}
-                className={getInputClassName()}
+                className="form-input"
                 readOnly={!isEditMode}
               />
             </div>
@@ -1374,7 +1364,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                     serialNumber: e.target.value
                   }
                 }))}
-                className={getInputClassName()}
+                className="form-input"
                 readOnly={!isEditMode}
               />
             </div>
@@ -1392,7 +1382,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
                     ampId: e.target.value
                   }
                 }))}
-                className={getInputClassName()}
+                className="form-input"
                 readOnly={!isEditMode}
               />
             </div>
@@ -1414,7 +1404,7 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
               }
             }))}
             rows={4}
-            className={getTextAreaClassName('w-full')}
+            className="w-full form-textarea resize-none"
             placeholder="Enter any additional comments..."
             readOnly={!isEditMode}
           />
@@ -1424,4 +1414,4 @@ const TwentySetsLowVoltageCableTestFormMTS: React.FC = () => {
   );
 };
 
-export default TwentySetsLowVoltageCableTestFormMTS; 
+export default ThreeLowVoltageCableMTSForm; 

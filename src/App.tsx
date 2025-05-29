@@ -30,6 +30,8 @@ import TwentySetsLowVoltageCableTestForm from './components/reports/20SetsLowVol
 import TanDeltaChart from './components/reports/TanDeltaChart';
 import MediumVoltageVLFReport from './components/reports/MediumVoltageVLFReport';
 import MediumVoltageCableVLFTest from './components/reports/MediumVoltageCableVLFTest';
+import ThreeLowVoltageCableMTSForm from './components/reports/3-LowVoltageCableMTS';
+import MediumVoltageVLFMTSReport from './components/reports/MediumVoltageVLFMTSReport';
 import ProfileSetup from './pages/ProfileSetup';
 import TechnicianProfilesPage from './pages/TechnicianProfilesPage';
 import CustomerCategoriesPage from './pages/CustomerCategoriesPage';
@@ -112,12 +114,16 @@ import MediumVoltageSwitchOilReport from './components/reports/MediumVoltageSwit
 // Import Low Voltage Circuit Breaker Electronic Trip Unit ATS Report component
 import LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport from './components/reports/LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport';
 import LowVoltageCircuitBreakerElectronicTripATSReport from './components/reports/LowVoltageCircuitBreakerElectronicTripATSReport';
+import LowVoltageCircuitBreakerElectronicTripMTSReport from './components/reports/LowVoltageCircuitBreakerElectronicTripMTSReport';
 import LowVoltageCircuitBreakerThermalMagneticATSReport from './components/reports/LowVoltageCircuitBreakerThermalMagneticATSReport';
+import LowVoltageCircuitBreakerThermalMagneticMTSReport from './components/reports/LowVoltageCircuitBreakerThermalMagneticMTSReport';
 
 // Import the new Small Breaker Panelboard report
 import LowVoltagePanelboardSmallBreakerTestATSReport from './components/reports/LowVoltagePanelboardSmallBreakerTestATSReport';
 // Import the new Medium Voltage Circuit Breaker report
 import MediumVoltageCircuitBreakerReport from './components/reports/MediumVoltageCircuitBreakerReport';
+// Import Medium Voltage Circuit Breaker MTS Report component
+import MediumVoltageCircuitBreakerMTSReport from './components/reports/MediumVoltageCircuitBreakerMTSReport';
 
 // Import the new Current Transformer Test ATS Report component
 import CurrentTransformerTestATSReport from './components/reports/CurrentTransformerTestATSReport';
@@ -151,6 +157,9 @@ const LiquidXfmrVisualMTSReport = lazy(() => import('@/components/reports/Liquid
 
 // Import the new Two Small Dry Type Transformer ATS Report component
 const TwoSmallDryTyperXfmrATSReport = lazy(() => import('@/components/reports/TwoSmallDryTyperXfmrATSReport'));
+
+// Import the new Tan Delta Test MTS Form report
+import TanDeltaTestMTSForm from './components/reports/TanDeltaTestMTSForm';
 
 // --- Define Division Context --- Start
 interface DivisionContextType {
@@ -436,8 +445,10 @@ function App() {
                   <Route path="/jobs/:id/medium-voltage-switch-oil-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageSwitchOilReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-cable-test-12sets/:reportId?" element={<RequireAuth><Layout><TwelveSetsLowVoltageCableTestForm /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-cable-test-20sets/:reportId?" element={<RequireAuth><Layout><TwentySetsLowVoltageCableTestForm /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/low-voltage-cable-test-3sets/:reportId?" element={<RequireAuth><Layout><ThreeLowVoltageCableMTSForm /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-vlf-tan-delta/:reportId?" element={<RequireAuth><Layout><TanDeltaChart /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-vlf/:reportId?" element={<RequireAuth><Layout><MediumVoltageVLFReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/medium-voltage-vlf-mts-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageVLFMTSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-cable-vlf-test/:reportId?" element={<RequireAuth><Layout><MediumVoltageCableVLFTest /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/metal-enclosed-busway/:reportId?" element={<RequireAuth><Layout><MetalEnclosedBuswayReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-switch-multi-device-test/:reportId?" element={<RequireAuth><Layout><LowVoltageSwitchWithPrint /></Layout></RequireAuth>} />
@@ -445,7 +456,9 @@ function App() {
                   <Route path="/jobs/:id/mv-switch-oil/:reportId?" element={<RequireAuth><Layout><MediumVoltageSwitchOilReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report/:reportId?" element={<RequireAuth><Layout><LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-circuit-breaker-electronic-trip-ats-report/:reportId?" element={<RequireAuth><Layout><LowVoltageCircuitBreakerElectronicTripATSReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/low-voltage-circuit-breaker-electronic-trip-mts-report/:reportId?" element={<RequireAuth><Layout><LowVoltageCircuitBreakerElectronicTripMTSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-circuit-breaker-thermal-magnetic-ats-report/:reportId?" element={<RequireAuth><Layout><LowVoltageCircuitBreakerThermalMagneticATSReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/low-voltage-circuit-breaker-thermal-magnetic-mts-report/:reportId?" element={<RequireAuth><Layout><LowVoltageCircuitBreakerThermalMagneticMTSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-panelboard-small-breaker-report/:reportId?" element={<RequireAuth><Layout><LowVoltagePanelboardSmallBreakerTestATSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-circuit-breaker-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageCircuitBreakerReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><CurrentTransformerTestATSReport /></Layout></RequireAuth>} />
@@ -472,6 +485,13 @@ function App() {
 
                   {/* Added route for Two Small Dry Type Transformer ATS Report */}
                   <Route path="/jobs/:id/two-small-dry-typer-xfmr-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><TwoSmallDryTyperXfmrATSReport /></Suspense></Layout></RequireAuth>} />
+
+                  {/* Added route for the new Tan Delta Test MTS Form */}
+                  <Route path="/jobs/:id/electrical-tan-delta-test-mts-form/:reportId?" element={<RequireAuth><Layout><TanDeltaTestMTSForm /></Layout></RequireAuth>} />
+                  
+                  {/* Added route for Medium Voltage Cable VLF Test MTS */}
+                  <Route path="/jobs/:id/medium-voltage-cable-vlf-test-mts/:reportId?" element={<RequireAuth><Layout><MediumVoltageCableVLFTest /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/medium-voltage-circuit-breaker-mts-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageCircuitBreakerMTSReport /></Layout></RequireAuth>} />
                 </Routes>
                 
                 {/* Persistent Chat Windows */}

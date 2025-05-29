@@ -442,15 +442,12 @@ const MediumVoltageCableVLFTest = () => {
     
     // Visual and Mechanical Inspection
     visualInspection: {
-      compareData: InspectionResult.SELECT,           // 7.3.3.A.1
-      inspectDamage: InspectionResult.SELECT,         // 7.3.3.A.2
-      useOhmmeter: InspectionResult.SELECT,           // 7.3.3.A.3.1
-      inspectConnectors: InspectionResult.SELECT,     // 7.3.3.A.4
-      inspectGrounding: InspectionResult.SELECT,      // 7.3.3.A.5
-      verifyBends: InspectionResult.SELECT,           // 7.3.3.A.6
-      inspectCurrentTransformers: InspectionResult.SELECT, // 7.3.3.A.8
-      inspectIdentification: InspectionResult.SELECT, // 7.3.3.A.9
-      inspectJacket: InspectionResult.SELECT,         // 7.3.3.A.10
+      inspectCablesAndConnectors: InspectionResult.SELECT,     // 7.3.3.A.1
+      inspectTerminationsAndSplices: InspectionResult.SELECT,  // 7.3.3.A.2
+      useOhmmeter: InspectionResult.SELECT,                    // 7.3.3.A.3.1
+      inspectShieldGrounding: InspectionResult.SELECT,         // 7.3.3.A.4
+      verifyBendRadius: InspectionResult.SELECT,               // 7.3.3.A.5
+      inspectCurrentTransformers: InspectionResult.SELECT,     // 7.3.3.A.7
     },
     
     // Electrical Tests - Shield Continuity
@@ -1186,34 +1183,17 @@ const MediumVoltageCableVLFTest = () => {
       console.log('Saving with user.id:', user.id);
       console.log('Form data to save:', formData);
 
-      const reportData = {
-        ...(!reportId ? { created_at: new Date().toISOString() } : {}),
-        report_info: {
-          ...formData,
-          jobNumber: effectiveJobId,
-          userId: user.id,
-          signatures: formData.signatures || null,
-        },
-        job_id: effectiveJobId,
-        user_id: user.id,
-        withstand_test: formData.withstandTest,
-        tan_delta_test: formData.tanDeltaTest,
-        equipment: formData.equipment,
-        cable_info: formData.cableInfo,
-        termination_data: formData.terminationData,
-        status: formData.status || 'PASS',
-      };
-
-      console.log('Prepared report data:', reportData);
-
       let result;
       if (reportId) {
         console.log(`Updating existing report with ID: ${reportId}`);
         try {
           const { data, error } = await supabase
             .schema('neta_ops')
-            .from('medium_voltage_cable_vlf_test_reports')
-            .update(reportData)
+            .from('medium_voltage_cable_vlf_test')
+            .update({
+              data: formData,
+              updated_at: new Date().toISOString()
+            })
             .eq('id', reportId);
           
           result = { data, error };
@@ -1234,8 +1214,13 @@ const MediumVoltageCableVLFTest = () => {
         try {
           const { data, error } = await supabase
             .schema('neta_ops')
-            .from('medium_voltage_cable_vlf_test_reports')
-            .insert(reportData)
+            .from('medium_voltage_cable_vlf_test')
+            .insert({
+              job_id: effectiveJobId,
+              user_id: user.id,
+              data: formData,
+              created_at: new Date().toISOString()
+            })
             .select('id');
           
           result = { data, error };
@@ -1385,16 +1370,16 @@ const MediumVoltageCableVLFTest = () => {
     setLoading(true);
 
     try {
-      console.log(`Attempting to load report from 'neta_ops.medium_voltage_cable_vlf_test_reports' table`);
+      console.log(`Attempting to load report from 'neta_ops.medium_voltage_cable_vlf_test' table`);
       const { data, error } = await supabase
         .schema('neta_ops')
-        .from('medium_voltage_cable_vlf_test_reports')
+        .from('medium_voltage_cable_vlf_test')
         .select('*')
         .eq('id', reportId)
         .single();
 
       if (error) {
-        console.error(`Error loading from medium_voltage_cable_vlf_test_reports:`, error);
+        console.error(`Error loading from medium_voltage_cable_vlf_test:`, error);
         // Handle specific errors if needed, otherwise throw generic
         if (error.message.includes('permission denied')) {
           toast.error('Permission denied when loading the report.');
@@ -1407,35 +1392,23 @@ const MediumVoltageCableVLFTest = () => {
         throw error; // Re-throw to trigger the catch block below
       }
 
-      if (data && data.report_info) {
+      if (data && data.data) {
         console.log('loadReport: Found report, setting form data.');
-        // ... (rest of the logic to set form data based on 'data')
+        // The report data is now stored in the 'data' column as JSONB
+        const reportData = data.data;
+        
         setFormData(prev => ({
           ...prev,
-          ...data.report_info, // Spread the report_info from the loaded data
-          // Make sure to map all relevant fields correctly
-          customerName: data.report_info?.customerName || prev.customerName,
-          siteAddress: data.report_info?.siteAddress || prev.siteAddress,
-          jobNumber: data.report_info?.jobNumber || prev.jobNumber,
-          location: data.report_info?.location || prev.location,
-          equipmentLocation: data.report_info?.equipmentLocation || prev.equipmentLocation,
-          contactPerson: data.report_info?.contactPerson || prev.contactPerson,
-          identifier: data.report_info?.identifier || prev.identifier,
-          cableInfo: data.report_info?.cableInfo || prev.cableInfo,
-          terminationData: data.report_info?.terminationData || prev.terminationData,
-          visualInspection: data.report_info?.visualInspection || prev.visualInspection,
-          shieldContinuity: data.report_info?.shieldContinuity || prev.shieldContinuity,
-          insulationTest: data.report_info?.insulationTest || prev.insulationTest,
-          equipment: {
-            ...prev.equipment,
-            ...(data.report_info?.equipment || {}),
-            // Add specific handling for AMP IDs
-            ohmAmpId: data.report_info?.equipment?.ohmAmpId || prev.equipment?.ohmAmpId || '',
-            megohmAmpId: data.report_info?.equipment?.megohmAmpId || prev.equipment?.megohmAmpId || '',
-            vlfAmpId: data.report_info?.equipment?.vlfAmpId || data.report_info?.equipment?.ampId || prev.equipment?.vlfAmpId || prev.equipment?.ampId || '',
-          },
-          temperature: data.report_info?.temperature || prev.temperature,
-          withstandTest: data.withstand_test || data.report_info?.withstandTest || {
+          ...reportData, // Spread all the report data
+          // Ensure specific nested objects are properly handled
+          cableInfo: reportData.cableInfo || prev.cableInfo,
+          terminationData: reportData.terminationData || prev.terminationData,
+          visualInspection: reportData.visualInspection || prev.visualInspection,
+          shieldContinuity: reportData.shieldContinuity || prev.shieldContinuity,
+          insulationTest: reportData.insulationTest || prev.insulationTest,
+          equipment: reportData.equipment || prev.equipment,
+          temperature: reportData.temperature || prev.temperature,
+          withstandTest: reportData.withstandTest || {
             readings: [
               { 
                 timeMinutes: "10", 
@@ -1481,14 +1454,7 @@ const MediumVoltageCableVLFTest = () => {
               },
             ]
           },
-          comments: data.report_info?.comments || prev.comments,
-          status: data.report_info?.status || prev.status,
-          // Ensure nested reportInfo object is also updated if it exists in DB
-          reportInfo: {
-            ...prev.reportInfo,
-            ...(data.report_info.reportInfo || {})
-          },
-          tanDeltaTest: data.tan_delta_test || {
+          tanDeltaTest: reportData.tanDeltaTest || {
             systemVoltageL2G: '14.4',
             testVoltage: '',
             frequency: '0.1',
@@ -1533,7 +1499,7 @@ const MediumVoltageCableVLFTest = () => {
         }));
         setIsEditMode(false); // Set to view mode since report was loaded
       } else {
-        console.warn('Report data loaded but report_info is missing or empty.');
+        console.warn('Report data loaded but data is missing or empty.');
         toast.error('Loaded report seems incomplete.'); // Changed from toast.warn
         setIsEditMode(true); // Allow editing if data is incomplete
       }
@@ -1981,10 +1947,10 @@ const MediumVoltageCableVLFTest = () => {
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">7.3.3.A Visual and Mechanical Inspection</h2>
         <div className="grid grid-cols-1 gap-4">
           <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.1 Compare cable data with drawings and specifications.</label>
+            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.1 Inspect exposed sections of cables and connectors for physical damage and evidence of degradation and corona.</label>
             <select
-              value={formData.visualInspection?.compareData || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, compareData: e.target.value})}
+              value={formData.visualInspection?.inspectCablesAndConnectors || InspectionResult.SELECT}
+              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectCablesAndConnectors: e.target.value})}
               disabled={!isEditMode}
               className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
@@ -1995,10 +1961,10 @@ const MediumVoltageCableVLFTest = () => {
           </div>
 
           <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.2 Inspect exposed sections of cables for physical damage.</label>
+            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.2 Inspect terminations and splices for physical damage, evidence of overheating, and corona.</label>
             <select
-              value={formData.visualInspection?.inspectDamage || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectDamage: e.target.value})}
+              value={formData.visualInspection?.inspectTerminationsAndSplices || InspectionResult.SELECT}
+              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectTerminationsAndSplices: e.target.value})}
               disabled={!isEditMode}
               className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
@@ -2023,10 +1989,10 @@ const MediumVoltageCableVLFTest = () => {
           </div>
 
           <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.4 Inspect compression-applied connectors for correct cable match and indentation.</label>
+            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.4 Inspect shield grounding, cable support.</label>
             <select
-              value={formData.visualInspection?.inspectConnectors || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectConnectors: e.target.value})}
+              value={formData.visualInspection?.inspectShieldGrounding || InspectionResult.SELECT}
+              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectShieldGrounding: e.target.value})}
               disabled={!isEditMode}
               className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
@@ -2037,10 +2003,10 @@ const MediumVoltageCableVLFTest = () => {
           </div>
 
           <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.5 Inspect shield grounding, cable supports, and terminations.</label>
+            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.5 Verify that visible cable bends are not less than ICEA and/or manufacturer's minimum allowable bending radius.</label>
             <select
-              value={formData.visualInspection?.inspectGrounding || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectGrounding: e.target.value})}
+              value={formData.visualInspection?.verifyBendRadius || InspectionResult.SELECT}
+              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, verifyBendRadius: e.target.value})}
               disabled={!isEditMode}
               className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
@@ -2051,52 +2017,10 @@ const MediumVoltageCableVLFTest = () => {
           </div>
 
           <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.6 Verify that visible cable bends meet or exceed ICEA and manufacturer's minimum published bending radius.</label>
-            <select
-              value={formData.visualInspection?.verifyBends || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, verifyBends: e.target.value})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.8 If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed and that shields are correctly terminated for operation of protective devices.</label>
+            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.7 If cables are terminated through window-type current transformers, inspect to verify neutral and ground conductors are correctly placed and shields are correctly terminated for operation of protective devices.</label>
             <select
               value={formData.visualInspection?.inspectCurrentTransformers || InspectionResult.SELECT}
               onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectCurrentTransformers: e.target.value})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.9 Inspect for correct identification and arrangements.</label>
-            <select
-              value={formData.visualInspection?.inspectIdentification || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectIdentification: e.target.value})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.10 Inspect cable jacket and insulation condition.</label>
-            <select
-              value={formData.visualInspection?.inspectJacket || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectJacket: e.target.value})}
               disabled={!isEditMode}
               className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >

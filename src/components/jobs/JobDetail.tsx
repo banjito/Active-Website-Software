@@ -359,6 +359,27 @@ export default function JobDetail() {
       created_at: new Date().toISOString(),
       template_type: 'MTS'
     },
+    {
+      id: '12-current-transformer-test-mts-report',
+      name: '12-Current Transformer Test MTS',
+      file_url: `report:/jobs/${id}/12-current-transformer-test-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
+      id: '13-voltage-potential-transformer-test-mts-report',
+      name: '13-Voltage Potential Transformer Test MTS',
+      file_url: `report:/jobs/${id}/13-voltage-potential-transformer-test-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
+      id: '23-medium-voltage-motor-starter-mts-report',
+      name: '23-Medium Voltage Motor Starter MTS Report',
+      file_url: `report:/jobs/${id}/23-medium-voltage-motor-starter-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    }
   ];
 
   // Handle clicking outside the dropdown
@@ -831,6 +852,9 @@ export default function JobDetail() {
       'electrical-tan-delta-test-mts-form': 'electrical-tan-delta-test-mts-form',
       'medium-voltage-cable-vlf-test-mts': 'medium-voltage-cable-vlf-test-mts',
       'medium-voltage-circuit-breaker-mts-report': 'medium-voltage-circuit-breaker-mts-report',
+      '12-current-transformer-test-mts-report': '12-current-transformer-test-mts-report',
+      '13-voltage-potential-transformer-test-mts-report': '13-voltage-potential-transformer-test-mts-report',
+      '23-medium-voltage-motor-starter-mts-report': '23-medium-voltage-motor-starter-mts-report'
     };
 
     const mappedReportName = reportPathMap[reportNameSlug];

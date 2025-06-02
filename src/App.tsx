@@ -137,6 +137,12 @@ import CableHiPotReport from './components/reports/CableHiPotReport';
 // Import the new 12-Current Transformer Test ATS Report
 const New12CurrentTransformerTestATSReport = lazy(() => import('@/components/reports/12-CurrentTransformerTestATSReport'));
 
+// Import the new 12-Current Transformer Test MTS Report
+const New12CurrentTransformerTestMTSReport = lazy(() => import('@/components/reports/12-CurrentTransformerTestMTSReport'));
+
+// Import the new 13-Voltage Potential Transformer Test MTS Report
+import VoltagePotentialTransformerTestMTSReport from './components/reports/13-VoltagePotentialTransformerTestMTSReport';
+
 // Import Relay Test Report
 import RelayTestReport from './components/reports/RelayTestReport';
 
@@ -160,6 +166,9 @@ const TwoSmallDryTyperXfmrATSReport = lazy(() => import('@/components/reports/Tw
 
 // Import the new Tan Delta Test MTS Form report
 import TanDeltaTestMTSForm from './components/reports/TanDeltaTestMTSForm';
+
+// Import the new 23-Medium Voltage Motor Starter MTS Report
+import MediumVoltageMotorStarterMTSReport from './components/reports/23-MediumVoltageMotorStarterMTSReport';
 
 // --- Define Division Context --- Start
 interface DivisionContextType {
@@ -492,6 +501,15 @@ function App() {
                   {/* Added route for Medium Voltage Cable VLF Test MTS */}
                   <Route path="/jobs/:id/medium-voltage-cable-vlf-test-mts/:reportId?" element={<RequireAuth><Layout><MediumVoltageCableVLFTest /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-circuit-breaker-mts-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageCircuitBreakerMTSReport /></Layout></RequireAuth>} />
+                  
+                  {/* Added route for 12-Current Transformer Test MTS Report */}
+                  <Route path="/jobs/:id/12-current-transformer-test-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><New12CurrentTransformerTestMTSReport /></Suspense></Layout></RequireAuth>} />
+
+                  {/* Added route for 13-Voltage Potential Transformer Test MTS Report */}
+                  <Route path="/jobs/:id/13-voltage-potential-transformer-test-mts-report/:reportId?" element={<RequireAuth><Layout><VoltagePotentialTransformerTestMTSReport /></Layout></RequireAuth>} />
+
+                  {/* === New Report Route === */}
+                  <Route path="/jobs/:id/23-medium-voltage-motor-starter-mts-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageMotorStarterMTSReport /></Layout></RequireAuth>} />
                 </Routes>
                 
                 {/* Persistent Chat Windows */}

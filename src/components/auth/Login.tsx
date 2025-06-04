@@ -80,53 +80,27 @@ export default function Login() {
 
   // Dynamic favicon change for login page
   useEffect(() => {
-    // Function to change favicon with better browser support
-    const changeFavicon = (href: string) => {
-      // Remove ALL existing favicon and icon links
-      const existingLinks = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
+    // Simple but effective favicon change with cache busting
+    const setFavicon = (href: string) => {
+      // Remove existing favicon links
+      const existingLinks = document.querySelectorAll('link[rel*="icon"]');
       existingLinks.forEach(link => link.remove());
       
-      // Create new favicon links with cache busting
-      const timestamp = Date.now();
-      
-      // Standard favicon
+      // Create new favicon link with cache busting
       const link = document.createElement('link');
       link.rel = 'icon';
       link.type = 'image/png';
-      link.href = href + '?v=' + timestamp;
+      link.href = href + '?v=' + Date.now();
       document.head.appendChild(link);
-      
-      // Shortcut icon for IE
-      const shortcutLink = document.createElement('link');
-      shortcutLink.rel = 'shortcut icon';
-      shortcutLink.type = 'image/png';
-      shortcutLink.href = href + '?v=' + timestamp;
-      document.head.appendChild(shortcutLink);
-      
-      // Force browser to reload favicon
-      const link32 = document.createElement('link');
-      link32.rel = 'icon';
-      link32.type = 'image/png';
-      link32.setAttribute('sizes', '32x32');
-      link32.href = href + '?v=' + timestamp;
-      document.head.appendChild(link32);
     };
     
-    // Store the original favicon (from index.html)
-    const originalHref = '/favicon/favicon.png';
+    // Set login favicon
+    console.log('Setting ampOS favicon for login page...');
+    setFavicon('/ampOS-favicon.png');
     
-    // Change to login favicon immediately
-    changeFavicon('/ampOS-favicon.png');
-    
-    // Force a small delay to ensure it takes effect
-    const timeoutId = setTimeout(() => {
-      changeFavicon('/ampOS-favicon.png');
-    }, 100);
-    
-    // Cleanup: restore original favicon when component unmounts
+    // Cleanup: restore default favicon when leaving login page
     return () => {
-      clearTimeout(timeoutId);
-      changeFavicon(originalHref);
+      setFavicon('/favicon/favicon.png');
     };
   }, []);
 

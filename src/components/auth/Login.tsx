@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/AuthContext';
 import { useTheme } from '../theme/theme-provider';
-import { Mail, Lock, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, Shield, Zap, Users, Award } from 'lucide-react';
 import { Button, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Input } from '../ui';
 import Card from '../ui/Card';
 import { EditProfilePopup } from '../profile/EditProfilePopup';
@@ -77,6 +77,58 @@ export default function Login() {
       }
     };
   }, [setTheme]);
+
+  // Dynamic favicon change for login page
+  useEffect(() => {
+    // Function to change favicon with better browser support
+    const changeFavicon = (href: string) => {
+      // Remove ALL existing favicon and icon links
+      const existingLinks = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
+      existingLinks.forEach(link => link.remove());
+      
+      // Create new favicon links with cache busting
+      const timestamp = Date.now();
+      
+      // Standard favicon
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.type = 'image/png';
+      link.href = href + '?v=' + timestamp;
+      document.head.appendChild(link);
+      
+      // Shortcut icon for IE
+      const shortcutLink = document.createElement('link');
+      shortcutLink.rel = 'shortcut icon';
+      shortcutLink.type = 'image/png';
+      shortcutLink.href = href + '?v=' + timestamp;
+      document.head.appendChild(shortcutLink);
+      
+      // Force browser to reload favicon
+      const link32 = document.createElement('link');
+      link32.rel = 'icon';
+      link32.type = 'image/png';
+      link32.setAttribute('sizes', '32x32');
+      link32.href = href + '?v=' + timestamp;
+      document.head.appendChild(link32);
+    };
+    
+    // Store the original favicon (from index.html)
+    const originalHref = '/favicon/favicon.png';
+    
+    // Change to login favicon immediately
+    changeFavicon('/ampOS-favicon.png');
+    
+    // Force a small delay to ensure it takes effect
+    const timeoutId = setTimeout(() => {
+      changeFavicon('/ampOS-favicon.png');
+    }, 100);
+    
+    // Cleanup: restore original favicon when component unmounts
+    return () => {
+      clearTimeout(timeoutId);
+      changeFavicon(originalHref);
+    };
+  }, []);
 
   // Redirect if already logged in
   React.useEffect(() => {
@@ -167,121 +219,201 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center mb-8">
-          <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
-            alt="AMP Logo"
-            className="h-24"
-          />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex">
+      {/* Left Side - Branding Section (Hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#4A9B8E] to-[#3A8A7D] relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-repeat opacity-20" 
+               style={{
+                 backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+                 backgroundSize: '30px 30px'
+               }}>
+          </div>
         </div>
-        <p className="mt-1 text-sm text-gray-600 text-center">
-          {isSignUpMode ? 'Create your account to get started' : 'Sign in to your account to continue'}
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card className="border-amber-200/50 bg-white shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-gray-900">
-              {isSignUpMode ? 'Create Account' : 'Welcome back'}
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              {isSignUpMode 
-                ? 'Enter your email and password to create your account' 
-                : 'Enter your credentials to access your account'}
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent>
-            <form className="space-y-4" onSubmit={isSignUpMode ? handleSignUp : handleSubmit}>
-              <Input
-                label="Email address"
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                leftIcon={<Mail className="h-4 w-4 text-gray-500" />}
-                placeholder="you@example.com"
-                className="bg-white border-gray-200"
+        
+        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 text-center">
+          {/* Logo Section */}
+          <div className="mb-8">
+            <div className="flex justify-center mb-6">
+              <img
+                src="/ampOS-logo.png"
+                alt="ampOS Logo"
+                className="h-24 w-auto max-w-xs rounded-lg shadow-lg"
               />
+            </div>
+            <h1 className="text-4xl font-bold mb-2"></h1>
+            <p className="text-xl text-white/90">Professional Electrical Testing & Maintenance</p>
+          </div>
 
-              <Input
-                label="Password"
-                id="password"
-                name="password"
-                type="password"
-                autoComplete={isSignUpMode ? "new-password" : "current-password"}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                leftIcon={<Lock className="h-4 w-4 text-gray-500" />}
-                minLength={6}
-                hint={isSignUpMode ? "Password must be at least 6 characters" : undefined}
-                className="bg-white border-gray-200"
-              />
-
-              {error && (
-                <div className={`rounded-lg p-4 ${
-                  error.startsWith('Success') 
-                    ? 'bg-amber-50 border border-amber-200 text-amber-800' 
-                    : 'bg-red-50 border border-red-200 text-red-700'
-                }`}>
-                  <div className="text-sm">
-                    {error}
-                  </div>
-                </div>
-              )}
-
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  variant="outline"
-                  size="lg"
-                  fullWidth
-                  isLoading={loading}
-                  leftIcon={isSignUpMode ? <UserPlus className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
-                  className="bg-amp-orange-500 hover:bg-amp-orange-600 text-white border-transparent"
-                >
-                  {isSignUpMode ? 'Create Account' : 'Sign in'}
-                </Button>
+          {/* Features */}
+          <div className="space-y-6 max-w-md">
+            <div className="flex items-center space-x-4">
+              <div className="bg-white/20 p-3 rounded-lg">
+                <Shield className="h-6 w-6" />
               </div>
-            </form>
-          </CardContent>
-          
-          <CardFooter className="flex flex-col">
-            <div className="relative w-full mb-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-600">
-                  {isSignUpMode ? 'Already have an account?' : 'New to AMP Field?'}
-                </span>
+              <div className="text-left">
+                <h3 className="font-semibold">Secure & Reliable</h3>
+                <p className="text-white/80 text-sm">Enterprise-grade security for your data</p>
               </div>
             </div>
             
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              fullWidth
-              onClick={() => {
-                setIsSignUpMode(!isSignUpMode);
-                setError(null);
-              }}
-              disabled={loading}
-              leftIcon={isSignUpMode ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
-              className="border-gray-200 text-gray-700 hover:bg-gray-50"
-            >
-              {isSignUpMode ? 'Sign in instead' : 'Create account'}
-            </Button>
-          </CardFooter>
-        </Card>
+            <div className="flex items-center space-x-4">
+              <div className="bg-white/20 p-3 rounded-lg">
+                <Zap className="h-6 w-6" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold">Real-time Updates</h3>
+                <p className="text-white/80 text-sm">Stay connected with live project status</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="bg-white/20 p-3 rounded-lg">
+                <Users className="h-6 w-6" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold">Team Collaboration</h3>
+                <p className="text-white/80 text-sm">Work seamlessly with your team</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="bg-white/20 p-3 rounded-lg">
+                <Award className="h-6 w-6" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold">Fully Customizable</h3>
+                <p className="text-white/80 text-sm">Your software, your way!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Login Form */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+        {/* Mobile Logo (Visible only on mobile) */}
+        <div className="lg:hidden flex justify-center mb-8">
+          <img
+            src="/ampOS-logo.png"
+            alt="ampOS Logo"
+            className="h-20 w-auto max-w-xs rounded-lg shadow-lg"
+          />
+        </div>
+
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              {isSignUpMode ? 'Join Our Team' : 'Welcome Back'}
+            </h2>
+            <p className="text-gray-600">
+              {isSignUpMode 
+                ? 'Create your account to get started with ampOS' 
+                : 'Sign in to access your dashboard and manage your projects'}
+            </p>
+          </div>
+
+          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <form className="space-y-6" onSubmit={isSignUpMode ? handleSignUp : handleSubmit}>
+                <div className="space-y-4">
+                  <Input
+                    label="Email address"
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    leftIcon={<Mail className="h-5 w-5 text-gray-400" />}
+                    placeholder="you@ampqes.com"
+                    className="bg-white border-gray-300 focus:border-[#4A9B8E] focus:ring-[#4A9B8E] h-12"
+                  />
+
+                  <Input
+                    label="Password"
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete={isSignUpMode ? "new-password" : "current-password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    leftIcon={<Lock className="h-5 w-5 text-gray-400" />}
+                    minLength={6}
+                    hint={isSignUpMode ? "Password must be at least 6 characters" : undefined}
+                    className="bg-white border-gray-300 focus:border-[#4A9B8E] focus:ring-[#4A9B8E] h-12"
+                  />
+                </div>
+
+                {error && (
+                  <div className={`rounded-xl p-4 ${
+                    error.startsWith('Success') || error.includes('created successfully')
+                      ? 'bg-green-50 border border-green-200 text-green-800' 
+                      : 'bg-red-50 border border-red-200 text-red-700'
+                  }`}>
+                    <div className="text-sm font-medium">
+                      {error}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4">
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    size="lg"
+                    fullWidth
+                    isLoading={loading}
+                    leftIcon={isSignUpMode ? <UserPlus className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
+                    className="bg-gradient-to-r from-[#4A9B8E] to-[#3A8A7D] hover:from-[#3A8A7D] hover:to-[#2A7A6D] text-white border-transparent h-12 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    {isSignUpMode ? 'Create Account' : 'Sign In'}
+                  </Button>
+                </div>
+              </form>
+
+              <div className="mt-8">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white text-gray-500 font-medium">
+                      {isSignUpMode ? 'Already have an account?' : 'New to ampOS?'}
+                    </span>
+                  </div>
+                </div>
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  fullWidth
+                  onClick={() => {
+                    setIsSignUpMode(!isSignUpMode);
+                    setError(null);
+                  }}
+                  disabled={loading}
+                  leftIcon={isSignUpMode ? <LogIn className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
+                  className="mt-4 border-gray-300 text-gray-700 hover:bg-gray-50 h-12 font-medium"
+                >
+                  {isSignUpMode ? 'Sign in instead' : 'Create account'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-500">
+            © 2024 ampOS. All rights reserved.
+          </p>
+        </div>
       </div>
 
       {/* Remove the direct rendering of EditProfilePopup from the Login component */}

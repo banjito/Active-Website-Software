@@ -19,7 +19,8 @@ import {
   Award,
   LineChart,
   Heart,
-  ClipboardList
+  ClipboardList,
+  ArrowLeft
 } from "lucide-react"
 import { Button } from './Button';
 import { ThemeToggle } from '../theme/theme-toggle';
@@ -56,6 +57,24 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   
   // Check if currently in HR portal
   const isHRPortal = location.pathname.startsWith('/hr');
+  
+  // Check if currently on a report page and extract job ID
+  const isReportPage = location.pathname.includes('/jobs/') && 
+    location.pathname.split('/').length > 3 && 
+    !location.pathname.endsWith('/jobs') &&
+    location.pathname.split('/')[3] !== '';
+  
+  const getJobIdFromReportPath = (): string | null => {
+    if (!isReportPage) return null;
+    const pathParts = location.pathname.split('/');
+    const jobsIndex = pathParts.findIndex(part => part === 'jobs');
+    if (jobsIndex !== -1 && jobsIndex + 1 < pathParts.length) {
+      return pathParts[jobsIndex + 1];
+    }
+    return null;
+  };
+  
+  const jobId = getJobIdFromReportPath();
 
   // Format division name for display
   function formatDivisionName(divisionValue: string | null): string {
@@ -337,7 +356,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <header className="sticky top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-sm dark:bg-dark-150/75 dark:border-dark-200">
           <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex h-20 items-center justify-between">
-              <div>
+              <div className="flex items-center gap-4">
+                {/* Back to Job button - only show on report pages */}
+                {isReportPage && jobId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate(`/jobs/${jobId}`)}
+                    className="flex items-center gap-2 text-[#f26722] hover:text-[#e55611] hover:bg-[#f26722]/10 dark:text-[#f26722] dark:hover:text-[#e55611] dark:hover:bg-[#f26722]/10"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Job
+                  </Button>
+                )}
                 <h2 className="text-lg font-semibold">{formatDivisionName(division)}</h2>
               </div>
               <div className="flex items-center">

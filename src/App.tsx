@@ -172,6 +172,7 @@ import MediumVoltageMotorStarterMTSReport from './components/reports/23-MediumVo
 
 // Import Keyboard Navigation Test component
 import { KeyboardNavigationTest } from './components/test/KeyboardNavigationTest';
+import { BackToJobButtonTest } from './components/test/BackToJobButtonTest';
 
 // --- Define Division Context --- Start
 interface DivisionContextType {
@@ -362,6 +363,7 @@ function App() {
                   <Route path="/debug" element={<RequireAuth><Layout><DebugTableCheck /></Layout></RequireAuth>} />
                   <Route path="/chat-debug" element={<RequireAuth><Layout><ChatDebug /></Layout></RequireAuth>} />
                   <Route path="/keyboard-test" element={<RequireAuth><Layout><KeyboardNavigationTest /></Layout></RequireAuth>} />
+                  <Route path="/back-to-job-test" element={<RequireAuth><Layout><BackToJobButtonTest /></Layout></RequireAuth>} />
 
                   {/* === HR Portal Route === */}
                   <Route path="/hr" element={<RequireAuth><Layout><HRPortal /></Layout></RequireAuth>} />

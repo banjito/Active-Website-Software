@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
+import { useKeyboardNavigation } from '@/lib/hooks/useKeyboardNavigation';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -168,6 +169,10 @@ const calculateTempCorrected = (reading: string, tcf: number): string => {
 };
 
 const CurrentTransformerTestATSReport: React.FC = () => {
+  // TODO: Set up keyboard navigation hooks for tables/forms
+  // See KEYBOARD_NAVIGATION_GUIDE.md for implementation details
+  // Example: const navigation = useKeyboardNavigation({ totalRows: X, totalCols: Y, isEditMode: isEditing });
+
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const navigate = useNavigate();
   const location = useLocation();

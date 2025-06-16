@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { initEncryptionService } from './services/encryptionService';
+// Initialize global keyboard navigation for all input fields
+import './lib/keyboardNavigation';
 
 // Add error logging
 const rootElement = document.getElementById('root');

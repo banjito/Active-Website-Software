@@ -48,3 +48,40 @@
     --ring: 24 100% 50%;
   }
 }
+
+/* Global Keyboard Navigation for Input Fields */
+@layer utilities {
+  /* Add a subtle visual indicator for keyboard navigation */
+  .keyboard-navigable {
+    position: relative;
+  }
+  
+  .keyboard-navigable:focus-within::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 2px solid #f26722;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* Ensure all input types are keyboard navigable */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  textarea,
+  select {
+    position: relative;
+  }
+}

@@ -170,6 +170,9 @@ import TanDeltaTestMTSForm from './components/reports/TanDeltaTestMTSForm';
 // Import the new 23-Medium Voltage Motor Starter MTS Report
 import MediumVoltageMotorStarterMTSReport from './components/reports/23-MediumVoltageMotorStarterMTSReport';
 
+// Import Keyboard Navigation Test component
+import { KeyboardNavigationTest } from './components/test/KeyboardNavigationTest';
+
 // --- Define Division Context --- Start
 interface DivisionContextType {
   division: string | null;
@@ -358,6 +361,7 @@ function App() {
                   <Route path="/profile-setup" element={<RequireAuth><ProfileSetup /></RequireAuth>} />
                   <Route path="/debug" element={<RequireAuth><Layout><DebugTableCheck /></Layout></RequireAuth>} />
                   <Route path="/chat-debug" element={<RequireAuth><Layout><ChatDebug /></Layout></RequireAuth>} />
+                  <Route path="/keyboard-test" element={<RequireAuth><Layout><KeyboardNavigationTest /></Layout></RequireAuth>} />
 
                   {/* === HR Portal Route === */}
                   <Route path="/hr" element={<RequireAuth><Layout><HRPortal /></Layout></RequireAuth>} />

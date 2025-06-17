@@ -86,8 +86,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         // Try to get profile from profiles table
         try {
           methods.push("profiles table (supabase client)");
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
+                  const { data: profileData, error: profileError } = await supabase
+          .schema('common')
+          .from('profiles')
             .select('*')
             .eq('id', userId)
             .single();
@@ -165,7 +166,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           // First try with the Supabase client
           try {
             methods.push("RPC method (Supabase client)");
-            const { data, error } = await supabase.rpc('get_user_details', {
+            const { data, error } = await supabase
+          .schema('common')
+          .rpc('get_user_details', {
               user_id: userId 
             });
             
@@ -250,7 +253,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           // Try using get_user_metadata RPC function
           try {
             methods.push("RPC method (get_user_metadata)");
-            const { data: metaData, error: metaError } = await supabase.rpc('get_user_metadata', { 
+            const { data: metaData, error: metaError } = await supabase
+          .schema('common')
+          .rpc('get_user_metadata', { 
               p_user_id: userId 
             });
             

@@ -57,7 +57,9 @@ export async function getCustomRoles(): Promise<CustomRole[]> {
   try {
     // Try to use the admin function first
     try {
-      const { data, error } = await supabase.rpc('admin_get_custom_roles');
+      const { data, error } = await supabase
+        .schema('common')
+        .rpc('admin_get_custom_roles');
       
       if (!error && data) {
         console.log('Successfully fetched custom roles via RPC');
@@ -115,10 +117,12 @@ export async function updateRole(roleName: Role, roleConfig: Partial<RolePermiss
   try {
     // Try to update the role using the admin function
     try {
-      const { data, error } = await supabase.rpc('admin_update_role', {
-        role_name: roleName,
-        role_config: roleConfig
-      });
+      const { data, error } = await supabase
+        .schema('common')
+        .rpc('admin_update_role', {
+          role_name: roleName,
+          role_config: roleConfig
+        });
       
       if (!error) {
         // Also update the local role cache
@@ -170,9 +174,11 @@ export async function deleteRole(roleName: Role): Promise<boolean> {
   try {
     // Try to delete the role using the admin function
     try {
-      const { data, error } = await supabase.rpc('admin_delete_role', {
-        role_name: roleName
-      });
+      const { data, error } = await supabase
+        .schema('common')
+        .rpc('admin_delete_role', {
+          role_name: roleName
+        });
       
       if (!error) {
         return data || true;

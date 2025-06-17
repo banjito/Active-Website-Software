@@ -83,6 +83,7 @@ export default function AuthCallback() {
               // Example of how to safely check if the user exists in the profiles table
               // Note: We use text casting and proper comparison to avoid numeric literal errors
               const { data: profileData, error: profileError } = await supabase
+                .schema('common')
                 .from('profiles')
                 .select('id')
                 .filter('id::text', 'eq', userId);

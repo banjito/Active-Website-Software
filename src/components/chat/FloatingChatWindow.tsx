@@ -229,7 +229,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
       className="fixed z-50 bg-white dark:bg-dark-150 shadow-xl rounded-lg border border-gray-200 dark:border-dark-300 flex flex-col overflow-hidden"
       style={{ 
         width: '380px',
-        height: isMinimized ? '48px' : '500px',
+        height: isMinimized ? '66px' : '500px',
         left: `${position.x}px`,
         top: `${position.y}px`,
         transition: isDragging ? 'none' : 'height 0.3s ease-in-out'
@@ -238,23 +238,18 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
       {/* Header - Draggable area */}
       <div 
         ref={dragRef}
-        className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 cursor-move select-none"
+        className="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 cursor-move select-none"
         onMouseDown={handleMouseDown}
       >
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-gray-900 dark:text-gray-100">{currentRoom.name}</h2>
-          
-          {/* Small loading indicator in the header */}
-          {loading && (
-            <Loader2 className="h-3 w-3 inline-block animate-spin text-gray-400" />
-          )}
         </div>
         
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-1"
+            className="h-9 w-9 p-2 flex items-center justify-center"
             onClick={toggleMinimize}
           >
             {isMinimized ? <Maximize className="h-4 w-4" /> : <Minimize className="h-4 w-4" />}
@@ -263,7 +258,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-1"
+            className="h-9 w-9 p-2 flex items-center justify-center"
             onClick={onClose}
           >
             <X className="h-4 w-4" />

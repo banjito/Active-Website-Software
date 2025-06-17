@@ -43,7 +43,8 @@ export const ChatDebug: React.FC = () => {
       
       // Test if the functions exist
       const { data: functions, error: functionError } = await supabase
-        .rpc('get_user_chat_rooms');
+        .schema('common')
+      .rpc('get_user_chat_rooms');
         
       if (functionError) {
         throw new Error(`Function check failed: ${functionError.message}`);

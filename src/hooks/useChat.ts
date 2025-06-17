@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { ChatRoom, ChatMessage } from '@/types/chat';
@@ -12,26 +12,50 @@ export function useChat() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dbSetupComplete, setDbSetupComplete] = useState<boolean | null>(null);
+  
+  // Use refs to prevent unnecessary re-subscriptions
+  const subscriptionsRef = useRef<Record<string, any>>({});
+  const userProfilesCache = useRef<Record<string, any>>({});
 
-  // Computed messages for the current room only
+  // Computed messages for the current room only (filtered to last 24 hours)
   const messages = useMemo(() => {
     if (!currentRoom) return [];
-    return messagesMap[currentRoom.id] || [];
+    const roomMessages = messagesMap[currentRoom.id] || [];
+    
+    // Filter messages to only show those from the last 24 hours
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+    
+    return roomMessages.filter(message => {
+      const messageTime = new Date(message.created_at);
+      return messageTime > twentyFourHoursAgo;
+    });
   }, [messagesMap, currentRoom]);
 
-  // Helper to update messages for a specific room
+  // Optimized helper to update messages for a specific room
   const updateRoomMessages = useCallback((roomId: string, updater: (prev: ChatMessage[]) => ChatMessage[]) => {
-    setMessagesMap(prev => ({
-      ...prev,
-      [roomId]: updater(prev[roomId] || [])
-    }));
+    setMessagesMap(prev => {
+      const currentMessages = prev[roomId] || [];
+      const newMessages = updater(currentMessages);
+      
+      // Only update if messages actually changed
+      if (JSON.stringify(currentMessages) === JSON.stringify(newMessages)) {
+        return prev;
+      }
+      
+      return {
+        ...prev,
+        [roomId]: newMessages
+      };
+    });
   }, []);
 
   // Check if the chat database setup is complete
-  const checkDatabaseSetup = async () => {
+  const checkDatabaseSetup = useCallback(async () => {
     try {
-      // Try to call the get_user_chat_rooms function
-      const { data, error: rpcError } = await supabase.rpc('get_user_chat_rooms');
+      const { data, error: rpcError } = await supabase
+        .schema('common')
+        .rpc('get_user_chat_rooms');
       
       if (rpcError) {
         console.error("Database setup check failed - RPC error:", rpcError);
@@ -48,15 +72,14 @@ export function useChat() {
       setError('The chat system is not properly set up. Please navigate to /chat-debug for more information.');
       return false;
     }
-  };
+  }, []);
 
-  // Fetch accessible chat rooms for the current user
-  const fetchChatRooms = async () => {
+  // Optimized fetch chat rooms
+  const fetchChatRooms = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Check database setup first if we haven't done so already
       if (dbSetupComplete === null) {
         const isSetupComplete = await checkDatabaseSetup();
         if (!isSetupComplete) {
@@ -65,15 +88,15 @@ export function useChat() {
         }
       }
       
-      console.log("Fetching chat rooms for user:", user?.id);
-      const { data, error } = await supabase.rpc('get_user_chat_rooms');
+      const { data, error } = await supabase
+        .schema('common')
+        .rpc('get_user_chat_rooms');
       
       if (error) {
         console.error("Error fetching chat rooms:", error);
         throw error;
       }
       
-      console.log("Chat rooms data received:", data);
       setChatRooms(data as ChatRoom[]);
       
       // Set the first room as current if none is selected
@@ -86,22 +109,22 @@ export function useChat() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dbSetupComplete, currentRoom, checkDatabaseSetup]);
 
   // Mark a room's messages as read
-  const markRoomAsRead = async (roomId: string) => {
+  const markRoomAsRead = useCallback(async (roomId: string) => {
     try {
       if (!user) return;
       
-      // Call the RPC function to mark messages as read
-      const { error } = await supabase.rpc('mark_room_messages_read', { p_room_id: roomId });
+      const { error } = await supabase
+        .schema('common')
+        .rpc('mark_room_messages_read', { p_room_id: roomId });
       
       if (error) {
         console.error('Error marking room as read:', error);
         return false;
       }
       
-      // Update local state to show 0 unread messages
       setChatRooms(prev => 
         prev.map(room => 
           room.id === roomId 
@@ -115,250 +138,126 @@ export function useChat() {
       console.error('Error in markRoomAsRead:', err);
       return false;
     }
-  };
+  }, [user]);
 
-  // Fetch messages for the current room
-  const fetchMessages = async (roomId: string) => {
+     // Helper function to generate fallback avatar from name
+   const getFallbackPhotoFromName = useCallback((name: string) => {
+     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4f46e5&color=fff&size=128`;
+   }, []);
+
+   // Get user profile from cache or fetch it
+   const getUserProfile = useCallback(async (userId: string) => {
+     // Check cache first
+     if (userProfilesCache.current[userId]) {
+       return userProfilesCache.current[userId];
+     }
+
+     // Special handling for current user - use auth context data first
+     if (user && userId === user.id) {
+       const currentUserProfile = {
+         email: user.email || '',
+         name: user.user_metadata?.name || user.user_metadata?.full_name || user.user_metadata?.username || user.email || 'You',
+         profileImage: user.user_metadata?.profileImage || user.user_metadata?.avatar_url || null
+       };
+       
+       // If no profile image, generate one from the name
+       if (!currentUserProfile.profileImage) {
+         currentUserProfile.profileImage = getFallbackPhotoFromName(currentUserProfile.name);
+       }
+       
+       // Cache the current user profile
+       userProfilesCache.current[userId] = currentUserProfile;
+       return currentUserProfile;
+     }
+
+     try {
+       const { data: profileData, error: profileError } = await supabase
+         .schema('common')
+         .from('profiles')
+         .select('id, full_name, email, avatar_url')
+         .eq('id', userId)
+         .single();
+
+       if (!profileError && profileData) {
+         const name = profileData.full_name || profileData.email || `User ${userId.substring(0, 6)}`;
+         const profile = {
+           email: profileData.email || 'unknown',
+           name: name,
+           profileImage: profileData.avatar_url || getFallbackPhotoFromName(name)
+         };
+         
+         // Cache the profile
+         userProfilesCache.current[userId] = profile;
+         return profile;
+       }
+     } catch (error) {
+       console.warn('Error fetching user profile:', error);
+     }
+
+     // Fallback profile with generated avatar
+     const fallbackName = `User ${userId.substring(0, 6)}`;
+     const fallbackProfile = {
+       email: 'unknown',
+       name: fallbackName,
+       profileImage: getFallbackPhotoFromName(fallbackName)
+     };
+     
+     userProfilesCache.current[userId] = fallbackProfile;
+     return fallbackProfile;
+   }, [user, getFallbackPhotoFromName]);
+
+  // Optimized fetch messages
+  const fetchMessages = useCallback(async (roomId: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      // DEBUG: List all profiles
-      console.log("DEBUG: Listing all profiles to find Jack Lyons");
-      const { data: allProfiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, avatar_url')
-        .limit(20);
-      
-      console.log("All profiles:", allProfiles, profilesError?.message);
-      
-      // DEBUG: Try to find specific user by name
-      const { data: jackUsers, error: jackError } = await supabase
-        .from('profiles')
-        .select('*')
-        .ilike('full_name', '%jack%')
-        .limit(5);
-        
-      console.log("Users with name 'Jack':", jackUsers, jackError?.message);
-      
-      // DEBUG: Find all participants in the current room
-      console.log("DEBUG: Finding all participants in room:", roomId);
-      
-      try {
-        // This query gets distinct user_ids from chat_messages in this room
-        const { data: participants, error: participantsError } = await supabase
-          .from('chat_messages')
-          .select('user_id')
-          .eq('room_id', roomId)
-          .limit(20);
-        
-        console.log("Room participants:", participants, participantsError?.message);
-        
-        // For each participant, try to get their details directly
-        if (participants && participants.length > 0) {
-          for (const participant of participants) {
-            const userId = participant.user_id;
-            
-            // Try profiles table first
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('id, full_name, email, avatar_url')
-              .eq('id', userId)
-              .single();
-            
-            console.log(`Profile data for user ${userId}:`, profileData, profileError?.message);
-            
-            // Try direct RPC call
-            const { data: userData, error: userError } = await supabase
-              .rpc('get_user_metadata', { p_user_id: userId });
-            
-            console.log(`User metadata for user ${userId}:`, userData, userError?.message);
-          }
-        }
-      } catch (err) {
-        console.error("Error in participant lookup:", err);
-      }
-      
       // Mark as read before fetching messages
-      await supabase.rpc('mark_room_messages_read', { p_room_id: roomId });
+      await supabase
+        .schema('common')
+        .rpc('mark_room_messages_read', { p_room_id: roomId });
       
-      // Fetch messages
+      // Fetch messages (only from the last 24 hours)
+      const twentyFourHoursAgo = new Date();
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+      
       const { data: messageData, error: messageError } = await supabase
+        .schema('common')
         .from('chat_messages')
         .select('*')
         .eq('room_id', roomId)
+        .gte('created_at', twentyFourHoursAgo.toISOString())
         .order('created_at', { ascending: true });
       
       if (messageError) throw messageError;
       
-      // If we have messages, fetch user data
       if (messageData && messageData.length > 0) {
-        // First, add basic placeholders for all messages to show something immediately
-        const basicMessages = messageData.map(message => ({
-          ...message,
-          user: {
-            email: user && message.user_id === user.id ? (user.email || '') : '',
-            name: user && message.user_id === user.id 
-              ? (user.user_metadata?.name || user.user_metadata?.full_name || user.user_metadata?.username || user.email || 'You') 
-              : 'Loading...',
-            profileImage: user && message.user_id === user.id 
-              ? (user.user_metadata?.profileImage || user.user_metadata?.avatar_url || null) 
-              : null
-          }
-        }));
-        
-        // Show these basic messages right away for THIS SPECIFIC room only
-        updateRoomMessages(roomId, () => basicMessages);
-        
-        // Then process each message to get full user details
-        const processedMessages = await Promise.all(
+        // Process messages with user data efficiently
+        const messagesWithUsers = await Promise.all(
           messageData.map(async (message) => {
-            // For current user, use the user context data
-            if (user && message.user_id === user.id) {
-              return {
-                ...message,
-                user: {
-                  email: user.email || '',
-                  name: user.user_metadata?.name || user.user_metadata?.full_name || user.user_metadata?.username || user.email || 'You',
-                  profileImage: user.user_metadata?.profileImage || user.user_metadata?.avatar_url || null
-                }
-              };
-            } 
-            
-            // For other users, get their details from the database
-            try {
-              console.log(`Fetching user details for user_id: ${message.user_id}`);
-              
-              // PROFILE TABLE FIRST APPROACH - Changed order to prioritize the profiles table
-              // First attempt: try profiles table directly - this seems most likely to work
-              const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('id, full_name, email, avatar_url')
-                .eq('id', message.user_id)
-                .single();
-              
-              console.log('Profiles table result:', { data: profileData, error: profileError?.message });
-                
-              if (!profileError && profileData) {
-                console.log('Got user details from profiles for', message.user_id, ':', profileData);
-                const name = profileData.full_name || profileData.email || `User ${message.user_id.substring(0, 6)}`;
-                return {
-                  ...message,
-                  user: {
-                    email: profileData.email || 'unknown',
-                    name: name,
-                    profileImage: profileData.avatar_url || getFallbackPhotoFromName(name)
-                  }
-                };
-              }
-              
-              // Second attempt: Try RPC method
-              const { data: rpcUserDetails, error: rpcError } = await supabase
-                .rpc('get_user_details', { user_id: message.user_id });
-              
-              console.log('RPC get_user_details result:', { data: rpcUserDetails, error: rpcError?.message });
-                  
-              if (!rpcError && rpcUserDetails && rpcUserDetails.length > 0) {
-                console.log('Got user details from RPC for', message.user_id, ':', rpcUserDetails[0]);
-                const name = rpcUserDetails[0].name || rpcUserDetails[0].email || `User ${message.user_id.substring(0, 6)}`;
-                return {
-                  ...message,
-                  user: {
-                    email: rpcUserDetails[0].email || '',
-                    name: name,
-                    profileImage: rpcUserDetails[0].profile_image || getFallbackPhotoFromName(name)
-                  }
-                };
-              }
-
-              // Third attempt: Try to use a raw query to get user info
-              const { data: rawUserData, error: rawError } = await supabase
-                .rpc('get_user_metadata', { p_user_id: message.user_id });
-              
-              console.log('get_user_metadata result:', { data: rawUserData, error: rawError?.message });
-              
-              if (!rawError && rawUserData) {
-                console.log('Got user metadata from custom RPC for', message.user_id, ':', rawUserData);
-                const name = rawUserData.name || rawUserData.full_name || rawUserData.email || `User ${message.user_id.substring(0, 6)}`;
-                return {
-                  ...message,
-                  user: {
-                    email: rawUserData.email || 'unknown',
-                    name: name,
-                    profileImage: rawUserData.profile_image || rawUserData.avatar_url || getFallbackPhotoFromName(name)
-                  }
-                };
-              }
-              
-              console.error('All user data retrieval methods failed for:', message.user_id);
-              
-              // Generate a fallback profile with an avatar
-              const defaultName = `User ${message.user_id.substring(0, 6)}`;
-              return {
-                ...message,
-                user: {
-                  email: 'unknown',
-                  name: defaultName,
-                  profileImage: getFallbackPhotoFromName(defaultName)
-                }
-              };
-            } catch (err) {
-              console.error('Error fetching user details:', err);
-              return {
-                ...message,
-                user: {
-                  email: 'unknown',
-                  name: `User ${message.user_id.substring(0, 6)}`,
-                  profileImage: null
-                }
-              };
-            }
+            const userProfile = await getUserProfile(message.user_id);
+            return {
+              ...message,
+              user: userProfile
+            };
           })
         );
         
-        // Update with fully processed messages, for THIS SPECIFIC room only
-        updateRoomMessages(roomId, () => processedMessages);
-        
-        // Also try to preload additional profile information for all users in the room
-        setTimeout(() => preloadUserProfiles(roomId), 500);
+        updateRoomMessages(roomId, () => messagesWithUsers);
       } else {
-        // Clear messages for this room
         updateRoomMessages(roomId, () => []);
       }
       
-      // Update unread count in chat rooms
-      setChatRooms(prev => 
-        prev.map(room => 
-          room.id === roomId 
-            ? { ...room, unread_count: 0 } 
-            : room
-        )
-      );
     } catch (err: any) {
       console.error('Error fetching messages:', err);
       setError(`Failed to load messages: ${err.message}`);
     } finally {
       setLoading(false);
     }
-  };
+  }, [updateRoomMessages, getUserProfile]);
 
-  // Helper function to get user details with appropriate fallbacks
-  const getUserDetails = (userId: string, defaultName: string = 'Unknown User') => {
-    // Return default values with a generated avatar based on name
-    return {
-      name: defaultName,
-      email: 'unknown',
-      profileImage: `https://ui-avatars.com/api/?name=${encodeURIComponent(defaultName)}&background=4f46e5&color=fff&size=128`
-    };
-  };
-
-  // Helper function to get a fallback profile image from name
-  const getFallbackPhotoFromName = (name: string) => {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4f46e5&color=fff&size=128`;
-  };
-
-  // Function to send a message
-  const sendMessage = async (content: string) => {
+  // Optimized send message
+  const sendMessage = useCallback(async (content: string) => {
     if (!user || !currentRoom || !content.trim()) return;
     
     const roomId = currentRoom.id;
@@ -369,7 +268,10 @@ export function useChat() {
     setError(null);
     
     try {
-      // Create an optimistic message with user details
+      // Get user profile for optimistic update
+      const userProfile = await getUserProfile(user.id);
+      
+      // Create optimistic message
       const optimisticMessage: ChatMessage = {
         id: tempId,
         room_id: roomId,
@@ -377,17 +279,13 @@ export function useChat() {
         content: content.trim(),
         created_at: now,
         updated_at: now,
-        user: {
-          email: user.email || '',
-          name: user.user_metadata?.name || user.user_metadata?.full_name || user.user_metadata?.username || user.email || 'You',
-          profileImage: user.user_metadata?.profileImage || user.user_metadata?.avatar_url || null
-        }
+        user: userProfile
       };
       
-      // Add message to THIS SPECIFIC room's messages (optimistic update)
+      // Add message optimistically
       updateRoomMessages(roomId, prev => [...prev, optimisticMessage]);
       
-      // Also update chat rooms with this new message
+      // Update chat rooms with new message
       setChatRooms(prev => 
         prev.map(room => {
           if (room.id === roomId) {
@@ -402,8 +300,9 @@ export function useChat() {
         })
       );
       
-      // Insert the message into the database
+      // Insert into database
       const { data, error } = await supabase
+        .schema('common')
         .from('chat_messages')
         .insert({
           room_id: roomId,
@@ -414,7 +313,7 @@ export function useChat() {
       
       if (error) {
         console.error('Error sending message:', error);
-        // Remove the optimistic message on error
+        // Remove optimistic message on error
         updateRoomMessages(roomId, prev => 
           prev.filter(message => message.id !== tempId)
         );
@@ -422,9 +321,17 @@ export function useChat() {
         return;
       }
       
-      // Note: We don't need to update the messages array here
-      // The subscription will handle that for us automatically
-      console.log('Message sent successfully');
+      // Replace optimistic message with real one
+      if (data && data.length > 0) {
+        const realMessage = data[0];
+        updateRoomMessages(roomId, prev => 
+          prev.map(message => 
+            message.id === tempId 
+              ? { ...realMessage, user: userProfile }
+              : message
+          )
+        );
+      }
       
     } catch (error) {
       console.error('Error sending message:', error);
@@ -432,35 +339,58 @@ export function useChat() {
     } finally {
       setSendingMessage(false);
     }
-  };
+  }, [user, currentRoom, updateRoomMessages, getUserProfile]);
 
-  // Set up real-time subscriptions for new messages when current room changes
+  // Setup real-time subscriptions
   useEffect(() => {
     if (!user || !currentRoom) return;
     
-    console.log(`Setting up message subscription for room: ${currentRoom.name} (${currentRoom.id})`);
+    const roomId = currentRoom.id;
+    const subscriptionKey = `messages-${roomId}`;
     
-    // Subscribe to new messages for the CURRENT room only
+    // Clean up existing subscription for this room
+    if (subscriptionsRef.current[subscriptionKey]) {
+      subscriptionsRef.current[subscriptionKey].unsubscribe();
+    }
+    
+    // Create new subscription
     const messagesSubscription = supabase
-      .channel(`chat-messages-room-${currentRoom.id}`)
+      .channel(`chat-messages-room-${roomId}`)
       .on('postgres_changes', 
         { 
           event: 'INSERT', 
           schema: 'common', 
           table: 'chat_messages',
-          filter: `room_id=eq.${currentRoom.id}`  // Only listen for messages in this room
+          filter: `room_id=eq.${roomId}`
         },
-        (payload) => {
+        async (payload) => {
           const newMessage = payload.new as ChatMessage;
-          const roomId = newMessage.room_id;
           
-          // Skip messages that don't belong to the current room (double-check)
-          if (roomId !== currentRoom.id) {
-            console.warn('Got message for room', roomId, 'but current room is', currentRoom.id);
-            return;
-          }
+          // Skip if not for current room
+          if (newMessage.room_id !== roomId) return;
           
-          // Update chat rooms with latest message
+          // Check if message already exists
+          const currentMessages = messagesMap[roomId] || [];
+          const messageExists = currentMessages.some(m => 
+            m.id === newMessage.id ||
+            (m.id.startsWith('temp-') && 
+             m.user_id === newMessage.user_id && 
+             m.content === newMessage.content && 
+             Math.abs(new Date(m.created_at).getTime() - new Date(newMessage.created_at).getTime()) < 10000)
+          );
+          
+          if (messageExists) return;
+          
+          // Get user profile and add message
+          const userProfile = await getUserProfile(newMessage.user_id);
+          const messageWithUser = {
+            ...newMessage,
+            user: userProfile
+          };
+          
+          updateRoomMessages(roomId, prev => [...prev, messageWithUser]);
+          
+          // Update chat rooms
           setChatRooms(prev => 
             prev.map(room => {
               if (room.id === roomId) {
@@ -468,114 +398,31 @@ export function useChat() {
                   ...room,
                   last_message: newMessage.content,
                   last_message_time: newMessage.created_at,
-                  unread_count: 0 // Always 0 since this is the current room
+                  unread_count: 0
                 };
               }
               return room;
             })
           );
-          
-          // Check if we already have this message in our local state
-          // (it might be a message we sent and already added optimistically)
-          const roomMessages = messagesMap[roomId] || [];
-          const messageExists = roomMessages.some(m => 
-            (m.id === newMessage.id) || 
-            (m.user_id === newMessage.user_id && 
-             m.content === newMessage.content && 
-             Math.abs(new Date(m.created_at).getTime() - new Date(newMessage.created_at).getTime()) < 5000)
-          );
-          
-          if (!messageExists) {
-            // If it's not one of our optimistic messages, add it now
-            // For new messages, immediately fetch user details instead of using placeholder
-            if (user?.id === newMessage.user_id) {
-              // If it's the current user, use their data from auth context
-              const messageWithUser = {
-                ...newMessage,
-                user: {
-                  email: user.email || '',
-                  name: user.user_metadata?.name || user.user_metadata?.full_name || user.user_metadata?.username || user.email || 'You',
-                  profileImage: user.user_metadata?.profileImage || user.user_metadata?.avatar_url || null
-                }
-              };
-              
-              updateRoomMessages(roomId, prev => [...prev, messageWithUser]);
-            } else {
-              // For other users, immediately fetch their details
-              // PROFILES TABLE FIRST - prioritize the most reliable approach
-              supabase
-                .from('profiles')
-                .select('id, full_name, email, avatar_url')
-                .eq('id', newMessage.user_id)
-                .single()
-                .then(({ data: profileData, error: profileError }) => {
-                  if (!profileError && profileData) {
-                    console.log('RT message: Got user details from profiles for', newMessage.user_id, ':', profileData);
-                    const messageWithUser = {
-                      ...newMessage,
-                      user: {
-                        email: profileData.email || 'unknown',
-                        name: profileData.full_name || profileData.email || `User ${newMessage.user_id.substring(0, 6)}`,
-                        profileImage: profileData.avatar_url || null
-                      }
-                    };
-                    updateRoomMessages(roomId, prev => [...prev, messageWithUser]);
-                  } else {
-                    console.warn('RT message: Profiles table failed, trying RPC:', profileError?.message);
-                    
-                    // Second attempt: try RPC method
-                    supabase
-                      .rpc('get_user_details', { user_id: newMessage.user_id })
-                      .then(({ data: rpcData, error: rpcError }) => {
-                        if (!rpcError && rpcData && rpcData.length > 0) {
-                          console.log('RT message: Got user details from RPC for', newMessage.user_id, ':', rpcData[0]);
-                          const messageWithUser = {
-                            ...newMessage,
-                            user: {
-                              email: rpcData[0].email || '',
-                              name: rpcData[0].name || rpcData[0].email || `User ${newMessage.user_id.substring(0, 6)}`,
-                              profileImage: rpcData[0].profile_image || null
-                            }
-                          };
-                          
-                          updateRoomMessages(roomId, prev => [...prev, messageWithUser]);
-                        } else {
-                          console.error('RT message: All user data retrieval methods failed for:', newMessage.user_id);
-                          
-                          // Generate a fallback user profile with generated avatar
-                          const userName = `User ${newMessage.user_id.substring(0, 6)}`;
-                          const messageWithUser = {
-                            ...newMessage,
-                            user: {
-                              email: 'unknown',
-                              name: userName,
-                              profileImage: getFallbackPhotoFromName(userName)
-                            }
-                          };
-                          
-                          updateRoomMessages(roomId, prev => [...prev, messageWithUser]);
-                        }
-                      });
-                  }
-                });
-            }
-          }
         }
       )
       .subscribe();
     
-    // Cleanup subscription
+    subscriptionsRef.current[subscriptionKey] = messagesSubscription;
+    
+    // Cleanup function
     return () => {
-      console.log(`Cleaning up message subscription for room: ${currentRoom.name}`);
-      messagesSubscription.unsubscribe();
+      if (subscriptionsRef.current[subscriptionKey]) {
+        subscriptionsRef.current[subscriptionKey].unsubscribe();
+        delete subscriptionsRef.current[subscriptionKey];
+      }
     };
-  }, [user, currentRoom?.id, messagesMap, updateRoomMessages]);
+  }, [user, currentRoom?.id, messagesMap, updateRoomMessages, getUserProfile]);
 
-  // Separate effect for chat rooms subscription - this one doesn't change with currentRoom
+  // Setup chat rooms subscription
   useEffect(() => {
     if (!user) return;
     
-    // Subscribe to changes in chat rooms
     const roomsSubscription = supabase
       .channel('chat-rooms-changes')
       .on('postgres_changes', 
@@ -586,104 +433,31 @@ export function useChat() {
       )
       .subscribe();
     
-    // Fetch initial data
     fetchChatRooms();
     
-    // Cleanup subscription
     return () => {
       roomsSubscription.unsubscribe();
     };
-  }, [user]);
+  }, [user, fetchChatRooms]);
   
-  // When currentRoom changes, fetch messages
+  // Fetch messages when room changes
   useEffect(() => {
     if (currentRoom) {
-      // We don't need to clear messages anymore - they're separated by room
-      // We only need to fetch messages for the room if we don't have them yet
       if (!messagesMap[currentRoom.id] || messagesMap[currentRoom.id].length === 0) {
         fetchMessages(currentRoom.id);
       }
     }
-  }, [currentRoom?.id, messagesMap]);
-  
-  // Preload profile information for all chat participants
-  const preloadUserProfiles = async (roomId: string) => {
-    try {
-      console.log("Preloading user profiles for room:", roomId);
-      
-      // Get all distinct user_ids from messages in this room
-      const { data: participants, error: participantsError } = await supabase
-        .from('chat_messages')
-        .select('user_id')
-        .eq('room_id', roomId);
-      
-      if (participantsError) {
-        console.error("Error fetching chat participants:", participantsError);
-        return;
-      }
-      
-      console.log("Found participants:", participants);
-      
-      // Fetch profile information for each participant
-      if (participants && participants.length > 0) {
-        // Get unique user IDs
-        const userIds = [...new Set(participants.map(p => p.user_id))];
-        
-        // First try to get all profiles at once
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, full_name, email, avatar_url')
-          .in('id', userIds);
-          
-        if (!profilesError && profiles && profiles.length > 0) {
-          console.log("Preloaded profiles:", profiles);
-          
-          // Map profiles to user IDs for quick lookup
-          const profileMap: Record<string, any> = {};
-          profiles.forEach(profile => {
-            profileMap[profile.id] = profile;
-          });
-          
-          // Now update the messages with profile information
-          updateRoomMessages(roomId, prevMessages => {
-            return prevMessages.map(message => {
-              // If message already has user info, keep it
-              if (message.user?.name && message.user.name !== `User ${message.user_id.substring(0, 6)}`) {
-                return message;
-              }
-              
-              // If we have profile info for this user, use it
-              const profile = profileMap[message.user_id];
-              if (profile) {
-                const name = profile.full_name || profile.email || `User ${message.user_id.substring(0, 6)}`;
-                return {
-                  ...message,
-                  user: {
-                    email: profile.email || 'unknown',
-                    name: name,
-                    profileImage: profile.avatar_url || getFallbackPhotoFromName(name)
-                  }
-                };
-              }
-              
-              // Generate a fallback profile with an avatar
-              const defaultName = `User ${message.user_id.substring(0, 6)}`;
-              return {
-                ...message,
-                user: {
-                  email: 'unknown',
-                  name: defaultName,
-                  profileImage: getFallbackPhotoFromName(defaultName)
-                }
-              };
-            });
-          });
-        }
-      }
-    } catch (err) {
-      console.error("Error preloading user profiles:", err);
-    }
-  };
+  }, [currentRoom?.id, messagesMap, fetchMessages]);
+
+  // Cleanup all subscriptions on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(subscriptionsRef.current).forEach(subscription => {
+        subscription?.unsubscribe();
+      });
+      subscriptionsRef.current = {};
+    };
+  }, []);
 
   return {
     chatRooms,
@@ -696,7 +470,6 @@ export function useChat() {
     sendMessage,
     markRoomAsRead,
     refreshRooms: fetchChatRooms,
-    refreshMessages: () => currentRoom && fetchMessages(currentRoom.id),
-    preloadUserProfiles
+    refreshMessages: () => currentRoom && fetchMessages(currentRoom.id)
   };
 }

@@ -87,20 +87,6 @@ async function createJobManually(
     throw new Error('Cannot create job: user ID is missing');
   }
   
-  // Determine if this is a NETA Technician job for Calibration, Armadillo, or Scavenger
-  const isSpecialDivision = ['calibration', 'armadillo', 'scavenger'].includes(
-    opportunity.amp_division?.toLowerCase()
-  );
-  
-  // Set portal type based on division
-  let portalType = 'neta'; // Default portal type
-  if (opportunity.amp_division?.toLowerCase() === 'calibration' || 
-      opportunity.amp_division?.toLowerCase() === 'armadillo') {
-    portalType = 'lab';
-  } else if (opportunity.amp_division?.toLowerCase() === 'scavenger') {
-    portalType = 'scavenger';
-  }
-
   // Get a unique job number from neta_ops schema
   const { data: maxJobNumber } = await supabase
     .schema('neta_ops')
@@ -132,9 +118,7 @@ async function createJobManually(
       notes: (opportunity.notes || '') + '\n\nConverted from opportunity: ' + opportunity.quote_number,
       job_number: 'JOB-' + nextJobNumber.toString().padStart(4, '0'),
       priority: 'medium',
-      division: opportunity.amp_division === 'Decatur' ? 'north_alabama' : opportunity.amp_division,
-      job_type: isSpecialDivision ? 'neta_technician' : 'standard',
-      portal_type: portalType
+      division: opportunity.amp_division === 'Decatur' ? 'north_alabama' : opportunity.amp_division
     })
     .select()
     .single();
@@ -209,6 +193,7 @@ export default function OpportunityDetail() {
   const { jobDetails } = useJobDetails(jobId || undefined);
   const [showDivisionAnalytics, setShowDivisionAnalytics] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
+  const [showEstimate, setShowEstimate] = useState(false);
 
   useEffect(() => {
     if (user && id) {
@@ -1003,7 +988,30 @@ export default function OpportunityDetail() {
               <div className="mt-8">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-3">Estimate</h3>
                 <div className="bg-white dark:bg-dark-100 p-4 rounded-md">
-                  {id && <EstimateSheet opportunityId={id} />}
+                  {showEstimate ? (
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Estimate Details</span>
+                        <button
+                          onClick={() => setShowEstimate(false)}
+                          className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                        >
+                          Hide Estimate
+                        </button>
+                      </div>
+                      {id ? <EstimateSheet opportunityId={id} /> : null}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 dark:text-gray-400 mb-4">Create or view estimates for this opportunity</p>
+                      <button
+                        onClick={() => setShowEstimate(true)}
+                        className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
+                      >
+                        View/Create Estimate
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1013,7 +1021,7 @@ export default function OpportunityDetail() {
           <Dialog
             open={confirmAwardOpen}
             onClose={() => setConfirmAwardOpen(false)}
-            className="fixed inset-0 z-10 overflow-y-auto"
+            className="fixed inset-0 z-50 overflow-y-auto"
           >
             <div className="flex items-center justify-center min-h-screen">
               <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
@@ -1062,7 +1070,7 @@ export default function OpportunityDetail() {
           <Dialog
             open={showJobDialog}
             onClose={() => setShowJobDialog(false)}
-            className="fixed inset-0 z-10 overflow-y-auto"
+            className="fixed inset-0 z-50 overflow-y-auto"
           >
             <div className="flex items-center justify-center min-h-screen">
               <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />

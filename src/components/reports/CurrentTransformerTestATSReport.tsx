@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -129,6 +130,11 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'current-transformer-test-ats-report'; // This component handles the current-transformer-test-ats-report route
+  const reportName = getReportName(reportSlug);
 
   const initialVisualInspectionItems = [
     { netaSection: '7.10.1.A.1', description: 'Compare equipment nameplate data with drawings and specifications.', result: '' },
@@ -330,7 +336,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
         if (result.data) {
           const assetData = {
-            name: `12-Current Transformer Test ATS - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/current-transformer-test-ats-report/${result.data.id}`,
             user_id: user.id,
             template_type: 'ATS' // Added template_type
@@ -439,9 +445,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          12-Current Transformer Test ATS (Partial, Single CT)
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

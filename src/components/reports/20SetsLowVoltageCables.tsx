@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../lib/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Types
 interface CableTestData {
@@ -347,6 +348,11 @@ const TwentySetsLowVoltageCableTestForm: React.FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
   const [isEditMode, setIsEditMode] = useState<boolean>(!reportId); // Edit mode enabled by default for new reports
+
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'low-voltage-cable-test-20sets'; // This component handles the low-voltage-cable-test-20sets route
+  const reportName = getReportName(reportSlug);
 
   const [formData, setFormData] = useState<CableTestData>({
     customer: "",
@@ -701,7 +707,7 @@ const TwentySetsLowVoltageCableTestForm: React.FC = () => {
             
             // Create an asset entry ONLY for the saved report
             const assetData = {
-                name: `Low Voltage Cable Test (20 Sets) - ${formData.identifier || new Date().toLocaleDateString()}`,
+                name: getAssetName(reportSlug, formData.identifier || ''),
                 file_url: `report:/jobs/${jobId}/low-voltage-cable-test-20sets/${savedReportId}`, // Use the 20sets route
                 user_id: user.id,
                 created_at: new Date().toISOString()
@@ -823,7 +829,7 @@ const TwentySetsLowVoltageCableTestForm: React.FC = () => {
   const renderHeader = () => (
     <div className="flex justify-between items-center mb-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Low Voltage Cable Test (ATS up to 20 sets) {/* Updated Title */}
+        {reportName}
       </h1>
       <div className="flex gap-2">
         {/* Pass/Fail Button - Always visible, modifies state */}

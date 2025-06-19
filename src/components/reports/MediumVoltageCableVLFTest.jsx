@@ -23,6 +23,7 @@ import { Textarea } from '../ui/Textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/Select';
 import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/Card';
 import { Label } from '../ui/Label';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Types
 const TestStatus = {
@@ -335,6 +336,11 @@ const MediumVoltageCableVLFTest = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'medium-voltage-cable-vlf-test'; // This component handles the medium-voltage-cable-vlf-test route
+  const reportName = getReportName(reportSlug);
 
   // State for IDs, loading, saving, edit mode, and errors
   const [jobId, setJobId] = useState(undefined);
@@ -1239,7 +1245,7 @@ const MediumVoltageCableVLFTest = () => {
             
             // Create the asset with correct structure
             const assetData = {
-              name: `Medium Voltage Cable VLF Test - ${formData.identifier || formData.location || 'Unnamed'}`,
+                              name: getAssetName(reportSlug, formData.identifier || formData.location || ''),
               file_url: `report:/jobs/${effectiveJobId}/medium-voltage-cable-vlf-test/${result.data[0].id}`,
               user_id: user.id
             };
@@ -1564,7 +1570,7 @@ const MediumVoltageCableVLFTest = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">MEDIUM VOLTAGE CABLE TEST REPORT</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

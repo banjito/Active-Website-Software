@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import _ from 'lodash';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -245,6 +246,11 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'large-dry-type-transformer-mts-report'; // This component handles the large-dry-type-transformer-mts-report route
+  const reportName = getReportName(reportSlug);
 
   const initialVisualInspectionState = {
     "7.2.1.2.A.1": "Select One", "7.2.1.2.A.1_comments": "",
@@ -534,7 +540,7 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">2-Large Dry Type Xfmr. Inspection and Test MTS 23</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <button onClick={() => { if (isEditing) { handleChange(null, 'status', formData.status === 'PASS' ? 'FAIL' : 'PASS'); } }} disabled={!isEditing}
             className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${ formData.status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' : 'bg-red-600 text-white focus:ring-red-500' } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}>

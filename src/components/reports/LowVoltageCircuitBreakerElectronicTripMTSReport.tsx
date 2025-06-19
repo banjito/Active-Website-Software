@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -251,6 +252,11 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'low-voltage-circuit-breaker-electronic-trip-mts-report'; // This component handles the low-voltage-circuit-breaker-electronic-trip-mts-report route
+  const reportName = getReportName(reportSlug);
   // Update initial state to match the new FormData structure
   const [formData, setFormData] = useState<FormData>({
     // Initialize with default values based on FormData interface
@@ -631,7 +637,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
         if (result.data) {
           const newReportId = result.data.id;
           const assetData = {
-            name: `LV CB Electronic Trip MTS - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`, // Updated name
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''), // Updated name
             file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-mts-report/${newReportId}`, // Updated path
             user_id: user.id
           };

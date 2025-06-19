@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -132,6 +133,11 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'automatic-transfer-switch-ats-report'; // This component handles the automatic-transfer-switch-ats-report route
+  const reportName = getReportName(reportSlug);
 
   const initialInsulationRow: InsulationResistanceRow = {
     p1Reading: '', p1Corrected: '',
@@ -447,7 +453,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 text-gray-900 dark:text-white">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-center sm:text-left">AUTOMATIC TRANSFER SWITCH ATS REPORT</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-center sm:text-left">{reportName}</h1>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => isEditing && setFormData(prev => ({ ...prev, status: prev.status === 'PASS' ? 'FAIL' : 'PASS' }))}

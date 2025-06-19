@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../lib/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Types
 interface CableTestData {
@@ -348,6 +349,11 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
   const [isEditMode, setIsEditMode] = useState<boolean>(!reportId); // Edit mode enabled by default for new reports
 
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'low-voltage-cable-test-12sets'; // This component handles the low-voltage-cable-test-12sets route
+  const reportName = getReportName(reportSlug);
+
   const [formData, setFormData] = useState<CableTestData>({
     customer: "",
     address: "",
@@ -660,7 +666,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                 
                 // Create an asset entry for the saved report
                 const assetData = {
-                    name: `Low Voltage Cable Test - ${formData.identifier || new Date().toLocaleDateString()}`,
+                    name: getAssetName(reportSlug, formData.identifier || ''),
                     file_url: `report:/jobs/${jobId}/low-voltage-cable-test-12sets/${savedReportId}`,
                     user_id: user?.id,
                     created_at: new Date().toISOString()
@@ -831,9 +837,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
   // Render the header section with buttons
   const renderHeader = () => (
     <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Low Voltage Cable Test (ATS up to 12 sets)
-      </h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
       <div className="flex gap-2">
         {/* Pass/Fail Button - Always visible, modifies state */}
         <button

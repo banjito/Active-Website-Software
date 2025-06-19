@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -179,6 +180,11 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'two-small-dry-typer-xfmr-mts-report'; // This component handles the two-small-dry-typer-xfmr-mts-report route
+  const reportName = getReportName(reportSlug);
   const [error, setError] = useState<string | null>(null);
   const isUpdatingTemp = useRef<boolean>(false);
 
@@ -710,7 +716,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         currentReportId = insertData.id;
 
         const assetData = {
-          name: `2-Small Dry Type Xfmr. MTS - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+          name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
           file_url: `report:/jobs/${jobId}/two-small-dry-typer-xfmr-mts-report/${currentReportId}`,
           user_id: user.id,
         };
@@ -761,9 +767,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
   const renderHeader = () => (
     <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        2-Small Dry Type Xfmr. Inspection and Test MTS
-      </h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
       <div className="flex items-center space-x-2">
         <button
           onClick={() => { if (isEditing) setFormData(prev => ({ ...prev, status: prev.status === 'PASS' ? 'FAIL' : 'PASS' })); }}

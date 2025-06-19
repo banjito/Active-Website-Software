@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, ClipboardCheck } from 'lucide-react';
+import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, ClipboardCheck, Calendar, DollarSign, Building, User, Phone, Mail, MapPin, Clock, AlertTriangle, CheckCircle, Image, Maximize2, Minimize2, Save, Edit3, Download, Eye } from 'lucide-react';
 import { supabase, isConnectionError } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import { useJobDetails } from '../../lib/hooks';
@@ -8,22 +8,15 @@ import { format } from 'date-fns';
 import { Button } from '../ui/Button';
 import { reportImportService } from '../../services/reportImport';
 import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/Card";
-import { Badge } from "../ui/Badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/Table";
-import { Popover, PopoverTrigger, PopoverContent } from '../ui/popover';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/Dialog';
-import { Alert, AlertDescription } from '../ui/Alert';
-import { Input } from '../ui/Input';
+import { Input } from "../ui/Input";
+import { Badge } from "../ui/Badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/Dialog";
 import { toast } from 'react-hot-toast';
-import JobSurveys from './JobSurveys';
-import ResourceAllocationManager from './ResourceAllocationManager';
-import JobCostTracking from './JobCostTracking';
-import JobProfitabilityAnalysis from './JobProfitabilityAnalysis';
-import { JobNotifications } from './JobNotifications';
-import { SLAManagement } from './SLAManagement';
 import { ReportApprovalWorkflow } from '../reports/ReportApprovalWorkflow';
-import { SelectRoot, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/Select';
-import { DropdownMenuItem } from '../ui/DropdownMenu';
+import JobSurveys from './JobSurveys';
+import { SLAManagement } from './SLAManagement';
+import { JobNotifications } from './JobNotifications';
 
 interface Job {
   id: string;
@@ -74,6 +67,30 @@ interface RelatedOpportunity {
   quote_number: string;
 }
 
+interface Contract {
+  id: string;
+  name: string;
+  type: 'main' | 'subcontract' | 'amendment' | 'change_order';
+  file_url: string;
+  uploaded_date: string;
+  status: 'pending' | 'signed' | 'expired' | 'cancelled';
+  value?: number;
+  start_date?: string;
+  end_date?: string;
+  description?: string;
+}
+
+interface OneLineDrawing {
+  id: string;
+  name: string;
+  file_url: string;
+  thumbnail_url?: string;
+  last_modified: string;
+  version: number;
+  status: 'draft' | 'approved' | 'revision_needed';
+  description?: string;
+}
+
 const reportRoutes = {
   'Panelboard Report': 'panelboard-report',
   'LV Switch Multi Device Test': 'low-voltage-switch-multi-device-test',
@@ -118,6 +135,30 @@ export default function JobDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  
+  // Contract and Drawing Management State
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [oneLineDrawings, setOneLineDrawings] = useState<OneLineDrawing[]>([]);
+  const [showContractUpload, setShowContractUpload] = useState(false);
+  const [showDrawingUpload, setShowDrawingUpload] = useState(false);
+  const [showDrawingViewer, setShowDrawingViewer] = useState(false);
+  const [selectedDrawing, setSelectedDrawing] = useState<OneLineDrawing | null>(null);
+  const [contractForm, setContractForm] = useState({
+    name: '',
+    type: 'main' as Contract['type'],
+    description: '',
+    value: '',
+    start_date: '',
+    end_date: ''
+  });
+  const [drawingForm, setDrawingForm] = useState({
+    name: '',
+    description: ''
+  });
+  const [contractFile, setContractFile] = useState<File | null>(null);
+  const [drawingFile, setDrawingFile] = useState<File | null>(null);
+  const [isContractUploading, setIsContractUploading] = useState(false);
+  const [isDrawingUploading, setIsDrawingUploading] = useState(false);
   
   // Default assets that are always available
   const defaultAssets: Asset[] = [
@@ -185,6 +226,13 @@ export default function JobDetail() {
       template_type: 'ATS'
     },
     {
+      id: 'large-dry-type-transformer-test',
+      name: '2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21',
+      file_url: `report:/jobs/${id}/large-dry-type-transformer-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
       id: 'liquid-filled-transformer-test',
       name: '2-Liquid Filled Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21',
       file_url: `report:/jobs/${id}/liquid-filled-transformer?returnToAssets=true`,
@@ -195,6 +243,13 @@ export default function JobDetail() {
       id: 'oil-inspection-report',
       name: '2-Oil Xfmr. Inspection and Test ATS 21',
       file_url: `report:/jobs/${id}/oil-inspection?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
+      id: 'two-small-dry-typer-xfmr-ats-report',
+      name: '2-Small Dry Typer Xfmr. Inspection and Test ATS',
+      file_url: `report:/jobs/${id}/two-small-dry-typer-xfmr-ats-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
     },
@@ -314,13 +369,6 @@ export default function JobDetail() {
       id: 'automatic-transfer-switch-ats-report',
       name: '35-Automatic Transfer Switch ATS',
       file_url: `report:/jobs/${id}/automatic-transfer-switch-ats-report?returnToAssets=true`,
-      created_at: new Date().toISOString(),
-      template_type: 'ATS'
-    },
-    {
-      id: 'two-small-dry-typer-xfmr-ats-report',
-      name: '2-Small Dry Typer Xfmr. Inspection and Test ATS',
-      file_url: `report:/jobs/${id}/two-small-dry-typer-xfmr-ats-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
     },
@@ -826,6 +874,7 @@ export default function JobDetail() {
       'switchgear-report': 'switchgear-report',
       'dry-type-transformer': 'dry-type-transformer',
       'large-dry-type-transformer': 'large-dry-type-transformer', // Added based on App.tsx routes
+      'large-dry-type-transformer-report': 'large-dry-type-transformer-report',
       'liquid-filled-transformer': 'liquid-filled-transformer',
       'oil-inspection': 'oil-inspection',
       'low-voltage-cable-test-12sets': 'low-voltage-cable-test-12sets',
@@ -885,6 +934,180 @@ export default function JobDetail() {
       return `/jobs/${jobIdSegment}/${mappedReportName}`;
     }
   };
+
+  // Contract Management Functions
+  const fetchContracts = async () => {
+    if (!id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .schema('neta_ops')
+        .from('job_contracts')
+        .select('*')
+        .eq('job_id', id)
+        .order('uploaded_date', { ascending: false });
+      
+      if (error) throw error;
+      setContracts(data || []);
+    } catch (error) {
+      console.error('Error fetching contracts:', error);
+    }
+  };
+
+  const handleContractUpload = async () => {
+    if (!contractFile || !user?.id || !id) return;
+    
+    setIsContractUploading(true);
+    try {
+      // Upload file to Supabase Storage
+      const fileExt = contractFile.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `contracts/${id}/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('job-documents')
+        .upload(filePath, contractFile);
+      
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('job-documents')
+        .getPublicUrl(filePath);
+      
+      // Save contract record
+      const contractData = {
+        job_id: id,
+        name: contractForm.name || contractFile.name,
+        type: contractForm.type,
+        file_url: publicUrl,
+        uploaded_date: new Date().toISOString(),
+        status: 'pending' as const,
+        value: contractForm.value ? parseFloat(contractForm.value) : null,
+        start_date: contractForm.start_date || null,
+        end_date: contractForm.end_date || null,
+        description: contractForm.description || null,
+        user_id: user.id
+      };
+      
+      const { error: insertError } = await supabase
+        .schema('neta_ops')
+        .from('job_contracts')
+        .insert(contractData);
+      
+      if (insertError) throw insertError;
+      
+      // Reset form and refresh contracts
+      setContractForm({
+        name: '',
+        type: 'main',
+        description: '',
+        value: '',
+        start_date: '',
+        end_date: ''
+      });
+      setContractFile(null);
+      setShowContractUpload(false);
+      await fetchContracts();
+      
+      toast.success('Contract uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading contract:', error);
+      toast.error('Failed to upload contract');
+    } finally {
+      setIsContractUploading(false);
+    }
+  };
+
+  // Drawing Management Functions
+  const fetchOneLineDrawings = async () => {
+    if (!id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .schema('neta_ops')
+        .from('job_drawings')
+        .select('*')
+        .eq('job_id', id)
+        .order('last_modified', { ascending: false });
+      
+      if (error) throw error;
+      setOneLineDrawings(data || []);
+    } catch (error) {
+      console.error('Error fetching drawings:', error);
+    }
+  };
+
+  const handleDrawingUpload = async () => {
+    if (!drawingFile || !user?.id || !id) return;
+    
+    setIsDrawingUploading(true);
+    try {
+      // Upload file to Supabase Storage
+      const fileExt = drawingFile.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `drawings/${id}/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('job-documents')
+        .upload(filePath, drawingFile);
+      
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('job-documents')
+        .getPublicUrl(filePath);
+      
+      // Save drawing record
+      const drawingData = {
+        job_id: id,
+        name: drawingForm.name || drawingFile.name,
+        file_url: publicUrl,
+        last_modified: new Date().toISOString(),
+        version: 1,
+        status: 'draft' as const,
+        description: drawingForm.description || null,
+        user_id: user.id
+      };
+      
+      const { error: insertError } = await supabase
+        .schema('neta_ops')
+        .from('job_drawings')
+        .insert(drawingData);
+      
+      if (insertError) throw insertError;
+      
+      // Reset form and refresh drawings
+      setDrawingForm({
+        name: '',
+        description: ''
+      });
+      setDrawingFile(null);
+      setShowDrawingUpload(false);
+      await fetchOneLineDrawings();
+      
+      toast.success('Drawing uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading drawing:', error);
+      toast.error('Failed to upload drawing');
+    } finally {
+      setIsDrawingUploading(false);
+    }
+  };
+
+  const handleDrawingView = (drawing: OneLineDrawing) => {
+    setSelectedDrawing(drawing);
+    setShowDrawingViewer(true);
+  };
+
+  // Add to useEffect to fetch contracts and drawings
+  useEffect(() => {
+    if (user && id) {
+      fetchContracts();
+      fetchOneLineDrawings();
+    }
+  }, [user, id]);
 
   if (loading) {
     return (
@@ -1013,11 +1236,328 @@ export default function JobDetail() {
               
               <div className="p-6">
                 {activeTab === 'overview' && (
-                  <div>
-                    {/* Overview content */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Job details and other overview information */}
+                  <div className="space-y-6">
+                    {/* Project Status Summary */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Project Status</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center space-x-2">
+                            <div className={`h-3 w-3 rounded-full ${
+                              job.status === 'completed' ? 'bg-green-500' :
+                              job.status === 'in_progress' ? 'bg-blue-500' :
+                              job.status === 'pending' ? 'bg-yellow-500' :
+                              'bg-gray-500'
+                            }`} />
+                            <span className="text-lg font-semibold capitalize text-gray-900 dark:text-white">
+                              {job.status.replace('_', ' ')}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Priority</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center space-x-2">
+                            {job.priority === 'high' ? <AlertTriangle className="h-4 w-4 text-red-500" /> :
+                             job.priority === 'medium' ? <Clock className="h-4 w-4 text-yellow-500" /> :
+                             <CheckCircle className="h-4 w-4 text-green-500" />}
+                            <span className="text-lg font-semibold capitalize text-gray-900 dark:text-white">
+                              {job.priority}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Budget</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center space-x-2">
+                            <DollarSign className="h-4 w-4 text-green-500" />
+                            <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                              ${job.budget?.toLocaleString() || 'Not set'}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
+
+                    {/* Job Details & Customer Information */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Job Information */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center space-x-2">
+                            <Building className="h-5 w-5 text-[#f26722]" />
+                            <span>Job Information</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div>
+                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Job Number</label>
+                            <p className="text-gray-900 dark:text-white font-mono">{job.job_number || 'Pending'}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Title</label>
+                            <p className="text-gray-900 dark:text-white">{job.title}</p>
+                          </div>
+                          {job.description && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Description</label>
+                              <p className="text-gray-900 dark:text-white text-sm">{job.description}</p>
+                            </div>
+                          )}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Start Date</label>
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-4 w-4 text-gray-500" />
+                                <p className="text-gray-900 dark:text-white text-sm">
+                                  {job.start_date ? format(new Date(job.start_date), 'MMM d, yyyy') : 'Not set'}
+                                </p>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Due Date</label>
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-4 w-4 text-gray-500" />
+                                <p className="text-gray-900 dark:text-white text-sm">
+                                  {job.due_date ? format(new Date(job.due_date), 'MMM d, yyyy') : 'Not set'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          {job.division && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Division</label>
+                              <p className="text-gray-900 dark:text-white capitalize">{job.division.replace('_', ' ')}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Customer Information */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center space-x-2">
+                            <User className="h-5 w-5 text-[#f26722]" />
+                            <span>Customer Information</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div>
+                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Company</label>
+                            <p className="text-gray-900 dark:text-white font-semibold">
+                              {job.customers.company_name || job.customers.name}
+                            </p>
+                          </div>
+                          {job.customers.address && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Address</label>
+                              <div className="flex items-start space-x-2">
+                                <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
+                                <p className="text-gray-900 dark:text-white text-sm">{job.customers.address}</p>
+                              </div>
+                            </div>
+                          )}
+                          {contacts.length > 0 && (
+                            <div>
+                              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Primary Contact</label>
+                              {contacts.filter(c => c.is_primary).map(contact => (
+                                <div key={contact.id} className="space-y-2">
+                                  <p className="text-gray-900 dark:text-white font-medium">
+                                    {contact.first_name} {contact.last_name}
+                                  </p>
+                                  <div className="space-y-1">
+                                    <div className="flex items-center space-x-2">
+                                      <Mail className="h-4 w-4 text-gray-500" />
+                                      <p className="text-gray-900 dark:text-white text-sm">{contact.email}</p>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <Phone className="h-4 w-4 text-gray-500" />
+                                      <p className="text-gray-900 dark:text-white text-sm">{contact.phone}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Contracts Section */}
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="flex items-center space-x-2">
+                            <FileText className="h-5 w-5 text-[#f26722]" />
+                            <span>Contracts & Agreements</span>
+                          </CardTitle>
+                          <Button 
+                            onClick={() => setShowContractUpload(true)}
+                            className="flex items-center space-x-2"
+                          >
+                            <Upload className="h-4 w-4" />
+                            <span>Upload Contract</span>
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        {contracts.length === 0 ? (
+                          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <p>No contracts uploaded yet</p>
+                            <p className="text-sm">Upload your first contract to get started</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {contracts.map((contract) => (
+                              <div key={contract.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-3">
+                                      <FileText className="h-5 w-5 text-[#f26722]" />
+                                      <div>
+                                        <h4 className="font-medium text-gray-900 dark:text-white">{contract.name}</h4>
+                                        <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                                          <span className="capitalize">{contract.type.replace('_', ' ')}</span>
+                                          <Badge className={
+                                            contract.status === 'signed' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' :
+                                            contract.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' :
+                                            contract.status === 'expired' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' :
+                                            'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+                                          }>
+                                            {contract.status}
+                                          </Badge>
+                                          {contract.value && (
+                                            <span>${contract.value.toLocaleString()}</span>
+                                          )}
+                                          <span>{format(new Date(contract.uploaded_date), 'MMM d, yyyy')}</span>
+                                        </div>
+                                        {contract.description && (
+                                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{contract.description}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => window.open(contract.file_url, '_blank')}
+                                    >
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      View
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => {
+                                        const link = document.createElement('a');
+                                        link.href = contract.file_url;
+                                        link.download = contract.name;
+                                        link.click();
+                                      }}
+                                    >
+                                      <Download className="h-4 w-4 mr-1" />
+                                      Download
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* One-Line Drawings Section */}
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="flex items-center space-x-2">
+                            <Image className="h-5 w-5 text-[#f26722]" />
+                            <span>One-Line Drawings</span>
+                          </CardTitle>
+                          <Button 
+                            onClick={() => setShowDrawingUpload(true)}
+                            className="flex items-center space-x-2"
+                          >
+                            <Upload className="h-4 w-4" />
+                            <span>Upload Drawing</span>
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        {oneLineDrawings.length === 0 ? (
+                          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <Image className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <p>No drawings uploaded yet</p>
+                            <p className="text-sm">Upload your first one-line drawing to get started</p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {oneLineDrawings.map((drawing) => (
+                              <div key={drawing.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg mb-3 flex items-center justify-center">
+                                  {drawing.thumbnail_url ? (
+                                    <img 
+                                      src={drawing.thumbnail_url} 
+                                      alt={drawing.name}
+                                      className="w-full h-full object-cover rounded-lg"
+                                    />
+                                  ) : (
+                                    <Image className="h-8 w-8 text-gray-400" />
+                                  )}
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="font-medium text-gray-900 dark:text-white text-sm truncate">{drawing.name}</h4>
+                                    <Badge className={
+                                      drawing.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' :
+                                      drawing.status === 'draft' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' :
+                                      'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                                    }>
+                                      {drawing.status.replace('_', ' ')}
+                                    </Badge>
+                                  </div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    <p>Version {drawing.version}</p>
+                                    <p>{format(new Date(drawing.last_modified), 'MMM d, yyyy')}</p>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => handleDrawingView(drawing)}
+                                      className="flex-1"
+                                    >
+                                      <Maximize2 className="h-3 w-3 mr-1" />
+                                      View
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => window.open(drawing.file_url, '_blank')}
+                                    >
+                                      <Edit3 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
                 
@@ -1397,6 +1937,255 @@ export default function JobDetail() {
               Delete
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Contract Upload Dialog */}
+      <Dialog open={showContractUpload} onOpenChange={setShowContractUpload}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Upload Contract</DialogTitle>
+            <DialogDescription>
+              Upload a contract or agreement for this job.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="contract-name" className="text-sm font-medium">Contract Name</label>
+              <Input
+                id="contract-name"
+                value={contractForm.name}
+                onChange={(e) => setContractForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Main Service Contract"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="contract-type" className="text-sm font-medium">Contract Type</label>
+              <select
+                id="contract-type"
+                value={contractForm.type}
+                onChange={(e) => setContractForm(prev => ({ ...prev, type: e.target.value as Contract['type'] }))}
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-900 dark:text-white"
+              >
+                <option value="main">Main Contract</option>
+                <option value="subcontract">Subcontract</option>
+                <option value="amendment">Amendment</option>
+                <option value="change_order">Change Order</option>
+              </select>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="contract-value" className="text-sm font-medium">Contract Value ($)</label>
+                <Input
+                  id="contract-value"
+                  type="number"
+                  value={contractForm.value}
+                  onChange={(e) => setContractForm(prev => ({ ...prev, value: e.target.value }))}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="contract-start" className="text-sm font-medium">Start Date</label>
+                <Input
+                  id="contract-start"
+                  type="date"
+                  value={contractForm.start_date}
+                  onChange={(e) => setContractForm(prev => ({ ...prev, start_date: e.target.value }))}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="contract-end" className="text-sm font-medium">End Date</label>
+              <Input
+                id="contract-end"
+                type="date"
+                value={contractForm.end_date}
+                onChange={(e) => setContractForm(prev => ({ ...prev, end_date: e.target.value }))}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="contract-description" className="text-sm font-medium">Description</label>
+              <textarea
+                id="contract-description"
+                value={contractForm.description}
+                onChange={(e) => setContractForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of the contract..."
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-900 dark:text-white resize-none"
+                rows={3}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="contract-file" className="text-sm font-medium">Contract File</label>
+              <Input
+                id="contract-file"
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={(e) => setContractFile(e.target.files?.[0] || null)}
+              />
+              {contractFile && (
+                <p className="text-xs text-gray-500">
+                  {contractFile.name} ({Math.round(contractFile.size / 1024)} KB)
+                </p>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowContractUpload(false)}
+              disabled={isContractUploading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleContractUpload}
+              disabled={isContractUploading || !contractFile || !contractForm.name.trim()}
+            >
+              {isContractUploading ? 'Uploading...' : 'Upload Contract'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Drawing Upload Dialog */}
+      <Dialog open={showDrawingUpload} onOpenChange={setShowDrawingUpload}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Upload One-Line Drawing</DialogTitle>
+            <DialogDescription>
+              Upload a one-line electrical drawing for this job.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="drawing-name" className="text-sm font-medium">Drawing Name</label>
+              <Input
+                id="drawing-name"
+                value={drawingForm.name}
+                onChange={(e) => setDrawingForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Main Electrical One-Line"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="drawing-description" className="text-sm font-medium">Description</label>
+              <textarea
+                id="drawing-description"
+                value={drawingForm.description}
+                onChange={(e) => setDrawingForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of the drawing..."
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-900 dark:text-white resize-none"
+                rows={3}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="drawing-file" className="text-sm font-medium">Drawing File</label>
+              <Input
+                id="drawing-file"
+                type="file"
+                accept=".pdf,.dwg,.png,.jpg,.jpeg,.svg"
+                onChange={(e) => setDrawingFile(e.target.files?.[0] || null)}
+              />
+              {drawingFile && (
+                <p className="text-xs text-gray-500">
+                  {drawingFile.name} ({Math.round(drawingFile.size / 1024)} KB)
+                </p>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDrawingUpload(false)}
+              disabled={isDrawingUploading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDrawingUpload}
+              disabled={isDrawingUploading || !drawingFile || !drawingForm.name.trim()}
+            >
+              {isDrawingUploading ? 'Uploading...' : 'Upload Drawing'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Drawing Viewer Dialog */}
+      <Dialog open={showDrawingViewer} onOpenChange={setShowDrawingViewer}>
+        <DialogContent className="sm:max-w-[90vw] sm:max-h-[90vh] max-w-none w-full h-full">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle>{selectedDrawing?.name}</DialogTitle>
+                <DialogDescription>
+                  Version {selectedDrawing?.version} • {selectedDrawing?.status.replace('_', ' ')}
+                </DialogDescription>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => selectedDrawing && window.open(selectedDrawing.file_url, '_blank')}
+                >
+                  <Edit3 className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    if (selectedDrawing) {
+                      const link = document.createElement('a');
+                      link.href = selectedDrawing.file_url;
+                      link.download = selectedDrawing.name;
+                      link.click();
+                    }
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Download
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowDrawingViewer(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-hidden">
+            {selectedDrawing && (
+              <div className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                {selectedDrawing.file_url.toLowerCase().endsWith('.pdf') ? (
+                  <iframe
+                    src={selectedDrawing.file_url}
+                    className="w-full h-full rounded-lg"
+                    title={selectedDrawing.name}
+                  />
+                ) : (
+                  <img
+                    src={selectedDrawing.file_url}
+                    alt={selectedDrawing.name}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

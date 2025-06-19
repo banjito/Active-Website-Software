@@ -1,8 +1,9 @@
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
-import React, { useState, useEffect } from 'react';
+import { getReportName, getAssetName } from './reportMappings';
 import _ from 'lodash';
 
 // Temperature conversion and TCF tables
@@ -193,6 +194,11 @@ const DryTypeTransformerReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'dry-type-transformer'; // This component handles the dry-type-transformer route
+  const reportName = getReportName(reportSlug);
   
   // Initialize form data with default values
   const [formData, setFormData] = useState<FormData>({
@@ -724,7 +730,7 @@ const DryTypeTransformerReport: React.FC = () => {
            console.log(`New report created with ID: ${currentReportId}`);
            // Create asset entry
           const assetData = {
-            name: `Dry Type Transformer - ${formData.identifier || formData.eqptLocation || formData.jobNumber}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/dry-type-transformer/${currentReportId}`,
             user_id: user.id
           };
@@ -801,7 +807,7 @@ const DryTypeTransformerReport: React.FC = () => {
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       {/* Header with Pass/Fail and Edit/Save buttons */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dry Type Transformer Report</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           {/* Pass/Fail Button */}
           <button

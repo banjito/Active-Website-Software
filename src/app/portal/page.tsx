@@ -32,22 +32,39 @@ export default function PortalLanding() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [defaultToShow, setDefaultToShow] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const { setDivision } = useDivision();
   const { isAdmin, checkPortalAccess } = usePermissions();
 
-  // Initialize showShortcuts from localStorage
+  // Initialize preferences from localStorage
   useEffect(() => {
-    const savedPreference = localStorage.getItem('showShortcuts');
-    if (savedPreference !== null) {
-      setShowShortcuts(savedPreference === 'true');
-    }
+    const savedDefaultPreference = localStorage.getItem('defaultToShowShortcuts');
+    
+    // Determine the default behavior value
+    const defaultBehavior = savedDefaultPreference === 'true';
+    
+    // Set default behavior preference
+    setDefaultToShow(defaultBehavior);
+    
+    // Always use the default behavior on page load/refresh
+    // This means the toggle controls what happens on refresh
+    setShowShortcuts(defaultBehavior);
+    
+    // Mark as initialized to prevent saving on initial load
+    setIsInitialized(true);
   }, []);
 
-  // Save showShortcuts preference to localStorage when it changes
+  // Don't save showShortcuts to localStorage - let the default toggle control refresh behavior
+  // The manual show/hide is only for the current session
+
+  // Save defaultToShow preference to localStorage when it changes (but not on initial load)
   useEffect(() => {
-    localStorage.setItem('showShortcuts', showShortcuts.toString());
-  }, [showShortcuts]);
+    if (isInitialized) {
+      localStorage.setItem('defaultToShowShortcuts', defaultToShow.toString());
+    }
+  }, [defaultToShow, isInitialized]);
 
   useEffect(() => {
     const division = searchParams.get('division');
@@ -227,6 +244,11 @@ export default function PortalLanding() {
     setShowShortcuts(prev => !prev);
   };
 
+  // Toggle default shortcuts behavior
+  const toggleDefaultBehavior = () => {
+    setDefaultToShow(prev => !prev);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-dark-background dark:text-dark-800">
       {/* Standard Header */}
@@ -367,18 +389,41 @@ export default function PortalLanding() {
       <div className="mt-10 max-w-[1400px] mx-auto">
         <div className="flex justify-between items-center mb-2 px-4 sm:px-6 lg:px-8">
           <h3 className="text-lg font-medium">My Shortcuts</h3>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={toggleShortcuts} 
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
-          >
-            {showShortcuts ? (
-              <>Hide <ChevronUp className="ml-1 h-4 w-4" /></>
-            ) : (
-              <>Show <ChevronDown className="ml-1 h-4 w-4" /></>
-            )}
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <label 
+                htmlFor="default-shortcuts-toggle" 
+                className="text-sm text-gray-600 dark:text-gray-400"
+              >
+                Default to {defaultToShow ? 'show' : 'hide'}:
+              </label>
+              <button
+                id="default-shortcuts-toggle"
+                onClick={toggleDefaultBehavior}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+                  defaultToShow ? 'bg-[#f26722]' : 'bg-gray-300 dark:bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                    defaultToShow ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={toggleShortcuts} 
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
+            >
+              {showShortcuts ? (
+                <>Hide <ChevronUp className="ml-1 h-4 w-4" /></>
+              ) : (
+                <>Show <ChevronDown className="ml-1 h-4 w-4" /></>
+              )}
+            </Button>
+          </div>
         </div>
         {showShortcuts && <ShortcutDisplay />}
       </div>

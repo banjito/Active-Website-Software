@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -191,6 +192,11 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'low-voltage-circuit-breaker-thermal-magnetic-mts-report'; // This component handles the low-voltage-circuit-breaker-thermal-magnetic-mts-report route
+  const reportName = getReportName(reportSlug);
   // Update initial state to match the new FormData structure
   const [formData, setFormData] = useState<FormData>({
     // Initialize with default values based on FormData interface
@@ -486,7 +492,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
         if (result.data) {
           // Create asset entry
           const assetData = {
-            name: `Low Voltage Circuit Breaker Thermal Magnetic MTS Report - ${formData.identifier || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-thermal-magnetic-mts-report/${result.data.id}`,
             user_id: user.id
           };
@@ -541,9 +547,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
       <div className="max-w-7xl w-full space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Low Voltage Circuit Breaker Thermal Magnetic MTS Report
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
           <div className="flex gap-2">
             {/* Status Button - Always visible, only interactive in edit mode */}
             <button

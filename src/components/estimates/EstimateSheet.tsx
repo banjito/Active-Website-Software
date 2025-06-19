@@ -467,11 +467,83 @@ export default function EstimateSheet({ opportunityId }: EstimateSheetProps) {
 
   // Load specific quote data
   const loadQuoteData = (quote: QuoteData) => {
-    setData(quote.data);
-    if (quote.travel_data) {
-      setTravelData(quote.travel_data);
-      setShowTravel(true);
-    } else {
+    try {
+      // Parse the JSON data if it's a string
+      let parsedData = quote.data;
+      if (typeof quote.data === 'string') {
+        parsedData = JSON.parse(quote.data);
+      }
+      
+      // Ensure the data has the required calculatedValues structure
+      const defaultCalculatedValues = {
+        taxRate: 8.25,
+        markupRate: 10,
+        laborRate: 75,
+        subtotalMaterial: 0,
+        subtotalExpense: 0,
+        subtotalLabor: 0,
+        tax: 0,
+        markup: 0,
+        totalMaterial: 0,
+        totalExpense: 0,
+        totalLabor: 0,
+        grandTotal: 0
+      };
+      
+      // Merge the loaded data with defaults to ensure all required properties exist
+      const completeData = {
+        client: parsedData.client || '',
+        jobDescription: parsedData.jobDescription || '',
+        dateDue: parsedData.dateDue || '',
+        location: parsedData.location || '',
+        periodOfPerformance: parsedData.periodOfPerformance || '',
+        notes: parsedData.notes || '',
+        items: (parsedData.items && parsedData.items.length > 0) ? parsedData.items : Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({...EMPTY_LINE_ITEM})),
+        calculatedValues: {
+          ...defaultCalculatedValues,
+          ...(parsedData.calculatedValues || {})
+        }
+      };
+      
+      setData(completeData);
+      
+      // Handle travel data
+      if (quote.travel_data) {
+        let parsedTravelData = quote.travel_data;
+        if (typeof quote.travel_data === 'string') {
+          parsedTravelData = JSON.parse(quote.travel_data);
+        }
+        setTravelData(parsedTravelData);
+        setShowTravel(true);
+      } else {
+        setShowTravel(false);
+      }
+    } catch (error) {
+      console.error('Error loading quote data:', error);
+      // Fallback to default data structure if parsing fails
+      setData({
+        client: '',
+        jobDescription: '',
+        dateDue: '',
+        location: '',
+        periodOfPerformance: '',
+        notes: '',
+        items: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({...EMPTY_LINE_ITEM})),
+        calculatedValues: {
+          taxRate: 8.25,
+          markupRate: 10,
+          laborRate: 75,
+          subtotalMaterial: 0,
+          subtotalExpense: 0,
+          subtotalLabor: 0,
+          tax: 0,
+          markup: 0,
+          totalMaterial: 0,
+          totalExpense: 0,
+          totalLabor: 0,
+          grandTotal: 0
+        }
+      });
       setShowTravel(false);
     }
   };
@@ -493,8 +565,7 @@ export default function EstimateSheet({ opportunityId }: EstimateSheetProps) {
       opportunity_id: opportunityId,
       // Use current state data and travelData for saving
       data: JSON.stringify(data), 
-      travel_data: showTravel ? JSON.stringify(travelData) : null,
-      user_id: user.id // Ensure user_id is included
+      travel_data: showTravel ? JSON.stringify(travelData) : null
     };
     
     try {
@@ -548,7 +619,9 @@ export default function EstimateSheet({ opportunityId }: EstimateSheetProps) {
             alert('New quote saved successfully!');
         } else {
             console.error('Insert operation did not return data.');
-            alert('Quote saved, but failed to retrieve confirmation. Please refresh.')
+            alert('Quote saved, but failed to retrieve confirmation. Please refresh.');
+            // Refetch to ensure we have the latest data
+            await fetchEstimateData();
         }
       }
       
@@ -917,7 +990,7 @@ export default function EstimateSheet({ opportunityId }: EstimateSheetProps) {
       <Dialog
         open={isOpen}
         onClose={() => setIsOpen(false)}
-        className="fixed inset-0 z-10 overflow-y-auto"
+        className="fixed inset-0 z-50 overflow-y-auto"
       >
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />

@@ -453,6 +453,7 @@ function App() {
                   <Route path="/jobs/:id/panelboard-report/:reportId?" element={<RequireAuth><Layout><PanelboardReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/dry-type-transformer/:reportId?" element={<RequireAuth><Layout><DryTypeTransformerReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/large-dry-type-transformer/:reportId?" element={<RequireAuth><Layout><LargeDryTypeTransformerReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/large-dry-type-transformer-report/:reportId?" element={<RequireAuth><Layout><LargeDryTypeTransformerReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/large-dry-type-transformer-mts-report/:reportId?" element={<RequireAuth><Layout><LargeDryTypeTransformerMTSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/large-dry-type-xfmr-mts-report/:reportId?" element={<RequireAuth><Layout><LargeDryTypeXfmrMTSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/liquid-filled-transformer/:reportId?" element={<RequireAuth><Layout><LiquidFilledTransformerReport /></Layout></RequireAuth>} />

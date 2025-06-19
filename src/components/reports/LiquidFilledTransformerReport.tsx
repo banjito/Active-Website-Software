@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import _ from 'lodash';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -303,6 +304,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'liquid-filled-transformer'; // This component handles the liquid-filled-transformer route
+  const reportName = getReportName(reportSlug);
 
   // Initialize form data with default values
   const [formData, setFormData] = useState<FormData>({
@@ -958,7 +964,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Liquid Filled Transformer Report</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           {/* Pass/Fail Button */}
           <button

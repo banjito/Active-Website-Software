@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -186,6 +187,11 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'low-voltage-circuit-breaker-thermal-magnetic-ats-report'; // This component handles the low-voltage-circuit-breaker-thermal-magnetic-ats-report route
+  const reportName = getReportName(reportSlug);
   // Update initial state to match the new FormData structure
   const [formData, setFormData] = useState<FormData>({
     // Initialize with default values based on FormData interface
@@ -493,7 +499,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           const newReportId = result.data.id;
           const assetData = {
             // *** Update Asset Name and URL ***
-            name: `LV CB Thermal-Magnetic ATS - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-thermal-magnetic-ats-report/${newReportId}`, // Needs routing
             user_id: user.id
           };

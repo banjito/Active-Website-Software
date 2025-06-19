@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 const getVisualInspectionDescription = (section: string): string => {
   const descriptions: Record<string, string> = {
@@ -544,6 +545,11 @@ export default function LowVoltageSwitchReport() {
   const navigate = useNavigate();
   const { user } = useAuth();
   
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'low-voltage-switch-report'; // This component handles the low-voltage-switch-report route
+  const reportName = getReportName(reportSlug);
+  
   // Add debug logging for URL parameters
   useEffect(() => {
     console.log('URL Parameters:', {
@@ -920,7 +926,7 @@ export default function LowVoltageSwitchReport() {
           // Create asset entry for the report
           if (result.data) {
             const assetData = {
-              name: `Low Voltage Switch Report - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
               file_url: `report:/jobs/${jobId}/low-voltage-switch-report/${result.data.id}`,
               user_id: user.id
             };
@@ -996,9 +1002,7 @@ export default function LowVoltageSwitchReport() {
       <div className="max-w-7xl w-full space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Low Voltage Switch Report
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
           <div className="flex gap-2">
             <button
               onClick={() => {

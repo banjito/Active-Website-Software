@@ -36,31 +36,39 @@ export default function AdminUserManagement() {
       setError(null);
 
       console.log("[fetchUsers] Fetching users via RPC...");
-      // Use function name WITHOUT schema prefix - client initialized with 'common' schema
-      const { data: adminData, error: adminError } = await supabase.rpc('admin_get_users');
-      console.log("[fetchUsers] RPC call completed.");
-
+      
+      // Call the admin_get_users RPC function from common schema
+      const { data: adminData, error: adminError } = await supabase
+        .schema('common')
+        .rpc('admin_get_users');
+      
       if (adminError) {
         console.error('[fetchUsers] Error fetching users from RPC:', adminError);
-        throw adminError;
+        
+        // Provide helpful error message based on the error
+        if (adminError.message.includes('Access denied') || adminError.message.includes('Admin role required')) {
+          setError('Access denied: Admin role required. Please ensure your user account has Admin role in user metadata.');
+        } else if (adminError.message.includes('function common.admin_get_users() does not exist')) {
+          setError('Admin functions not found. Please run the admin function creation SQL in your Supabase SQL editor.');
+        } else {
+          setError(`Failed to load users: ${adminError.message}`);
+        }
+        return;
       }
 
       if (adminData) {
-        console.log("[fetchUsers] Received raw data length:", adminData.length);
-        // Map the raw data (from auth.users) to the UserData interface
+        console.log("[fetchUsers] RPC call succeeded.");
         const mappedUsers: UserData[] = adminData.map((user: any) => ({
           id: user.id,
           email: user.email,
           created_at: user.created_at,
-          // Map raw_user_meta_data to user_metadata
-          // Ensure user_metadata is always an object
           user_metadata: user.raw_user_meta_data || {}
         }));
         console.log("[fetchUsers] Mapped data sample (first user):", JSON.stringify(mappedUsers[0], null, 2));
         setUsers(mappedUsers);
       } else {
         console.log("[fetchUsers] No data returned from RPC.");
-        setUsers([]); // Ensure users state is empty if no data
+        setUsers([]);
       }
     } catch (err) {
       const error = err as Error;
@@ -78,17 +86,31 @@ export default function AdminUserManagement() {
       setUpdateSuccessUserId(null);
       setUpdateErrorUserId(null);
 
-      // Use function name WITHOUT schema prefix - client initialized with 'common' schema
-      const { error } = await supabase.rpc('admin_update_user_role', {
-        user_id: userId,
-        new_role: role
-      });
+      // Call the admin_update_user_role RPC function from common schema
+      const { error } = await supabase
+        .schema('common')
+        .rpc('admin_update_user_role', {
+          user_id: userId,
+          new_role: role
+        });
 
       if (error) {
-          console.error('[updateUserRole] Error response from RPC:', error);
-          throw error; // Throw error to be caught by catch block
+        console.error('[updateUserRole] Error response from RPC:', error);
+        
+        // Provide helpful error message based on the error
+        if (error.message.includes('Access denied') || error.message.includes('Admin role required')) {
+          setError('Access denied: Admin role required to update user roles.');
+        } else if (error.message.includes('function common.admin_update_user_role() does not exist')) {
+          setError('Admin functions not found. Please run the admin function creation SQL in your Supabase SQL editor.');
+        } else {
+          setError(`Failed to update role for ${userId}: ${error.message}`);
+        }
+        setUpdateErrorUserId(userId);
+        return;
       }
 
+      console.log('[updateUserRole] RPC call succeeded.');
+      
       // Update local state optimistically ONLY if RPC succeeds
       setUsers(prevUsers =>
         prevUsers.map(user =>

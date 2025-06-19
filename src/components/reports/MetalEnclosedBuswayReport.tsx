@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../lib/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Add dropdown option constants
 const INSPECTION_OPTIONS = [
@@ -336,6 +337,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'metal-enclosed-busway'; // This component handles the metal-enclosed-busway route
+  const reportName = getReportName(reportSlug);
   
   // Form state
   const [formData, setFormData] = useState<FormData>({
@@ -757,7 +763,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       if (!reportId && result.data) {
         // Create asset entry
         const assetData = {
-          name: `Metal Enclosed Busway - ${formData.identifier || formData.substation || 'Unnamed'}`,
+          name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
           file_url: `report:/jobs/${jobId}/metal-enclosed-busway/${result.data.id}`,
           user_id: user.id
         };
@@ -810,7 +816,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Metal Enclosed Busway ATS Inspection Form</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <select
             value={formData.status}

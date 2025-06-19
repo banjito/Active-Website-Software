@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -189,6 +190,11 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'liquid-xfmr-visual-mts-report'; // This component handles the liquid-xfmr-visual-mts-report route
+  const reportName = getReportName(reportSlug);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
@@ -516,9 +522,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
     <div className="p-4 max-w-7xl mx-auto space-y-8 dark:text-white">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          2-Liquid Filled Xfmr. Visual, Mechanical, Insulation Resistance Test MTS
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex items-center space-x-4">
           <button
             onClick={() => {

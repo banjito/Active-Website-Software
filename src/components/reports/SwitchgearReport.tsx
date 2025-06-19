@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Add these constants at the top of the file, after the imports
 const visualInspectionOptions = [
@@ -197,6 +198,11 @@ const SwitchgearReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId); // True if new report, false if loading existing
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'switchgear-report'; // This component handles the switchgear-report route
+  const reportName = getReportName(reportSlug);
   const [formData, setFormData] = useState<FormData>({
     // Initialize with default values
     customer: '',
@@ -619,9 +625,9 @@ const SwitchgearReport: React.FC = () => {
 
         // Create asset entry
         if (result.data) {
-          const assetData = {
-            name: `Switchgear Report - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
-            file_url: `report:/jobs/${jobId}/switchgear-report/${result.data.id}`,
+                      const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
+              file_url: `report:/jobs/${jobId}/switchgear-report/${result.data.id}`,
             user_id: user.id
           };
 
@@ -701,7 +707,7 @@ const SwitchgearReport: React.FC = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">SWITCHGEAR SWITCHBOARD PANELBOARD INSPECTION & TEST REPORT ATS 21</h1>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

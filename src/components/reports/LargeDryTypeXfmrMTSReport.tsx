@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import _ from 'lodash';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -188,6 +189,11 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'large-dry-type-xfmr-mts-report'; // This component handles the large-dry-type-xfmr-mts-report route
+  const reportName = getReportName(reportSlug);
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
   const [error, setError] = useState<string | null>(null); // Error state
 
@@ -623,9 +629,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
 
   const renderHeader = () => (
     <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test MTS
-      </h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
       <div className="flex items-center space-x-2">
         <button
           onClick={() => { if (isEditing) setStatus(status === 'PASS' ? 'FAIL' : 'PASS'); }}

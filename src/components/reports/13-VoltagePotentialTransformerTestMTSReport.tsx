@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables
 const tcfData: Array<{ celsius: number; multiplier: number }> = [
@@ -190,6 +191,11 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = '13-voltage-potential-transformer-test-mts-report'; // This component handles the 13-voltage-potential-transformer-test-mts-report route
+  const reportName = getReportName(reportSlug);
 
   const initialVisualInspectionItems = [
     { netaSection: '7.10.2.1', description: 'Inspect physical and mechanical condition.', result: 'Select One' },
@@ -493,7 +499,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
 
         if (result.data) {
           const assetData = {
-            name: `13-VP Transformer Test MTS - ${finalFormData.identifier || finalFormData.eqptLocation || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/13-voltage-potential-transformer-test-mts-report/${result.data.id}`,
             user_id: user.id,
             template_type: 'MTS' // Or a more specific type if needed
@@ -527,7 +533,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">13-VOLTAGE/POTENTIAL TRANSFORMER TEST (MTS)</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

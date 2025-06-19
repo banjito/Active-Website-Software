@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables (reuse from other reports)
 const tcfTable: { [key: string]: number } = {
@@ -271,7 +272,12 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(!reportId); // Edit if no reportId
+  const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = '23-medium-voltage-motor-starter-mts-report'; // This component handles the 23-medium-voltage-motor-starter-mts-report route
+  const reportName = getReportName(reportSlug); // Edit if no reportId
 
   const initialFormData: FormData = {
     customerName: '',
@@ -512,7 +518,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         if (result.data) {
           const assetData = {
-            name: `23-Medium Voltage Motor Starter MTS - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/23-medium-voltage-motor-starter-mts-report/${result.data.id}`, // Match new route
             user_id: user.id,
             template_type: 'MTS' // Or specific type
@@ -633,7 +639,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
       {/* Header: Title and Buttons */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Medium Voltage Motor Starter MTS Report</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

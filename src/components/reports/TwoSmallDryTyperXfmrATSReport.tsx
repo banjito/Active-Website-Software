@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -182,6 +183,11 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'two-small-dry-typer-xfmr-ats-report'; // This component handles the two-small-dry-typer-xfmr-ats-report route
+  const reportName = getReportName(reportSlug);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
@@ -518,7 +524,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
         currentReportId = insertData.id;
 
         const assetData = {
-          name: `2-Small Dry Type Xfmr. ATS - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+          name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
           file_url: `report:/jobs/${jobId}/two-small-dry-typer-xfmr-ats-report/${currentReportId}`,
           user_id: user.id,
         };
@@ -573,9 +579,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
 
   const renderHeader = () => (
     <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        2-Small Dry Type Xfmr. Inspection and Test ATS
-      </h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
       <div className="flex items-center space-x-2">
         <button
           onClick={() => { if (isEditing) setFormData(prev => ({ ...prev, status: prev.status === 'PASS' ? 'FAIL' : 'PASS' })); }}

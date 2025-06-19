@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 interface FormData {
   // General Info
@@ -189,6 +190,11 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'low-voltage-switch-multi-device-test'; // This component handles the low-voltage-switch-multi-device-test route
+  const reportName = getReportName(reportSlug);
   const [isEditing, setIsEditing] = useState(!reportId);
   const [formData, setFormData] = useState<FormData>({
     // General Info
@@ -633,7 +639,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
         // Create asset entry if this is a new report
         if (result.data) {
           const assetData = {
-            name: `Low Voltage Switch Multi-Device Test - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || ''),
             file_url: `report:/jobs/${jobId}/low-voltage-switch-multi-device-test/${result.data.id}`,
             user_id: user.id
           };
@@ -1004,7 +1010,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">LOW VOLTAGE SWITCH MULTI-DEVICE TEST REPORT</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

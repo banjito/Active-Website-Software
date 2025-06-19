@@ -14,6 +14,7 @@ import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/Select';
 import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/Card';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Types
 enum TestStatus {
@@ -356,6 +357,11 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'medium-voltage-vlf-mts-report'; // This component handles the medium-voltage-vlf-mts-report route
+  const reportName = getReportName(reportSlug);
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
@@ -608,7 +614,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
         
         if (result.data) {
           const assetData = {
-            name: `MEDIUM VOLTAGE CABLE VLF TEST REPORT MTS - ${formData.identifier || formData.location || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${effectiveJobId}/medium-voltage-vlf-mts-report/${result.data.id}`,
             user_id: user.id
           };
@@ -683,7 +689,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">MEDIUM VOLTAGE CABLE VLF TEST REPORT MTS</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => { if (isEditMode) setFormData(prev => ({ ...prev, status: prev.status === TestStatus.PASS ? TestStatus.FAIL : TestStatus.PASS }))}}

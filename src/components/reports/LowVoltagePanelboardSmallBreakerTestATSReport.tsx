@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import { toast } from 'react-toastify';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -167,6 +168,11 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
   const [isEditMode, setIsEditMode] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'low-voltage-panelboard-small-breaker-report'; // This component handles the low-voltage-panelboard-small-breaker-report route
+  const reportName = getReportName(reportSlug);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tcf, setTcf] = useState(1);
@@ -497,7 +503,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
         if (result.data && result.data.id) {
           const newReportId = result.data.id;
           const assetData = {
-            name: `8-Low Voltage Panelboard Small Breaker Test ATS - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/low-voltage-panelboard-small-breaker-report/${newReportId}`,
             user_id: user.id,
             template_type: 'ATS'
@@ -571,9 +577,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
       <div className="max-w-7xl w-full space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Low Voltage Panelboard Small Breaker Test ATS Report
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
           <div className="flex gap-2">
             <button
               onClick={() => {

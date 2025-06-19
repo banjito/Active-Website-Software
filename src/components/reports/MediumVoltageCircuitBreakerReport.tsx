@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables (copied from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -195,6 +196,11 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'medium-voltage-circuit-breaker-report'; // This component handles the medium-voltage-circuit-breaker-report route
+  const reportName = getReportName(reportSlug);
   const [isEditing, setIsEditing] = useState<boolean>(!reportId);
   const [saving, setSaving] = useState<boolean>(false);
 
@@ -424,7 +430,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
 
         if (result.data) {
           const assetData = {
-            name: `MV Circuit Breaker Report - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/medium-voltage-circuit-breaker-report/${result.data.id}`,
             user_id: user.id,
           };
@@ -497,7 +503,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Medium Voltage Circuit Breaker Test Report</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

@@ -14,6 +14,7 @@ import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/Select';
 import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/Card';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Types
 enum TestStatus {
@@ -452,6 +453,11 @@ const MediumVoltageVLFReport: React.FC = () => {
   const [jobId, setJobId] = useState<string | undefined>(undefined);
   const [reportId, setReportId] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'medium-voltage-vlf'; // This component handles the medium-voltage-vlf route
+  const reportName = getReportName(reportSlug);
   const [isSaving, setIsSaving] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false); // Default to view mode
   const [error, setError] = useState<string | null>(null);
@@ -1271,7 +1277,7 @@ const MediumVoltageVLFReport: React.FC = () => {
         if (result.data) {
           console.log('Creating asset entry for report:', result.data.id);
           const assetData = {
-            name: `Medium Voltage VLF Report - ${formData.identifier || formData.location || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${effectiveJobId}/medium-voltage-vlf/${result.data.id}`,
             user_id: user.id
           };
@@ -1495,7 +1501,7 @@ const MediumVoltageVLFReport: React.FC = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">MEDIUM VOLTAGE CABLE TEST REPORT</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

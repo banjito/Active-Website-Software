@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -184,6 +185,11 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report'; // This component handles the low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report route
+  const reportName = getReportName(reportSlug);
   const [formData, setFormData] = useState<FormData>({
     // Initialize with default values based on FormData interface
     customer: '',
@@ -499,7 +505,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
         if (result.data) {
           const newReportId = result.data.id;
           const assetData = {
-            name: `LV CB Electronic Trip ATS - Secondary Inj - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report/${newReportId}`, // Reverted to descriptive path for routing
             user_id: user.id
           };
@@ -692,9 +698,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
     <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          8-Low Voltage Circuit Breaker Electronic Trip Unit ATS - Secondary Injection
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           {/* Status Button */}
           <button

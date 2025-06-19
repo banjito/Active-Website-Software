@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 import _ from 'lodash';
 
 // Add type definitions for error handling
@@ -253,6 +254,13 @@ const LargeDryTypeTransformerReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = currentPath.includes('large-dry-type-transformer-report') ? 'large-dry-type-transformer-report' : 
+                     currentPath.includes('large-dry-type-transformer') ? 'large-dry-type-transformer' : 
+                     'large-dry-type-transformer-report'; // default fallback
+  const reportName = getReportName(reportSlug);
 
   // Initialize form data with default values
   const [formData, setFormData] = useState<FormData>({
@@ -808,9 +816,9 @@ const LargeDryTypeTransformerReport: React.FC = () => {
                    console.log(`New report created with ID: ${currentReportId}`);
 
                    // --- Create corresponding asset entry (like DryType) ---
-                   const assetName = `Large Dry Type Transformer - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`;
+                   const assetName = getAssetName(reportSlug, formData.identifier || formData.eqptLocation || '');
                    // Update the URL path to match the new route
-                   const assetUrl = `report:/jobs/${jobId}/large-dry-type-transformer/${currentReportId}`;
+                   const assetUrl = `report:/jobs/${jobId}/${reportSlug}/${currentReportId}`;
 
                    const assetData = {
                        name: assetName,
@@ -887,7 +895,7 @@ const LargeDryTypeTransformerReport: React.FC = () => {
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Large Dry Type Transformer Report</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex gap-2">
           {/* Pass/Fail Button */}
           <button

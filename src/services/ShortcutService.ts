@@ -18,6 +18,7 @@ export const ShortcutService = {
     
     try {
       const { data, error } = await supabase
+        .schema('common')
         .from('user_shortcuts')
         .select('*')
         .eq('user_id', userId)
@@ -45,6 +46,7 @@ export const ShortcutService = {
     try {
       // Get the highest position to place new shortcut at the end
       const { data: existingShortcuts, error: countError } = await supabase
+        .schema('common')
         .from('user_shortcuts')
         .select('position')
         .eq('user_id', shortcut.user_id)
@@ -61,6 +63,7 @@ export const ShortcutService = {
         : 0;
 
       const { data, error } = await supabase
+        .schema('common')
         .from('user_shortcuts')
         .insert([{ ...shortcut, position }])
         .select()
@@ -87,6 +90,7 @@ export const ShortcutService = {
     
     try {
       const { data, error } = await supabase
+        .schema('common')
         .from('user_shortcuts')
         .update({ ...shortcut, updated_at: new Date() })
         .eq('id', id)
@@ -114,6 +118,7 @@ export const ShortcutService = {
     
     try {
       const { error } = await supabase
+        .schema('common')
         .from('user_shortcuts')
         .delete()
         .eq('id', id);
@@ -142,6 +147,7 @@ export const ShortcutService = {
       // Start a batch update
       const updates = shortcutIds.map((id, index) => {
         return supabase
+          .schema('common')
           .from('user_shortcuts')
           .update({ position: index, updated_at: new Date() })
           .eq('id', id)

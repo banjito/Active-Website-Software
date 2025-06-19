@@ -511,11 +511,14 @@ export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at
   try {
     console.log("Creating new customer:", customer);
     
+    // Remove fields that don't exist in the database schema
+    const { category_id, category, ...customerData } = customer;
+    
     // Ensure we're using the common schema
     const { data, error } = await supabase
       .schema('common')
       .from('customers')
-      .insert([customer])
+      .insert([customerData])
       .select()
       .single();
 

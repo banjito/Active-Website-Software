@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 import {
   LineChart,
   Line,
@@ -292,7 +293,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
       <div className="flex justify-between items-center mb-6">
-        <h1 style={{ textAlign: 'center', marginBottom: '10px' }}>Electrical Tests - Tan Delta Test</h1>
+        <h1 style={{ textAlign: 'center', marginBottom: '10px' }}>{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

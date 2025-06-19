@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Types for form data and measurements
 interface InsulationResistance {
@@ -303,6 +304,11 @@ export default function MediumVoltageSwitchOilReport() {
   const { user } = useAuth();
   
   const [isEditMode, setIsEditMode] = useState(!reportId);
+
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'medium-voltage-switch-oil-report'; // This component handles the medium-voltage-switch-oil-report route
+  const reportName = getReportName(reportSlug);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<'PASS' | 'FAIL' | 'LIMITED SERVICE'>('PASS');
   const [loading, setLoading] = useState(true);
@@ -634,7 +640,7 @@ export default function MediumVoltageSwitchOilReport() {
         // Create asset entry for the report
         if (result.data) {
           const assetData = {
-            name: `Medium Voltage Switch Oil Report - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/medium-voltage-switch-oil-report/${result.data.id}`,
             user_id: user.id
           };
@@ -734,9 +740,7 @@ export default function MediumVoltageSwitchOilReport() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            7-Medium Voltage Way Switch (OIL) Report
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
           <div className="flex gap-2">
             <button
               onClick={() => {

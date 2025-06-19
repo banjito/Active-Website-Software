@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables
 const TCF_TABLE: { [key: string]: number } = {
@@ -178,6 +179,11 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const reportSlug = 'switchgear-panelboard-mts-report'; // This component handles the switchgear-panelboard-mts-report route
+  const reportName = getReportName(reportSlug);
 
   const [formData, setFormData] = useState<FormData>({
     customerName: '', customerLocation: '', userName: user?.email || '', date: new Date().toISOString().split('T')[0],
@@ -367,7 +373,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         // Create asset entry for new reports
         if (result.data) {
           const assetData = {
-            name: `Switchgear Panelboard MTS Report - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/switchgear-panelboard-mts-report/${result.data.id}`,
             user_id: user.id,
             template_type: 'MTS'
@@ -466,7 +472,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 bg-white dark:bg-dark-200">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">1-Switchgear, Switchboard, Panelboard Inspection & Test Report MTS</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
         <div className="flex items-center space-x-4">
           <button
             onClick={() => isEditing && setFormData(prev => ({ ...prev, status: prev.status === 'PASS' ? 'FAIL' : 'PASS' }))}

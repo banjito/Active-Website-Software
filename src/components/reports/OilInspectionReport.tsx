@@ -1238,9 +1238,7 @@ const OilInspectionReport: React.FC = () => {
 
            if (!reportId && savedReport) {
                // Create asset entry for new reports
-               const assetName = formData.identifier 
-                   ? `Oil Inspection Report - ${formData.identifier}`
-                   : `Oil Inspection Report - ${formData.eqptLocation || 'Unnamed'}`;
+               const assetName = getAssetName(reportSlug, formData.identifier || formData.eqptLocation || '');
                const assetUrl = `report:/jobs/${jobId}/oil-inspection/${savedReport.id}`;
 
                       const { data: assetResult, error: assetError } = await supabase

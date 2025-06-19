@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { getReportName, getAssetName } from './reportMappings';
 import {
   LineChart,
   Line,
@@ -48,6 +49,10 @@ const TanDeltaChart: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(!reportId);
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
+  
+  // Define the report slug and name
+  const reportSlug = 'medium-voltage-vlf-tan-delta';
+  const reportName = getReportName(reportSlug);
   const [data, setData] = useState<TanDeltaDataPoint[]>(initialData);
   const [editingData, setEditingData] = useState<boolean>(false);
   const [testDate, setTestDate] = useState<string>('');
@@ -188,7 +193,7 @@ const TanDeltaChart: React.FC = () => {
         // Create asset entry
         if (result.data) {
           const assetData = {
-            name: `Tan Delta Test - ${cableType || 'Cable'}`,
+            name: getAssetName(reportSlug, cableType || ''),
             file_url: `report:/jobs/${jobId}/medium-voltage-vlf-tan-delta/${result.data.id}`,
             user_id: user.id
           };
@@ -264,7 +269,7 @@ const TanDeltaChart: React.FC = () => {
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
       <div className="flex justify-between items-center mb-6">
-        <h1 style={{ textAlign: 'center', marginBottom: '10px' }}>4-Medium Voltage Cable VLF Tan Delta Test ATS</h1>
+        <h1 style={{ textAlign: 'center', marginBottom: '10px' }}>{reportName}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

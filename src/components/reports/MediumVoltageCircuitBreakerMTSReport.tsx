@@ -474,7 +474,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
         if (result.data) {
           const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
+            name: getAssetName('medium-voltage-circuit-breaker-mts-report', formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/medium-voltage-circuit-breaker-mts-report/${result.data.id}`,
             user_id: user.id,
           };
@@ -547,7 +547,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
     <div className="p-4 max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{getReportName('medium-voltage-circuit-breaker-mts-report')}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => {

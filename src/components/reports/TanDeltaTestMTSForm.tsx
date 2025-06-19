@@ -51,6 +51,10 @@ const TanDeltaTestMTSForm: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(!reportId);
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
+  
+  // Define the report slug and name
+  const reportSlug = 'electrical-tan-delta-test-mts-form';
+  const reportName = getReportName(reportSlug);
   const [data, setData] = useState<TanDeltaDataPoint[]>(initialData);
   const [editingData, setEditingData] = useState<boolean>(false);
   const [systemVoltage, setSystemVoltage] = useState<string>('14.400');
@@ -210,7 +214,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
         if (result.data) {
           const newReportId = result.data.id;
           const assetData = {
-            name: `Tan Delta Test MTS`,
+            name: getAssetName(reportSlug, systemVoltage || ''),
             file_url: `report:/jobs/${jobId}/electrical-tan-delta-test-mts-form/${newReportId}`,
             user_id: user.id
           };

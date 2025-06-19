@@ -889,7 +889,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                    console.log(`New report created with ID: ${currentReportId}`);
 
                    // --- Create corresponding asset entry (like DryType) ---
-                   const assetName = `Liquid Filled Transformer - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`;
+                   const assetName = getAssetName(reportSlug, formData.identifier || formData.eqptLocation || '');
                    // Update the URL path to match the new route
                    const assetUrl = `report:/jobs/${jobId}/liquid-filled-transformer/${currentReportId}`;
 

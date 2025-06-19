@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
-import { useKeyboardNavigation } from '@/lib/hooks/useKeyboardNavigation';
+
 import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables
@@ -323,51 +323,56 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         }
       }
       if (data) {
-        // Deep merge existing data with initial state to ensure all fields are present
-        const loadedFormData = _.merge({}, {
-          customerName: '',
-          customerAddress: '',
-          userName: user?.email || '',
-          date: new Date().toISOString().split('T')[0],
-          identifier: '',
-          jobNumber: '',
-          technicians: '',
-          temperature: { fahrenheit: 68, celsius: 20, tcf: 1, humidity: 0 },
-          substation: '',
-          eqptLocation: '',
-          deviceData: {
+        // Reconstruct formData from the new database structure
+        const loadedFormData = {
+          // Job information from report_info
+          customerName: data.report_info?.customerName || '',
+          customerAddress: data.report_info?.customerAddress || '',
+          userName: data.report_info?.userName || user?.email || '',
+          date: data.report_info?.date || new Date().toISOString().split('T')[0],
+          identifier: data.report_info?.identifier || '',
+          jobNumber: data.report_info?.jobNumber || '',
+          technicians: data.report_info?.technicians || '',
+          temperature: data.report_info?.temperature || { fahrenheit: 68, celsius: 20, tcf: 1, humidity: 0 },
+          substation: data.report_info?.substation || '',
+          eqptLocation: data.report_info?.eqptLocation || '',
+          status: data.report_info?.status || 'PASS',
+          
+          // Device data from nameplate_data
+          deviceData: data.nameplate_data || {
             manufacturer: '', class: '', ctRatio: '', catalogNumber: '',
             voltageRating: '', polarityFacing: '', type: '', frequency: ''
           },
-          visualMechanicalInspection: initialVisualInspectionItems,
-          ctIdentification: {
-            phase1: '', 
-            phase1Serial: '',
-            phase2: '', 
-            phase2Serial: '',
-            phase3: '', 
-            phase3Serial: '',
-            neutral: '', 
-            neutralSerial: ''
+          
+          // Visual inspection from visual_mechanical_inspection
+          visualMechanicalInspection: data.visual_mechanical_inspection || initialVisualInspectionItems,
+          
+          // CT identification and electrical tests from electrical_tests
+          ctIdentification: data.electrical_tests?.ctIdentification || {
+            phase1: '', phase1Serial: '', phase2: '', phase2Serial: '',
+            phase3: '', phase3Serial: '', neutral: '', neutralSerial: ''
           },
           electricalTests: {
-            ratioPolarity: initialRatioPolarityItems,
-            primaryWindingInsulation: {
+            ratioPolarity: data.electrical_tests?.ratioPolarity || initialRatioPolarityItems,
+            primaryWindingInsulation: data.electrical_tests?.primaryWindingInsulation || {
               testVoltage: '1000V', readingPhase1: '', readingPhase2: '', readingPhase3: '', readingNeutral: '', units: 'MΩ',
               tempCorrection20CPhase1: '', tempCorrection20CPhase2: '', tempCorrection20CPhase3: '', tempCorrection20CNeutral: ''
             },
-            secondaryWindingInsulation: {
+            secondaryWindingInsulation: data.electrical_tests?.secondaryWindingInsulation || {
               testVoltage: '1000V', readingPhase1: '', readingPhase2: '', readingPhase3: '', readingNeutral: '', units: 'MΩ',
               tempCorrection20CPhase1: '', tempCorrection20CPhase2: '', tempCorrection20CPhase3: '', tempCorrection20CNeutral: ''
             }
           },
-          testEquipmentUsed: {
+          
+          // Test equipment from test_equipment
+          testEquipmentUsed: data.test_equipment || {
             megohmmeterName: '', megohmmeterSerial: '', megohmmeterAmpId: '',
             ctRatioTestSetName: '', ctRatioTestSetSerial: '', ctRatioTestSetAmpId: ''
           },
-          comments: '',
-          status: 'PASS',
-        }, data.report_data); // Assuming report data is stored in 'report_data' JSONB column
+          
+          // Comments
+          comments: data.comments || ''
+        };
 
         setFormData(loadedFormData);
         setIsEditing(false);
@@ -433,7 +438,29 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     const reportPayload = {
       job_id: jobId,
       user_id: user.id,
-      report_data: formData // Store the whole formData object
+      report_info: {
+        customerName: formData.customerName,
+        customerAddress: formData.customerAddress,
+        userName: formData.userName,
+        date: formData.date,
+        identifier: formData.identifier,
+        jobNumber: formData.jobNumber,
+        technicians: formData.technicians,
+        temperature: formData.temperature,
+        substation: formData.substation,
+        eqptLocation: formData.eqptLocation,
+        status: formData.status
+      },
+      nameplate_data: formData.deviceData,
+      visual_mechanical_inspection: formData.visualMechanicalInspection,
+      electrical_tests: {
+        ratioPolarity: formData.electricalTests.ratioPolarity,
+        primaryWindingInsulation: formData.electricalTests.primaryWindingInsulation,
+        secondaryWindingInsulation: formData.electricalTests.secondaryWindingInsulation,
+        ctIdentification: formData.ctIdentification
+      },
+      test_equipment: formData.testEquipmentUsed,
+      comments: formData.comments
     };
 
     try {

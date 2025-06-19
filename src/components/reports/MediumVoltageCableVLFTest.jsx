@@ -1542,7 +1542,7 @@ const MediumVoltageCableVLFTest = () => {
           <p className="mb-6">{error}</p>
           <div className="flex flex-col gap-3">
             <button
-              onClick={() => navigate(`/jobs/${jobId || ''}`)}
+              onClick={() => navigate(`/jobs/${jobId || ''}?tab=assets`)}
               className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md"
             >
               Return to Job

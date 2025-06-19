@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from 'react-hot-toast';
 import { ReportApprovalWorkflow } from '../reports/ReportApprovalWorkflow';
 import JobSurveys from './JobSurveys';
-import { SLAManagement } from './SLAManagement';
+
 import { JobNotifications } from './JobNotifications';
 
 interface Job {
@@ -60,6 +60,7 @@ interface Asset {
   file_url: string;
   created_at: string;
   template_type?: 'MTS' | 'ATS' | null;
+  status?: 'in_progress' | 'ready_for_review' | 'approved' | 'issue';
 }
 
 interface RelatedOpportunity {
@@ -114,6 +115,7 @@ export default function JobDetail() {
   const [jobAssets, setJobAssets] = useState<Asset[]>([]);
   const [filteredJobAssets, setFilteredJobAssets] = useState<Asset[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [assetStatusFilter, setAssetStatusFilter] = useState<'all' | 'in_progress' | 'approved' | 'issue'>('all');
   const [reportSearchQuery, setReportSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newAssetName, setNewAssetName] = useState('');
@@ -549,16 +551,31 @@ export default function JobDetail() {
   }
 
   useEffect(() => {
-    // Filter job assets when search query changes
-    if (searchQuery.trim() === '') {
-      setFilteredJobAssets(jobAssets);
-    } else {
-      const filtered = jobAssets.filter(asset => 
+    // Filter job assets when search query or status filter changes
+    let filtered = jobAssets;
+    
+    // Apply search filter
+    if (searchQuery.trim() !== '') {
+      filtered = filtered.filter(asset => 
         asset.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setFilteredJobAssets(filtered);
     }
-  }, [searchQuery, jobAssets]);
+    
+    // Apply status filter
+    if (assetStatusFilter === 'in_progress') {
+      // Include both in_progress and ready_for_review in the "In Progress" tab
+      filtered = filtered.filter(asset => 
+        !asset.status || asset.status === 'in_progress' || asset.status === 'ready_for_review'
+      );
+    } else if (assetStatusFilter === 'approved') {
+      filtered = filtered.filter(asset => asset.status === 'approved');
+    } else if (assetStatusFilter === 'issue') {
+      filtered = filtered.filter(asset => asset.status === 'issue');
+    }
+    // 'all' shows everything, so no additional filtering needed
+    
+    setFilteredJobAssets(filtered);
+  }, [searchQuery, jobAssets, assetStatusFilter]);
 
   // Filter report templates based on search
   const filteredReportTemplates = reportSearchQuery.trim() === '' 
@@ -609,7 +626,7 @@ export default function JobDetail() {
       const { data: assetsData, error: assetsError } = await supabase
         .schema('neta_ops')
         .from('assets')
-        .select('id, name, file_url, created_at')
+        .select('id, name, file_url, created_at, status')
         .in('id', assetIds);
 
       if (assetsError) {
@@ -739,6 +756,7 @@ export default function JobDetail() {
           name: newAssetName,
           file_url: publicUrl,
           created_at: new Date().toISOString(),
+          status: 'in_progress',
         })
         .select('id')
         .single();
@@ -840,6 +858,123 @@ export default function JobDetail() {
     }
   };
 
+  const handleStatusUpdate = async (assetId: string, newStatus: Asset['status']) => {
+    try {
+      const asset = jobAssets.find(a => a.id === assetId);
+      const currentStatus = asset?.status;
+
+      // If moving FROM "ready_for_review" back to "in_progress", remove from approval workflow
+      if (currentStatus === 'ready_for_review' && newStatus === 'in_progress') {
+        // Confirm with user before removing from approval workflow
+        const confirmed = confirm(
+          'This will remove the report from the approval workflow. ' +
+          'Are you sure you want to change the status back to "In Progress"?'
+        );
+        
+        if (!confirmed) {
+          return; // User cancelled, don't proceed with status change
+        }
+
+        // Import the report service functions
+        const { getReportByAssetId, deleteReport } = await import('@/lib/services/reportService');
+        
+        // Find the associated technical report
+        console.log('Looking for technical report for asset ID:', assetId);
+        const reportResult = await getReportByAssetId(assetId);
+        console.log('Report lookup result:', reportResult);
+        
+        if (reportResult.data) {
+          console.log('Found technical report, attempting to delete:', reportResult.data.id);
+          // Delete the technical report and its links
+          const deleteResult = await deleteReport(reportResult.data.id);
+          console.log('Delete result:', deleteResult);
+          
+          if (deleteResult.error) {
+            console.error('Failed to remove report from approval workflow:', deleteResult.error);
+            alert(`Warning: Failed to remove report from approval workflow: ${deleteResult.error && typeof deleteResult.error === 'object' && 'message' in deleteResult.error ? (deleteResult.error as any).message : 'Unknown error'}`);
+            // Don't throw error here - still allow status update to proceed
+          } else {
+            console.log('Successfully removed report from approval workflow');
+            alert('Report has been removed from the approval workflow.');
+          }
+        } else {
+          console.log('No technical report found for this asset');
+          if (reportResult.error) {
+            console.error('Error looking up technical report:', reportResult.error);
+          }
+        }
+      }
+      
+      // If moving to "ready_for_review", create a technical report entry
+      if (newStatus === 'ready_for_review') {
+        if (asset && asset.file_url.startsWith('report:')) {
+          // Create a technical report entry for approval workflow
+          const reportData = {
+            job_id: id!,
+            title: asset.name,
+            report_type: asset.template_type || 'Technical Report',
+            report_data: {
+              asset_id: assetId,
+              file_url: asset.file_url,
+              asset_name: asset.name
+            }
+          };
+
+          // Import the report service
+          const { createDraftReport, submitReportForApproval } = await import('@/lib/services/reportService');
+          
+          // Create draft and immediately submit for approval
+          const draftResult = await createDraftReport(reportData, user?.id || '');
+          if (draftResult.error) {
+            throw new Error(`Failed to create report entry: ${JSON.stringify(draftResult.error)}`);
+          }
+          
+          // Submit for approval
+          const submitResult = await submitReportForApproval(draftResult.data!.id, user?.id || '', 'Asset submitted for review');
+          if (submitResult.error) {
+            throw new Error(`Failed to submit for approval: ${JSON.stringify(submitResult.error)}`);
+          }
+
+          // Link asset to technical report
+          const { error: linkError } = await supabase
+            .schema('neta_ops')
+            .from('asset_reports')
+            .insert({
+              asset_id: assetId,
+              report_id: draftResult.data!.id
+            });
+
+          if (linkError) {
+            console.warn('Warning: Failed to link asset to report:', linkError);
+          }
+        }
+      }
+
+      const { error } = await supabase
+        .schema('neta_ops')
+        .from('assets')
+        .update({ status: newStatus })
+        .eq('id', assetId);
+
+      if (error) {
+        console.error('Error updating asset status:', error);
+        throw new Error(`Failed to update status: ${error.message}`);
+      }
+
+      // Update local state
+      setJobAssets(prev => prev.map(asset => 
+        asset.id === assetId ? { ...asset, status: newStatus } : asset
+      ));
+      setFilteredJobAssets(prev => prev.map(asset => 
+        asset.id === assetId ? { ...asset, status: newStatus } : asset
+      ));
+      
+    } catch (error) {
+      console.error('Error in handleStatusUpdate:', error);
+      alert(`Failed to update status: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   const getReportEditPath = (asset: Asset) => {
     const urlContent = asset.file_url.split(':/')[1];
     const pathSegments = urlContent.split('/');
@@ -926,12 +1061,13 @@ export default function JobDetail() {
       return `/jobs/${jobIdSegment}/${mappedReportName}`;
     } else if (reportIdFromUrl) {
       // For existing reports that have an ID in their URL structure.
-      return `/jobs/${jobIdSegment}/${mappedReportName}/${reportIdFromUrl}`;
+      // Add returnToAssets=true so that when users navigate back, they go to the assets tab
+      return `/jobs/${jobIdSegment}/${mappedReportName}/${reportIdFromUrl}?returnToAssets=true`;
     } else {
       // Fallback for existing assets that might have a malformed URL or if it's a template missed by the above check.
       // This primarily targets new reports from templates.
       console.warn('Asset is not a template and has no reportId in URL, defaulting to new report path:', asset.file_url);
-      return `/jobs/${jobIdSegment}/${mappedReportName}`;
+      return `/jobs/${jobIdSegment}/${mappedReportName}?returnToAssets=true`;
     }
   };
 
@@ -1101,6 +1237,236 @@ export default function JobDetail() {
     setShowDrawingViewer(true);
   };
 
+  const handleExportAllApprovedReports = async () => {
+    const approvedReports = jobAssets.filter(asset => 
+      asset.status === 'approved' && asset.file_url.startsWith('report:')
+    );
+    
+    if (approvedReports.length === 0) {
+      toast.error('No approved reports found to export');
+      return;
+    }
+
+    try {
+      toast.success(`Starting unified PDF export of ${approvedReports.length} approved reports...`);
+      
+      // Import jsPDF and html2canvas dynamically
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas')
+      ]);
+
+      // Create a single PDF document
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      let isFirstReport = true;
+
+      for (let i = 0; i < approvedReports.length; i++) {
+        const report = approvedReports[i];
+        
+        try {
+          toast.success(`Processing report ${i + 1} of ${approvedReports.length}: ${report.name}`);
+          
+          // Create a hidden iframe to load the report
+          const iframe = document.createElement('iframe');
+          iframe.style.position = 'absolute';
+          iframe.style.left = '-9999px';
+          iframe.style.width = '1200px';
+          iframe.style.height = '800px';
+          document.body.appendChild(iframe);
+          
+          // Load the report in the iframe
+          const reportPath = getReportEditPath(report);
+          iframe.src = reportPath;
+          
+          // Wait for iframe to load
+          await new Promise((resolve, reject) => {
+            iframe.onload = resolve;
+            iframe.onerror = reject;
+            setTimeout(reject, 10000); // 10 second timeout
+          });
+          
+          // Wait a bit more for React components to render
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Get the report content from iframe
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          if (!iframeDoc) {
+            throw new Error('Could not access iframe content');
+          }
+          
+          // Find the main report container - look for common report wrapper patterns
+          const reportContent = iframeDoc.querySelector('.report-container') || 
+                               iframeDoc.querySelector('.report-fullscreen-viewer') ||
+                               iframeDoc.querySelector('[class*="max-w-7xl"]') ||
+                               iframeDoc.querySelector('[class*="space-y-6"]') ||
+                               iframeDoc.querySelector('main') ||
+                               iframeDoc.querySelector('[role="main"]') ||
+                               iframeDoc.body;
+          
+          if (!reportContent) {
+            throw new Error('Could not find report content');
+          }
+          
+          // Apply print styles to ensure proper formatting
+          const printStyle = iframeDoc.createElement('style');
+          printStyle.textContent = `
+            @media print, screen {
+              * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              
+              body {
+                margin: 0 !important;
+                padding: 20px !important;
+                background: white !important;
+              }
+              
+              table {
+                border-collapse: collapse !important;
+                width: 100% !important;
+              }
+              
+              th, td {
+                border: 1px solid #ccc !important;
+                padding: 8px !important;
+                text-align: left !important;
+              }
+              
+              .bg-gray-50, .bg-gray-100 {
+                background-color: #f9fafb !important;
+              }
+              
+              .bg-white {
+                background-color: white !important;
+              }
+              
+              .border {
+                border: 1px solid #e5e7eb !important;
+              }
+              
+              .shadow, .shadow-md {
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+              }
+            }
+          `;
+          iframeDoc.head.appendChild(printStyle);
+          
+          // Wait for styles to apply
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Create canvas from the report content
+          const canvas = await html2canvas(reportContent as HTMLElement, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            width: 1200,
+            height: Math.max(reportContent.scrollHeight, 1000),
+            logging: false,
+            removeContainer: true,
+            foreignObjectRendering: true,
+            ignoreElements: (element) => {
+              // Skip buttons and interactive elements
+              return element.tagName === 'BUTTON' || 
+                     element.classList.contains('no-print') ||
+                     element.getAttribute('aria-label') === 'Close';
+            }
+          });
+          
+          // Calculate image dimensions for PDF
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          
+          // Add a new page for each report (except the first one)
+          if (!isFirstReport) {
+            pdf.addPage();
+          }
+          isFirstReport = false;
+          
+          // If the report fits on one page, add it directly
+          if (imgHeight <= pageHeight) {
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+          } else {
+            // If the report is taller than one page, split it across multiple pages
+            let heightLeft = imgHeight;
+            let position = 0;
+            let pageCount = 0;
+            
+            while (heightLeft >= 0) {
+              if (pageCount > 0) {
+                pdf.addPage();
+              }
+              
+              // Calculate the source Y position for this page
+              const sourceY = pageCount * pageHeight * (canvas.height / imgHeight);
+              const sourceHeight = Math.min(pageHeight * (canvas.height / imgHeight), canvas.height - sourceY);
+              
+              // Create a temporary canvas for this page section
+              const tempCanvas = document.createElement('canvas');
+              const tempCtx = tempCanvas.getContext('2d');
+              tempCanvas.width = canvas.width;
+              tempCanvas.height = sourceHeight;
+              
+              if (tempCtx) {
+                // Draw the portion of the original canvas onto the temp canvas
+                tempCtx.drawImage(
+                  canvas,
+                  0, sourceY, canvas.width, sourceHeight,
+                  0, 0, canvas.width, sourceHeight
+                );
+                
+                // Calculate the height for this page section
+                const pageImgHeight = (sourceHeight * imgWidth) / canvas.width;
+                
+                // Add this section to the PDF
+                pdf.addImage(tempCanvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, pageImgHeight);
+              }
+              
+              heightLeft -= pageHeight;
+              pageCount++;
+            }
+          }
+          
+          // Clean up iframe
+          document.body.removeChild(iframe);
+          
+          // Small delay between reports
+          if (i < approvedReports.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+          
+        } catch (error) {
+          console.error(`Error processing report ${report.name}:`, error);
+          toast.error(`Failed to process report: ${report.name}`);
+          
+          // Clean up iframe on error
+          const iframe = document.querySelector('iframe[src*="' + report.id + '"]');
+          if (iframe) {
+            document.body.removeChild(iframe);
+          }
+        }
+      }
+      
+      // Save the unified PDF with the requested naming format
+      const jobNumber = job?.job_number || id;
+      const fileName = `AMPReports:Job${jobNumber}.pdf`;
+      pdf.save(fileName);
+      
+      toast.success(`Successfully exported ${approvedReports.length} reports as unified PDF: ${fileName}`);
+    } catch (error) {
+      console.error('Error exporting reports:', error);
+      toast.error('Failed to export reports');
+    }
+  };
+
   // Add to useEffect to fetch contracts and drawings
   useEffect(() => {
     if (user && id) {
@@ -1220,16 +1586,6 @@ export default function JobDetail() {
                     }`}
                   >
                     Surveys
-                  </button>
-                  <button
-                    onClick={() => handleTabChange('sla')}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === 'sla'
-                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
-                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    SLA Tracking
                   </button>
                 </div>
               </div>
@@ -1707,6 +2063,66 @@ export default function JobDetail() {
                             />
                           </div>
                         </div>
+                        
+                        {/* Status filter tabs */}
+                        <div className="flex items-center justify-between mt-4">
+                          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+                            <button
+                              onClick={() => setAssetStatusFilter('all')}
+                              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                assetStatusFilter === 'all'
+                                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                              }`}
+                            >
+                              All ({jobAssets.length})
+                            </button>
+                            <button
+                              onClick={() => setAssetStatusFilter('in_progress')}
+                              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                assetStatusFilter === 'in_progress'
+                                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                              }`}
+                            >
+                              In Progress ({jobAssets.filter(asset => !asset.status || asset.status === 'in_progress' || asset.status === 'ready_for_review').length})
+                            </button>
+                            <button
+                              onClick={() => setAssetStatusFilter('approved')}
+                              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                assetStatusFilter === 'approved'
+                                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                              }`}
+                            >
+                              Approved ({jobAssets.filter(asset => asset.status === 'approved').length})
+                            </button>
+                            <button
+                              onClick={() => setAssetStatusFilter('issue')}
+                              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                assetStatusFilter === 'issue'
+                                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                              }`}
+                            >
+                              Issues ({jobAssets.filter(asset => asset.status === 'issue').length})
+                            </button>
+                          </div>
+                          
+                          {/* Export All Reports Button - Only show when on Approved tab */}
+                          {assetStatusFilter === 'approved' && (
+                            <Button
+                              onClick={handleExportAllApprovedReports}
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-2"
+                              disabled={jobAssets.filter(asset => asset.status === 'approved' && asset.file_url.startsWith('report:')).length === 0}
+                            >
+                              <Download className="h-4 w-4" />
+                              Export All Reports
+                            </Button>
+                          )}
+                        </div>
                       </CardHeader>
                       <CardContent>
                         {jobAssets.length === 0 ? (
@@ -1723,6 +2139,7 @@ export default function JobDetail() {
                               <TableRow>
                                 <TableHead>Asset Name</TableHead>
                                 <TableHead>Type</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead>Date Added</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
@@ -1736,6 +2153,31 @@ export default function JobDetail() {
                                       <Badge>{asset.template_type}</Badge>
                                     ) : (
                                       'Document'
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    {/* Show status - read-only for approved/issue, editable dropdown for others */}
+                                    {asset.status === 'approved' || asset.status === 'issue' ? (
+                                      // Read-only display for approved/issue status (for all users)
+                                      <span className={`px-2 py-1 rounded text-sm font-medium ${
+                                        asset.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                      }`}>
+                                        {asset.status === 'approved' ? 'Approved' : 'Issue'}
+                                      </span>
+                                    ) : (
+                                      // Editable dropdown for all users (only in_progress and ready_for_review)
+                                      <select
+                                        value={asset.status || 'in_progress'}
+                                        onChange={(e) => handleStatusUpdate(asset.id, e.target.value as Asset['status'])}
+                                        className={`px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                                          asset.status === 'ready_for_review' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                        }`}
+                                      >
+                                        <option value="in_progress">In Progress</option>
+                                        <option value="ready_for_review">Ready for Review</option>
+                                      </select>
                                     )}
                                   </TableCell>
                                   <TableCell>
@@ -1811,12 +2253,7 @@ export default function JobDetail() {
                   />
                 )}
                 
-                {activeTab === 'sla' && job && (
-                  <SLAManagement 
-                    jobId={job.id} 
-                    jobDetails={job}
-                  />
-                )}
+
               </div>
             </div>
           </div>

@@ -362,10 +362,10 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           }
         } catch (error) {
           console.error("Error loading report data:", error);
-          setIsEditMode(true); 
+          // Don't automatically set edit mode on load errors - let user click Edit if needed
         }
       } else {
-        setIsEditMode(true); 
+        setIsEditMode(true); // New report, start in edit mode (this is correct for new reports)
       }
       setLoading(false);
     };

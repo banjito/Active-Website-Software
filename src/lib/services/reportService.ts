@@ -55,7 +55,7 @@ export interface ReportSubmissionRequest {
  */
 export interface ReportApprovalRequest {
   report_id: string;
-  status: 'approved' | 'rejected' | 'in-review';
+  status: 'approved' | 'rejected';
   comments?: string;
   reviewer_id: string;
 }
@@ -79,12 +79,9 @@ export interface ReportFilters {
 export async function getAllReports(filters?: ReportFilters) {
   try {
     let query = supabase
-      .from(SCHEMAS.REPORTS)
-      .select(`
-        *,
-        submitted_by:submitted_by(id, raw_user_meta_data->name),
-        reviewed_by:reviewed_by(id, raw_user_meta_data->name)
-      `);
+      .schema('neta_ops')
+      .from('technical_reports')
+      .select('*');
 
     // Apply filters if provided
     if (filters) {
@@ -122,11 +119,22 @@ export async function getAllReports(filters?: ReportFilters) {
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      // If table doesn't exist, return empty array instead of throwing
+      if (error.code === 'PGRST106' || error.message?.includes('does not exist')) {
+        console.warn('Technical reports table does not exist yet. Please run the migration.');
+        return { data: [], error: null };
+      }
+      throw error;
+    }
     
     return { data, error: null };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error getting technical reports:', error);
+    // Return empty array for missing table instead of null
+    if (error.code === 'PGRST106' || error.message?.includes('does not exist')) {
+      return { data: [], error: null };
+    }
     return { data: null, error };
   }
 }
@@ -137,12 +145,9 @@ export async function getAllReports(filters?: ReportFilters) {
 export async function getReportById(id: string) {
   try {
     const { data, error } = await supabase
-      .from(SCHEMAS.REPORTS)
-      .select(`
-        *,
-        submitted_by:submitted_by(id, raw_user_meta_data->name),
-        reviewed_by:reviewed_by(id, raw_user_meta_data->name)
-      `)
+      .schema('neta_ops')
+      .from('technical_reports')
+      .select('*')
       .eq('id', id)
       .single();
 
@@ -185,7 +190,8 @@ export async function createDraftReport(reportData: ReportSubmissionRequest, use
     };
 
     const { data, error } = await supabase
-      .from(SCHEMAS.REPORTS)
+      .schema('neta_ops')
+      .from('technical_reports')
       .insert(newReport)
       .select()
       .single();
@@ -206,7 +212,8 @@ export async function updateDraftReport(id: string, reportData: Partial<ReportSu
   try {
     // First, get the current report to check status and update revision history
     const { data: currentReport, error: fetchError } = await supabase
-      .from(SCHEMAS.REPORTS)
+      .schema('neta_ops')
+      .from('technical_reports')
       .select('*')
       .eq('id', id)
       .single();
@@ -229,7 +236,8 @@ export async function updateDraftReport(id: string, reportData: Partial<ReportSu
     if (reportData.report_data) updates.report_data = reportData.report_data;
     
     const { data, error } = await supabase
-      .from(SCHEMAS.REPORTS)
+      .schema('neta_ops')
+      .from('technical_reports')
       .update(updates)
       .eq('id', id)
       .select()
@@ -254,7 +262,8 @@ export async function submitReportForApproval(id: string, userId: string, commen
     
     // First get current report
     const { data: currentReport, error: fetchError } = await supabase
-      .from(SCHEMAS.REPORTS)
+      .schema('neta_ops')
+      .from('technical_reports')
       .select('*')
       .eq('id', id)
       .single();
@@ -299,7 +308,8 @@ export async function submitReportForApproval(id: string, userId: string, commen
     };
     
     const { data, error } = await supabase
-      .from(SCHEMAS.REPORTS)
+      .schema('neta_ops')
+      .from('technical_reports')
       .update(updates)
       .eq('id', id)
       .select()
@@ -326,7 +336,8 @@ export async function reviewReport(approvalRequest: ReportApprovalRequest) {
     
     // First get current report
     const { data: currentReport, error: fetchError } = await supabase
-      .from(SCHEMAS.REPORTS)
+      .schema('neta_ops')
+      .from('technical_reports')
       .select('*')
       .eq('id', report_id)
       .single();
@@ -334,8 +345,8 @@ export async function reviewReport(approvalRequest: ReportApprovalRequest) {
     if (fetchError) throw fetchError;
     
     // Validate report state
-    if (currentReport.status !== 'submitted' && currentReport.status !== 'in-review') {
-      throw new Error('Only submitted or in-review reports can be reviewed');
+    if (currentReport.status !== 'submitted') {
+      throw new Error('Only submitted reports can be reviewed');
     }
     
     // Create new revision history entry
@@ -364,13 +375,54 @@ export async function reviewReport(approvalRequest: ReportApprovalRequest) {
     };
     
     const { data, error } = await supabase
-      .from(SCHEMAS.REPORTS)
+      .schema('neta_ops')
+      .from('technical_reports')
       .update(updates)
       .eq('id', report_id)
       .select()
       .single();
       
     if (error) throw error;
+
+    // Update linked asset status based on approval decision
+    try {
+      // Get linked assets for this report
+      const { data: assetLinks, error: linkError } = await supabase
+        .schema('neta_ops')
+        .from('asset_reports')
+        .select('asset_id')
+        .eq('report_id', report_id);
+
+      if (!linkError && assetLinks && assetLinks.length > 0) {
+        // Determine new asset status based on report status
+        let newAssetStatus: string;
+        switch (status) {
+          case 'approved':
+            newAssetStatus = 'approved';
+            break;
+          case 'rejected':
+            newAssetStatus = 'issue';
+            break;
+
+          default:
+            newAssetStatus = 'in_progress';
+        }
+
+        // Update all linked assets
+        const assetIds = assetLinks.map(link => link.asset_id);
+        const { error: updateError } = await supabase
+          .schema('neta_ops')
+          .from('assets')
+          .update({ status: newAssetStatus })
+          .in('id', assetIds);
+
+        if (updateError) {
+          console.warn('Warning: Failed to update linked asset status:', updateError);
+        }
+      }
+    } catch (assetError) {
+      console.warn('Warning: Error updating linked asset status:', assetError);
+    }
 
     // TODO: Send notification to report submitter about the review result
     
@@ -390,7 +442,8 @@ export async function archiveReport(id: string, userId: string, comments?: strin
     
     // First get current report
     const { data: currentReport, error: fetchError } = await supabase
-      .from(SCHEMAS.REPORTS)
+      .schema('neta_ops')
+      .from('technical_reports')
       .select('*')
       .eq('id', id)
       .single();
@@ -420,7 +473,8 @@ export async function archiveReport(id: string, userId: string, comments?: strin
     };
     
     const { data, error } = await supabase
-      .from(SCHEMAS.REPORTS)
+      .schema('neta_ops')
+      .from('technical_reports')
       .update(updates)
       .eq('id', id)
       .select()
@@ -441,7 +495,8 @@ export async function archiveReport(id: string, userId: string, comments?: strin
 export async function getReportApprovalMetrics(timeRange?: { startDate: string, endDate: string }) {
   try {
     let query = supabase
-      .from(SCHEMAS.REPORTS)
+      .schema('neta_ops')
+      .from('technical_reports')
       .select('status');
       
     if (timeRange) {
@@ -452,14 +507,32 @@ export async function getReportApprovalMetrics(timeRange?: { startDate: string, 
     
     const { data, error } = await query;
     
-    if (error) throw error;
+    if (error) {
+      // If table doesn't exist, return empty metrics
+      if (error.code === 'PGRST106' || error.message?.includes('does not exist')) {
+        console.warn('Technical reports table does not exist yet. Please run the migration.');
+        return { 
+          data: {
+            total: 0,
+            draft: 0,
+            submitted: 0,
+            inReview: 0,
+            approved: 0,
+            rejected: 0,
+            archived: 0
+          }, 
+          error: null 
+        };
+      }
+      throw error;
+    }
     
     // Count reports by status
     const metrics = {
       total: data.length,
       draft: data.filter(r => r.status === 'draft').length,
       submitted: data.filter(r => r.status === 'submitted').length,
-      inReview: data.filter(r => r.status === 'in-review').length,
+      inReview: 0, // Removed in-review status
       approved: data.filter(r => r.status === 'approved').length,
       rejected: data.filter(r => r.status === 'rejected').length,
       archived: data.filter(r => r.status === 'archived').length
@@ -489,12 +562,9 @@ export async function getReportApprovalMetrics(timeRange?: { startDate: string, 
 export async function getReportHistoryByJob(jobId: string) {
   try {
     const { data, error } = await supabase
-      .from(SCHEMAS.REPORTS)
-      .select(`
-        *,
-        submitted_by:submitted_by(id, raw_user_meta_data->name),
-        reviewed_by:reviewed_by(id, raw_user_meta_data->name)
-      `)
+      .schema('neta_ops')
+      .from('technical_reports')
+      .select('*')
       .eq('job_id', jobId)
       .order('submitted_at', { ascending: false });
 
@@ -513,11 +583,9 @@ export async function getReportHistoryByJob(jobId: string) {
 export async function getPendingReportsForReview() {
   try {
     const { data, error } = await supabase
-      .from(SCHEMAS.REPORTS)
-      .select(`
-        *,
-        submitted_by:submitted_by(id, raw_user_meta_data->name)
-      `)
+      .schema('neta_ops')
+      .from('technical_reports')
+      .select('*')
       .eq('status', 'submitted')
       .order('submitted_at', { ascending: true });
 
@@ -526,6 +594,140 @@ export async function getPendingReportsForReview() {
     return { data, error: null };
   } catch (error) {
     console.error('Error getting pending reports for review:', error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Delete a technical report and its associated links
+ */
+export async function deleteReport(reportId: string) {
+  try {
+    console.log('deleteReport: Attempting to delete report:', reportId);
+    
+    // First, try to delete the asset_reports link if the table exists
+    console.log('deleteReport: Deleting asset_reports link...');
+    try {
+      const { error: linkError } = await supabase
+        .schema('neta_ops')
+        .from('asset_reports')
+        .delete()
+        .eq('report_id', reportId);
+
+      if (linkError) {
+        if (linkError.code === 'PGRST106' || linkError.message?.includes('does not exist')) {
+          console.log('deleteReport: asset_reports table does not exist, skipping link deletion');
+        } else {
+          console.warn('Warning: Failed to delete asset-report link:', linkError);
+        }
+      } else {
+        console.log('deleteReport: Successfully deleted asset_reports link');
+      }
+    } catch (linkErr) {
+      console.log('deleteReport: Skipping asset_reports deletion due to table not existing');
+    }
+
+    // Then delete the technical report
+    console.log('deleteReport: Deleting technical report...');
+    const { error } = await supabase
+      .schema('neta_ops')
+      .from('technical_reports')
+      .delete()
+      .eq('id', reportId);
+
+    if (error) {
+      console.error('deleteReport: Failed to delete technical report:', error);
+      throw error;
+    }
+    
+    console.log('deleteReport: Successfully deleted technical report');
+    return { error: null };
+  } catch (error) {
+    console.error('Error deleting technical report:', error);
+    return { error };
+  }
+}
+
+/**
+ * Find technical report by asset ID
+ */
+export async function getReportByAssetId(assetId: string) {
+  try {
+    console.log('getReportByAssetId: Looking for asset_reports link for asset:', assetId);
+    
+    // First try to get the report ID from asset_reports table
+    const { data: linkData, error: linkError } = await supabase
+      .schema('neta_ops')
+      .from('asset_reports')
+      .select('report_id')
+      .eq('asset_id', assetId)
+      .single();
+
+    console.log('getReportByAssetId: Link query result:', { linkData, linkError });
+
+    if (linkError) {
+      // If asset_reports table doesn't exist (406 error), try alternative approach
+      if (linkError.code === 'PGRST106' || linkError.message?.includes('does not exist')) {
+        console.log('getReportByAssetId: asset_reports table does not exist, trying alternative approach');
+        return await getReportByAssetIdFallback(assetId);
+      }
+      
+      if (linkError.code === 'PGRST116') {
+        // No matching record found
+        console.log('getReportByAssetId: No asset_reports link found');
+        return { data: null, error: null };
+      }
+      throw linkError;
+    }
+
+    if (!linkData) {
+      console.log('getReportByAssetId: Link data is null');
+      return { data: null, error: null };
+    }
+
+    console.log('getReportByAssetId: Found report ID:', linkData.report_id);
+    // Then get the actual report
+    const reportResult = await getReportById(linkData.report_id);
+    console.log('getReportByAssetId: Final report result:', reportResult);
+    return reportResult;
+  } catch (error) {
+    console.error('Error getting report by asset ID:', error);
+    // Try fallback approach if main approach fails
+    console.log('getReportByAssetId: Trying fallback approach due to error');
+    return await getReportByAssetIdFallback(assetId);
+  }
+}
+
+/**
+ * Fallback method to find technical report by asset ID when asset_reports table doesn't exist
+ */
+async function getReportByAssetIdFallback(assetId: string) {
+  try {
+    console.log('getReportByAssetIdFallback: Searching technical_reports for asset:', assetId);
+    
+    // Search technical_reports table for reports that contain this asset_id in report_data
+    const { data: reports, error } = await supabase
+      .schema('neta_ops')
+      .from('technical_reports')
+      .select('*')
+      .contains('report_data', { asset_id: assetId });
+
+    if (error) {
+      console.error('getReportByAssetIdFallback: Error searching technical_reports:', error);
+      return { data: null, error };
+    }
+
+    if (!reports || reports.length === 0) {
+      console.log('getReportByAssetIdFallback: No technical report found for asset');
+      return { data: null, error: null };
+    }
+
+    // Return the most recent report if multiple found
+    const report = reports.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+    console.log('getReportByAssetIdFallback: Found technical report:', report.id);
+    return { data: report, error: null };
+  } catch (error) {
+    console.error('Error in fallback asset lookup:', error);
     return { data: null, error };
   }
 }
@@ -541,5 +743,7 @@ export const reportService = {
   archiveReport,
   getReportApprovalMetrics,
   getReportHistoryByJob,
-  getPendingReportsForReview
+  getPendingReportsForReview,
+  deleteReport,
+  getReportByAssetId
 }; 

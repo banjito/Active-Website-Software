@@ -19,8 +19,9 @@ export const navigateAfterSave = (
   const searchParams = new URLSearchParams(location.search);
   const returnToAssets = searchParams.get('returnToAssets') === 'true';
   
-  // Navigate back to job assets tab if returnToAssets is true, otherwise just to job details
-  if (returnToAssets) {
+  // Always navigate to the assets tab - this ensures users can see their newly saved reports
+  // regardless of how they got to the report page
+  if (returnToAssets || true) { // Always go to assets for now
     navigate(`/jobs/${jobId}?tab=assets`);
   } else {
     navigate(`/jobs/${jobId}`);

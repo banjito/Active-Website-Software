@@ -614,7 +614,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
         
         if (result.data) {
           const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
+            name: getAssetName(reportSlug, formData.identifier || formData.equipmentLocation || ''),
             file_url: `report:/jobs/${effectiveJobId}/medium-voltage-vlf-mts-report/${result.data.id}`,
             user_id: user.id
           };
@@ -650,7 +650,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
 
   const loadReport = async () => {
     if (!reportId) {
-      setIsEditMode(true);
+      setIsEditMode(true); // New report, start in edit mode (this is correct for new reports)
       setLoading(false);
       return;
     }
@@ -673,18 +673,18 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
         setIsEditMode(false);
       } else {
         toast.error('Loaded report seems incomplete.');
-        setIsEditMode(true);
+        // Don't automatically set edit mode for incomplete data - let user click Edit if needed
       }
     } catch (error) {
       toast.error(`Failed to load report: ${(error as Error).message}`);
-      setIsEditMode(true);
+      // Don't automatically set edit mode on load errors - let user click Edit if needed
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) return <div className="flex justify-center items-center h-screen"><div className="spinner mb-4"></div><p>Loading report...</p></div>;
-  if (error) return <div className="flex justify-center items-center h-screen"><div className="text-center max-w-md p-6 bg-white dark:bg-dark-150 rounded-lg shadow"><div className="text-red-500 text-xl mb-4">Error</div><p className="mb-6">{error}</p><button onClick={() => navigate(`/jobs/${jobId || ''}`)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md">Return to Job</button></div></div>;
+  if (error) return <div className="flex justify-center items-center h-screen"><div className="text-center max-w-md p-6 bg-white dark:bg-dark-150 rounded-lg shadow"><div className="text-red-500 text-xl mb-4">Error</div><p className="mb-6">{error}</p><button onClick={() => navigate(`/jobs/${jobId || ''}?tab=assets`)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md">Return to Job</button></div></div>;
 
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-8">

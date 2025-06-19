@@ -598,7 +598,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         if (error.code === 'PGRST116') {
           console.warn(`Report with ID ${reportId} not found or access denied.`);
           alert('Report not found or you do not have permission to view it.');
-          navigate(`/jobs/${jobId}/reports`);
+          navigate(`/jobs/${jobId}?tab=assets`);
           return;
         }
         throw error;
@@ -763,7 +763,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       if (!reportId && result.data) {
         // Create asset entry
         const assetData = {
-          name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
+          name: getAssetName(reportSlug, formData.identifier || formData.equipment || ''),
           file_url: `report:/jobs/${jobId}/metal-enclosed-busway/${result.data.id}`,
           user_id: user.id
         };
@@ -789,8 +789,8 @@ const MetalEnclosedBuswayReport: React.FC = () => {
 
         if (linkError) throw linkError;
 
-        // Navigate to the new report URL
-        navigate(`/jobs/${jobId}/metal-enclosed-busway/${result.data.id}`);
+        // Navigate back to job assets to see the newly created report
+        navigateAfterSave(navigate, jobId, location);
       }
 
       setIsEditing(false); // Exit editing mode

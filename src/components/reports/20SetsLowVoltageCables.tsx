@@ -513,12 +513,12 @@ const TwentySetsLowVoltageCableTestForm: React.FC = () => {
         setIsEditMode(false); // Existing report loaded, start in view mode
       } else {
         console.warn('No data found for report ID:', reportId);
-        setIsEditMode(true); // No data found, treat as new report
+        // Don't automatically set edit mode for missing data - let user click Edit if needed
       }
     } catch (error) {
       console.error('Error in loadReport:', error);
       setError(`Failed to load report: ${(error as Error).message}`);
-      setIsEditMode(true); // Error loading, start in edit mode
+      // Don't automatically set edit mode on load errors - let user click Edit if needed
     } finally {
       setLoading(false); // Finish loading after report fetch attempt
     }
@@ -532,7 +532,7 @@ const TwentySetsLowVoltageCableTestForm: React.FC = () => {
           loadReport();
         } else {
           setLoading(false); // No reportId, finish loading after job info
-          setIsEditMode(true); // New report, start in edit mode
+          setIsEditMode(true); // New report, start in edit mode (this is correct for new reports)
         }
       });
     } else if (!jobId) {

@@ -985,7 +985,7 @@ export default function LowVoltageSwitchReport() {
       if (error) throw error;
 
       toast.success('Report deleted successfully');
-      navigate(`/jobs/${jobId}/reports`);
+      navigate(`/jobs/${jobId}?tab=assets`);
     } catch (error: any) {
       console.error('Error deleting report:', error);
       toast.error(`Failed to delete report: ${error?.message || 'Unknown error'}`);

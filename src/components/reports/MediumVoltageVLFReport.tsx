@@ -1277,7 +1277,7 @@ const MediumVoltageVLFReport: React.FC = () => {
         if (result.data) {
           console.log('Creating asset entry for report:', result.data.id);
           const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
+            name: getAssetName(reportSlug, formData.identifier || formData.equipmentLocation || ''),
             file_url: `report:/jobs/${effectiveJobId}/medium-voltage-vlf/${result.data.id}`,
             user_id: user.id
           };
@@ -1397,7 +1397,7 @@ const MediumVoltageVLFReport: React.FC = () => {
           toast.error('Permission denied when loading the report.');
         } else if (error.code === 'PGRST116') { // Not found
           toast.error('Report not found.');
-          setIsEditMode(true); // Allow creating new if not found
+          // Don't set edit mode for missing reports - let user click Edit if needed
         } else {
           toast.error(`Failed to load report: ${error.message}`);
         }
@@ -1438,14 +1438,13 @@ const MediumVoltageVLFReport: React.FC = () => {
       } else {
         console.warn('Report data loaded but report_info is missing or empty.');
         toast.error('Loaded report seems incomplete.'); // Changed from toast.warn
-        setIsEditMode(true); // Allow editing if data is incomplete
+        // Don't automatically set edit mode - let user click Edit if needed
       }
 
     } catch (error) {
       console.error('loadReport: CATCH block - Error loading report:', error);
       // Error is already toasted inside the try block
-      // If loading fails, default to creating a new report
-      setIsEditMode(true);
+      // Don't automatically set edit mode on load errors - let user click Edit if needed
     } finally {
       console.log('loadReport: Finished, setting loading=false');
       setLoading(false);
@@ -1473,7 +1472,7 @@ const MediumVoltageVLFReport: React.FC = () => {
           <p className="mb-6">{error}</p>
           <div className="flex flex-col gap-3">
             <button
-              onClick={() => navigate(`/jobs/${jobId || ''}`)}
+              onClick={() => navigate(`/jobs/${jobId || ''}?tab=assets`)}
               className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md"
             >
               Return to Job

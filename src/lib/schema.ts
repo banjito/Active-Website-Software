@@ -6,7 +6,7 @@ export const SCHEMAS = {
   ASSETS: 'neta_ops.assets',
   JOB_ASSETS: 'neta_ops.job_assets',
   JOBS: 'neta_ops.jobs', 
-  REPORTS: 'neta_ops.reports',
+  REPORTS: 'neta_ops.technical_reports',
   
   // business schema tables
   ESTIMATES: 'business.estimates',

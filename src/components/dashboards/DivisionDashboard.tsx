@@ -36,6 +36,7 @@ import { supabase, isConnectionError, isSchemaError, tryWithFallbackSchema } fro
 import { useAuth } from '@/lib/AuthContext';
 import { NETAMetrics } from '@/components/metrics/NETAMetrics';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
+import { useMobileDetection } from '@/hooks/useMobileDetection';
 
 interface CountsData {
   customers: number;
@@ -97,6 +98,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isMobile, deviceType } = useMobileDetection();
   
   const [recentJobs, setRecentJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -448,7 +450,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
   const isNETADivision = ['north_alabama', 'tennessee', 'georgia', 'international'].includes(division);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 no-horizontal-scroll">
+    <div className={`w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 no-horizontal-scroll ${isMobile ? 'mobile-container mobile-force-small' : ''}`}>
       {error && (
         <div className="mb-4 p-3 sm:p-4 bg-red-100 text-red-800 rounded-md text-sm">
           Error loading dashboard: {error}

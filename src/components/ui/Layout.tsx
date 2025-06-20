@@ -30,6 +30,7 @@ import { SettingsPopup } from './SettingsPopup';
 import { ProfileView } from '../profile/ProfileView';
 import { AboutPopup } from './AboutPopup';
 import { ChatButton } from '../chat/ChatButton';
+import { useMobileDetection } from '../../hooks/useMobileDetection';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -40,6 +41,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { division } = useDivision();
   const location = useLocation();
   const navigate = useNavigate();
+  const { isMobile, deviceType } = useMobileDetection();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);

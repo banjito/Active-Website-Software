@@ -153,10 +153,16 @@
   }
 
   /* Mobile-specific font and sizing fixes */
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     /* Force smaller base font size on mobile */
     html {
-      font-size: 14px; /* Reduces all rem-based sizes */
+      font-size: 13px !important; /* Reduces all rem-based sizes */
+    }
+  }
+  
+  @media (max-width: 640px) {
+    html {
+      font-size: 12px !important; /* Even smaller for very small screens */
     }
 
     /* Mobile-specific text sizing overrides */
@@ -265,6 +271,31 @@
       font-size: 10px !important;
       padding: 2px 6px !important;
     }
+    
+    /* Force mobile layout adjustments */
+    .mobile-force-small {
+      transform: scale(0.85) !important;
+      transform-origin: top left !important;
+    }
+    
+    /* Mobile container adjustments */
+    .mobile-container {
+      max-width: 100vw !important;
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+    }
+    
+    /* Mobile card adjustments */
+    .mobile-card-auto {
+      padding: 8px !important;
+      margin: 4px 0 !important;
+    }
+    
+    /* Mobile text adjustments */
+    .mobile-text-auto {
+      font-size: 0.75rem !important;
+      line-height: 1.2 !important;
+    }
   }
 
   /* Tablet-specific adjustments (641px - 1023px) */
@@ -274,3 +305,4 @@
     }
   }
 }
+

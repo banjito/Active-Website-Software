@@ -20,7 +20,9 @@ import {
   LineChart,
   Heart,
   ClipboardList,
-  ArrowLeft
+  ArrowLeft,
+  Menu,
+  X
 } from "lucide-react"
 import { Button } from './Button';
 import { ThemeToggle } from '../theme/theme-toggle';
@@ -43,7 +45,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   console.log('Layout - Current division:', division);
   console.log('Layout - Current location:', location.pathname);
@@ -123,12 +127,21 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setIsProfileMenuOpen(false);
       }
+      // Close mobile sidebar when clicking outside
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        setIsMobileSidebarOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [profileMenuRef]);
+  }, [profileMenuRef, sidebarRef]);
+
+  // Close mobile sidebar when route changes
+  useEffect(() => {
+    setIsMobileSidebarOpen(false);
+  }, [location.pathname]);
 
   if (!user) return <div className="min-h-screen">{children}</div>;
 
@@ -170,7 +183,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     if (isHRPortal) {
       return (
         <>
-          <Link to="/hr">
+          <Link to="/hr" onClick={() => setIsMobileSidebarOpen(false)}>
             <Button
               variant="ghost"
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -181,7 +194,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               HR Dashboard
             </Button>
           </Link>
-          <Link to="/hr#employees">
+          <Link to="/hr#employees" onClick={() => setIsMobileSidebarOpen(false)}>
             <Button 
               variant="ghost" 
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -192,7 +205,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               Employee Records
             </Button>
           </Link>
-          <Link to="/hr#training">
+          <Link to="/hr#training" onClick={() => setIsMobileSidebarOpen(false)}>
             <Button 
               variant="ghost" 
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -203,7 +216,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               Training
             </Button>
           </Link>
-          <Link to="/hr#certifications">
+          <Link to="/hr#certifications" onClick={() => setIsMobileSidebarOpen(false)}>
             <Button 
               variant="ghost" 
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -214,7 +227,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               Certifications
             </Button>
           </Link>
-          <Link to="/hr#performance">
+          <Link to="/hr#performance" onClick={() => setIsMobileSidebarOpen(false)}>
             <Button 
               variant="ghost" 
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -225,7 +238,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               Performance Reviews
             </Button>
           </Link>
-          <Link to="/hr#benefits">
+          <Link to="/hr#benefits" onClick={() => setIsMobileSidebarOpen(false)}>
             <Button 
               variant="ghost" 
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -236,7 +249,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               Benefits
             </Button>
           </Link>
-          <Link to="/hr#policies">
+          <Link to="/hr#policies" onClick={() => setIsMobileSidebarOpen(false)}>
             <Button 
               variant="ghost" 
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -262,7 +275,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       // Default menu items for non-HR portals
       return (
         <>
-          <Link to={currentDashboardPath}>
+          <Link to={currentDashboardPath} onClick={() => setIsMobileSidebarOpen(false)}>
             <Button
               variant="ghost"
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -275,7 +288,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               {isOfficeAdmin || isOfficePortal ? 'Office Dashboard' : dashboardDisplayName}
             </Button>
           </Link>
-          <Link to={`${basePath}/customers`}>
+          <Link to={`${basePath}/customers`} onClick={() => setIsMobileSidebarOpen(false)}>
             <Button 
               variant="ghost" 
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -286,7 +299,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               Customers
             </Button>
           </Link>
-          <Link to={`${basePath}/contacts`}>
+          <Link to={`${basePath}/contacts`} onClick={() => setIsMobileSidebarOpen(false)}>
             <Button 
               variant="ghost" 
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -301,7 +314,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Only show Jobs and Scheduling tabs if NOT Office Admin and NOT in Office Portal */}
           {!hideJobsAndScheduling && (
             <>
-              <Link to={`${basePath}/jobs`}>
+              <Link to={`${basePath}/jobs`} onClick={() => setIsMobileSidebarOpen(false)}>
                 <Button 
                   variant="ghost" 
                   className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -312,7 +325,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   Jobs
                 </Button>
               </Link>
-              <Link to={`${basePath}/scheduling`}>
+              <Link to={`${basePath}/scheduling`} onClick={() => setIsMobileSidebarOpen(false)}>
                 <Button 
                   variant="ghost" 
                   className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
@@ -332,19 +345,41 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="flex min-h-screen bg-background dark:bg-dark-background">
+      {/* Mobile Overlay */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-64 flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200 flex">
-        <div className="flex h-20 items-center border-b border-black/10 dark:border-dark-200 px-6">
-          <Link to="/portal">
+      <div 
+        ref={sidebarRef}
+        className={`
+          fixed lg:static inset-y-0 left-0 z-50 w-64 flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200 flex
+          transform transition-transform duration-300 ease-in-out lg:transform-none
+          ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        <div className="flex h-16 lg:h-20 items-center border-b border-black/10 dark:border-dark-200 px-4 lg:px-6">
+          <Link to="/portal" onClick={() => setIsMobileSidebarOpen(false)}>
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
               alt="AMP Logo"
-              className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-10 lg:h-12 cursor-pointer hover:opacity-80 transition-opacity"
             />
           </Link>
+          {/* Mobile Close Button */}
+          <button
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="ml-auto lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-100"
+          >
+            <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          </button>
         </div>
-        <div className="flex flex-col gap-1 p-4 flex-grow">
-          <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500">DASHBOARD MENU</h2>
+        <div className="flex flex-col gap-1 p-3 lg:p-4 flex-grow overflow-y-auto">
+          <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500 mb-2">DASHBOARD MENU</h2>
           <div className="flex flex-col gap-1">
             {renderMenuItems()}
           </div>
@@ -352,49 +387,58 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 lg:ml-0">
         <header className="sticky top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-sm dark:bg-dark-150/75 dark:border-dark-200">
-          <div className="w-full px-4 sm:px-6 lg:px-8">
-            <div className="flex h-20 items-center justify-between">
-              <div className="flex items-center gap-4">
+          <div className="w-full px-3 sm:px-4 lg:px-8">
+            <div className="flex h-16 lg:h-20 items-center justify-between">
+              <div className="flex items-center gap-2 lg:gap-4 min-w-0 flex-1">
+                {/* Mobile Menu Button */}
+                <button
+                  onClick={() => setIsMobileSidebarOpen(true)}
+                  className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-100 flex-shrink-0"
+                >
+                  <Menu className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                </button>
+
                 {/* Back to Job button - only show on report pages */}
                 {isReportPage && jobId && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => navigate(`/jobs/${jobId}?tab=assets`)}
-                    className="flex items-center gap-2 text-[#f26722] hover:text-[#e55611] hover:bg-[#f26722]/10 dark:text-[#f26722] dark:hover:text-[#e55611] dark:hover:bg-[#f26722]/10"
+                    className="flex items-center gap-1 lg:gap-2 text-[#f26722] hover:text-[#e55611] hover:bg-[#f26722]/10 dark:text-[#f26722] dark:hover:text-[#e55611] dark:hover:bg-[#f26722]/10 text-xs lg:text-sm px-2 lg:px-3"
                   >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Job
+                    <ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4" />
+                    <span className="hidden sm:inline">Back to Job</span>
+                    <span className="sm:hidden">Back</span>
                   </Button>
                 )}
-                <h2 className="text-lg font-semibold">{formatDivisionName(division)}</h2>
+                <h2 className="text-sm lg:text-lg font-semibold truncate">{formatDivisionName(division)}</h2>
               </div>
-              <div className="flex items-center">
-                <div className="mr-2">
+              <div className="flex items-center gap-1 lg:gap-2">
+                <div className="hidden sm:block">
                   <ChatButton />
                 </div>
                 <div className="relative" ref={profileMenuRef}>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full w-10 h-10 hover:bg-gray-100 dark:hover:bg-dark-50 p-0 overflow-hidden"
+                    className="rounded-full w-8 h-8 lg:w-10 lg:h-10 hover:bg-gray-100 dark:hover:bg-dark-50 p-0 overflow-hidden"
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                   >
                     {user?.user_metadata?.profileImage ? (
                       <img
                         src={user.user_metadata.profileImage}
                         alt="Profile"
-                        className="h-10 w-10 rounded-full object-cover"
+                        className="h-8 w-8 lg:h-10 lg:w-10 rounded-full object-cover"
                       />
                     ) : (
-                      <UserIcon className="h-5 w-5 text-gray-600 dark:text-dark-400" />
+                      <UserIcon className="h-4 w-4 lg:h-5 lg:w-5 text-gray-600 dark:text-dark-400" />
                     )}
                   </Button>
 
                   {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-64 origin-top-right rounded-md bg-white dark:bg-dark-100 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                    <div className="absolute right-0 mt-2 w-56 lg:w-64 origin-top-right rounded-md bg-white dark:bg-dark-100 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                       <div className="py-1">
                         <div className="px-4 py-2 border-b border-gray-200 dark:border-dark-200">
                           <p className="text-sm font-medium text-gray-900 dark:text-dark-900">
@@ -460,7 +504,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           currentUser={user}
         />
 
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-y-auto">
           {children}
         </main>
       </div>

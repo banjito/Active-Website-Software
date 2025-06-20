@@ -448,90 +448,90 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
   const isNETADivision = ['north_alabama', 'tennessee', 'georgia', 'international'].includes(division);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 no-horizontal-scroll">
       {error && (
-        <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-md">
+        <div className="mb-4 p-3 sm:p-4 bg-red-100 text-red-800 rounded-md text-sm">
           Error loading dashboard: {error}
         </div>
       )}
       
       {/* Title section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-dark-900">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-dark-900">
           {divisionName} Dashboard
         </h1>
-        <p className="mt-2 text-gray-600 dark:text-dark-400">
+        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-dark-400">
           {`Welcome to the ${divisionName} portal`}
         </p>
       </div>
       
       {/* Quick Actions Section - Add for NETA Divisions */}
       {isNETADivision && (
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="hover:shadow-md hover:border-green-200 transition-all cursor-pointer">
-            <Link to={`/${division}/equipment`} className="block p-4">
+        <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="hover:shadow-md hover:border-green-200 transition-all cursor-pointer touch-target">
+            <Link to={`/${division}/equipment`} className="block p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-50 rounded-full mr-3">
-                    <Wrench className="h-5 w-5 text-green-500" />
+                <div className="flex items-center min-w-0 flex-1">
+                  <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
+                    <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Equipment Management</h3>
-                    <p className="text-sm text-gray-600">Track, assign, and maintain equipment</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">Equipment Management</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">Track, assign, and maintain equipment</p>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-gray-400" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2" />
               </div>
             </Link>
           </Card>
           
-          <Card className="hover:shadow-md hover:border-orange-200 transition-all cursor-pointer">
-            <Link to={`/${division}/maintenance`} className="block p-4">
+          <Card className="hover:shadow-md hover:border-orange-200 transition-all cursor-pointer touch-target">
+            <Link to={`/${division}/maintenance`} className="block p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="p-2 bg-orange-50 rounded-full mr-3">
-                    <Wrench className="h-5 w-5 text-orange-500" />
+                <div className="flex items-center min-w-0 flex-1">
+                  <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
+                    <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Equipment Maintenance</h3>
-                    <p className="text-sm text-gray-600">Schedule and track maintenance</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">Equipment Maintenance</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">Schedule and track maintenance</p>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-gray-400" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2" />
               </div>
             </Link>
           </Card>
           
-          <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
-            <Link to={`/${division}/profiles`} className="block p-4">
+          <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer touch-target">
+            <Link to={`/${division}/profiles`} className="block p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="p-2 bg-indigo-50 rounded-full mr-3">
-                    <Users className="h-5 w-5 text-indigo-500" />
+                <div className="flex items-center min-w-0 flex-1">
+                  <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
+                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Technician Profiles</h3>
-                    <p className="text-sm text-gray-600">Manage skills and certifications</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">Technician Profiles</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">Manage skills and certifications</p>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-gray-400" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2" />
               </div>
             </Link>
           </Card>
           
-          <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
-            <Link to={`/${division}/jobs`} className="block p-4">
+          <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer touch-target">
+            <Link to={`/${division}/jobs`} className="block p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="p-2 bg-amber-50 rounded-full mr-3">
-                    <BriefcaseIcon className="h-5 w-5 text-amber-500" />
+                <div className="flex items-center min-w-0 flex-1">
+                  <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
+                    <BriefcaseIcon className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Job Management</h3>
-                    <p className="text-sm text-gray-600">View and manage jobs</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">Job Management</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">View and manage jobs</p>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-gray-400" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2" />
               </div>
             </Link>
           </Card>
@@ -555,21 +555,21 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       {hasCustomMetricsComponent && !metricsComponent && <div className="mb-12"></div>}
 
       {/* 2. Core Business Metrics (Customers, Contacts, Documents) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 mt-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8 mt-8 sm:mt-12">
         {/* Customers Card */}
         <Card>
-          <div className="flex items-center justify-between p-6">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Customers</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts.customers}</p>
+          <div className="flex items-center justify-between p-4 sm:p-6">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Customers</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.customers}</p>
               <Link to={`/${division}/customers`}>
-                <Button variant="ghost" size="sm" className="mt-2 h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
+                <Button variant="ghost" size="sm" className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
                   View all customers
                   <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
             </div>
-            <div className="rounded-md bg-black/5 p-2">
+            <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <Building className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -577,18 +577,18 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 
         {/* Contacts Card */}
         <Card>
-          <div className="flex items-center justify-between p-6">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Contacts</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts.contacts}</p>
+          <div className="flex items-center justify-between p-4 sm:p-6">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Contacts</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.contacts}</p>
               <Link to={`/${division}/contacts`}>
-                <Button variant="ghost" size="sm" className="mt-2 h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
+                <Button variant="ghost" size="sm" className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
                   View all contacts
                   <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
             </div>
-            <div className="rounded-md bg-black/5 p-2">
+            <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <Users2 className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -597,18 +597,18 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         {/* Documents Card (conditionally shown) */}
         {showDocumentation && (
           <Card>
-            <div className="flex items-center justify-between p-6">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Documents</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts.documents}</p>
-                              <Link to={`/${division}/reports`}>
-                <Button variant="ghost" size="sm" className="mt-2 h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
-                  View all documents
-                  <ChevronRight className="ml-1 h-3 w-3" />
-                </Button>
-              </Link>
+            <div className="flex items-center justify-between p-4 sm:p-6">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Documents</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.documents}</p>
+                <Link to={`/${division}/reports`}>
+                  <Button variant="ghost" size="sm" className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
+                    View all documents
+                    <ChevronRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
               </div>
-              <div className="rounded-md bg-black/5 p-2">
+              <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
                 <FileText className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
               </div>
             </div>
@@ -617,39 +617,39 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       </div>
 
       {/* 3. Job Status Section */}
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Job Status</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">Job Status</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <Card>
-          <div className="flex items-center justify-between p-6">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Active Jobs</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts.activeJobs}</p>
+          <div className="flex items-center justify-between p-4 sm:p-6">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Active Jobs</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.activeJobs}</p>
             </div>
-            <div className="rounded-full bg-black/5 p-2">
+            <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <Clock className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
         </Card>
 
         <Card>
-          <div className="flex items-center justify-between p-6">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Upcoming Jobs</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts.upcomingJobs}</p>
+          <div className="flex items-center justify-between p-4 sm:p-6">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Upcoming Jobs</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.upcomingJobs}</p>
             </div>
-            <div className="rounded-full bg-black/5 p-2">
+            <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <CalendarIcon className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
         </Card>
 
         <Card>
-          <div className="flex items-center justify-between p-6">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Completed Jobs</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts.completedJobs}</p>
+          <div className="flex items-center justify-between p-4 sm:p-6">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Completed Jobs</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.completedJobs}</p>
             </div>
-            <div className="rounded-full bg-black/5 p-2">
+            <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <CheckCircle className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
             </div>
           </div>
@@ -657,16 +657,16 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       </div>
 
       {/* 4. Recent Activity Tabs */}
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
+      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">Recent Activity</h2>
       <Card>
         <Tabs defaultValue="jobs" className="w-full">
-          <TabsList className="flex justify-between bg-transparent space-x-0 border-b">
+          <TabsList className="flex justify-between bg-transparent space-x-0 border-b overflow-x-auto mobile-scroll">
             <TabsTrigger 
-              className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-16 text-base"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
               value="jobs"
             >
-              <div className="flex flex-col items-center justify-center">
-                <span>Recent Jobs</span>
+              <div className="flex flex-col items-center justify-center px-2">
+                <span className="truncate">Recent Jobs</span>
                 <span className="text-xs text-muted-foreground mt-1">
                   {recentJobs.length} jobs
                 </span>
@@ -675,11 +675,11 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             
             {showDocumentation && (
               <TabsTrigger 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-16 text-base"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="documents"
               >
-                <div className="flex flex-col items-center justify-center">
-                  <span>Recent Documents</span>
+                <div className="flex flex-col items-center justify-center px-2">
+                  <span className="truncate">Recent Documents</span>
                   <span className="text-xs text-muted-foreground mt-1">
                     {recentJobs.length} documents
                   </span>
@@ -689,11 +689,11 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             
             {showTechnicians && (
               <TabsTrigger 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-16 text-base"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="technicians"
               >
-                <div className="flex flex-col items-center justify-center">
-                  <span>Technicians</span>
+                <div className="flex flex-col items-center justify-center px-2">
+                  <span className="truncate">Technicians</span>
                   <span className="text-xs text-muted-foreground mt-1">
                     {technicians.length} technicians
                   </span>
@@ -703,11 +703,11 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 
             {showEquipment && (
               <TabsTrigger 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-16 text-base"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="equipment"
               >
-                <div className="flex flex-col items-center justify-center">
-                  <span>Equipment</span>
+                <div className="flex flex-col items-center justify-center px-2">
+                  <span className="truncate">Equipment</span>
                   <span className="text-xs text-muted-foreground mt-1">
                     {equipment.length} items
                   </span>
@@ -717,11 +717,11 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 
             {showCalibrations && (
               <TabsTrigger 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-16 text-base"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="calibrations"
               >
-                <div className="flex flex-col items-center justify-center">
-                  <span>Calibrations</span>
+                <div className="flex flex-col items-center justify-center px-2">
+                  <span className="truncate">Calibrations</span>
                   <span className="text-xs text-muted-foreground mt-1">
                     {calibrations.length} calibrations
                   </span>
@@ -730,46 +730,47 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             )}
           </TabsList>
           
-          <TabsContent value="jobs" className="p-6">
-            <div className="grid grid-cols-1 gap-4">
+          <TabsContent value="jobs" className="p-3 sm:p-6">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {recentJobs.length === 0 ? (
-                <div className="text-center py-6 text-gray-500">No recent jobs found</div>
+                <div className="text-center py-6 text-gray-500 text-sm sm:text-base">No recent jobs found</div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {recentJobs.map((job) => (
                       <Link to={`/jobs/${job.id}`} key={job.id}>
-                        <Card className="h-full hover:shadow-md transition-shadow duration-200 cursor-pointer">
-                          <div className="p-4 flex flex-col h-full">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="font-medium text-[#f26722] truncate">{job.title}</p>
-                                <p className="text-sm text-gray-600 mt-1">
+                        <Card className="h-full hover:shadow-md transition-shadow duration-200 cursor-pointer touch-target mobile-tap-highlight">
+                          <div className="p-3 sm:p-4 flex flex-col h-full">
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-[#f26722] truncate text-sm sm:text-base">{job.title}</p>
+                                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                                   {job.customers?.company_name || job.customers?.name || 'No customer'}
                                 </p>
                               </div>
                               <Badge 
                                 className={`
-                                  px-2 py-1 text-xs font-normal whitespace-nowrap
-                                  ${job.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
-                                  ${job.status === 'in-progress' || job.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : ''}
-                                  ${job.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
+                                  px-1.5 sm:px-2 py-1 text-xs font-normal whitespace-nowrap flex-shrink-0
+                                  ${job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : ''}
+                                  ${job.status === 'in-progress' || job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' : ''}
+                                  ${job.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' : ''}
                                 `}
                               >
                                 {job.status?.replace(/_/g, ' ')}
                               </Badge>
                             </div>
                             
-                            <div className="flex justify-between mt-auto pt-3 text-sm text-gray-500 border-t border-gray-100 mt-3">
-                              <div className="flex items-center">
-                                <BriefcaseIcon className="h-3.5 w-3.5 mr-1" />
-                                {job.job_number || 'No number'}
+                            <div className="flex justify-between mt-auto pt-2 sm:pt-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 mt-2 sm:mt-3">
+                              <div className="flex items-center min-w-0 flex-1">
+                                <BriefcaseIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
+                                <span className="truncate">{job.job_number || 'No number'}</span>
                               </div>
                               {/* Due date is optional */}
                               {job.due_date && (
-                                <div className="flex items-center">
-                                  <CalendarIcon className="h-3.5 w-3.5 mr-1" />
-                                  {formatDate(job.due_date)}
+                                <div className="flex items-center flex-shrink-0 ml-2">
+                                  <CalendarIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
+                                  <span className="hidden sm:inline">{formatDate(job.due_date)}</span>
+                                  <span className="sm:hidden">{new Date(job.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                                 </div>
                               )}
                             </div>
@@ -779,9 +780,9 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                     ))}
                   </div>
                   
-                  <div className="flex justify-center mt-6">
+                  <div className="flex justify-center mt-4 sm:mt-6">
                     <Link to={`/${division}/jobs`}>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="touch-target">
                         View all jobs
                         <ChevronRight className="ml-1 h-3 w-3" />
                       </Button>
@@ -793,15 +794,15 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
           </TabsContent>
           
           {showDocumentation && (
-            <TabsContent value="documents">
+            <TabsContent value="documents" className="p-3 sm:p-6">
               <Card>
-                <div className="p-4 text-center py-8">
-                  <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                  <h3 className="text-lg font-medium mb-2">Documentation Module</h3>
-                  <p className="text-gray-500 dark:text-gray-400 mb-4">
+                <div className="p-4 sm:p-6 text-center py-6 sm:py-8">
+                  <FileText className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-300 dark:text-gray-600" />
+                  <h3 className="text-base sm:text-lg font-medium mb-2">Documentation Module</h3>
+                  <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-4">
                     Access to division-specific documentation and files.
                   </p>
-                  <Button>Browse Documentation</Button>
+                  <Button className="touch-target">Browse Documentation</Button>
                 </div>
               </Card>
             </TabsContent>

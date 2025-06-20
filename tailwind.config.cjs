@@ -145,7 +145,9 @@ module.exports = {
       boxShadow: {
         'soft': '0 4px 20px rgba(0, 0, 0, 0.05)',
         'cozy': '0 8px 30px rgba(0, 0, 0, 0.08)',
-        'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.04)'
+        'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.04)',
+        'mobile': '0 2px 10px rgba(0, 0, 0, 0.1)',
+        'mobile-lg': '0 4px 20px rgba(0, 0, 0, 0.15)'
       },
       keyframes: {
         "accordion-down": {

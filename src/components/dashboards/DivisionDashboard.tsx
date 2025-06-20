@@ -457,30 +457,30 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       
       {/* Title section */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-dark-900">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-dark-900 mobile-dashboard-title">
           {divisionName} Dashboard
         </h1>
-        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-dark-400">
+        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-dark-400 mobile-text-sm">
           {`Welcome to the ${divisionName} portal`}
         </p>
       </div>
       
       {/* Quick Actions Section - Add for NETA Divisions */}
       {isNETADivision && (
-        <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mobile-gap-2">
           <Card className="hover:shadow-md hover:border-green-200 transition-all cursor-pointer touch-target">
-            <Link to={`/${division}/equipment`} className="block p-3 sm:p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center min-w-0 flex-1">
-                  <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
-                    <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+            <Link to={`/${division}/equipment`} className="block p-3 sm:p-4 mobile-card-sm">
+              <div className="flex items-center justify-between mobile-gap-2">
+                <div className="flex items-center min-w-0 flex-1 mobile-gap-2">
+                  <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0 mobile-p-2">
+                    <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mobile-icon-sm" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">Equipment Management</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">Track, assign, and maintain equipment</p>
+                    <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate mobile-card-title">Equipment Management</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mobile-text-xs">Track, assign, and maintain equipment</p>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2 mobile-icon-sm" />
               </div>
             </Link>
           </Card>
@@ -558,19 +558,19 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8 mt-8 sm:mt-12">
         {/* Customers Card */}
         <Card>
-          <div className="flex items-center justify-between p-4 sm:p-6">
+          <div className="flex items-center justify-between p-4 sm:p-6 mobile-card-sm">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Customers</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.customers}</p>
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70 mobile-text-xs">Customers</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mobile-text-lg">{counts.customers}</p>
               <Link to={`/${division}/customers`}>
-                <Button variant="ghost" size="sm" className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
+                <Button variant="ghost" size="sm" className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90 mobile-btn-sm mobile-text-xs">
                   View all customers
-                  <ChevronRight className="ml-1 h-3 w-3" />
+                  <ChevronRight className="ml-1 h-3 w-3 mobile-icon-xs" />
                 </Button>
               </Link>
             </div>
-            <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
-              <Building className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
+            <div className="rounded-md bg-black/5 dark:bg-white/5 p-2 flex-shrink-0 mobile-p-2">
+              <Building className="h-4 w-4 text-black dark:text-[#8D5F3D] mobile-icon-sm" />
             </div>
           </div>
         </Card>
@@ -617,7 +617,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       </div>
 
       {/* 3. Job Status Section */}
-      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">Job Status</h2>
+      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 mobile-section-title">Job Status</h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <Card>
           <div className="flex items-center justify-between p-4 sm:p-6">
@@ -657,7 +657,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       </div>
 
       {/* 4. Recent Activity Tabs */}
-      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">Recent Activity</h2>
+      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 mobile-section-title">Recent Activity</h2>
       <Card>
         <Tabs defaultValue="jobs" className="w-full">
           <TabsList className="flex justify-between bg-transparent space-x-0 border-b overflow-x-auto mobile-scroll">
@@ -740,17 +740,17 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                     {recentJobs.map((job) => (
                       <Link to={`/jobs/${job.id}`} key={job.id}>
                         <Card className="h-full hover:shadow-md transition-shadow duration-200 cursor-pointer touch-target mobile-tap-highlight">
-                          <div className="p-3 sm:p-4 flex flex-col h-full">
-                            <div className="flex justify-between items-start gap-2">
+                          <div className="p-3 sm:p-4 flex flex-col h-full mobile-card-compact">
+                            <div className="flex justify-between items-start gap-2 mobile-gap-1">
                               <div className="min-w-0 flex-1">
-                                <p className="font-medium text-[#f26722] truncate text-sm sm:text-base">{job.title}</p>
-                                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                                <p className="font-medium text-[#f26722] truncate text-sm sm:text-base mobile-card-title">{job.title}</p>
+                                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 mobile-text-xs">
                                   {job.customers?.company_name || job.customers?.name || 'No customer'}
                                 </p>
                               </div>
                               <Badge 
                                 className={`
-                                  px-1.5 sm:px-2 py-1 text-xs font-normal whitespace-nowrap flex-shrink-0
+                                  px-1.5 sm:px-2 py-1 text-xs font-normal whitespace-nowrap flex-shrink-0 mobile-badge
                                   ${job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : ''}
                                   ${job.status === 'in-progress' || job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' : ''}
                                   ${job.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' : ''}

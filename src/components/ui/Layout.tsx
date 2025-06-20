@@ -378,8 +378,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
-        <div className="flex flex-col gap-1 p-3 lg:p-4 flex-grow overflow-y-auto">
-          <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500 mb-2">DASHBOARD MENU</h2>
+        <div className="flex flex-col gap-1 p-3 lg:p-4 flex-grow overflow-y-auto mobile-space-y-1">
+          <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500 mb-2 mobile-nav-text">DASHBOARD MENU</h2>
           <div className="flex flex-col gap-1">
             {renderMenuItems()}
           </div>
@@ -413,7 +413,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <span className="sm:hidden">Back</span>
                   </Button>
                 )}
-                <h2 className="text-sm lg:text-lg font-semibold truncate">{formatDivisionName(division)}</h2>
+                <h2 className="text-sm lg:text-lg font-semibold truncate mobile-nav-text">{formatDivisionName(division)}</h2>
               </div>
               <div className="flex items-center gap-1 lg:gap-2">
                 <div className="hidden sm:block">

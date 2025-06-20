@@ -221,7 +221,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
   const [saving, setSaving] = useState<boolean>(false);
 
   const initialFormData: FormData = {
-    customer: '', address: '', user: user?.email || '', date: new Date().toISOString().split('T')[0],
+    customer: '', address: '', user: '', date: new Date().toISOString().split('T')[0],
     jobNumber: '', technicians: '', substation: '', eqptLocation: '', identifier: '', status: 'PASS',
     temperature: { fahrenheit: 68, celsius: 20, tcf: 1 }, humidity: 80,
     manufacturer: '', catalogNumber: '', serialNumber: '', type: '', manufacturingDate: '',

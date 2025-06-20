@@ -191,7 +191,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     customer: '',
     address: '',
-    user: user?.email || '',
+    user: '',
     date: new Date().toISOString().split('T')[0],
     identifier: '',
     jobNumber: '',
@@ -274,7 +274,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         jobNumber: jobData?.job_number || '',
         customer: customerName,
         address: customerAddress,
-        user: user?.email || prev.user || '',
+        user: prev.user || '',
       }));
     } catch (error) {
       console.error('Error loading job info:', error);

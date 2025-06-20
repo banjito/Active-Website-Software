@@ -202,7 +202,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
     // Initialize with default values based on FormData interface
     customer: '',
     address: '',
-    user: user?.email || '',
+    user: '',
     date: new Date().toISOString().split('T')[0],
     identifier: '',
     jobNumber: '',

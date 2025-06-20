@@ -282,7 +282,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
   const initialFormData: FormData = {
     customerName: '',
     customerAddress: '',
-    userName: user?.email || '',
+    userName: '',
     date: new Date().toISOString().split('T')[0],
     identifier: '',
     jobNumber: '',
@@ -477,7 +477,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
     if (!reportId) {
         // If it's a new report, reset specific fields that shouldn't carry over from a previous view
         const freshInitialData = _.cloneDeep(initialFormData);
-        freshInitialData.userName = user?.email || ''; // Keep user email
+        freshInitialData.userName = ''; // Don't auto-fill user email
         // Preserve job-related info if already loaded
         freshInitialData.customerName = formData.customerName;
         freshInitialData.customerAddress = formData.customerAddress;

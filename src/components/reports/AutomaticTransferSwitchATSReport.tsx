@@ -148,7 +148,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
   };
   
   const [formData, setFormData] = useState<FormData>(() => ({
-    customerName: '', customerLocation: '', userName: user?.email || '', date: new Date().toISOString().split('T')[0], identifier: '',
+    customerName: '', customerLocation: '', userName: '', date: new Date().toISOString().split('T')[0], identifier: '',
     jobNumber: '', technicians: '', substation: '', eqptLocation: '',
     temperature: { fahrenheit: 68, celsius: 20, tcf: 1, humidity: 50 },
     nameplateManufacturer: '', nameplateModelType: '', nameplateCatalogNo: '', nameplateSerialNumber: '',

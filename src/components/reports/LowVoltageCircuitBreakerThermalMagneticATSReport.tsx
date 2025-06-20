@@ -197,7 +197,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
     // Initialize with default values based on FormData interface
     customer: '',
     address: '',
-    user: user?.email || '',
+    user: '',
     date: new Date().toISOString().split('T')[0],
     identifier: '',
     jobNumber: '',
@@ -369,7 +369,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           // Job Info
           customer: data.report_info?.customer || prev.customer,
           address: data.report_info?.address || prev.address,
-          user: data.report_info?.user || user?.email || prev.user,
+          user: data.report_info?.user || prev.user,
           date: data.report_info?.date || prev.date,
           identifier: data.report_info?.identifier || prev.identifier,
           jobNumber: data.report_info?.jobNumber || prev.jobNumber,
@@ -1275,9 +1275,24 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                 <td className={tableStyles.cell}>
                   <input type="text" value={formData.primaryInjection.results.thermal.toleranceMax} onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMax', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                 </td>
-                <td className={`${tableStyles.cell} text-center`}>sec.</td>
-                <td className={`${tableStyles.cell} text-center`}>sec.</td>
-                <td className={`${tableStyles.cell} text-center`}>sec.</td>
+                <td className={tableStyles.cell}>
+                  <div className="flex items-center space-x-1">
+                    <input type="text" value={formData.primaryInjection.results.thermal.pole1.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole1.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center text-xs flex-1`} />
+                    <span className="text-xs">sec.</span>
+                  </div>
+                </td>
+                <td className={tableStyles.cell}>
+                  <div className="flex items-center space-x-1">
+                    <input type="text" value={formData.primaryInjection.results.thermal.pole2.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole2.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center text-xs flex-1`} />
+                    <span className="text-xs">sec.</span>
+                  </div>
+                </td>
+                <td className={tableStyles.cell}>
+                  <div className="flex items-center space-x-1">
+                    <input type="text" value={formData.primaryInjection.results.thermal.pole3.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole3.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center text-xs flex-1`} />
+                    <span className="text-xs">sec.</span>
+                  </div>
+                </td>
               </tr>
               {/* Magnetic Row */}
               <tr>
@@ -1295,9 +1310,24 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                  <td className={tableStyles.cell}>
                    <input type="text" value={calculateMagneticTolerance(calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%'), false)} readOnly className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`} />
                  </td>
-                <td className={`${tableStyles.cell} text-center`}>A</td>
-                 <td className={`${tableStyles.cell} text-center`}>A</td>
-                 <td className={`${tableStyles.cell} text-center`}>A</td>
+                <td className={tableStyles.cell}>
+                  <div className="flex items-center space-x-1">
+                    <input type="text" value={formData.primaryInjection.results.magnetic.pole1.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole1.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center text-xs flex-1`} />
+                    <span className="text-xs">A</span>
+                  </div>
+                </td>
+                <td className={tableStyles.cell}>
+                  <div className="flex items-center space-x-1">
+                    <input type="text" value={formData.primaryInjection.results.magnetic.pole2.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole2.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center text-xs flex-1`} />
+                    <span className="text-xs">A</span>
+                  </div>
+                </td>
+                <td className={tableStyles.cell}>
+                  <div className="flex items-center space-x-1">
+                    <input type="text" value={formData.primaryInjection.results.magnetic.pole3.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole3.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center text-xs flex-1`} />
+                    <span className="text-xs">A</span>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>

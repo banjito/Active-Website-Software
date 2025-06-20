@@ -183,7 +183,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
     return {
       customer: '', 
       address: '', 
-      user: user?.email || '', 
+      user: '', 
       date: new Date().toISOString().split('T')[0], 
       identifier: '',
       jobNumber: '', 

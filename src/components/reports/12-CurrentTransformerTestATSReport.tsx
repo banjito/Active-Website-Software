@@ -214,7 +214,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     customerName: '',
     customerAddress: '',
-    userName: user?.email || '',
+    userName: '',
     date: new Date().toISOString().split('T')[0],
     identifier: '',
     jobNumber: '',
@@ -328,7 +328,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           // Job information from report_info
           customerName: data.report_info?.customerName || '',
           customerAddress: data.report_info?.customerAddress || '',
-          userName: data.report_info?.userName || user?.email || '',
+          userName: data.report_info?.userName || '',
           date: data.report_info?.date || new Date().toISOString().split('T')[0],
           identifier: data.report_info?.identifier || '',
           jobNumber: data.report_info?.jobNumber || '',

@@ -570,7 +570,7 @@ export default function LowVoltageSwitchReport() {
   const [formData, setFormData] = useState<FormData>({
     customer: '',
     address: '',
-    user: user?.email || '',
+    user: '',
     date: new Date().toISOString().split('T')[0],
     jobNumber: '',
     technicians: '',

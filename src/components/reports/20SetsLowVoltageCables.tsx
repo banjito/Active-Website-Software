@@ -457,7 +457,7 @@ const TwentySetsLowVoltageCableTestForm: React.FC = () => {
           customer: customerName,
           address: customerAddress,
           // Set user from auth context if not loading an existing report yet
-          user: user?.email || '' 
+          user: '' 
         }));
       }
     } catch (error) {

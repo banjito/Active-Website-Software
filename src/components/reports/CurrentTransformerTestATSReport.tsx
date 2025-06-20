@@ -150,7 +150,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   const initialFormData: FormData = {
     customerName: '',
     customerAddress: '',
-    userName: user?.email || '',
+    userName: '',
     date: new Date().toISOString().split('T')[0],
     identifier: '',
     jobNumber: '',
@@ -253,7 +253,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           ...prev,
           customerName: data.report_info?.customerName || prev.customerName,
           customerAddress: data.report_info?.customerAddress || prev.customerAddress,
-          userName: data.report_info?.userName || user?.email || prev.userName,
+          userName: data.report_info?.userName || prev.userName,
           date: data.report_info?.date || prev.date,
           identifier: data.report_info?.identifier || '',
           jobNumber: data.report_info?.jobNumber || prev.jobNumber,

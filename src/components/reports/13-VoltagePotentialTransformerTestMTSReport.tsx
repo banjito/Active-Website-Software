@@ -221,7 +221,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     customerName: '',
     customerAddress: '',
-    userName: user?.email || '',
+    userName: '',
     date: new Date().toISOString().split('T')[0],
     identifier: '',
     jobNumber: '',

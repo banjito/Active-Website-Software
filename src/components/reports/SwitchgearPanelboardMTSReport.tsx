@@ -186,7 +186,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
   const reportName = getReportName(reportSlug);
 
   const [formData, setFormData] = useState<FormData>({
-    customerName: '', customerLocation: '', userName: user?.email || '', date: new Date().toISOString().split('T')[0],
+    customerName: '', customerLocation: '', userName: '', date: new Date().toISOString().split('T')[0],
     identifier: '', jobNumber: '', technicians: '',
     temperature: { fahrenheit: 68, celsius: 20, tcf: 1, humidity: 50 },
     substation: '', eqptLocation: '', status: 'PASS',

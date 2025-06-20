@@ -54,7 +54,7 @@ const equipmentEvaluationResultOptions = ["PASS", "FAIL", "LIMITED SERVICE"];
 // I²t Options
 const i2tOptions = ["", "Yes", "No", "N/A"];
 // Trip Unit Type options
-const tripUnitTypeOptions = ["", "LI", "LS", "LSI", "LSIG"];
+const tripUnitTypeOptions = ["", "On", "Off", "In", "Out", "N/A"];
 const tripTestingUnitsOptions = ["sec.", "cycles", "ms"]; // Example options
 
 interface FormData {
@@ -256,7 +256,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
     // Initialize with default values based on FormData interface
     customer: '',
     address: '',
-    user: user?.email || '',
+    user: '',
     date: new Date().toISOString().split('T')[0],
     identifier: '',
     jobNumber: '',
@@ -325,7 +325,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
     // Initialize Primary Injection with updated structure
     primaryInjection: {
       testedSettings: {
-        longTime: { setting: '', delay: '', i2t: 'N/A' },
+        longTime: { setting: '', delay: '', i2t: '2' },
         shortTime: { setting: '', delay: '', i2t: '' },
         instantaneous: { setting: '', delay: '', i2t: 'N/A' },
         groundFault: { setting: '', delay: '', i2t: '' }
@@ -496,7 +496,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           // Job Info (potentially from report_info)
           customer: data.report_info?.customer || prev.customer,
           address: data.report_info?.address || prev.address,
-          user: data.report_info?.user || user?.email || prev.user,
+          user: data.report_info?.user || prev.user,
           date: data.report_info?.date || prev.date,
           identifier: data.report_info?.identifier || prev.identifier,
           jobNumber: data.report_info?.jobNumber || prev.jobNumber,
@@ -1131,7 +1131,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                         ) : (
                           <input
                             type="text"
-                            value="N/A"
+                            value=""
                             readOnly
                             className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
                           />
@@ -1193,7 +1193,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                         ) : (
                           <input
                             type="text"
-                            value="N/A"
+                            value=""
                             readOnly
                             className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
                           />
@@ -1569,7 +1569,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                       ) : (
                         <input
                           type="text"
-                          value="N/A"
+                          value=""
                           readOnly
                           className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
                         />

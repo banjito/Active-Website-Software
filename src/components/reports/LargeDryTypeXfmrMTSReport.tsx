@@ -213,7 +213,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
       substation: '',
       eqptLocation: '',
       identifier: '',
-      userName: user?.email || '',
+      userName: '',
       temperature: {
         ambient: 68, 
         celsius: 20,
@@ -414,7 +414,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
           ...prev,
           ...data.report_data,
           visualInspection: initialVisualInspectionState,
-          userName: data.user_name || user?.email || '',
+          userName: data.user_name || '',
           status: data.report_data.status || 'PASS',
           // Ensure temperature object and its fields are correctly populated
           temperature: {

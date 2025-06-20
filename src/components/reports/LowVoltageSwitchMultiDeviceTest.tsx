@@ -203,7 +203,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
     date: new Date().toISOString().split('T')[0],
     inspector: '',
     description: '',
-    userName: user?.email || '',
+    userName: '',
     jobNumber: '',
     technicians: '',
     substation: '',

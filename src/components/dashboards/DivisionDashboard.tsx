@@ -536,22 +536,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             </Link>
           </Card>
           
-          <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
-            <Link to={`/${division}/reports`} className="block p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-50 rounded-full mr-3">
-                    <FileText className="h-5 w-5 text-green-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Report Management</h3>
-                    <p className="text-sm text-gray-600">Manage and approve reports</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-5 w-5 text-gray-400" />
-              </div>
-            </Link>
-          </Card>
+
         </div>
       )}
       
@@ -577,7 +562,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             <div>
               <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Customers</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts.customers}</p>
-              <Link to={`/customers?division=${division}`}>
+              <Link to={`/${division}/customers`}>
                 <Button variant="ghost" size="sm" className="mt-2 h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
                   View all customers
                   <ChevronRight className="ml-1 h-3 w-3" />
@@ -596,7 +581,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             <div>
               <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Contacts</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts.contacts}</p>
-              <Link to={`/contacts?division=${division}`}>
+              <Link to={`/${division}/contacts`}>
                 <Button variant="ghost" size="sm" className="mt-2 h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
                   View all contacts
                   <ChevronRight className="ml-1 h-3 w-3" />
@@ -616,12 +601,12 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
               <div>
                 <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Documents</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts.documents}</p>
-                <Link to={`/documents?division=${division}`}>
-                  <Button variant="ghost" size="sm" className="mt-2 h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
-                    View all documents
-                    <ChevronRight className="ml-1 h-3 w-3" />
-                  </Button>
-                </Link>
+                              <Link to={`/${division}/reports`}>
+                <Button variant="ghost" size="sm" className="mt-2 h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
+                  View all documents
+                  <ChevronRight className="ml-1 h-3 w-3" />
+                </Button>
+              </Link>
               </div>
               <div className="rounded-md bg-black/5 p-2">
                 <FileText className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
@@ -795,7 +780,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                   </div>
                   
                   <div className="flex justify-center mt-6">
-                    <Link to={`/jobs?division=${division}`}>
+                    <Link to={`/${division}/jobs`}>
                       <Button variant="outline" size="sm">
                         View all jobs
                         <ChevronRight className="ml-1 h-3 w-3" />

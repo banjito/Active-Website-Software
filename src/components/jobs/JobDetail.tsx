@@ -687,6 +687,42 @@ export default function JobDetail() {
     setActiveTab(tabValue);
   };
 
+  const handleEditSubmit = async () => {
+    if (!editFormData || !id) return;
+
+    try {
+      setError(null);
+      
+      const { error: updateError } = await supabase
+        .from('jobs')
+        .update({
+          title: editFormData.title,
+          description: editFormData.description,
+          status: editFormData.status,
+          priority: editFormData.priority,
+          start_date: editFormData.start_date,
+          due_date: editFormData.due_date,
+          budget: editFormData.budget,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (updateError) throw updateError;
+
+      // Update the local job state with the new data
+      setJob(prev => prev ? {...prev, ...editFormData} : null);
+      
+      // Exit edit mode
+      setIsEditing(false);
+      setEditFormData(null);
+      
+      alert('Job updated successfully!');
+    } catch (err) {
+      console.error('Error updating job:', err);
+      setError('Failed to update job. Please try again.');
+    }
+  };
+
   // Handle file change for asset upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -1512,7 +1548,10 @@ export default function JobDetail() {
           
           <Button 
             variant="outline"
-            onClick={() => setIsEditing(true)}
+            onClick={() => {
+              setIsEditing(true);
+              setEditFormData(job);
+            }}
             className="flex items-center gap-2"
           >
             <Pencil className="h-5 w-5 min-w-[20px] flex-shrink-0" />
@@ -1521,12 +1560,194 @@ export default function JobDetail() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-150 shadow">
+      <Card className="shadow-lg">
         {isEditing ? (
-          <div className="px-6 py-4">
-            <form onSubmit={(e) => { e.preventDefault(); /* handleEditSubmit(); */ }} className="space-y-4">
-              {/* Edit form fields would go here */}
-            </form>
+          <div>
+            {/* Edit Form Header */}
+            <CardHeader className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#f26722]/10 rounded-lg">
+                  <Edit3 className="h-5 w-5 text-[#f26722]" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl text-gray-900 dark:text-white">Edit Job Details</CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-400">
+                    Update job information and settings
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-8">
+              <form onSubmit={(e) => { e.preventDefault(); handleEditSubmit(); }} className="space-y-8">
+                {/* Basic Information Section */}
+                <div className="space-y-6">
+                  <div className="border-l-4 border-[#f26722] pl-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Basic Information</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Job title and description</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-6">
+                    <div>
+                      <label htmlFor="title" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Job Title *
+                      </label>
+                      <input
+                        type="text"
+                        id="title"
+                        value={editFormData?.title || ''}
+                        onChange={(e) => setEditFormData(prev => prev ? {...prev, title: e.target.value} : null)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722]/20 dark:bg-dark-100 dark:text-white transition-all duration-200"
+                        placeholder="Enter job title"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="description" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Description
+                      </label>
+                      <textarea
+                        id="description"
+                        rows={4}
+                        value={editFormData?.description || ''}
+                        onChange={(e) => setEditFormData(prev => prev ? {...prev, description: e.target.value} : null)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722]/20 dark:bg-dark-100 dark:text-white transition-all duration-200 resize-vertical"
+                        placeholder="Enter job description"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status and Priority Section */}
+                <div className="space-y-6">
+                  <div className="border-l-4 border-blue-500 pl-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Status & Priority</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Job status and priority level</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="status" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Status *
+                      </label>
+                      <select
+                        id="status"
+                        value={editFormData?.status || ''}
+                        onChange={(e) => setEditFormData(prev => prev ? {...prev, status: e.target.value} : null)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722]/20 dark:bg-dark-100 dark:text-white transition-all duration-200"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="on_hold">On Hold</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="priority" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Priority *
+                      </label>
+                      <select
+                        id="priority"
+                        value={editFormData?.priority || ''}
+                        onChange={(e) => setEditFormData(prev => prev ? {...prev, priority: e.target.value} : null)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722]/20 dark:bg-dark-100 dark:text-white transition-all duration-200"
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dates and Budget Section */}
+                <div className="space-y-6">
+                  <div className="border-l-4 border-green-500 pl-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Timeline & Budget</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Project dates and budget information</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label htmlFor="start_date" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <Calendar className="inline h-4 w-4 mr-1" />
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        id="start_date"
+                        value={editFormData?.start_date?.substring(0, 10) || ''}
+                        onChange={(e) => setEditFormData(prev => prev ? {...prev, start_date: e.target.value} : null)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722]/20 dark:bg-dark-100 dark:text-white transition-all duration-200"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="due_date" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <Clock className="inline h-4 w-4 mr-1" />
+                        Due Date
+                      </label>
+                      <input
+                        type="date"
+                        id="due_date"
+                        value={editFormData?.due_date?.substring(0, 10) || ''}
+                        onChange={(e) => setEditFormData(prev => prev ? {...prev, due_date: e.target.value} : null)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722]/20 dark:bg-dark-100 dark:text-white transition-all duration-200"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="budget" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <DollarSign className="inline h-4 w-4 mr-1" />
+                        Budget
+                      </label>
+                      <input
+                        type="number"
+                        id="budget"
+                        step="0.01"
+                        min="0"
+                        value={editFormData?.budget || ''}
+                        onChange={(e) => setEditFormData(prev => prev ? {...prev, budget: e.target.value ? Number(e.target.value) : null} : null)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722]/20 dark:bg-dark-100 dark:text-white transition-all duration-200"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </CardContent>
+
+            <CardFooter className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200 px-8 py-6">
+              <div className="flex justify-between items-center w-full">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  * Required fields
+                </p>
+                <div className="flex space-x-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditFormData(null);
+                    }}
+                    className="px-6 py-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-dark-100"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    onClick={handleEditSubmit}
+                    className="px-6 py-2 bg-[#f26722] hover:bg-[#f26722]/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </Button>
+                </div>
+              </div>
+            </CardFooter>
           </div>
         ) : (
           <div>
@@ -2258,7 +2479,7 @@ export default function JobDetail() {
             </div>
           </div>
         )}
-      </div>
+      </Card>
       
       {/* Upload file dialog */}
       <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>

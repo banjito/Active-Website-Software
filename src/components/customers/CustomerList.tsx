@@ -239,13 +239,13 @@ export default function CustomerList() {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Link
-            to="/sales-dashboard/customer-categories"
+          <button
+            onClick={navigateToCategoriesPage}
             className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600"
           >
             <Tag className="h-4 w-4 mr-2" />
             Categories
-          </Link>
+          </button>
           <button
             type="button"
             onClick={() => setFilterOpen(true)}

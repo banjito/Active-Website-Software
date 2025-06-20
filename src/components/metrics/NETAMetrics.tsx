@@ -17,23 +17,34 @@ interface NETAMetricsProps {
   division?: string | null;
 }
 
-// Function to format division names for display
-function formatDivisionForDisplay(division: string | null | undefined): string {
-  if (!division) return 'all NETA divisions';
+function formatDivisionForDisplay(division?: string | null): string {
+  if (!division) return 'All Divisions';
   
-  // Replace underscores with spaces and capitalize each word
-  const formatted = division
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  const divisionMap: { [key: string]: string } = {
+    'north_alabama': 'North Alabama Division',
+    'tennessee': 'Tennessee Division',
+    'georgia': 'Georgia Division',
+    'international': 'International Division'
+  };
   
-  return `the ${formatted} division`;
+  return divisionMap[division] || division;
 }
 
 export function NETAMetrics({ division }: NETAMetricsProps) {
   const [loading, setLoading] = useState(true);
   const [divisionData, setDivisionData] = useState<any[]>([]);
   const [reportApprovalData, setReportApprovalData] = useState<MetricData[]>([]);
+  const [reportApprovalMetrics, setReportApprovalMetrics] = useState<{
+    approved: number;
+    pending: number;
+    rejected: number;
+    total: number;
+  }>({
+    approved: 0,
+    pending: 0,
+    rejected: 0,
+    total: 0
+  });
   const [vehiclesAvailable, setVehiclesAvailable] = useState<number>(0);
   const [equipmentAvailable, setEquipmentAvailable] = useState<number>(0);
   const [technicianCount, setTechnicianCount] = useState<number>(0);
@@ -47,13 +58,20 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
         const divisionsMetrics = await fetchNETADivisionMetrics();
         setDivisionData(divisionsMetrics);
 
-        // Fetch report approval data
-        const reportApproval = await fetchReportApprovalMetrics();
-        setReportApprovalData([
-          { name: 'Approved', value: reportApproval.approved },
-          { name: 'Pending', value: reportApproval.pending },
-          { name: 'Rejected', value: reportApproval.rejected }
-        ]);
+        // Fetch report approval data for the specific division
+        const reportApproval = await fetchReportApprovalMetrics(division || undefined);
+        setReportApprovalMetrics(reportApproval);
+        
+        // Set chart data - only show if there are reports
+        if (reportApproval.total > 0) {
+          setReportApprovalData([
+            { name: 'Approved', value: reportApproval.approved },
+            { name: 'Pending', value: reportApproval.pending },
+            { name: 'Rejected', value: reportApproval.rejected }
+          ]);
+        } else {
+          setReportApprovalData([]);
+        }
 
         // Fetch single metrics
         const vehicles = await fetchVehicleAvailabilityMetrics(division || undefined);
@@ -126,11 +144,11 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                 </div>
               </Card>
 
-              {/* Field Technicians */}
+              {/* Technicians */}
               <Card>
                 <div className="flex items-center justify-between p-6">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Field Technicians</p>
+                    <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Technicians</p>
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
@@ -144,7 +162,6 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
               </Card>
             </div>
 
-            {/* Report Approval */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -159,15 +176,39 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                   <div className="flex justify-center py-8">
                     <Skeleton className="h-40 w-full" />
                   </div>
+                ) : reportApprovalMetrics.total === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 dark:text-gray-400">No reports found for this division</p>
+                  </div>
                 ) : (
-                  <div className="h-[200px]">
-                    <MetricsChart 
-                      type="pie"
-                      data={reportApprovalData}
-                      title="Report Status"
-                      colors={['#4ade80', '#facc15', '#f87171']}
-                      height={200}
-                    />
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-4 gap-4 text-center">
+                      <div>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportApprovalMetrics.total}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Total Reports</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-green-600">{reportApprovalMetrics.approved}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Approved</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-yellow-600">{reportApprovalMetrics.pending}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-red-600">{reportApprovalMetrics.rejected}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Rejected</p>
+                      </div>
+                    </div>
+                    <div className="h-[200px]">
+                      <MetricsChart 
+                        type="pie"
+                        data={reportApprovalData}
+                        title="Report Status Distribution"
+                        colors={['#4ade80', '#facc15', '#f87171']}
+                        height={200}
+                      />
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -218,15 +259,51 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                   <div className="flex justify-center py-8">
                     <Skeleton className="h-[300px] w-full" />
                   </div>
+                ) : reportApprovalMetrics.total === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 dark:text-gray-400">No reports found for this division</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                      Reports will appear here once they are submitted for approval
+                    </p>
+                  </div>
                 ) : (
-                  <div className="h-[350px]">
-                    <MetricsChart 
-                      type="bar"
-                      data={reportApprovalData}
-                      title="Report Status"
-                      colors={['#4ade80', '#facc15', '#f87171']}
-                      height={350}
-                    />
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{reportApprovalMetrics.total}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Total Reports</p>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <p className="text-3xl font-bold text-green-600">{reportApprovalMetrics.approved}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Approved</p>
+                        <p className="text-xs text-green-600">
+                          {reportApprovalMetrics.total > 0 ? Math.round((reportApprovalMetrics.approved / reportApprovalMetrics.total) * 100) : 0}%
+                        </p>
+                      </div>
+                      <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                        <p className="text-3xl font-bold text-yellow-600">{reportApprovalMetrics.pending}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
+                        <p className="text-xs text-yellow-600">
+                          {reportApprovalMetrics.total > 0 ? Math.round((reportApprovalMetrics.pending / reportApprovalMetrics.total) * 100) : 0}%
+                        </p>
+                      </div>
+                      <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                        <p className="text-3xl font-bold text-red-600">{reportApprovalMetrics.rejected}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Rejected</p>
+                        <p className="text-xs text-red-600">
+                          {reportApprovalMetrics.total > 0 ? Math.round((reportApprovalMetrics.rejected / reportApprovalMetrics.total) * 100) : 0}%
+                        </p>
+                      </div>
+                    </div>
+                    <div className="h-[350px]">
+                      <MetricsChart 
+                        type="bar"
+                        data={reportApprovalData}
+                        title="Report Status"
+                        colors={['#4ade80', '#facc15', '#f87171']}
+                        height={350}
+                      />
+                    </div>
                   </div>
                 )}
               </CardContent>

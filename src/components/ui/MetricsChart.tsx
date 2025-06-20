@@ -40,6 +40,28 @@ export const MetricsChart: React.FC<MetricsChartProps> = ({
     return <div className="flex justify-center items-center h-[200px] text-gray-400">No data available</div>;
   }
 
+  // Custom label function for pie chart with better formatting
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="#374151" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize="12"
+        fontWeight="500"
+      >
+        {`${name}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
   // Render different chart types based on props
   switch (type) {
     case 'bar':
@@ -63,14 +85,14 @@ export const MetricsChart: React.FC<MetricsChartProps> = ({
     case 'pie':
       return (
         <ResponsiveContainer width="100%" height={height}>
-          <PieChart>
+          <PieChart margin={{ top: 20, right: 60, bottom: 20, left: 60 }}>
             <Pie
               data={data as MetricData[]}
               cx="50%"
               cy="50%"
-              labelLine={true}
-              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-              outerRadius={80}
+              labelLine={false}
+              label={renderCustomizedLabel}
+              outerRadius={Math.min(height * 0.25, 100)}
               fill="#8884d8"
               dataKey="value"
             >
@@ -78,8 +100,24 @@ export const MetricsChart: React.FC<MetricsChartProps> = ({
                 <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(value) => `${value}`} />
-            <Legend />
+            <Tooltip 
+              formatter={(value, name) => [`${value}`, name]}
+              contentStyle={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                fontSize: '12px'
+              }}
+            />
+            <Legend 
+              verticalAlign="bottom" 
+              height={36}
+              iconType="circle"
+              wrapperStyle={{
+                fontSize: '12px',
+                paddingTop: '10px'
+              }}
+            />
           </PieChart>
         </ResponsiveContainer>
       );

@@ -13,6 +13,7 @@ export interface ReportApprovalMetrics {
   approved: number;
   pending: number;
   rejected: number;
+  total: number;
 }
 
 // Division mapping for display names
@@ -57,22 +58,93 @@ export async function fetchNETADivisionMetrics(): Promise<DivisionMetrics[]> {
 }
 
 /**
- * Fetch report approval metrics
+ * Fetch report approval metrics for a specific division or all divisions
  */
-export async function fetchReportApprovalMetrics(): Promise<ReportApprovalMetrics> {
+export async function fetchReportApprovalMetrics(division?: string): Promise<ReportApprovalMetrics> {
   try {
-    // In a real implementation, this would query neta_ops schema tables
-    // that track report submissions and approvals
+    // Get all jobs for the division (or all divisions) to link reports to divisions
+    let jobsQuery = supabase
+      .schema('neta_ops')
+      .from('jobs')
+      .select('id, division');
     
-    // For demo purposes, we're returning sample data
+    if (division) {
+      jobsQuery = jobsQuery.eq('division', division);
+    }
+    
+    const { data: jobs, error: jobsError } = await jobsQuery;
+    
+    if (jobsError) {
+      console.warn('Error fetching jobs for report metrics:', jobsError);
+      // Return default values if jobs table is not accessible
+      return {
+        approved: 0,
+        pending: 0,
+        rejected: 0,
+        total: 0
+      };
+    }
+    
+    if (!jobs || jobs.length === 0) {
+      return {
+        approved: 0,
+        pending: 0,
+        rejected: 0,
+        total: 0
+      };
+    }
+    
+    // Get job IDs for the division
+    const jobIds = jobs.map(job => job.id);
+    
+    // Fetch technical reports for these jobs
+    const { data: reports, error: reportsError } = await supabase
+      .schema('neta_ops')
+      .from('technical_reports')
+      .select('status')
+      .in('job_id', jobIds);
+    
+    if (reportsError) {
+      console.warn('Error fetching technical reports:', reportsError);
+      // Return default values if technical_reports table doesn't exist yet
+      return {
+        approved: 0,
+        pending: 0,
+        rejected: 0,
+        total: 0
+      };
+    }
+    
+    if (!reports || reports.length === 0) {
+      return {
+        approved: 0,
+        pending: 0,
+        rejected: 0,
+        total: 0
+      };
+    }
+    
+    // Count reports by status
+    const approved = reports.filter(r => r.status === 'approved').length;
+    const pending = reports.filter(r => r.status === 'submitted').length; // 'submitted' means pending approval
+    const rejected = reports.filter(r => r.status === 'rejected').length;
+    const total = reports.length;
+    
     return {
-      approved: 76,  // 76% approved
-      pending: 20,   // 20% pending
-      rejected: 4    // 4% rejected
+      approved,
+      pending,
+      rejected,
+      total
     };
   } catch (error) {
     console.error('Error fetching report approval metrics:', error);
-    throw error;
+    // Return fallback data for demo purposes
+    return {
+      approved: 0,
+      pending: 0,
+      rejected: 0,
+      total: 0
+    };
   }
 }
 

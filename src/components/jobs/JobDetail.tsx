@@ -12,9 +12,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Input } from "../ui/Input";
 import { Badge } from "../ui/Badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/Dialog";
-import { toast } from 'react-hot-toast';
+import { toast } from '@/components/ui/toast';
 import { ReportApprovalWorkflow } from '../reports/ReportApprovalWorkflow';
 import JobSurveys from './JobSurveys';
+import { pdfExportService } from '../../services/pdfExportService';
 
 import { JobNotifications } from './JobNotifications';
 
@@ -161,6 +162,9 @@ export default function JobDetail() {
   const [drawingFile, setDrawingFile] = useState<File | null>(null);
   const [isContractUploading, setIsContractUploading] = useState(false);
   const [isDrawingUploading, setIsDrawingUploading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportStatus, setExportStatus] = useState('');
   
   // Default assets that are always available
   const defaultAssets: Asset[] = [
@@ -716,7 +720,7 @@ export default function JobDetail() {
       setIsEditing(false);
       setEditFormData(null);
       
-      alert('Job updated successfully!');
+      toast({ title: 'Success', description: 'Job updated successfully!', variant: 'success' });
     } catch (err) {
       console.error('Error updating job:', err);
       setError('Failed to update job. Please try again.');
@@ -733,7 +737,7 @@ export default function JobDetail() {
   // Handle file upload for adding a new asset
   const handleFileUpload = async () => {
     if (!id) {
-      toast.error('Job ID is missing');
+      toast({ title: 'Error', description: 'Job ID is missing', variant: 'destructive' });
       return;
     }
 
@@ -749,7 +753,7 @@ export default function JobDetail() {
 
     // For document uploads
     if (!selectedFile || !newAssetName.trim()) {
-      toast.error('Please provide a file and asset name');
+      toast({ title: 'Error', description: 'Please provide a file and asset name', variant: 'destructive' });
       return;
     }
 
@@ -826,10 +830,10 @@ export default function JobDetail() {
       setSelectedAssetType('document');
       setIsDropdownOpen(false);
       setShowUploadDialog(false);
-      toast.success('Asset added successfully');
+      toast({ title: 'Success', description: 'Asset added successfully', variant: 'success' });
     } catch (error) {
       console.error('Error uploading asset:', error);
-      toast.error('Failed to upload asset. Please try again.');
+      toast({ title: 'Error', description: 'Failed to upload asset. Please try again.', variant: 'destructive' });
     } finally {
       setIsUploading(false);
       setTimeout(() => setUploadProgress(0), 500); // Reset after a delay to show completion
@@ -839,7 +843,7 @@ export default function JobDetail() {
   // Handle delete asset function
   const handleDeleteAsset = async () => {
     if (!assetToDelete || !id) {
-      toast.error('Unable to delete asset');
+      toast({ title: 'Error', description: 'Unable to delete asset', variant: 'destructive' });
       return;
     }
 
@@ -887,10 +891,10 @@ export default function JobDetail() {
       // 4. Reset state and notify user
       setAssetToDelete(null);
       setShowDeleteConfirm(false);
-      toast.success('Asset removed successfully');
+      toast({ title: 'Success', description: 'Asset removed successfully', variant: 'success' });
     } catch (error) {
       console.error('Error deleting asset:', error);
-      toast.error('Failed to delete asset. Please try again.');
+      toast({ title: 'Error', description: 'Failed to delete asset. Please try again.', variant: 'destructive' });
     }
   };
 
@@ -1182,10 +1186,10 @@ export default function JobDetail() {
       setShowContractUpload(false);
       await fetchContracts();
       
-      toast.success('Contract uploaded successfully!');
+      toast({ title: 'Success', description: 'Contract uploaded successfully!', variant: 'success' });
     } catch (error) {
       console.error('Error uploading contract:', error);
-      toast.error('Failed to upload contract');
+      toast({ title: 'Error', description: 'Failed to upload contract', variant: 'destructive' });
     } finally {
       setIsContractUploading(false);
     }
@@ -1259,10 +1263,10 @@ export default function JobDetail() {
       setShowDrawingUpload(false);
       await fetchOneLineDrawings();
       
-      toast.success('Drawing uploaded successfully!');
+      toast({ title: 'Success', description: 'Drawing uploaded successfully!', variant: 'success' });
     } catch (error) {
       console.error('Error uploading drawing:', error);
-      toast.error('Failed to upload drawing');
+      toast({ title: 'Error', description: 'Failed to upload drawing', variant: 'destructive' });
     } finally {
       setIsDrawingUploading(false);
     }
@@ -1274,232 +1278,54 @@ export default function JobDetail() {
   };
 
   const handleExportAllApprovedReports = async () => {
-    const approvedReports = jobAssets.filter(asset => 
-      asset.status === 'approved' && asset.file_url.startsWith('report:')
-    );
-    
-    if (approvedReports.length === 0) {
-      toast.error('No approved reports found to export');
+    // Prevent multiple simultaneous exports
+    if (isExporting) {
       return;
     }
 
-    try {
-      toast.success(`Starting unified PDF export of ${approvedReports.length} approved reports...`);
-      
-      // Import jsPDF and html2canvas dynamically
-      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-        import('jspdf'),
-        import('html2canvas')
-      ]);
+    setIsExporting(true);
+    setExportProgress(0);
+    setExportStatus('');
 
-      // Create a single PDF document
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
+    try {
+      const approvedAssets = jobAssets.filter(asset => asset.status === 'approved' && asset.file_url?.startsWith('report:'));
+      
+      if (approvedAssets.length === 0) {
+        toast({
+          title: "No Approved Reports",
+          description: "There are no approved reports to export.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const jobTitle = job?.title || 'Job_Reports';
+
+      await pdfExportService.exportApprovedReportsToPDF(
+        approvedAssets,
+        jobTitle,
+        (progress: number, status: string) => {
+          setExportProgress(progress);
+          setExportStatus(status);
+        }
+      );
+
+      toast({
+        title: "Export Complete",
+        description: `Successfully exported ${approvedAssets.length} approved reports to PDF.`,
       });
 
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      let isFirstReport = true;
-
-      for (let i = 0; i < approvedReports.length; i++) {
-        const report = approvedReports[i];
-        
-        try {
-          toast.success(`Processing report ${i + 1} of ${approvedReports.length}: ${report.name}`);
-          
-          // Create a hidden iframe to load the report
-          const iframe = document.createElement('iframe');
-          iframe.style.position = 'absolute';
-          iframe.style.left = '-9999px';
-          iframe.style.width = '1200px';
-          iframe.style.height = '800px';
-          document.body.appendChild(iframe);
-          
-          // Load the report in the iframe
-          const reportPath = getReportEditPath(report);
-          iframe.src = reportPath;
-          
-          // Wait for iframe to load
-          await new Promise((resolve, reject) => {
-            iframe.onload = resolve;
-            iframe.onerror = reject;
-            setTimeout(reject, 10000); // 10 second timeout
-          });
-          
-          // Wait a bit more for React components to render
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          // Get the report content from iframe
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (!iframeDoc) {
-            throw new Error('Could not access iframe content');
-          }
-          
-          // Find the main report container - look for common report wrapper patterns
-          const reportContent = iframeDoc.querySelector('.report-container') || 
-                               iframeDoc.querySelector('.report-fullscreen-viewer') ||
-                               iframeDoc.querySelector('[class*="max-w-7xl"]') ||
-                               iframeDoc.querySelector('[class*="space-y-6"]') ||
-                               iframeDoc.querySelector('main') ||
-                               iframeDoc.querySelector('[role="main"]') ||
-                               iframeDoc.body;
-          
-          if (!reportContent) {
-            throw new Error('Could not find report content');
-          }
-          
-          // Apply print styles to ensure proper formatting
-          const printStyle = iframeDoc.createElement('style');
-          printStyle.textContent = `
-            @media print, screen {
-              * {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-              
-              body {
-                margin: 0 !important;
-                padding: 20px !important;
-                background: white !important;
-              }
-              
-              table {
-                border-collapse: collapse !important;
-                width: 100% !important;
-              }
-              
-              th, td {
-                border: 1px solid #ccc !important;
-                padding: 8px !important;
-                text-align: left !important;
-              }
-              
-              .bg-gray-50, .bg-gray-100 {
-                background-color: #f9fafb !important;
-              }
-              
-              .bg-white {
-                background-color: white !important;
-              }
-              
-              .border {
-                border: 1px solid #e5e7eb !important;
-              }
-              
-              .shadow, .shadow-md {
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-              }
-            }
-          `;
-          iframeDoc.head.appendChild(printStyle);
-          
-          // Wait for styles to apply
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          // Create canvas from the report content
-          const canvas = await html2canvas(reportContent as HTMLElement, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff',
-            width: 1200,
-            height: Math.max(reportContent.scrollHeight, 1000),
-            logging: false,
-            removeContainer: true,
-            foreignObjectRendering: true,
-            ignoreElements: (element) => {
-              // Skip buttons and interactive elements
-              return element.tagName === 'BUTTON' || 
-                     element.classList.contains('no-print') ||
-                     element.getAttribute('aria-label') === 'Close';
-            }
-          });
-          
-          // Calculate image dimensions for PDF
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          
-          // Add a new page for each report (except the first one)
-          if (!isFirstReport) {
-            pdf.addPage();
-          }
-          isFirstReport = false;
-          
-          // If the report fits on one page, add it directly
-          if (imgHeight <= pageHeight) {
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
-          } else {
-            // If the report is taller than one page, split it across multiple pages
-            let heightLeft = imgHeight;
-            let position = 0;
-            let pageCount = 0;
-            
-            while (heightLeft >= 0) {
-              if (pageCount > 0) {
-                pdf.addPage();
-              }
-              
-              // Calculate the source Y position for this page
-              const sourceY = pageCount * pageHeight * (canvas.height / imgHeight);
-              const sourceHeight = Math.min(pageHeight * (canvas.height / imgHeight), canvas.height - sourceY);
-              
-              // Create a temporary canvas for this page section
-              const tempCanvas = document.createElement('canvas');
-              const tempCtx = tempCanvas.getContext('2d');
-              tempCanvas.width = canvas.width;
-              tempCanvas.height = sourceHeight;
-              
-              if (tempCtx) {
-                // Draw the portion of the original canvas onto the temp canvas
-                tempCtx.drawImage(
-                  canvas,
-                  0, sourceY, canvas.width, sourceHeight,
-                  0, 0, canvas.width, sourceHeight
-                );
-                
-                // Calculate the height for this page section
-                const pageImgHeight = (sourceHeight * imgWidth) / canvas.width;
-                
-                // Add this section to the PDF
-                pdf.addImage(tempCanvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, pageImgHeight);
-              }
-              
-              heightLeft -= pageHeight;
-              pageCount++;
-            }
-          }
-          
-          // Clean up iframe
-          document.body.removeChild(iframe);
-          
-          // Small delay between reports
-          if (i < approvedReports.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-          
-        } catch (error) {
-          console.error(`Error processing report ${report.name}:`, error);
-          toast.error(`Failed to process report: ${report.name}`);
-          
-          // Clean up iframe on error
-          const iframe = document.querySelector('iframe[src*="' + report.id + '"]');
-          if (iframe) {
-            document.body.removeChild(iframe);
-          }
-        }
-      }
-      
-      // Save the unified PDF with the requested naming format
-      const jobNumber = job?.job_number || id;
-      const fileName = `AMPReports:Job${jobNumber}.pdf`;
-      pdf.save(fileName);
-      
-      toast.success(`Successfully exported ${approvedReports.length} reports as unified PDF: ${fileName}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error exporting reports:', error);
-      toast.error('Failed to export reports');
+      toast({
+        title: "Export Failed",
+        description: error.message || "An unknown error occurred during PDF export.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+      setExportProgress(0);
+      setExportStatus('');
     }
   };
 
@@ -1716,7 +1542,7 @@ export default function JobDetail() {
                     </div>
                   </div>
                 </div>
-              </form>
+            </form>
             </CardContent>
 
             <CardFooter className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200 px-8 py-6">
@@ -2332,16 +2158,33 @@ export default function JobDetail() {
                           
                           {/* Export All Reports Button - Only show when on Approved tab */}
                           {assetStatusFilter === 'approved' && (
-                            <Button
-                              onClick={handleExportAllApprovedReports}
-                              variant="outline"
-                              size="sm"
-                              className="flex items-center gap-2"
-                              disabled={jobAssets.filter(asset => asset.status === 'approved' && asset.file_url.startsWith('report:')).length === 0}
-                            >
-                              <Download className="h-4 w-4" />
-                              Export All Reports
-                            </Button>
+                            <div className="mt-2">
+                              <Button 
+                                onClick={handleExportAllApprovedReports} 
+                                disabled={isExporting}
+                                className="w-full"
+                              >
+                                {isExporting ? (
+                                  <div className="flex items-center space-x-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <span>Exporting... {Math.round(exportProgress)}%</span>
+                                  </div>
+                                ) : (
+                                  'Export All Approved Reports'
+                                )}
+                              </Button>
+                              {isExporting && exportStatus && (
+                                <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                  <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+                                    <div 
+                                      className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                      style={{ width: `${exportProgress}%` }}
+                                    ></div>
+                                  </div>
+                                  <p className="text-center">{exportStatus}</p>
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                       </CardHeader>

@@ -114,25 +114,25 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                 </div>
               </Card>
 
-              <Card>
-                <div className="flex items-center justify-between p-6">
-                  <div>
+        <Card>
+          <div className="flex items-center justify-between p-6">
+            <div>
                     <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Calibration Accuracy</p>
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">{calibrationMetrics.calibrationAccuracy}</p>
                     )}
-                  </div>
-                  <div className="rounded-md bg-black/5 p-2">
+            </div>
+            <div className="rounded-md bg-black/5 p-2">
                     <BarChart className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <div className="flex items-center justify-between p-6">
-                  <div>
+            </div>
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="flex items-center justify-between p-6">
+            <div>
                     <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Pending Calibrations</p>
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
@@ -174,29 +174,29 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                     ) : (
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">{equipmentAvailable}</p>
                     )}
-                  </div>
-                  <div className="rounded-md bg-black/5 p-2">
-                    <Wrench className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <div className="flex items-center justify-between p-6">
-                  <div>
+            </div>
+            <div className="rounded-md bg-black/5 p-2">
+              <Wrench className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
+            </div>
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="flex items-center justify-between p-6">
+            <div>
                     <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Technicians</p>
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">{technicianCount}</p>
                     )}
-                  </div>
-                  <div className="rounded-md bg-black/5 p-2">
-                    <Users className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
-                  </div>
-                </div>
-              </Card>
             </div>
+            <div className="rounded-md bg-black/5 p-2">
+              <Users className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
+            </div>
+          </div>
+        </Card>
+      </div>
 
             <Card>
               <CardHeader>
@@ -245,7 +245,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                         height={200}
                       />
                     </div>
-                  </div>
+            </div>
                 )}
               </CardContent>
             </Card>
@@ -310,15 +310,15 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                         colors={['#4ade80', '#facc15', '#f87171']}
                         height={350}
                       />
-                    </div>
-                  </div>
+            </div>
+            </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </CardContent>
-    </Card>
+      </Card>
   );
 }
 

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
+import { ReportWrapper } from './ReportWrapper';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -172,6 +173,8 @@ const PanelboardReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  const [searchParams] = useSearchParams();
+  const isPrintMode = searchParams.get('print') === 'true';
   
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
@@ -584,49 +587,25 @@ const PanelboardReport: React.FC = () => {
   }
 
   return (
-    <div className="p-4 max-w-7xl mx-auto space-y-8">
-      <div className="flex justify-between items-center">
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
-        <div className="flex gap-2">
-          {/* Pass/Fail Button - Always visible, modifies state */}
+    <ReportWrapper isPrintMode={isPrintMode}>
+      {/* Header */}
+      <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''}`}>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Panelboard Report
+        </h1>
+        <div className="flex items-center space-x-4">
           <button
-            onClick={() => {
-              if (isEditing) { // Only allow state change if editing
-                 setFormData(prev => ({ ...prev, status: prev.status === 'PASS' ? 'FAIL' : 'PASS' }))
-              }
-            }}
-            // Make it visually clear if not editable
-            className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              formData.status === 'PASS'
-                ? 'bg-green-600 text-white focus:ring-green-500'
-                : 'bg-red-600 text-white focus:ring-red-500'
-            } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`} // Style change when not editing
+            onClick={handleSave}
+            disabled={!isEditing}
+            className="bg-[#f26722] hover:bg-[#e55611] text-white font-medium px-4 py-2 rounded-md disabled:opacity-50"
           >
-            {formData.status === 'PASS' ? 'PASS' : 'FAIL'}
+            {isEditing ? 'Save Changes' : 'Edit Report'}
           </button>
-
-          {/* Conditional Edit/Save Buttons */}
-          {reportId && !isEditing ? (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Edit Report
-            </button>
-          ) : (
-            <button
-              onClick={handleSave}
-              disabled={!isEditing} // Technically redundant due to conditional render, but good practice
-              className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700'}`} // Hide when not editing
-            >
-              Save Report
-            </button>
-          )}
         </div>
       </div>
 
       {/* Job Information */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="space-y-4">
@@ -757,7 +736,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Nameplate Data */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-4">
@@ -848,7 +827,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Visual and Mechanical Inspection */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -902,7 +881,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Electrical Tests - Insulation Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Insulation Resistance</h2>
         <div className="flex justify-end mb-2">
           <div className="flex items-center space-x-2">
@@ -988,7 +967,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Temperature Corrected Values */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Temperature Corrected Values</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -1038,7 +1017,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Contact Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Contact Resistance</h2>
         <div className="flex justify-end mb-2">
           <div className="flex items-center space-x-2">
@@ -1121,7 +1100,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Test Equipment Used */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
         <div className="grid grid-cols-1 gap-6">
           <div className="grid grid-cols-3 gap-4">
@@ -1160,17 +1139,17 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Comments */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
         <textarea
           value={formData.comments}
           onChange={(e) => handleChange(null, 'comments', e.target.value)}
           readOnly={!isEditing}
           rows={4}
-          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+          className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
         />
       </div>
-    </div>
+    </ReportWrapper>
   );
 };
 

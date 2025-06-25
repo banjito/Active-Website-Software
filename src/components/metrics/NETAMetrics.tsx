@@ -64,11 +64,11 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
         
         // Set chart data - only show if there are reports
         if (reportApproval.total > 0) {
-          setReportApprovalData([
-            { name: 'Approved', value: reportApproval.approved },
-            { name: 'Pending', value: reportApproval.pending },
-            { name: 'Rejected', value: reportApproval.rejected }
-          ]);
+        setReportApprovalData([
+          { name: 'Approved', value: reportApproval.approved },
+          { name: 'Pending', value: reportApproval.pending },
+          { name: 'Rejected', value: reportApproval.rejected }
+        ]);
         } else {
           setReportApprovalData([]);
         }
@@ -200,14 +200,14 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                         <p className="text-sm text-gray-500 dark:text-gray-400">Rejected</p>
                       </div>
                     </div>
-                    <div className="h-[200px]">
-                      <MetricsChart 
-                        type="pie"
-                        data={reportApprovalData}
+                  <div className="h-[200px]">
+                    <MetricsChart 
+                      type="pie"
+                      data={reportApprovalData}
                         title="Report Status Distribution"
-                        colors={['#4ade80', '#facc15', '#f87171']}
-                        height={200}
-                      />
+                      colors={['#4ade80', '#facc15', '#f87171']}
+                      height={200}
+                    />
                     </div>
                   </div>
                 )}
@@ -295,14 +295,14 @@ export function NETAMetrics({ division }: NETAMetricsProps) {
                         </p>
                       </div>
                     </div>
-                    <div className="h-[350px]">
-                      <MetricsChart 
-                        type="bar"
-                        data={reportApprovalData}
-                        title="Report Status"
-                        colors={['#4ade80', '#facc15', '#f87171']}
-                        height={350}
-                      />
+                  <div className="h-[350px]">
+                    <MetricsChart 
+                      type="bar"
+                      data={reportApprovalData}
+                      title="Report Status"
+                      colors={['#4ade80', '#facc15', '#f87171']}
+                      height={350}
+                    />
                     </div>
                   </div>
                 )}

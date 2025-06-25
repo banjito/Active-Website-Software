@@ -98,54 +98,54 @@ export function ArmadilloMetrics({ division }: ArmadilloMetricsProps) {
           <TabsContent value="overview" className="space-y-4">
             {/* Armadillo-specific metrics */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-              <Card>
-                <div className="flex items-center justify-between p-6">
-                  <div>
+        <Card>
+          <div className="flex items-center justify-between p-6">
+            <div>
                     <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Energy Efficiency</p>
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">{armadilloMetrics.energyEfficiency}</p>
                     )}
-                  </div>
-                  <div className="rounded-md bg-black/5 p-2">
+            </div>
+            <div className="rounded-md bg-black/5 p-2">
                     <Zap className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <div className="flex items-center justify-between p-6">
-                  <div>
+            </div>
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="flex items-center justify-between p-6">
+            <div>
                     <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Safety Score</p>
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">{armadilloMetrics.safetyScore}</p>
                     )}
-                  </div>
-                  <div className="rounded-md bg-black/5 p-2">
+            </div>
+            <div className="rounded-md bg-black/5 p-2">
                     <Shield className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <div className="flex items-center justify-between p-6">
-                  <div>
+            </div>
+          </div>
+        </Card>
+        
+        <Card>
+          <div className="flex items-center justify-between p-6">
+            <div>
                     <p className="text-sm font-medium text-muted-foreground dark:text-white/70">Operational Uptime</p>
                     {loading ? (
                       <Skeleton className="h-8 w-16 mt-1" />
                     ) : (
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">{armadilloMetrics.operationalUptime}</p>
                     )}
-                  </div>
-                  <div className="rounded-md bg-black/5 p-2">
-                    <TrendingUp className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
-                  </div>
-                </div>
-              </Card>
             </div>
+            <div className="rounded-md bg-black/5 p-2">
+                    <TrendingUp className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
+            </div>
+          </div>
+        </Card>
+      </div>
 
             {/* General metrics */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
@@ -311,14 +311,14 @@ export function ArmadilloMetrics({ division }: ArmadilloMetricsProps) {
                         height={350}
                       />
                     </div>
-                  </div>
+            </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </CardContent>
-    </Card>
+      </Card>
   );
 }
 

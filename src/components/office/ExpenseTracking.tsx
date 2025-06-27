@@ -27,8 +27,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 
 interface ExpenseFormData {
   amount: string;
@@ -227,106 +225,6 @@ export default function ExpenseTracking() {
     link.click();
   };
 
-  const generatePDFReport = () => {
-    const doc = new jsPDF();
-    
-    // Add title
-    doc.setFontSize(16);
-    doc.text('Expense Report', 14, 20);
-    
-    // Add filters summary
-    doc.setFontSize(10);
-    let yPos = 30;
-    if (filterDateFrom || filterDateTo) {
-      const dateRange = `Date Range: ${filterDateFrom || 'Any'} to ${filterDateTo || 'Any'}`;
-      doc.text(dateRange, 14, yPos);
-      yPos += 6;
-    }
-    if (filterCategory) {
-      const category = `Category: ${expenseCategories.find(c => c.value === filterCategory)?.label || filterCategory}`;
-      doc.text(category, 14, yPos);
-      yPos += 6;
-    }
-    if (filterDepartment) {
-      const department = `Department: ${departments.find(d => d.value === filterDepartment)?.label || filterDepartment}`;
-      doc.text(department, 14, yPos);
-      yPos += 6;
-    }
-    if (filterStatus) {
-      const status = `Status: ${filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}`;
-      doc.text(status, 14, yPos);
-      yPos += 6;
-    }
-
-    // Add generation date
-    const generatedDate = `Generated on: ${format(new Date(), 'MMM d, yyyy HH:mm')}`;
-    doc.text(generatedDate, 14, yPos);
-    yPos += 10;
-
-    // Calculate totals
-    const totalAmount = filteredAndSortedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const totalByStatus = filteredAndSortedExpenses.reduce((acc, expense) => {
-      acc[expense.status] = (acc[expense.status] || 0) + expense.amount;
-      return acc;
-    }, {} as Record<string, number>);
-
-    // Add summary section
-    doc.setFontSize(12);
-    doc.text('Summary', 14, yPos);
-    yPos += 6;
-    doc.setFontSize(10);
-    doc.text(`Total Amount: $${totalAmount.toFixed(2)}`, 14, yPos);
-    yPos += 6;
-    Object.entries(totalByStatus).forEach(([status, amount]) => {
-      doc.text(`${status.charAt(0).toUpperCase() + status.slice(1)}: $${amount.toFixed(2)}`, 14, yPos);
-      yPos += 6;
-    });
-    yPos += 6;
-
-    // Add expense table
-    const headers = [
-      ['Date', 'Vendor', 'Category', 'Department', 'Amount', 'Status', 'Notes']
-    ];
-
-    const data = filteredAndSortedExpenses.map(expense => [
-      format(new Date(expense.date), 'MMM d, yyyy'),
-      expense.vendor,
-      expenseCategories.find(c => c.value === expense.category)?.label ?? expense.category,
-      departments.find(d => d.value === expense.department)?.label ?? expense.department,
-      `$${expense.amount.toFixed(2)}`,
-      expense.status.charAt(0).toUpperCase() + expense.status.slice(1),
-      expense.notes
-    ]);
-
-    (doc as any).autoTable({
-      head: headers,
-      body: data,
-      startY: yPos,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [66, 66, 66] },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-      columnStyles: {
-        0: { cellWidth: 25 }, // Date
-        1: { cellWidth: 30 }, // Vendor
-        2: { cellWidth: 25 }, // Category
-        3: { cellWidth: 25 }, // Department
-        4: { cellWidth: 20 }, // Amount
-        5: { cellWidth: 20 }, // Status
-        6: { cellWidth: 'auto' } // Notes
-      },
-      margin: { top: 10 },
-      didDrawPage: (data: any) => {
-        // Add page number at the bottom
-        const pageNumber = `Page ${data.pageNumber} of ${doc.getNumberOfPages()}`;
-        doc.setFontSize(8);
-        doc.text(pageNumber, doc.internal.pageSize.width - 20, doc.internal.pageSize.height - 10, { align: 'right' });
-      }
-    });
-
-    // Save the PDF
-    doc.save(`expense_report_${format(new Date(), 'yyyy-MM-dd_HHmm')}.pdf`);
-  };
-
   const filteredAndSortedExpenses = expenses
     .filter(expense => {
       const matchesSearch = searchTerm === '' || 
@@ -373,9 +271,6 @@ export default function ExpenseTracking() {
             <DropdownMenuContent>
               <DropdownMenuItem onClick={exportToCSV}>
                 Export to CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={generatePDFReport}>
-                Generate PDF Report
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -702,18 +597,6 @@ export default function ExpenseTracking() {
                                   onClick={() => window.open(expense.receiptUrl)}
                                 >
                                   <Eye className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => {
-                                    const link = document.createElement('a');
-                                    link.href = expense.receiptUrl!;
-                                    link.download = `receipt-${expense.id}`;
-                                    link.click();
-                                  }}
-                                >
-                                  <Download className="w-4 h-4" />
                                 </Button>
                               </>
                             )}

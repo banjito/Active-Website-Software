@@ -266,7 +266,8 @@ const initialVisualMechanicalItems = [
   { netaSection: '7.16.1.2.A.11', description: 'Use appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.', result: 'Select One' },
 ];
 
-const MediumVoltageMotorStarterMTSReport: React.FC = () => {
+const MediumVoltageMotorStarterMTSReport: React.FC<{ printMode?: boolean }> = (props) => {
+  const { printMode = false } = props;
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -636,7 +637,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
   // Render method (JSX to be added in subsequent steps)
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+    <div className={printMode ? 'print-report' : 'screen-report'}>
       {/* Header: Title and Buttons */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>

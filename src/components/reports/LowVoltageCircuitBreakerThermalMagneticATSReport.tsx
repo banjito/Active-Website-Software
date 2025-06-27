@@ -180,7 +180,8 @@ const tableStyles = {
 };
 
 // Rename component
-const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
+const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC<{ printMode?: boolean }> = (props) => {
+  const { printMode = false } = props;
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -740,7 +741,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
 
   // --- Render Component (Adapt JSX for Thermal-Magnetic) ---
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+    <div className={printMode ? 'print-report' : 'screen-report'}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">

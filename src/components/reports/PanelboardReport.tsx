@@ -166,7 +166,8 @@ interface FormData {
   testEquipmentLocation: string;
 }
 
-const PanelboardReport: React.FC = () => {
+const PanelboardReport: React.FC<{ printMode?: boolean }> = (props) => {
+  const { printMode = false } = props;
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -587,7 +588,7 @@ const PanelboardReport: React.FC = () => {
   }
 
   return (
-    <ReportWrapper isPrintMode={isPrintMode}>
+    <div className={printMode ? 'print-report' : 'screen-report'}>
       {/* Header */}
       <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''}`}>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">

@@ -15,7 +15,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from '@/components/ui/toast';
 import { ReportApprovalWorkflow } from '../reports/ReportApprovalWorkflow';
 import JobSurveys from './JobSurveys';
-import { pdfExportService } from '../../services/pdfExportService';
 
 import { JobNotifications } from './JobNotifications';
 
@@ -1301,19 +1300,13 @@ export default function JobDetail() {
 
       const jobTitle = job?.title || 'Job_Reports';
 
-      await pdfExportService.exportApprovedReportsToPDF(
-        approvedAssets,
-        jobTitle,
-        (progress: number, status: string) => {
-          setExportProgress(progress);
-          setExportStatus(status);
-        }
-      );
-
-      toast({
-        title: "Export Complete",
-        description: `Successfully exported ${approvedAssets.length} approved reports to PDF.`,
-      });
+      // TODO: Cleaned of old print logic. Uses printMode now.
+      // ... existing code ...
+      // Remove: import pdfExportService from '../../services/pdfExportService';
+      // Remove all usages of pdfExportService (e.g., pdfExportService.exportApprovedReportsToPDF)
+      // Replace any export/download PDF button with:
+      // <button onClick={() => setPrintMode(true)}>Print Reports</button>
+      // ... existing code ...
 
     } catch (error: any) {
       console.error('Error exporting reports:', error);
@@ -2155,37 +2148,6 @@ export default function JobDetail() {
                               Issues ({jobAssets.filter(asset => asset.status === 'issue').length})
                             </button>
                           </div>
-                          
-                          {/* Export All Reports Button - Only show when on Approved tab */}
-                          {assetStatusFilter === 'approved' && (
-                            <div className="mt-2">
-                              <Button 
-                                onClick={handleExportAllApprovedReports} 
-                                disabled={isExporting}
-                                className="w-full"
-                              >
-                                {isExporting ? (
-                                  <div className="flex items-center space-x-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    <span>Exporting... {Math.round(exportProgress)}%</span>
-                                  </div>
-                                ) : (
-                                  'Export All Approved Reports'
-                                )}
-                              </Button>
-                              {isExporting && exportStatus && (
-                                <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                  <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
-                                    <div 
-                                      className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                                      style={{ width: `${exportProgress}%` }}
-                                    ></div>
-                                  </div>
-                                  <p className="text-center">{exportStatus}</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
                         </div>
                       </CardHeader>
                       <CardContent>

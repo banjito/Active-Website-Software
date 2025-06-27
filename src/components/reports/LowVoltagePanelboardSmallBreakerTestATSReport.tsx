@@ -160,7 +160,8 @@ const initialBreakerData = (circuitNum: number): BreakerTestData => ({
   insulationLL: '', insulationLP: '', insulationPP: ''
 });
 
-const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
+const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC<{ printMode?: boolean }> = (props) => {
+  const { printMode = false } = props;
   const { id: jobId, reportId } = useParams<{ id: string; reportId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -573,6 +574,156 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
   if (loading) return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Loading report data...</div>;
 
   return (
+    <div className={printMode ? 'print-report' : 'screen-report'}>
+      <div className="p-6 flex justify-center">
+        <div className="max-w-7xl w-full space-y-6">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (isEditMode) {
+                    setStatus(status === 'PASS' ? 'FAIL' : 'PASS');
+                  }
+                }}
+                className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  status === 'PASS'
+                    ? 'bg-green-600 text-white focus:ring-green-500'
+                    : 'bg-red-600 text-white focus:ring-red-500'
+                } ${!isEditMode ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+              >
+                {status}
+              </button>
+              {reportId && !isEditMode ? (
+                <button onClick={() => setIsEditMode(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md">Edit Report</button>
+              ) : (
+                <button onClick={handleSave} disabled={!isEditMode} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md ${!isEditMode ? 'hidden' : 'hover:bg-orange-700'}`}>Save Report</button>
+              )}
+            </div>
+          </div>
+
+          {/* Job Information Section */}
+          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+                {renderInputField("Customer", "customer", "", "text", "md:col-span-1", true)}
+                {renderInputField("Job #", "jobNumber", "", "text", "md:col-span-1", true)}
+                {renderInputField("Address", "address", "", "text", "md:col-span-1", true)}
+                {renderInputField("Technicians", "technicians")}
+                {renderInputField("User", "user")}
+                <div className="flex items-end space-x-2 md:col-span-1 mb-2">
+                    {renderInputField("Temp.", "temperature.fahrenheit", "", "number", "flex-grow")}
+                    <span className="pb-1">°F</span>
+                    <input type="text" value={formData.temperature.celsius} readOnly className="form-input mt-1 w-16 bg-gray-100 dark:bg-dark-200 text-center cursor-not-allowed" />
+                    <span className="pb-1">°C</span>
+                    <label className="form-label inline-block pb-1 ml-2">TCF:</label>
+                    <input type="text" value={formData.temperature.tcf.toFixed(3)} readOnly className="form-input mt-1 w-20 bg-gray-100 dark:bg-dark-200 text-center cursor-not-allowed" />
+                </div>
+                {renderInputField("Date", "date", "", "date")}
+                <div className="flex items-center space-x-2 md:col-span-1 mb-2">
+                 {renderInputField("Humidity", "humidity", "", "number", "w-20")}
+                 <span className="pt-7">%</span>
+                </div>
+                {renderInputField("Identifier", "identifier")}
+                {renderInputField("Substation", "substation")}
+                <div className="md:col-span-1"></div>
+                {renderInputField("Eqpt. Location", "eqptLocation")}
+            </div>
+          </section>
+
+          {/* Nameplate Data Section */}
+          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+                <div>
+                    <h3 className="text-lg font-medium mb-2 dark:text-gray-200">Panelboard</h3>
+                    {renderInputField("Manufacturer", "panelboardManufacturer")}
+                    {renderInputField("Type / Cat #", "panelboardTypeCat")}
+                    {renderInputField("Size (A)", "panelboardSizeA")}
+                    {renderInputField("Voltage (V)", "panelboardVoltageV")}
+                    {renderInputField("SCCR (kA)", "panelboardSCCRkA")}
+                </div>
+                <div>
+                    <h3 className="text-lg font-medium mb-2 dark:text-gray-200">Main Breaker</h3>
+                    {renderInputField("Manufacturer", "mainBreakerManufacturer")}
+                    {renderInputField("Type", "mainBreakerType")}
+                    {renderInputField("Frame Size (A)", "mainBreakerFrameSizeA")}
+                    {renderInputField("Rating Plug (A)", "mainBreakerRatingPlugA")}
+                    {renderInputField("I.C. Rating (kA)", "mainBreakerICRatingkA")}
+                </div>
+            </div>
+          </section>
+
+          {/* Visual and Mechanical Inspection Section */}
+          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-dark-200">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/5">NETA Section</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-3/5">Description</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/5">Results</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  {formData.visualInspectionItems.map((item, index) => (
+                    <tr key={index}>
+                      <td className="px-3 py-1 text-sm">{item.netaSection}</td>
+                      <td className="px-3 py-1 text-sm">{item.description}</td>
+                      <td className="px-3 py-1 text-sm">
+                        <select
+                          value={item.results}
+                          onChange={(e) => handleChange('visualInspectionItems', e.target.value, index, 'results')}
+                          disabled={!isEditMode}
+                          className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+                        >
+                          {visualInspectionResultOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* Test Equipment Used Section */}
+          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-1">
+                {renderInputField("Megohmmeter", "megohmmeterName")}
+                {renderInputField("Serial Number", "megohmmeterSerial")}
+                {renderInputField("AMP ID", "megohmmeterAmpId")}
+
+                {renderInputField("Low-Resistance Ohmmeter", "lowResistanceOhmmeterName")}
+                {renderInputField("Serial Number", "lowResistanceOhmmeterSerial")}
+                {renderInputField("AMP ID", "lowResistanceOhmmeterAmpId")}
+
+                {renderInputField("Primary Injection Test Set", "primaryInjectionTestSetName")}
+                {renderInputField("Serial Number", "primaryInjectionTestSetSerial")}
+                {renderInputField("AMP ID", "primaryInjectionTestSetAmpId")}
+            </div>
+          </section>
+
+          {/* Comments Section */}
+          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
+            <textarea
+              value={formData.comments}
+              onChange={(e) => handleChange('comments', e.target.value)}
+              readOnly={!isEditMode}
+              rows={3}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+            />
+          </section>
+
+          {/* Electrical Tests Section */}
+          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex justify-between items-center mb-2">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Electrical Tests</h2>
+            </div>
     <div className="p-6 flex justify-center">
       <div className="max-w-7xl w-full space-y-6">
         {/* Header */}

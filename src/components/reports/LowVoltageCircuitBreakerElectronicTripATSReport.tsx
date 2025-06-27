@@ -239,7 +239,8 @@ const tableStyles = {
 };
 
 // Rename component
-const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
+const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC<{ printMode?: boolean }> = (props) => {
+  const { printMode = false } = props;
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -858,7 +859,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
   // --- Render Component ---
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+    <div className={printMode ? 'print-report' : 'screen-report'}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">

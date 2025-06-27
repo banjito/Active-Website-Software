@@ -306,3 +306,29 @@
   }
 }
 
+/* === Print Styles === */
+@media print {
+  body {
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .screen-report, .no-print {
+    display: none !important;
+  }
+
+  .print-report {
+    display: block !important;
+    background-color: white !important;
+    color: black !important;
+    font-size: 12px;
+    padding: 1in;
+    page-break-after: always;
+  }
+
+  .page-break {
+    page-break-after: always;
+  }
+}
+

@@ -178,7 +178,8 @@ const tableStyles = {
   select: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
 };
 
-const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.FC = () => {
+const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.FC<{ printMode?: boolean }> = (props) => {
+  const { printMode = false } = props;
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -695,7 +696,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
 
   // --- Render Component ---
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+    <div className={printMode ? 'print-report' : 'screen-report'}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>

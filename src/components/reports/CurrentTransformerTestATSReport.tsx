@@ -123,7 +123,8 @@ interface FormData {
   comments: string;
 }
 
-const CurrentTransformerTestATSReport: React.FC = () => {
+const CurrentTransformerTestATSReport: React.FC<{ printMode?: boolean }> = (props) => {
+  const { printMode = false } = props;
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -442,7 +443,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   if (loading) return <div className="p-6 text-center">Loading report data...</div>;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+    <div className={printMode ? 'print-report' : 'screen-report'}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>

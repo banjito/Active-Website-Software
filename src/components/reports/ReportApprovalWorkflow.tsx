@@ -27,8 +27,6 @@ import {
   UserCheck
 } from 'lucide-react';
 import Select from '@/components/ui/Select';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
 
 // Report Content Viewer Component
 interface ReportContentViewerProps {
@@ -523,108 +521,6 @@ export function ReportApprovalWorkflow({ division, jobId }: ReportApprovalWorkfl
   };
 
   const isManager = user?.user_metadata?.role === 'Manager' || user?.user_metadata?.role === 'Admin';
-
-  // Generate PDF report
-  const generatePDF = (report: TechnicalReport) => {
-    try {
-      const doc = new jsPDF();
-      
-      // Add header with logo (would need to import logo)
-      // doc.addImage(logo, 'PNG', 10, 10, 50, 15);
-      
-      // Add title
-      doc.setFontSize(20);
-      doc.text('Technical Report', 105, 20, { align: 'center' });
-      
-      doc.setFontSize(16);
-      doc.text(report.title, 105, 30, { align: 'center' });
-      
-      // Add metadata
-      doc.setFontSize(12);
-      doc.text(`Report ID: ${report.id}`, 14, 45);
-      doc.text(`Type: ${report.report_type}`, 14, 55);
-      doc.text(`Status: ${report.status.toUpperCase()}`, 14, 65);
-      doc.text(`Submitted: ${formatDate(report.submitted_at)}`, 14, 75);
-      
-      if (report.reviewed_at && report.reviewed_by) {
-        doc.text(`Reviewed: ${formatDate(report.reviewed_at)}`, 14, 85);
-        doc.text(`Reviewer: ${typeof report.reviewed_by === 'object' ? 
-          (report.reviewed_by as any)?.display_name || 'Unknown' : 'Unknown'}`, 14, 95);
-      }
-      
-      // Add revision history
-      doc.setFontSize(14);
-      doc.text('Revision History', 14, 115);
-      
-      const revisionData = report.revision_history.map(rev => [
-        `v${rev.version}`,
-        rev.status,
-        formatDate(rev.timestamp),
-        rev.user_name || 'Unknown'
-      ]);
-      
-      (doc as any).autoTable({
-        startY: 120,
-        head: [['Version', 'Status', 'Date', 'User']],
-        body: revisionData,
-      });
-      
-      // Add report data
-      const reportDataY = (doc as any).lastAutoTable.finalY + 20;
-      doc.setFontSize(14);
-      doc.text('Report Details', 14, reportDataY);
-      
-      // Format report data as needed
-      let reportTextY = reportDataY + 10;
-      const reportDataStr = JSON.stringify(report.report_data, null, 2);
-      const reportLines = reportDataStr.split('\n');
-      
-      doc.setFontSize(10);
-      reportLines.forEach((line, index) => {
-        if (reportTextY > 280) {
-          doc.addPage();
-          reportTextY = 20;
-        }
-        doc.text(line, 14, reportTextY);
-        reportTextY += 5;
-      });
-      
-      // Add approval signature for approved reports
-      if (report.status === 'approved') {
-        doc.addPage();
-        doc.setFontSize(14);
-        doc.text('Approval Certification', 105, 20, { align: 'center' });
-        
-        doc.setFontSize(12);
-        doc.text('This report has been reviewed and approved according to', 105, 40, { align: 'center' });
-        doc.text('company standards and procedures.', 105, 50, { align: 'center' });
-        
-        doc.text(`Approved by: ${typeof report.reviewed_by === 'object' ? 
-          (report.reviewed_by as any)?.display_name || 'Unknown' : 'Unknown'}`, 105, 70, { align: 'center' });
-        doc.text(`Approval date: ${formatDate(report.reviewed_at)}`, 105, 80, { align: 'center' });
-        
-        // Add signature line
-        doc.line(60, 100, 150, 100);
-        doc.text('Authorized Signature', 105, 110, { align: 'center' });
-      }
-      
-      // Save the PDF
-      doc.save(`Report_${report.id}_${report.title.replace(/\s+/g, '_')}.pdf`);
-      
-      toast({
-        title: "Success",
-        description: "Report PDF has been generated and downloaded",
-        variant: "success"
-      });
-    } catch (err) {
-      console.error('Error generating PDF:', err);
-      toast({
-        title: "Error",
-        description: "Failed to generate PDF report",
-        variant: "destructive"
-      });
-    }
-  };
 
   // Customize the UI based on whether we're showing all reports or just job-specific reports
   const isJobSpecific = !!jobId;

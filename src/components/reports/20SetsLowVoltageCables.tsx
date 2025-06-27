@@ -338,7 +338,8 @@ const applyTCF = (reading: string, tcf: number): string => {
 };
 
 // Main component
-const TwentySetsLowVoltageCableTestForm: React.FC = () => {
+const TwentySetsLowVoltageCableTestForm: React.FC<{ printMode?: boolean }> = (props) => {
+  const { printMode = false } = props;
   const { id: jobId, reportId } = useParams<{ id: string, reportId?: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -903,6 +904,20 @@ const TwentySetsLowVoltageCableTestForm: React.FC = () => {
   const formLabelClass = "form-label inline-block w-32 text-gray-900 dark:text-white";
 
   return (
+    <div className={printMode ? 'print-report' : 'screen-report'}>
+      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
+        <div className="max-w-7xl w-full space-y-6">
+          {/* Header with title and buttons */}
+          {renderHeader()}
+          
+          {/* Job Information Section - Standard card structure */}
+          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              {/* Column 1 */}
+              <div>
+                <div className="mb-4">
+                  <label htmlFor="customer" className={formLabelClass}>Customer:</label>
     // Main container with padding and centered layout, following ReportRules.md
     <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
       <div className="max-w-7xl w-full space-y-6">

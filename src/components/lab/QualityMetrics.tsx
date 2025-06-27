@@ -29,10 +29,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { toast } from '@/components/ui/toast';
 
-// Import required modules for PDF generation
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
-
 interface QualityMetricsProps {
   division?: string;
 }
@@ -314,56 +310,6 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
       case 'above-threshold': return <AlertTriangle className="h-4 w-4" />;
       default: return null;
     }
-  };
-
-  // Generate PDF report
-  const generatePDFReport = () => {
-    const doc = new jsPDF();
-    const metricsSummary = calculateMetricsSummary();
-    
-    // Add title
-    doc.setFontSize(18);
-    doc.text(`Quality Metrics Report - ${reportType.charAt(0).toUpperCase() + reportType.slice(1)}`, 14, 22);
-    
-    // Add date range
-    doc.setFontSize(12);
-    doc.text(`Period: ${new Date(reportDateRange.start).toLocaleDateString()} to ${new Date(reportDateRange.end).toLocaleDateString()}`, 14, 30);
-    
-    // Add summary section
-    doc.setFontSize(14);
-    doc.text('Summary', 14, 40);
-    doc.setFontSize(10);
-    doc.text(`Total Metrics: ${metricsSummary.total}`, 14, 50);
-    doc.text(`Within Threshold: ${metricsSummary.withinThreshold} (${Math.round(metricsSummary.withinThreshold / metricsSummary.total * 100)}%)`, 14, 58);
-    doc.text(`Below Threshold: ${metricsSummary.belowThreshold} (${Math.round(metricsSummary.belowThreshold / metricsSummary.total * 100)}%)`, 14, 66);
-    doc.text(`Above Threshold: ${metricsSummary.aboveThreshold} (${Math.round(metricsSummary.aboveThreshold / metricsSummary.total * 100)}%)`, 14, 74);
-    
-    // Add metrics table
-    if (reportType !== 'summary') {
-      const tableData = filteredMetrics.map(metric => [
-        metric.metric_name,
-        `${metric.metric_value} ${metric.unit || ''}`,
-        metric.status === 'within-threshold' ? 'Within Range' : 
-        metric.status === 'below-threshold' ? 'Below Range' : 'Above Range',
-        metric.equipment_name || '-',
-        new Date(metric.date_recorded).toLocaleDateString()
-      ]);
-      
-      // @ts-ignore - jspdf-autotable method
-      doc.autoTable({
-        startY: 90,
-        head: [['Metric Name', 'Value', 'Status', 'Equipment', 'Date Recorded']],
-        body: tableData,
-      });
-    }
-    
-    // Save the document
-    doc.save(`quality-metrics-report-${new Date().toISOString().split('T')[0]}.pdf`);
-    
-    toast({
-      title: "Success",
-      description: "Report generated successfully"
-    });
   };
 
   return (
@@ -808,7 +754,6 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
               </Button>
               <Button 
                 onClick={() => {
-                  generatePDFReport();
                   setShowReportDialog(false);
                 }}
               >

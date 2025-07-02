@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
+import { ReportWrapper } from './ReportWrapper';
 
 import { getReportName, getAssetName } from './reportMappings';
 
@@ -180,6 +181,188 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  const [searchParams] = useSearchParams();
+  const isPrintMode = searchParams.get('print') === 'true';
+
+  // Add print styles and hide navigation/scrollbar
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      /* Hide navigation bar and scrollbar */
+      nav, header, .navigation, [class*="nav"], [class*="header"] {
+        display: none !important;
+      }
+      
+      /* Hide scrollbar */
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      
+      html {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        height: 100%;
+      }
+      
+      body {
+        overflow-x: hidden;
+        min-height: 100vh;
+        padding-bottom: 100px;
+      }
+      
+      /* Ensure comments section is visible */
+      textarea {
+        min-height: 200px !important;
+      }
+
+      @media print {
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        .print\\:break-before-page { page-break-before: always; }
+        .print\\:break-after-page { page-break-after: always; }
+        .print\\:break-inside-avoid { page-break-inside: avoid; }
+        .print\\:text-black { color: black !important; }
+        .print\\:bg-white { background-color: white !important; }
+        .print\\:border-black { border-color: black !important; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black !important; padding: 4px !important; color: black !important; font-size: 10px !important; }
+        th { background-color: #f0f0f0 !important; font-weight: bold !important; }
+        input, select, textarea { 
+          background-color: white !important; 
+          border: 1px solid black !important; 
+          color: black !important; 
+          padding: 2px !important; 
+          font-size: 10px !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+        }
+        /* Hide dropdown arrows and form control indicators */
+        select {
+          background-image: none !important;
+          padding-right: 8px !important;
+        }
+        /* Hide spin buttons on number inputs */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none !important;
+          margin: 0 !important;
+        }
+        input[type="number"] {
+          -moz-appearance: textfield !important;
+        }
+        .print\\:font-bold { font-weight: bold !important; }
+        .print\\:text-center { text-align: center !important; }
+        label { color: black !important; font-weight: 500 !important; }
+        h1, h2, h3, h4, h5, h6 { color: black !important; }
+        div[class*="bg-white"] { background-color: white !important; }
+        div[class*="shadow"] { box-shadow: none !important; }
+        .bg-green-100 { background-color: #dcfce7 !important; }
+        .text-green-800 { color: #166534 !important; }
+        .bg-red-100 { background-color: #fecaca !important; }
+        .text-red-800 { color: #991b1b !important; }
+        .bg-yellow-100 { background-color: #fef3c7 !important; }
+        .text-yellow-800 { color: #92400e !important; }
+        
+        /* Electrical tests table specific styling */
+        section h3 + div table {
+          font-size: 8px !important;
+          width: 100% !important;
+        }
+        section h3 + div th,
+        section h3 + div td {
+          padding: 2px !important;
+          font-size: 8px !important;
+          border: 1px solid black !important;
+        }
+        section h3 + div input {
+          font-size: 8px !important;
+          padding: 1px !important;
+          width: 100% !important;
+          min-width: 0 !important;
+        }
+        section h3 + div select {
+          font-size: 8px !important;
+          padding: 1px !important;
+          width: 100% !important;
+          min-width: 0 !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+          background-image: none !important;
+        }
+        
+        /* Test Equipment section styling */
+        section[aria-labelledby="equipment-heading"] {
+          page-break-inside: avoid !important;
+          margin-bottom: 20px !important;
+        }
+        
+        section[aria-labelledby="equipment-heading"] input {
+          font-size: 10px !important;
+          padding: 4px !important;
+          border: 1px solid black !important;
+          background-color: white !important;
+          color: black !important;
+          height: auto !important;
+          min-height: 25px !important;
+        }
+        
+        section[aria-labelledby="equipment-heading"] label {
+          font-size: 10px !important;
+          color: black !important;
+          font-weight: 500 !important;
+        }
+        
+        section[aria-labelledby="equipment-heading"] .grid {
+          display: grid !important;
+          grid-template-columns: 1fr 1fr 1fr !important;
+          gap: 10px !important;
+        }
+        
+        /* Comments section specific styling */
+        section[aria-labelledby="comments-heading"] {
+          page-break-inside: avoid !important;
+          margin-bottom: 50px !important;
+          min-height: 250px !important;
+        }
+        
+        section[aria-labelledby="comments-heading"] textarea {
+          min-height: 180px !important;
+          height: 180px !important;
+          font-size: 10px !important;
+          padding: 8px !important;
+          border: 1px solid black !important;
+          background-color: white !important;
+          color: black !important;
+          resize: none !important;
+          overflow: visible !important;
+          page-break-inside: avoid !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        
+        /* Force table to fit on page */
+        .overflow-x-auto {
+          overflow: visible !important;
+        }
+        
+        /* Force sections to be visible and prevent cutting */
+        section {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+        
+        /* Ensure proper spacing between sections */
+        .space-y-6 > * + * {
+          margin-top: 15px !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
@@ -556,43 +739,82 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   if (loading) return <div className="p-4">Loading...</div>;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
-        <div className="flex gap-2">
-          <select
-            value={formData.status}
-            onChange={(e) => {
-              if (isEditing) handleChange('status', e.target.value)
-            }}
-            disabled={!isEditing}
-            className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              formData.status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' :
-              formData.status === 'FAIL' ? 'bg-red-600 text-white focus:ring-red-500' :
-              'bg-yellow-500 text-white focus:ring-yellow-400' // LIMITED SERVICE
-            } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 dark:bg-opacity-80'}`}
-          >
-            {equipmentEvaluationResultOptions.map(option => (
-              <option key={option} value={option} className="bg-white dark:bg-dark-100 text-gray-900 dark:text-white">{option}</option>
-            ))}
-          </select>
-
-          {reportId && !isEditing ? (
-            <button onClick={() => setIsEditing(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Edit Report
-            </button>
-          ) : (
-            <button onClick={handleSave} disabled={!isEditing} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700'}`}>
-              Save Report
-            </button>
-          )}
+    <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>
+    <ReportWrapper isPrintMode={isPrintMode}>
+      {/* Print Header - Only visible when printing */}
+      <div className={`hidden print:block mb-8 ${isPrintMode ? 'block' : ''}`}>
+        <div className="text-center border-b-2 border-gray-800 pb-4 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            CURRENT TRANSFORMER TEST REPORT (ATS)
+          </h1>
+          <div className="text-lg font-semibold">
+            Status: <span className={`px-3 py-1 rounded ${
+              formData.status === 'PASS' ? 'bg-green-100 text-green-800' : 
+              formData.status === 'FAIL' ? 'bg-red-100 text-red-800' : 
+              'bg-yellow-100 text-yellow-800'
+            }`}>
+              {formData.status}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Job Information Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
+      <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+        {/* Header */}
+        <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''} print:hidden`}>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(`/jobs/${jobId}`)}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Job
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
+          </div>
+          <div className="flex gap-2">
+            <select
+              value={formData.status}
+              onChange={(e) => {
+                if (isEditing) handleChange('status', e.target.value)
+              }}
+              disabled={!isEditing}
+              className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                formData.status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' :
+                formData.status === 'FAIL' ? 'bg-red-600 text-white focus:ring-red-500' :
+                'bg-yellow-500 text-white focus:ring-yellow-400' // LIMITED SERVICE
+              } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 dark:bg-opacity-80'}`}
+            >
+              {equipmentEvaluationResultOptions.map(option => (
+                <option key={option} value={option} className="bg-white dark:bg-dark-100 text-gray-900 dark:text-white">{option}</option>
+              ))}
+            </select>
+
+            {reportId && !isEditing ? (
+              <>
+                <button onClick={() => setIsEditing(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  Edit Report
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Print Report
+                </button>
+              </>
+            ) : (
+              <button onClick={handleSave} disabled={!isEditing} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700'}`}>
+                Save Report
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Job Information Section */}
+        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           {/* Left Column */}
           <div className="space-y-3">
@@ -653,9 +875,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         </div>
       </section>
 
-      {/* Device Data Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Device Data</h2>
+        {/* Device Data Section */}
+        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Device Data</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           {/* Left Column */}
           <div className="space-y-3">
@@ -674,9 +896,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         </div>
       </section>
 
-      {/* Visual and Mechanical Inspection Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
+        {/* Visual and Mechanical Inspection Section */}
+        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-dark-200">
@@ -703,15 +925,15 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         </div>
       </section>
 
-      {/* CT Identification Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">CT Identification</h2>
+        {/* CT Identification Section */}
+        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">CT Identification</h2>
         {renderCtIdentification()}
       </section>
 
-      {/* Electrical Tests Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests</h2>
+        {/* Electrical Tests Section */}
+        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 space-y-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests</h2>
         
         {/* Ratio and Polarity Table */}
         <div>
@@ -940,9 +1162,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         </div>
       </section>
 
-      {/* Test Equipment Used Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
+        {/* Test Equipment Used Section */}
+        <section aria-labelledby="equipment-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+          <h2 id="equipment-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div><label htmlFor="testEquipmentUsed.megohmmeterName" className="form-label block">Megohmmeter:</label><input id="testEquipmentUsed.megohmmeterName" type="text" value={formData.testEquipmentUsed.megohmmeterName} onChange={(e) => handleChange('testEquipmentUsed.megohmmeterName', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -957,9 +1179,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         </div>
       </section>
 
-      {/* Comments Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
+        {/* Comments Section */}
+        <section aria-labelledby="comments-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-32" style={{ marginBottom: '150px' }}>
+          <h2 id="comments-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         <textarea
           value={formData.comments}
           onChange={(e) => handleChange('comments', e.target.value)}
@@ -968,7 +1190,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           className={`form-textarea w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
           placeholder="Enter comments here..."
         />
-      </section>
+        </section>
+      </div>
+    </ReportWrapper>
     </div>
   );
 };

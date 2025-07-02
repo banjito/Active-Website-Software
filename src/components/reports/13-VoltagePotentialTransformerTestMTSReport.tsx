@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
+import { ReportWrapper } from './ReportWrapper';
 
 // Temperature conversion and correction factor lookup tables
 const tcfData: Array<{ celsius: number; multiplier: number }> = [
@@ -189,6 +190,8 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const isPrintMode = searchParams.get('print') === 'true';
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
   
@@ -529,40 +532,80 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
 
   if (loading) return <div className="p-4 dark:text-white">Loading...</div>;
 
-  return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              if (isEditing) handleChange('status', formData.status === 'PASS' ? 'FAIL' : 'PASS')
-            }}
-            disabled={!isEditing}
-            className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              formData.status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' :
-              'bg-red-600 text-white focus:ring-red-500'
-            } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 dark:bg-opacity-80'}`}
-          >
-            {formData.status}
-          </button>
-
-          {reportId && !isEditing ? (
-            <button onClick={() => setIsEditing(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Edit Report
-            </button>
-          ) : (
-            <button onClick={handleSave} disabled={!isEditing} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700'}`}>
-              Save Report
-            </button>
-          )}
-        </div>
+  const printHeader = (
+    <div className="text-center border-b-2 border-gray-800 pb-4 mb-6">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        VOLTAGE/POTENTIAL TRANSFORMER TEST REPORT (MTS)
+      </h1>
+      <div className="text-lg font-semibold">
+        Status: <span className={`px-3 py-1 rounded font-bold ${
+          formData.status === 'PASS' ? 'bg-green-600 text-white' : 
+          formData.status === 'FAIL' ? 'bg-red-600 text-white' : 
+          'bg-yellow-500 text-white'
+        }`}>
+          {formData.status || 'PASS'}
+        </span>
       </div>
+    </div>
+  );
+
+  return (
+    <ReportWrapper isPrintMode={isPrintMode}>
+      {/* Print Header - Only visible when printing */}
+      {isPrintMode && printHeader}
+      
+      <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+        {/* Header */}
+        <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''} print:hidden`}>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(`/jobs/${jobId}`)}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Job
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                if (isEditing) handleChange('status', formData.status === 'PASS' ? 'FAIL' : 'PASS')
+              }}
+              disabled={!isEditing}
+              className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                formData.status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' :
+                'bg-red-600 text-white focus:ring-red-500'
+              } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 dark:bg-opacity-80'}`}
+            >
+              {formData.status}
+            </button>
+
+            {reportId && !isEditing ? (
+              <>
+                <button onClick={() => setIsEditing(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  Edit Report
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Print Report
+                </button>
+              </>
+            ) : (
+              <button onClick={handleSave} disabled={!isEditing} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700'}`}>
+                Save Report
+              </button>
+            )}
+          </div>
+        </div>
 
       {/* Job Information Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
+      <section aria-labelledby="job-info-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <h2 id="job-info-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
             <div><label className="form-label">Customer:</label><input type="text" value={formData.customerName} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
             <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
@@ -590,8 +633,8 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       </section>
 
       {/* Device Data Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Device Data</h2>
+      <section aria-labelledby="device-data-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <h2 id="device-data-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Device Data</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
             <div><label htmlFor="deviceData.manufacturer" className="form-label">Manufacturer:</label><input id="deviceData.manufacturer" type="text" value={formData.deviceData.manufacturer} onChange={(e) => handleChange('deviceData.manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="deviceData.catalogNumber" className="form-label">Catalog Number:</label><input id="deviceData.catalogNumber" type="text" value={formData.deviceData.catalogNumber} onChange={(e) => handleChange('deviceData.catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -605,8 +648,8 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       </section>
 
       {/* Visual and Mechanical Inspection Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
+      <section aria-labelledby="visual-inspection-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <h2 id="visual-inspection-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-dark-200">
@@ -634,8 +677,8 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       </section>
 
       {/* Fuse Data Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Fuse Data</h2>
+      <section aria-labelledby="fuse-data-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <h2 id="fuse-data-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Fuse Data</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
             <div><label htmlFor="fuseData.manufacturer" className="form-label">Manufacturer:</label><input id="fuseData.manufacturer" type="text" value={formData.fuseData.manufacturer} onChange={(e) => handleChange('fuseData.manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="fuseData.catalogNumber" className="form-label">Catalog Number:</label><input id="fuseData.catalogNumber" type="text" value={formData.fuseData.catalogNumber} onChange={(e) => handleChange('fuseData.catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -647,8 +690,8 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       </section>
       
       {/* Electrical Tests - Fuse Resistance Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Fuse Resistance</h2>
+      <section aria-labelledby="fuse-resistance-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <h2 id="fuse-resistance-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Fuse Resistance</h2>
         <div className="overflow-x-auto">
             <table className="min-w-full w-max divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-dark-200">
@@ -676,8 +719,8 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       </section>
 
       {/* Electrical Tests - Insulation Resistance & Ratio Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Insulation Resistance & Ratio</h2>
+      <section aria-labelledby="electrical-tests-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 space-y-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <h2 id="electrical-tests-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance & Ratio</h2>
         
         {/* Insulation Resistance Table */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -781,8 +824,8 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       </section>
 
       {/* Test Equipment Used Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
+      <section aria-labelledby="test-equipment-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <h2 id="test-equipment-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
         <div className="space-y-4">
             {(Object.keys(formData.testEquipmentUsed) as Array<keyof FormData['testEquipmentUsed']>).map(equipmentKey => {
                 const equipment = formData.testEquipmentUsed[equipmentKey];
@@ -803,8 +846,8 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       </section>
 
       {/* Comments Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
+      <section aria-labelledby="comments-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <h2 id="comments-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         <textarea
           value={formData.comments}
           onChange={(e) => handleChange('comments', e.target.value)}
@@ -814,8 +857,129 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
           placeholder="Enter comments here..."
         />
       </section>
-    </div>
+      </div>
+    </ReportWrapper>
   );
 };
+
+// Add print styles
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = `
+    @media print {
+      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      * { color: black !important; }
+      
+      /* Form elements - hide interactive indicators */
+      input, select, textarea { 
+        background-color: white !important; 
+        border: 1px solid black !important; 
+        color: black !important;
+        padding: 2px !important; 
+        font-size: 10px !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+      }
+      
+      /* Hide dropdown arrows and form control indicators */
+      select {
+        background-image: none !important;
+        padding-right: 8px !important;
+      }
+      
+      /* Hide spin buttons on number inputs */
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none !important;
+        margin: 0 !important;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield !important;
+      }
+      
+      /* Table styling */
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid black !important; padding: 4px !important; }
+      th { background-color: #f0f0f0 !important; font-weight: bold !important; }
+      
+      /* Hide interactive elements */
+      button:not(.print-visible) { display: none !important; }
+      
+      /* Status badge colors for print */
+      .bg-green-600 { background-color: #059669 !important; color: white !important; }
+      .bg-red-600 { background-color: #dc2626 !important; color: white !important; }
+      .bg-yellow-500 { background-color: #eab308 !important; color: white !important; }
+      
+      /* Section styling */
+      section { break-inside: avoid !important; margin-bottom: 20px !important; }
+      
+      /* Test Equipment Section - Enhanced Print Styling */
+      section[aria-labelledby="test-equipment-heading"] {
+        page-break-before: always !important;
+        page-break-inside: avoid !important;
+        font-size: 8px !important;
+      }
+      
+      section[aria-labelledby="test-equipment-heading"] input {
+        font-size: 8px !important;
+        padding: 1px !important;
+        border: 1px solid black !important;
+        background: transparent !important;
+        color: black !important;
+        height: auto !important;
+        line-height: 1.1 !important;
+      }
+      
+      section[aria-labelledby="test-equipment-heading"] label {
+        font-size: 8px !important;
+        color: black !important;
+        font-weight: bold !important;
+      }
+      
+      section[aria-labelledby="test-equipment-heading"] .grid {
+        display: block !important;
+      }
+      
+      section[aria-labelledby="test-equipment-heading"] .grid > div {
+        margin-bottom: 4px !important;
+        display: block !important;
+      }
+      
+      /* Comments Section - Enhanced Print Styling */
+      section[aria-labelledby="comments-heading"] {
+        page-break-before: always !important;
+        page-break-inside: avoid !important;
+        font-size: 8px !important;
+      }
+      
+      section[aria-labelledby="comments-heading"] textarea {
+        font-size: 8px !important;
+        padding: 2px !important;
+        border: 1px solid black !important;
+        background: transparent !important;
+        color: black !important;
+        min-height: 100px !important;
+        height: 100px !important;
+        resize: none !important;
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        line-height: 1.1 !important;
+      }
+      
+      /* Print utility classes */
+      .print\\:break-before-page { page-break-before: always; }
+      .print\\:break-after-page { page-break-after: always; }
+      .print\\:break-inside-avoid { page-break-inside: avoid; }
+      .print\\:text-black { color: black !important; }
+      .print\\:bg-white { background-color: white !important; }
+      .print\\:border-black { border-color: black !important; }
+      .print\\:font-bold { font-weight: bold !important; }
+      .print\\:text-center { text-align: center !important; }
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 export default VoltagePotentialTransformerTestMTSReport; 

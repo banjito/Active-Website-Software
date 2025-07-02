@@ -270,3 +270,90 @@ This document outlines the standardized CSS rules and components for both light 
 3. Include proper ARIA labels where needed
 4. Ensure focus states are visible in both modes
 5. Test with screen readers in both light and dark modes 
+
+
+## Print Styles
+
+All reports must include comprehensive print styles that remove interactive elements and provide clean, professional output:
+
+### Required Print CSS
+```css
+@media print {
+  body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+  * { color: black !important; }
+  
+  /* Form elements - hide interactive indicators */
+  input, select, textarea { 
+    background-color: white !important; 
+    border: 1px solid black !important; 
+    color: black !important;
+    padding: 2px !important; 
+    font-size: 10px !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+  }
+  
+  /* Hide dropdown arrows and form control indicators */
+  select {
+    background-image: none !important;
+    padding-right: 8px !important;
+  }
+  
+  /* Hide spin buttons on number inputs */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield !important;
+  }
+  
+  /* Table styling */
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid black !important; padding: 4px !important; }
+  th { background-color: #f0f0f0 !important; font-weight: bold !important; }
+  
+  /* Hide interactive elements */
+  button:not(.print-visible) { display: none !important; }
+  
+  /* Section styling */
+  section { break-inside: avoid !important; margin-bottom: 20px !important; }
+  
+  /* Print utility classes */
+  .print\\:break-before-page { page-break-before: always; }
+  .print\\:break-after-page { page-break-after: always; }
+  .print\\:break-inside-avoid { page-break-inside: avoid; }
+  .print\\:text-black { color: black !important; }
+  .print\\:bg-white { background-color: white !important; }
+  .print\\:border-black { border-color: black !important; }
+  .print\\:font-bold { font-weight: bold !important; }
+  .print\\:text-center { text-align: center !important; }
+}
+```
+
+### Print Style Requirements
+1. **Remove all dropdown arrows** using `appearance: none` and `background-image: none`
+2. **Hide number input spin buttons** for temperature and numeric fields  
+3. **Clean form presentation** showing only selected values, not interactive elements
+4. **Professional table borders** with consistent black borders
+5. **Proper page breaks** to avoid cutting sections
+6. **Black text and white backgrounds** for optimal print contrast
+7. **Cross-browser compatibility** using `-webkit-`, `-moz-`, and standard prefixes
+
+### Print Implementation Notes
+- All reports must include the complete print CSS in a `useEffect` hook
+- Test print preview in multiple browsers (Chrome, Firefox, Safari, Edge)
+- Verify no interactive UI elements (arrows, spinners) are visible in print
+- Ensure proper page breaks and section spacing
+- Use print utility classes for consistent styling across reports
+
+### Print Testing Checklist
+- [ ] No dropdown arrows visible on select elements
+- [ ] No spin buttons on number inputs
+- [ ] Clean, professional appearance
+- [ ] Proper page breaks between sections
+- [ ] All text is black on white background
+- [ ] Tables have consistent borders
+- [ ] Forms show only selected values

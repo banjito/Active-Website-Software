@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../lib/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
+import { ReportWrapper } from './ReportWrapper';
 
 // Types
 interface CableTestData {
@@ -348,6 +349,198 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
   const [isEditMode, setIsEditMode] = useState<boolean>(!reportId); // Edit mode enabled by default for new reports
+  const [searchParams] = useSearchParams();
+  const isPrintMode = searchParams.get('print') === 'true';
+
+  // Add print styles and hide navigation/scrollbar
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      /* Hide navigation bar and scrollbar */
+      nav, header, .navigation, [class*="nav"], [class*="header"] {
+        display: none !important;
+      }
+      
+      /* Hide scrollbar */
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      
+      html {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        height: 100%;
+      }
+      
+      body {
+        overflow-x: hidden;
+        min-height: 100vh;
+        padding-bottom: 100px;
+      }
+      
+      /* Ensure comments section is visible */
+      textarea {
+        min-height: 200px !important;
+      }
+
+      @media print {
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        .print\\:break-before-page { page-break-before: always; }
+        .print\\:break-after-page { page-break-after: always; }
+        .print\\:break-inside-avoid { page-break-inside: avoid; }
+        .print\\:text-black { color: black !important; }
+        .print\\:bg-white { background-color: white !important; }
+        .print\\:border-black { border-color: black !important; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black !important; padding: 4px !important; color: black !important; font-size: 10px !important; }
+        th { background-color: #f0f0f0 !important; font-weight: bold !important; }
+        input, select, textarea { 
+          background-color: white !important; 
+          border: 1px solid black !important; 
+          color: black !important; 
+          padding: 2px !important; 
+          font-size: 10px !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+        }
+        /* Hide dropdown arrows and form control indicators */
+        select {
+          background-image: none !important;
+          padding-right: 8px !important;
+        }
+        /* Hide spin buttons on number inputs */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none !important;
+          margin: 0 !important;
+        }
+        input[type="number"] {
+          -moz-appearance: textfield !important;
+        }
+        .print\\:font-bold { font-weight: bold !important; }
+        .print\\:text-center { text-align: center !important; }
+        label { color: black !important; font-weight: 500 !important; }
+        h1, h2, h3, h4, h5, h6 { color: black !important; }
+        div[class*="bg-white"] { background-color: white !important; }
+        div[class*="shadow"] { box-shadow: none !important; }
+        .bg-green-100 { background-color: #dcfce7 !important; }
+        .text-green-800 { color: #166534 !important; }
+        .bg-red-100 { background-color: #fecaca !important; }
+        .text-red-800 { color: #991b1b !important; }
+        
+        /* Electrical tests table specific styling */
+        section[aria-labelledby="electrical-tests-heading"] table {
+          font-size: 8px !important;
+          width: 100% !important;
+        }
+        section[aria-labelledby="electrical-tests-heading"] th,
+        section[aria-labelledby="electrical-tests-heading"] td {
+          padding: 2px !important;
+          font-size: 8px !important;
+          border: 1px solid black !important;
+        }
+        section[aria-labelledby="electrical-tests-heading"] input {
+          font-size: 8px !important;
+          padding: 1px !important;
+          width: 100% !important;
+          min-width: 0 !important;
+        }
+        section[aria-labelledby="electrical-tests-heading"] select {
+          font-size: 8px !important;
+          padding: 1px !important;
+          width: 100% !important;
+          min-width: 0 !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+          background-image: none !important;
+        }
+        
+        /* Force table to fit on page */
+        .overflow-x-auto {
+          overflow: visible !important;
+        }
+        
+        /* Ensure no page breaks in electrical tests section */
+        section[aria-labelledby="electrical-tests-heading"] {
+          page-break-inside: avoid !important;
+        }
+        
+        /* Caption styling */
+        caption {
+          color: black !important;
+          font-size: 9px !important;
+          margin-bottom: 5px !important;
+        }
+        
+        /* Test Equipment section styling */
+        section[aria-labelledby="equipment-heading"] {
+          page-break-inside: avoid !important;
+          margin-bottom: 20px !important;
+        }
+        
+        section[aria-labelledby="equipment-heading"] input {
+          font-size: 10px !important;
+          padding: 4px !important;
+          border: 1px solid black !important;
+          background-color: white !important;
+          color: black !important;
+          height: auto !important;
+          min-height: 25px !important;
+        }
+        
+        section[aria-labelledby="equipment-heading"] label {
+          font-size: 10px !important;
+          color: black !important;
+          font-weight: 500 !important;
+        }
+        
+        section[aria-labelledby="equipment-heading"] .grid {
+          display: grid !important;
+          grid-template-columns: 1fr 1fr 1fr !important;
+          gap: 10px !important;
+        }
+        
+        /* Comments section specific styling */
+        section[aria-labelledby="comments-heading"] {
+          page-break-inside: avoid !important;
+          margin-bottom: 50px !important;
+          min-height: 250px !important;
+        }
+        
+        section[aria-labelledby="comments-heading"] textarea {
+          min-height: 180px !important;
+          height: 180px !important;
+          font-size: 10px !important;
+          padding: 8px !important;
+          border: 1px solid black !important;
+          background-color: white !important;
+          color: black !important;
+          resize: none !important;
+          overflow: visible !important;
+          page-break-inside: avoid !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        
+        /* Force sections to be visible and prevent cutting */
+        section {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+        
+        /* Ensure proper spacing between sections */
+        .space-y-6 > * + * {
+          margin-top: 15px !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
@@ -851,10 +1044,21 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
 
   // Render the header section with buttons
   const renderHeader = () => (
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        {reportName}
-      </h1>
+    <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''} print:hidden`}>
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => navigate(`/jobs/${jobId}`)}
+          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Job
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {reportName}
+        </h1>
+      </div>
       <div className="flex gap-2">
         {/* Pass/Fail Button - Always visible, modifies state */}
         <button
@@ -875,12 +1079,20 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
 
         {/* Conditional Edit/Save Buttons */}
         {reportId && !isEditMode ? (
-          <button
-            onClick={() => setIsEditMode(true)}
-            className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Edit Report
-          </button>
+          <>
+            <button
+              onClick={() => setIsEditMode(true)}
+              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Edit Report
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              Print Report
+            </button>
+          </>
         ) : (
           <button
             onClick={handleSave}
@@ -903,533 +1115,551 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
   }
 
   return (
-    // Main container with padding and centered layout
-    <div className="p-6 flex justify-center">
-      <div className="max-w-7xl w-full space-y-6">
-        {/* Header with title and buttons */}
-        {renderHeader()}
-        
-        {/* Update form input styles throughout the component */}
-        <style>{`
-          /* Reset light/dark mode styling to defaults */
-          html:not(.dark) input, 
-          html:not(.dark) select, 
-          html:not(.dark) textarea, 
-          html:not(.dark) .form-input, 
-          html:not(.dark) .form-select, 
-          html:not(.dark) .form-textarea {
-            background-color: #ffffff !important;
-            color: #111827 !important;
-            border-color: #d1d5db !important;
-          }
-          
-          /* Readonly fields in view mode */
-          input[readonly], textarea[readonly], select[disabled] {
-            background-color: #f3f4f6 !important;
-            color: #4b5563 !important;
-            cursor: not-allowed;
-            opacity: 0.7;
-          }
-          
-          /* Ensure button text stays white in light mode */
-          html:not(.dark) button.text-white {
-            color: white !important;
-          }
-          
-          html:not(.dark) input[readonly], 
-          html:not(.dark) .form-input[readonly] {
-            background-color: #f3f4f6 !important;
-            color: #4b5563 !important;
-          }
-          
-          html:not(.dark) *, 
-          html:not(.dark) *::before, 
-          html:not(.dark) *::after,
-          html:not(.dark) h1, 
-          html:not(.dark) h2, 
-          html:not(.dark) h3, 
-          html:not(.dark) h4, 
-          html:not(.dark) h5, 
-          html:not(.dark) h6, 
-          html:not(.dark) p, 
-          html:not(.dark) span, 
-          html:not(.dark) div, 
-          html:not(.dark) label, 
-          html:not(.dark) th, 
-          html:not(.dark) td {
-            color: initial !important;
-          }
-          
-          html:not(.dark) section {
-            background-color: #ffffff !important;
-          }
-          
-          html:not(.dark) thead tr, 
-          html:not(.dark) tr.bg-gray-50 {
-            background-color: #f9fafb !important;
-          }
-          
-          /* Dark mode styling only applied when .dark class is present */
-          html.dark input, 
-          html.dark select, 
-          html.dark textarea, 
-          html.dark .form-input, 
-          html.dark .form-select, 
-          html.dark .form-textarea {
-            background-color: #242424 !important;
-            color: white !important;
-            border-color: #4b5563 !important;
-          }
-          
-          html.dark input[readonly], 
-          html.dark .form-input[readonly],
-          html.dark select[disabled],
-          html.dark textarea[readonly] {
-            background-color: #2a2a2a !important;
-            color: #9ca3af !important;
-            cursor: not-allowed;
-            opacity: 0.7;
-          }
-          
-          html.dark *, 
-          html.dark *::before, 
-          html.dark *::after {
-            color: white !important;
-          }
-          
-          html.dark h1, 
-          html.dark h2, 
-          html.dark h3, 
-          html.dark h4, 
-          html.dark h5, 
-          html.dark h6, 
-          html.dark p, 
-          html.dark span, 
-          html.dark div, 
-          html.dark label, 
-          html.dark th, 
-          html.dark td {
-            color: white !important;
-          }
-          
-          html.dark section {
-            background-color: #1a1a1a !important;
-          }
-          
-          html.dark thead tr, 
-          html.dark tr.bg-gray-50 {
-            background-color: #2a2a2a !important;
-          }
-        `}</style>
-        
-        {/* Job Information Section - Uses dark:bg-dark-150 directly */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-            {/* Column 1 */}
-            <div>
-              <div className="mb-4">
-                <label htmlFor="customer" className="form-label inline-block w-32">Customer:</label>
-                <input id="customer" name="customer" type="text" value={formData.customer} onChange={handleChange} 
-                  className="form-input" readOnly={true} 
-                  style={{ backgroundColor: 'var(--dark-input-bg, #242424)', color: 'var(--dark-text-primary, #ffffff)' }} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="address" className="form-label inline-block w-32">Address:</label>
-                <input id="address" name="address" type="text" value={formData.address} onChange={handleChange} 
-                  className="form-input" readOnly={true} 
-                  style={{ backgroundColor: 'var(--dark-input-bg, #242424)', color: 'var(--dark-text-primary, #ffffff)' }} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="user" className="form-label inline-block w-32">User:</label>
-                <input id="user" name="user" type="text" value={formData.user} onChange={handleChange} className="form-input" readOnly={true} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="date" className="form-label inline-block w-32">Date:</label>
-                <input id="date" name="date" type="date" value={formData.date} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="identifier" className="form-label inline-block w-32">Identifier:</label>
-                <input id="identifier" name="identifier" type="text" value={formData.identifier || ''} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-            </div>
-            {/* Column 2 */}
-            <div>
-              <div className="mb-4">
-                <label htmlFor="jobNumber" className="form-label inline-block w-32">Job #:</label>
-                <input id="jobNumber" name="jobNumber" type="text" value={formData.jobNumber} onChange={handleChange} className="form-input" readOnly={true} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="technicians" className="form-label inline-block w-32">Technicians:</label>
-                <input id="technicians" name="technicians" type="text" value={formData.technicians} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4 flex items-center">
-                <label htmlFor="temperature" className="form-label inline-block w-32">Temp:</label>
-                <input 
-                  id="temperature" 
-                  name="temperature" 
-                  type="number" 
-                  value={formData.temperature} 
-                  onChange={handleChange} 
-                  className="form-input w-20"
-                  readOnly={!isEditMode}
-                />
-                <span className="mx-2 text-gray-600 dark:text-gray-400">°F</span>
-                <span className="mx-2 text-gray-600 dark:text-gray-400">{celsiusTemperature.toFixed(0)}</span>
-                <span className="text-gray-600 dark:text-gray-400">°C</span>
-                <span className="mx-5 text-gray-600 dark:text-gray-400">TCF</span>
-                <span className="font-medium text-gray-900 dark:text-white">{tcf}</span>
-              </div>
-              <div className="mb-4">
-                <label htmlFor="humidity" className="form-label inline-block w-32">Humidity:</label>
-                <input 
-                  id="humidity" 
-                  name="humidity" 
-                  type="number" 
-                  value={formData.humidity} 
-                  onChange={handleChange} 
-                  className="form-input w-20"
-                  readOnly={!isEditMode}
-                />
-                <span className="ml-2 text-gray-600 dark:text-gray-400">%</span>
-              </div>
-              <div className="mb-4">
-                <label htmlFor="substation" className="form-label inline-block w-32">Substation:</label>
-                <input id="substation" name="substation" type="text" value={formData.substation} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="eqptLocation" className="form-label inline-block w-32">Eqpt. Location:</label>
-                <input id="eqptLocation" name="eqptLocation" type="text" value={formData.eqptLocation} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-            </div>
+    <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>
+    <ReportWrapper isPrintMode={isPrintMode}>
+      {/* Print Header - Only visible when printing */}
+      <div className={`hidden print:block mb-8 ${isPrintMode ? 'block' : ''}`}>
+        <div className="text-center border-b-2 border-gray-800 pb-4 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            LOW VOLTAGE CABLE TEST REPORT (3 SETS)
+          </h1>
+          <div className="text-lg font-semibold">
+            Status: <span className={`px-3 py-1 rounded ${status === 'PASS' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {status}
+            </span>
           </div>
-        </section>
-        
-        {/* Cable Data Section */}
-        <section aria-labelledby="cable-data-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-          <h2 id="cable-data-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Cable Data</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-            {/* Column 1 */}
-            <div>
-              <div className="mb-4">
-                <label htmlFor="testedFrom" className="form-label inline-block w-32">Tested From:</label>
-                <input id="testedFrom" name="testedFrom" type="text" value={formData.testedFrom} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+        </div>
+      </div>
+
+      {/* Main container with padding and centered layout */}
+      <div className="p-6 flex justify-center">
+        <div className="max-w-7xl w-full space-y-6">
+          {/* Header with title and buttons */}
+          {renderHeader()}
+          
+          {/* Update form input styles throughout the component */}
+          <style>{`
+            /* Reset light/dark mode styling to defaults */
+            html:not(.dark) input, 
+            html:not(.dark) select, 
+            html:not(.dark) textarea, 
+            html:not(.dark) .form-input, 
+            html:not(.dark) .form-select, 
+            html:not(.dark) .form-textarea {
+              background-color: #ffffff !important;
+              color: #111827 !important;
+              border-color: #d1d5db !important;
+            }
+            
+            /* Readonly fields in view mode */
+            input[readonly], textarea[readonly], select[disabled] {
+              background-color: #f3f4f6 !important;
+              color: #4b5563 !important;
+              cursor: not-allowed;
+              opacity: 0.7;
+            }
+            
+            /* Ensure button text stays white in light mode */
+            html:not(.dark) button.text-white {
+              color: white !important;
+            }
+            
+            html:not(.dark) input[readonly], 
+            html:not(.dark) .form-input[readonly] {
+              background-color: #f3f4f6 !important;
+              color: #4b5563 !important;
+            }
+            
+            html:not(.dark) *, 
+            html:not(.dark) *::before, 
+            html:not(.dark) *::after,
+            html:not(.dark) h1, 
+            html:not(.dark) h2, 
+            html:not(.dark) h3, 
+            html:not(.dark) h4, 
+            html:not(.dark) h5, 
+            html:not(.dark) h6, 
+            html:not(.dark) p, 
+            html:not(.dark) span, 
+            html:not(.dark) div, 
+            html:not(.dark) label, 
+            html:not(.dark) th, 
+            html:not(.dark) td {
+              color: initial !important;
+            }
+            
+            html:not(.dark) section {
+              background-color: #ffffff !important;
+            }
+            
+            html:not(.dark) thead tr, 
+            html:not(.dark) tr.bg-gray-50 {
+              background-color: #f9fafb !important;
+            }
+            
+            /* Dark mode styling only applied when .dark class is present */
+            html.dark input, 
+            html.dark select, 
+            html.dark textarea, 
+            html.dark .form-input, 
+            html.dark .form-select, 
+            html.dark .form-textarea {
+              background-color: #242424 !important;
+              color: white !important;
+              border-color: #4b5563 !important;
+            }
+            
+            html.dark input[readonly], 
+            html.dark .form-input[readonly],
+            html.dark select[disabled],
+            html.dark textarea[readonly] {
+              background-color: #2a2a2a !important;
+              color: #9ca3af !important;
+              cursor: not-allowed;
+              opacity: 0.7;
+            }
+            
+            html.dark *, 
+            html.dark *::before, 
+            html.dark *::after {
+              color: white !important;
+            }
+            
+            html.dark h1, 
+            html.dark h2, 
+            html.dark h3, 
+            html.dark h4, 
+            html.dark h5, 
+            html.dark h6, 
+            html.dark p, 
+            html.dark span, 
+            html.dark div, 
+            html.dark label, 
+            html.dark th, 
+            html.dark td {
+              color: white !important;
+            }
+            
+            html.dark section {
+              background-color: #1a1a1a !important;
+            }
+            
+            html.dark thead tr, 
+            html.dark tr.bg-gray-50 {
+              background-color: #2a2a2a !important;
+            }
+          `}</style>
+          
+          {/* Job Information Section - Updated with print classes */}
+          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              {/* Column 1 */}
+              <div>
+                <div className="mb-4">
+                  <label htmlFor="customer" className="form-label inline-block w-32">Customer:</label>
+                  <input id="customer" name="customer" type="text" value={formData.customer} onChange={handleChange} 
+                    className="form-input" readOnly={true} 
+                    style={{ backgroundColor: 'var(--dark-input-bg, #242424)', color: 'var(--dark-text-primary, #ffffff)' }} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="address" className="form-label inline-block w-32">Address:</label>
+                  <input id="address" name="address" type="text" value={formData.address} onChange={handleChange} 
+                    className="form-input" readOnly={true} 
+                    style={{ backgroundColor: 'var(--dark-input-bg, #242424)', color: 'var(--dark-text-primary, #ffffff)' }} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="user" className="form-label inline-block w-32">User:</label>
+                  <input id="user" name="user" type="text" value={formData.user} onChange={handleChange} className="form-input" readOnly={true} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="date" className="form-label inline-block w-32">Date:</label>
+                  <input id="date" name="date" type="date" value={formData.date} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="identifier" className="form-label inline-block w-32">Identifier:</label>
+                  <input id="identifier" name="identifier" type="text" value={formData.identifier || ''} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
               </div>
-              <div className="mb-4">
-                <label htmlFor="manufacturer" className="form-label inline-block w-32">Manufacturer:</label>
-                <input id="manufacturer" name="manufacturer" type="text" value={formData.manufacturer} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="conductorMaterial" className="form-label inline-block w-32">Conductor Material:</label>
-                <input id="conductorMaterial" name="conductorMaterial" type="text" value={formData.conductorMaterial} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="insulationType" className="form-label inline-block w-32">Insulation Type:</label>
-                <input id="insulationType" name="insulationType" type="text" value={formData.insulationType} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+              {/* Column 2 */}
+              <div>
+                <div className="mb-4">
+                  <label htmlFor="jobNumber" className="form-label inline-block w-32">Job #:</label>
+                  <input id="jobNumber" name="jobNumber" type="text" value={formData.jobNumber} onChange={handleChange} className="form-input" readOnly={true} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="technicians" className="form-label inline-block w-32">Technicians:</label>
+                  <input id="technicians" name="technicians" type="text" value={formData.technicians} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="temperature" className="form-label inline-block w-32">Temp:</label>
+                  <input 
+                    id="temperature" 
+                    name="temperature" 
+                    type="number" 
+                    value={formData.temperature} 
+                    onChange={handleChange} 
+                    className="form-input w-20"
+                    readOnly={!isEditMode}
+                  />
+                  <span className="mx-2 text-gray-600 dark:text-gray-400">°F</span>
+                  <span className="mx-2 text-gray-600 dark:text-gray-400">{celsiusTemperature.toFixed(0)}</span>
+                  <span className="text-gray-600 dark:text-gray-400">°C</span>
+                  <span className="mx-5 text-gray-600 dark:text-gray-400">TCF</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{tcf}</span>
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="humidity" className="form-label inline-block w-32">Humidity:</label>
+                  <input 
+                    id="humidity" 
+                    name="humidity" 
+                    type="number" 
+                    value={formData.humidity} 
+                    onChange={handleChange} 
+                    className="form-input w-20"
+                    readOnly={!isEditMode}
+                  />
+                  <span className="ml-2 text-gray-600 dark:text-gray-400">%</span>
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="substation" className="form-label inline-block w-32">Substation:</label>
+                  <input id="substation" name="substation" type="text" value={formData.substation} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="eqptLocation" className="form-label inline-block w-32">Eqpt. Location:</label>
+                  <input id="eqptLocation" name="eqptLocation" type="text" value={formData.eqptLocation} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
               </div>
             </div>
-            {/* Column 2 */}
-            <div>
-              <div className="mb-4">
-                <label htmlFor="systemVoltage" className="form-label inline-block w-32">System Voltage:</label>
-                <input id="systemVoltage" name="systemVoltage" type="text" value={formData.systemVoltage} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+          </section>
+          
+          {/* Cable Data Section - Updated with print classes */}
+          <section aria-labelledby="cable-data-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+            <h2 id="cable-data-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Cable Data</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              {/* Column 1 */}
+              <div>
+                <div className="mb-4">
+                  <label htmlFor="testedFrom" className="form-label inline-block w-32">Tested From:</label>
+                  <input id="testedFrom" name="testedFrom" type="text" value={formData.testedFrom} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="manufacturer" className="form-label inline-block w-32">Manufacturer:</label>
+                  <input id="manufacturer" name="manufacturer" type="text" value={formData.manufacturer} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="conductorMaterial" className="form-label inline-block w-32">Conductor Material:</label>
+                  <input id="conductorMaterial" name="conductorMaterial" type="text" value={formData.conductorMaterial} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="insulationType" className="form-label inline-block w-32">Insulation Type:</label>
+                  <input id="insulationType" name="insulationType" type="text" value={formData.insulationType} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
               </div>
-              <div className="mb-4">
-                <label htmlFor="ratedVoltage" className="form-label inline-block w-32">Rated Voltage:</label>
-                <input id="ratedVoltage" name="ratedVoltage" type="text" value={formData.ratedVoltage} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="length" className="form-label inline-block w-32">Length:</label>
-                <input id="length" name="length" type="text" value={formData.length} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+              {/* Column 2 */}
+              <div>
+                <div className="mb-4">
+                  <label htmlFor="systemVoltage" className="form-label inline-block w-32">System Voltage:</label>
+                  <input id="systemVoltage" name="systemVoltage" type="text" value={formData.systemVoltage} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="ratedVoltage" className="form-label inline-block w-32">Rated Voltage:</label>
+                  <input id="ratedVoltage" name="ratedVoltage" type="text" value={formData.ratedVoltage} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="length" className="form-label inline-block w-32">Length:</label>
+                  <input id="length" name="length" type="text" value={formData.length} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-        
-        {/* Visual and Mechanical Inspection Section */}
-        <section aria-labelledby="inspection-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-          <h2 id="inspection-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse min-w-[600px]">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-dark-200">
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">NETA Section</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">Description</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-48">Results</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {Object.entries({
-                  "7.3.1.A.1": "Inspect exposed sections of cables and connectors for physical damage and evidence of degradation.",
-                  "7.3.1.A.2.1": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
-                  "7.3.1.A.3": "Inspect cable tray and cable supports.",
-                  "7.3.1.A.4": "If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed for operation of protective devices.",
-                  "7.3.1.A.5*": "Compare cable data with drawings and cable schedule. *Optional"
-                }).map(([section, description]) => (
-                  <tr key={section} className="hover:bg-gray-50 dark:hover:bg-dark-200">
-                    <td className="px-4 py-2 text-sm font-mono text-gray-900 dark:text-white">{section}</td>
-                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{description}</td>
-                    <td className="px-4 py-2">
-                      <select
-                        id={`inspection-${section}`}
-                        value={formData.inspectionResults[section]}
-                        onChange={(e) => handleInspectionChange(section, e.target.value)}
-                        className="form-select w-full text-sm"
-                        disabled={!isEditMode}
-                      >
-                        {INSPECTION_RESULTS_OPTIONS.map(option => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </td>
+          </section>
+          
+          {/* Visual and Mechanical Inspection Section - Updated with print classes */}
+          <section aria-labelledby="inspection-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+            <h2 id="inspection-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse min-w-[600px]">
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-dark-200">
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">NETA Section</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">Description</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-48">Results</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-        
-        {/* Electrical Tests Section */}
-        <section aria-labelledby="electrical-tests-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-          <h2 id="electrical-tests-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests</h2>
-          
-          <div className="flex justify-end mb-4">
-            <div className="w-48">
-              <label htmlFor="testVoltage" className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</label>
-              <select
-                id="testVoltage"
-                name="testVoltage"
-                value={formData.testVoltage}
-                onChange={handleChange}
-                className="form-select text-sm"
-                disabled={!isEditMode}
-              >
-                {TEST_VOLTAGES.map(voltage => (
-                  <option key={voltage} value={voltage}>{voltage}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          {/* Test Sets Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
-              <caption className="caption-bottom text-xs text-gray-500 dark:text-gray-400 py-2">
-                Insulation Resistance Readings in MΩ (Mega-Ohms). RDG = Raw Reading, 20°C = Temperature Corrected Reading.
-              </caption>
-              <thead>
-                <tr className="bg-gray-50 dark:bg-dark-200">
-                  <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-28">From</th>
-                  <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-28">To</th>
-                  <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-20">Size</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-G</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-G</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-G</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">N-G</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-B</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-C</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-A</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-N</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-N</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-N</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-20">Cont.</th>
-                  <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-24">Results</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {formData.testSets.slice(0, 12).map((set) => ( // Changed from 3 to 12
-                  <React.Fragment key={set.id}>
-                    {/* Raw Readings Row */}
-                    <tr className="hover:bg-gray-50 dark:hover:bg-dark-200">
-                      <td className="px-1 py-0.5">
-                        <input
-                          type="text"
-                          data-position={`${set.id - 1}-0`}
-                          aria-label={`Set ${set.id} From`}
-                          value={set.from}
-                          onChange={(e) => handleTestSetChange(set.id, 'from', e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 0 })}
-                          className="form-input text-xs py-1 px-1.5 text-gray-900 dark:text-white"
-                          readOnly={!isEditMode}
-                        />
-                      </td>
-                      <td className="px-1 py-0.5">
-                        <input
-                          type="text"
-                          data-position={`${set.id - 1}-1`}
-                          aria-label={`Set ${set.id} To`}
-                          value={set.to}
-                          onChange={(e) => handleTestSetChange(set.id, 'to', e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 1 })}
-                          className="form-input text-xs py-1 px-1.5 text-gray-900 dark:text-white"
-                          readOnly={!isEditMode}
-                        />
-                      </td>
-                      <td className="px-1 py-0.5">
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {Object.entries({
+                    "7.3.1.A.1": "Inspect exposed sections of cables and connectors for physical damage and evidence of degradation.",
+                    "7.3.1.A.2.1": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
+                    "7.3.1.A.3": "Inspect cable tray and cable supports.",
+                    "7.3.1.A.4": "If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed for operation of protective devices.",
+                    "7.3.1.A.5*": "Compare cable data with drawings and cable schedule. *Optional"
+                  }).map(([section, description]) => (
+                    <tr key={section} className="hover:bg-gray-50 dark:hover:bg-dark-200">
+                      <td className="px-4 py-2 text-sm font-mono text-gray-900 dark:text-white">{section}</td>
+                      <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{description}</td>
+                      <td className="px-4 py-2">
                         <select
-                          data-position={`${set.id - 1}-2`}
-                          aria-label={`Set ${set.id} Size`}
-                          value={set.size}
-                          onChange={(e) => handleTestSetChange(set.id, 'size', e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 2 })}
-                          className="form-select text-xs py-1 px-1.5 text-gray-900 dark:text-white"
+                          id={`inspection-${section}`}
+                          value={formData.inspectionResults[section]}
+                          onChange={(e) => handleInspectionChange(section, e.target.value)}
+                          className="form-select w-full text-sm"
                           disabled={!isEditMode}
                         >
-                          <option value="">Select</option>
-                          {CABLE_SIZES.map(size => (
-                            <option key={size} value={size}>{size}</option>
+                          {INSPECTION_RESULTS_OPTIONS.map(option => (
+                            <option key={option} value={option}>{option}</option>
                           ))}
                         </select>
                       </td>
-                      {/* Dynamically generate input cells for readings */}
-                      {Object.keys(set.readings).filter(k => k !== 'continuity').map((key, idx) => (
-                        <td className="px-1 py-0.5" key={`${set.id}-reading-${key}`}>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+          
+          {/* Electrical Tests Section - Updated with print classes */}
+          <section aria-labelledby="electrical-tests-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+            <h2 id="electrical-tests-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests</h2>
+            
+            <div className="flex justify-end mb-4">
+              <div className="w-48">
+                <label htmlFor="testVoltage" className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</label>
+                <select
+                  id="testVoltage"
+                  name="testVoltage"
+                  value={formData.testVoltage}
+                  onChange={handleChange}
+                  className="form-select text-sm"
+                  disabled={!isEditMode}
+                >
+                  {TEST_VOLTAGES.map(voltage => (
+                    <option key={voltage} value={voltage}>{voltage}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            {/* Test Sets Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <caption className="caption-bottom text-xs text-gray-500 dark:text-gray-400 py-2">
+                  Insulation Resistance Readings in MΩ (Mega-Ohms). RDG = Raw Reading, 20°C = Temperature Corrected Reading.
+                </caption>
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-dark-200">
+                    <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-28">From</th>
+                    <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-28">To</th>
+                    <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-20">Size</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-G</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-G</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-G</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">N-G</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-B</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-C</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-A</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-N</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-N</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-N</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-20">Cont.</th>
+                    <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-24">Results</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {formData.testSets.slice(0, 12).map((set) => ( // Changed from 3 to 12
+                    <React.Fragment key={set.id}>
+                      {/* Raw Readings Row */}
+                      <tr className="hover:bg-gray-50 dark:hover:bg-dark-200">
+                        <td className="px-1 py-0.5">
                           <input
                             type="text"
-                            data-position={`${set.id - 1}-${idx + 3}`}
-                            aria-label={`Set ${set.id} Reading ${key}`}
-                            value={set.readings[key as keyof typeof set.readings]}
-                            onChange={(e) => handleReadingChange(set.id, key as keyof TestSet['readings'], e.target.value)}
-                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: idx + 3 })}
-                            className="form-input text-xs py-1 px-1.5 text-center w-full text-gray-900 dark:text-white"
+                            data-position={`${set.id - 1}-0`}
+                            aria-label={`Set ${set.id} From`}
+                            value={set.from}
+                            onChange={(e) => handleTestSetChange(set.id, 'from', e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 0 })}
+                            className="form-input text-xs py-1 px-1.5 text-gray-900 dark:text-white"
                             readOnly={!isEditMode}
                           />
                         </td>
-                      ))}
-                      <td className="px-1 py-0.5">
-                        <select
-                          data-position={`${set.id - 1}-13`}
-                          aria-label={`Set ${set.id} Continuity`}
-                          value={set.readings.continuity || ''}
-                          onChange={(e) => handleReadingChange(set.id, 'continuity', e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 13 })}
-                          className="form-select text-xs py-1 px-1.5 text-center text-gray-900 dark:text-white"
-                          disabled={!isEditMode}
-                        >
-                          <option value="">Select</option>
-                          <option value="Yes">Yes</option>
-                          <option value="No">No</option>
-                        </select>
-                      </td>
-                      <td className="px-1 py-0.5">
-                        <select
-                          data-position={`${set.id - 1}-14`}
-                          aria-label={`Set ${set.id} Result`}
-                          className="form-select text-xs py-1 px-1.5 text-gray-900 dark:text-white"
-                          value={set.result || ''}
-                          onChange={(e) => handleTestSetChange(set.id, 'result', e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 14 })}
-                          disabled={!isEditMode}
-                        >
-                          <option value="">Select</option>
-                          {EVALUATION_RESULTS.map(result => (
-                            <option key={result} value={result}>{result}</option>
-                          ))}
-                        </select>
-                      </td>
-                    </tr>
-                    
-                    {/* Temperature Corrected Row */}
-                    <tr className="bg-gray-50 dark:bg-dark-200 hover:bg-gray-100 dark:hover:bg-dark-300">
-                      <td colSpan={3} className="px-1.5 py-0.5 text-center text-xs text-gray-500 dark:text-gray-400">20°C Corrected Values</td>
-                      {/* Dynamically generate cells for corrected readings */}
-                      {Object.keys(set.correctedReadings).filter(k => k !== 'continuity').map(key => (
-                        <td className="px-1.5 py-0.5 text-center text-xs font-medium text-gray-900 dark:text-white" key={`${set.id}-corrected-${key}`}>
-                          {set.correctedReadings[key as keyof typeof set.correctedReadings]}
+                        <td className="px-1 py-0.5">
+                          <input
+                            type="text"
+                            data-position={`${set.id - 1}-1`}
+                            aria-label={`Set ${set.id} To`}
+                            value={set.to}
+                            onChange={(e) => handleTestSetChange(set.id, 'to', e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 1 })}
+                            className="form-input text-xs py-1 px-1.5 text-gray-900 dark:text-white"
+                            readOnly={!isEditMode}
+                          />
                         </td>
-                      ))}
-                      <td></td>
-                      <td></td>
-                    </tr>
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-        
-        {/* Test Equipment Used */}
-        <section aria-labelledby="equipment-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-          <h2 id="equipment-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="megohmmeter" className="form-label inline-block w-32">Megohmmeter:</label>
-              <input
-                id="megohmmeter"
-                name="testEquipment.megohmmeter"
-                type="text"
-                value={formData.testEquipment.megohmmeter}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    megohmmeter: e.target.value
-                  }
-                }))}
-                className="form-input"
-                readOnly={!isEditMode}
-              />
+                        <td className="px-1 py-0.5">
+                          <select
+                            data-position={`${set.id - 1}-2`}
+                            aria-label={`Set ${set.id} Size`}
+                            value={set.size}
+                            onChange={(e) => handleTestSetChange(set.id, 'size', e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 2 })}
+                            className="form-select text-xs py-1 px-1.5 text-gray-900 dark:text-white"
+                            disabled={!isEditMode}
+                          >
+                            <option value="">Select</option>
+                            {CABLE_SIZES.map(size => (
+                              <option key={size} value={size}>{size}</option>
+                            ))}
+                          </select>
+                        </td>
+                        {/* Dynamically generate input cells for readings */}
+                        {Object.keys(set.readings).filter(k => k !== 'continuity').map((key, idx) => (
+                          <td className="px-1 py-0.5" key={`${set.id}-reading-${key}`}>
+                            <input
+                              type="text"
+                              data-position={`${set.id - 1}-${idx + 3}`}
+                              aria-label={`Set ${set.id} Reading ${key}`}
+                              value={set.readings[key as keyof typeof set.readings]}
+                              onChange={(e) => handleReadingChange(set.id, key as keyof TestSet['readings'], e.target.value)}
+                              onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: idx + 3 })}
+                              className="form-input text-xs py-1 px-1.5 text-center w-full text-gray-900 dark:text-white"
+                              readOnly={!isEditMode}
+                            />
+                          </td>
+                        ))}
+                        <td className="px-1 py-0.5">
+                          <select
+                            data-position={`${set.id - 1}-13`}
+                            aria-label={`Set ${set.id} Continuity`}
+                            value={set.readings.continuity || ''}
+                            onChange={(e) => handleReadingChange(set.id, 'continuity', e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 13 })}
+                            className="form-select text-xs py-1 px-1.5 text-center text-gray-900 dark:text-white"
+                            disabled={!isEditMode}
+                          >
+                            <option value="">Select</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                          </select>
+                        </td>
+                        <td className="px-1 py-0.5">
+                          <select
+                            data-position={`${set.id - 1}-14`}
+                            aria-label={`Set ${set.id} Result`}
+                            className="form-select text-xs py-1 px-1.5 text-gray-900 dark:text-white"
+                            value={set.result || ''}
+                            onChange={(e) => handleTestSetChange(set.id, 'result', e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 14 })}
+                            disabled={!isEditMode}
+                          >
+                            <option value="">Select</option>
+                            {EVALUATION_RESULTS.map(result => (
+                              <option key={result} value={result}>{result}</option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                      
+                      {/* Temperature Corrected Row */}
+                      <tr className="bg-gray-50 dark:bg-dark-200 hover:bg-gray-100 dark:hover:bg-dark-300">
+                        <td colSpan={3} className="px-1.5 py-0.5 text-center text-xs text-gray-500 dark:text-gray-400">20°C Corrected Values</td>
+                        {/* Dynamically generate cells for corrected readings */}
+                        {Object.keys(set.correctedReadings).filter(k => k !== 'continuity').map(key => (
+                          <td className="px-1.5 py-0.5 text-center text-xs font-medium text-gray-900 dark:text-white" key={`${set.id}-corrected-${key}`}>
+                            {set.correctedReadings[key as keyof typeof set.correctedReadings]}
+                          </td>
+                        ))}
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div>
-              <label htmlFor="serialNumber" className="form-label inline-block w-32">Serial Number:</label>
-              <input
-                id="serialNumber"
-                name="testEquipment.serialNumber"
-                type="text"
-                value={formData.testEquipment.serialNumber}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    serialNumber: e.target.value
-                  }
-                }))}
-                className="form-input"
-                readOnly={!isEditMode}
-              />
+          </section>
+          
+          {/* Test Equipment Used - Updated with print classes */}
+          <section aria-labelledby="equipment-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+            <h2 id="equipment-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="megohmmeter" className="form-label inline-block w-32">Megohmmeter:</label>
+                <input
+                  id="megohmmeter"
+                  name="testEquipment.megohmmeter"
+                  type="text"
+                  value={formData.testEquipment.megohmmeter}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    testEquipment: {
+                      ...prev.testEquipment,
+                      megohmmeter: e.target.value
+                    }
+                  }))}
+                  className="form-input"
+                  readOnly={!isEditMode}
+                />
+              </div>
+              <div>
+                <label htmlFor="serialNumber" className="form-label inline-block w-32">Serial Number:</label>
+                <input
+                  id="serialNumber"
+                  name="testEquipment.serialNumber"
+                  type="text"
+                  value={formData.testEquipment.serialNumber}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    testEquipment: {
+                      ...prev.testEquipment,
+                      serialNumber: e.target.value
+                    }
+                  }))}
+                  className="form-input"
+                  readOnly={!isEditMode}
+                />
+              </div>
+              <div>
+                <label htmlFor="ampId" className="form-label inline-block w-32">AMP ID:</label>
+                <input
+                  id="ampId"
+                  name="testEquipment.ampId"
+                  type="text"
+                  value={formData.testEquipment.ampId}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    testEquipment: {
+                      ...prev.testEquipment,
+                      ampId: e.target.value
+                    }
+                  }))}
+                  className="form-input"
+                  readOnly={!isEditMode}
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="ampId" className="form-label inline-block w-32">AMP ID:</label>
-              <input
-                id="ampId"
-                name="testEquipment.ampId"
-                type="text"
-                value={formData.testEquipment.ampId}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    ampId: e.target.value
-                  }
-                }))}
-                className="form-input"
-                readOnly={!isEditMode}
-              />
-            </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Comments Section */}
-        <section aria-labelledby="comments-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-          <h2 id="comments-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
-          <textarea
-            id="equipmentComments"
-            name="testEquipment.comments"
-            value={formData.testEquipment.comments}
-            onChange={(e) => setFormData(prev => ({
-              ...prev,
-              testEquipment: {
-                ...prev.testEquipment,
-                comments: e.target.value
-              }
-            }))}
-            rows={4}
-            className="w-full form-textarea resize-none"
-            placeholder="Enter any additional comments..."
-            readOnly={!isEditMode}
-          />
-        </section>
+          {/* Comments Section - Updated with print classes */}
+          <section aria-labelledby="comments-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-32" style={{ marginBottom: '150px' }}>
+            <h2 id="comments-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+            <textarea
+              id="equipmentComments"
+              name="testEquipment.comments"
+              value={formData.testEquipment.comments}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                testEquipment: {
+                  ...prev.testEquipment,
+                  comments: e.target.value
+                }
+              }))}
+              rows={10}
+              className="w-full form-textarea resize-vertical min-h-[250px]"
+              placeholder="Enter any additional comments..."
+              readOnly={!isEditMode}
+            />
+          </section>
+        </div>
       </div>
+    </ReportWrapper>
     </div>
   );
 };

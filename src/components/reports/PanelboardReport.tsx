@@ -176,6 +176,89 @@ const PanelboardReport: React.FC = () => {
   const [searchParams] = useSearchParams();
   const isPrintMode = searchParams.get('print') === 'true';
   
+  // Add print styles and hide navigation/scrollbar
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      /* Hide navigation bar and scrollbar */
+      nav, header, .navigation, [class*="nav"], [class*="header"] {
+        display: none !important;
+      }
+      
+      /* Hide scrollbar */
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      
+      html {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        height: 100%;
+      }
+      
+      body {
+        overflow-x: hidden;
+        min-height: 100vh;
+        padding-bottom: 100px;
+      }
+      
+      /* Ensure comments section is visible */
+      textarea {
+        min-height: 200px !important;
+      }
+
+      @media print {
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        * { color: black !important; }
+        .print\\:break-before-page { page-break-before: always; }
+        .print\\:break-after-page { page-break-after: always; }
+        .print\\:break-inside-avoid { page-break-inside: avoid; }
+        .print\\:text-black { color: black !important; }
+        .print\\:bg-white { background-color: white !important; }
+        .print\\:border-black { border-color: black !important; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black !important; padding: 8px !important; color: black !important; }
+        th { background-color: #f0f0f0 !important; font-weight: bold !important; }
+        input, select, textarea { 
+          background-color: white !important; 
+          border: 1px solid black !important; 
+          color: black !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+        }
+        /* Hide dropdown arrows and form control indicators */
+        select {
+          background-image: none !important;
+          padding-right: 8px !important;
+        }
+        /* Hide spin buttons on number inputs */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none !important;
+          margin: 0 !important;
+        }
+        input[type="number"] {
+          -moz-appearance: textfield !important;
+        }
+        .print\\:font-bold { font-weight: bold !important; }
+        .print\\:text-center { text-align: center !important; }
+        label { color: black !important; font-weight: 500 !important; }
+        h1, h2, h3, h4, h5, h6 { color: black !important; }
+        div[class*="bg-white"] { background-color: white !important; }
+        div[class*="shadow"] { box-shadow: none !important; }
+        .bg-green-100 { background-color: #dcfce7 !important; }
+        .text-green-800 { color: #166534 !important; }
+        .bg-red-100 { background-color: #fecaca !important; }
+        .text-red-800 { color: #991b1b !important; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+  
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
   const reportSlug = 'panelboard-report'; // This component handles the panelboard-report route
@@ -587,12 +670,38 @@ const PanelboardReport: React.FC = () => {
   }
 
   return (
+    <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>
     <ReportWrapper isPrintMode={isPrintMode}>
-      {/* Header with Pass/Fail and Edit/Save buttons */}
-      <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''}`}>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {reportName}
-        </h1>
+      {/* Print Header - Only visible when printing */}
+      <div className={`hidden print:block mb-8 ${isPrintMode ? 'block' : ''}`}>
+        <div className="text-center border-b-2 border-gray-800 pb-4 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            PANELBOARD INSPECTION AND TEST REPORT
+          </h1>
+          <div className="text-lg font-semibold">
+            Status: <span className={`px-3 py-1 rounded ${formData.status === 'PASS' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {formData.status}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Header with Back button and Pass/Fail and Edit/Save buttons */}
+      <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''} print:hidden`}>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate(`/jobs/${jobId}`)}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Job
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {reportName}
+          </h1>
+        </div>
         <div className="flex gap-2">
           {/* Pass/Fail Button */}
           <button
@@ -612,27 +721,35 @@ const PanelboardReport: React.FC = () => {
 
           {/* Edit/Save Buttons */}
           {reportId && !isEditing ? (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Edit Report
-            </button>
+            <>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Edit Report
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                Print Report
+              </button>
+            </>
           ) : (
-            <button
-              onClick={handleSave}
-              disabled={!isEditing}
+          <button
+            onClick={handleSave}
+            disabled={!isEditing}
               className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
-            >
+          >
               {reportId ? 'Update Report' : 'Save New Report'}
-            </button>
+          </button>
           )}
         </div>
       </div>
 
       {/* Job Information */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="space-y-4">
             <div>
@@ -762,8 +879,8 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Nameplate Data */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-4">
             <div>
@@ -853,8 +970,8 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Visual and Mechanical Inspection */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
@@ -907,8 +1024,8 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Electrical Tests - Insulation Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Insulation Resistance</h2>
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance</h2>
         <div className="flex justify-end mb-2">
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
@@ -993,8 +1110,8 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Temperature Corrected Values */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Temperature Corrected Values</h2>
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Values</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
@@ -1043,8 +1160,8 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Contact Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Contact Resistance</h2>
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Contact Resistance</h2>
         <div className="flex justify-end mb-2">
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
@@ -1126,37 +1243,40 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Test Equipment Used */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
-        <div className="grid grid-cols-1 gap-6">
-          <div className="grid grid-cols-3 gap-4">
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Megohmmeter</label>
               <input
                 type="text"
                 value={formData.testEquipment.megohmmeter.name}
                 onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', 'name', e.target.value)}
                 readOnly={!isEditing}
+                placeholder="Enter Equipment Name"
                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Serial Number</label>
               <input
                 type="text"
                 value={formData.testEquipment.megohmmeter.serialNumber}
                 onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', 'serialNumber', e.target.value)}
                 readOnly={!isEditing}
+                placeholder="Enter Serial Number"
                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">AMP ID</label>
               <input
                 type="text"
                 value={formData.testEquipment.megohmmeter.ampId}
                 onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', 'ampId', e.target.value)}
                 readOnly={!isEditing}
+                placeholder="Enter AMP ID"
                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
@@ -1165,17 +1285,21 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Comments */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-gray-300">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-32" style={{ marginBottom: '150px' }}>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+        <div className="space-y-4">
         <textarea
           value={formData.comments}
           onChange={(e) => handleChange(null, 'comments', e.target.value)}
           readOnly={!isEditing}
-          rows={4}
-          className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            rows={10}
+            placeholder="Enter any additional comments, observations, or notes about the inspection..."
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white resize-vertical min-h-[250px] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
         />
+        </div>
       </div>
     </ReportWrapper>
+    </div>
   );
 };
 

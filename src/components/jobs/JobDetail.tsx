@@ -2202,23 +2202,25 @@ export default function JobDetail() {
                             <TableHeader>
                               <TableRow>
                                 <TableHead>Asset Name</TableHead>
-                                <TableHead>Type</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Date Added</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {filteredJobAssets.map((asset) => (
+                              {filteredJobAssets
+                                .slice() // Create a shallow copy to avoid mutating the original array
+                                .sort((a, b) => {
+                                  const numA = parseInt(a.name.match(/^(\\d+)/)?.[1] || '0', 10);
+                                  const numB = parseInt(b.name.match(/^(\\d+)/)?.[1] || '0', 10);
+                                  if (numA !== numB) {
+                                    return numA - numB;
+                                  }
+                                  return a.name.localeCompare(b.name);
+                                })
+                                .map((asset) => (
                                 <TableRow key={asset.id}>
                                   <TableCell className="font-medium">{asset.name}</TableCell>
-                                  <TableCell>
-                                    {asset.template_type ? (
-                                      <Badge>{asset.template_type}</Badge>
-                                    ) : (
-                                      'Document'
-                                    )}
-                                  </TableCell>
                                   <TableCell>
                                     {/* Show status - read-only for approved/issue, editable dropdown for others */}
                                     {asset.status === 'approved' || asset.status === 'issue' ? (

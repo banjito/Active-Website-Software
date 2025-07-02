@@ -481,30 +481,44 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         .schema('neta_ops')
         .from('low_voltage_cable_test_3sets') // Changed table name
         .select('*')
-        .eq('id', reportId)
-        .single();
+        .eq('id', reportId);
       
       if (error) {
         console.error('Error loading report:', error);
         throw error;
       }
+
+      if (!data || data.length === 0) {
+        console.error('Error loading report: No report found with this ID in this table.');
+        throw new Error('No report found with this ID. The link may be incorrect.');
+      }
+
+      if (data.length > 1) {
+        console.error('Error loading report: Multiple reports found with this ID.');
+        throw new Error('Multiple reports found with this ID. Please contact support.');
+      }
+
+      const reportData = data[0];
       
-      if (data && data.data) {
-        console.log('Report data loaded successfully:', data.data);
-        // Update form data with the loaded report data
+      if (reportData && reportData.data) {
+        console.log('Report data loaded successfully:', reportData.data);
+        // Merge loaded data with existing data (like job info)
         setFormData(prevData => ({
-          ...prevData,
-          ...data.data,
-          // Ensure these don't get overwritten if they're already set
-          customer: data.data.customer || prevData.customer,
-          address: data.data.address || prevData.address,
-          jobNumber: data.data.jobNumber || prevData.jobNumber
+          ...prevData, // Keep job info and user from loadJobInfo
+          ...reportData.data, // Load report-specific data
+          // Make sure crucial fields like temperature/humidity are loaded correctly
+          temperature: reportData.data.temperature ?? prevData.temperature,
+          humidity: reportData.data.humidity ?? prevData.humidity,
+          testSets: reportData.data.testSets ?? prevData.testSets, // Ensure testSets are loaded
+          // Ensure test equipment data is loaded
+          testEquipment: reportData.data.testEquipment ?? prevData.testEquipment,
         }));
         
         // Set status based on data if available
-        if (data.data.status) {
-          setStatus(data.data.status);
+        if (reportData.data.status) {
+          setStatus(reportData.data.status);
         }
+        setIsEditMode(false); // Existing report loaded, start in view mode
       } else {
         console.warn('No data found for report ID:', reportId);
       }

@@ -588,19 +588,45 @@ const PanelboardReport: React.FC = () => {
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
-      {/* Header */}
+      {/* Header with Pass/Fail and Edit/Save buttons */}
       <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''}`}>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Panelboard Report
+          {reportName}
         </h1>
-        <div className="flex items-center space-x-4">
+        <div className="flex gap-2">
+          {/* Pass/Fail Button */}
           <button
-            onClick={handleSave}
-            disabled={!isEditing}
-            className="bg-[#f26722] hover:bg-[#e55611] text-white font-medium px-4 py-2 rounded-md disabled:opacity-50"
+            onClick={() => {
+              if (isEditing) {
+                setFormData(prev => ({ ...prev, status: prev.status === 'PASS' ? 'FAIL' : 'PASS' }))
+              }
+            }}
+            className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              formData.status === 'PASS'
+                ? 'bg-green-600 text-white focus:ring-green-500'
+                : 'bg-red-600 text-white focus:ring-red-500'
+            } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
           >
-            {isEditing ? 'Save Changes' : 'Edit Report'}
+            {formData.status === 'PASS' ? 'PASS' : 'FAIL'}
           </button>
+
+          {/* Edit/Save Buttons */}
+          {reportId && !isEditing ? (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Edit Report
+            </button>
+          ) : (
+            <button
+              onClick={handleSave}
+              disabled={!isEditing}
+              className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
+            >
+              {reportId ? 'Update Report' : 'Save New Report'}
+            </button>
+          )}
         </div>
       </div>
 

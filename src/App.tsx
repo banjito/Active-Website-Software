@@ -31,6 +31,7 @@ import TanDeltaChart from './components/reports/TanDeltaChart';
 import MediumVoltageVLFReport from './components/reports/MediumVoltageVLFReport';
 import MediumVoltageCableVLFTest from './components/reports/MediumVoltageCableVLFTest';
 import ThreeLowVoltageCableMTSForm from './components/reports/3-LowVoltageCableMTS';
+import ThreeLowVoltageCableATSForm from './components/reports/3-LowVoltageCableATS';
 import MediumVoltageVLFMTSReport from './components/reports/MediumVoltageVLFMTSReport';
 import ProfileSetup from './pages/ProfileSetup';
 import TechnicianProfilesPage from './pages/TechnicianProfilesPage';
@@ -462,6 +463,7 @@ function App() {
                   <Route path="/jobs/:id/low-voltage-cable-test-12sets/:reportId?" element={<RequireAuth><Layout><TwelveSetsLowVoltageCableTestForm /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-cable-test-20sets/:reportId?" element={<RequireAuth><Layout><TwentySetsLowVoltageCableTestForm /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-cable-test-3sets/:reportId?" element={<RequireAuth><Layout><ThreeLowVoltageCableMTSForm /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/low-voltage-cable-test-3sets-ats/:reportId?" element={<RequireAuth><Layout><ThreeLowVoltageCableATSForm /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-vlf-tan-delta/:reportId?" element={<RequireAuth><Layout><TanDeltaChart /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-vlf/:reportId?" element={<RequireAuth><Layout><MediumVoltageVLFReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-vlf-mts-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageVLFMTSReport /></Layout></RequireAuth>} />

@@ -948,7 +948,13 @@ const TwentySetsLowVoltageCableTestForm: React.FC = () => {
     // Main container with padding and centered layout, following ReportRules.md
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      {isPrintMode && printHeader}
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
+        <div className="flex-1 text-center">
+          <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
+        </div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+      </div>
       
       <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
         <div className="max-w-7xl w-full space-y-2"> {/* Reduced from space-y-4 to space-y-2 */}

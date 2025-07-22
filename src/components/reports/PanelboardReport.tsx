@@ -6,6 +6,7 @@ import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import { ArrowLeft } from 'lucide-react';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -184,73 +185,401 @@ const PanelboardReport: React.FC = () => {
       nav, header, .navigation, [class*="nav"], [class*="header"] {
         display: none !important;
       }
-      
-      /* Hide scrollbar */
-      ::-webkit-scrollbar {
-        display: none;
-      }
-      
-      html {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-        height: 100%;
-      }
-      
-      body {
-        overflow-x: hidden;
-        min-height: 100vh;
-        padding-bottom: 100px;
-      }
-      
-      /* Ensure comments section is visible */
-      textarea {
-        min-height: 200px !important;
+      ::-webkit-scrollbar { display: none; }
+      html { -ms-overflow-style: none; scrollbar-width: none; height: 100%; }
+      body { overflow-x: hidden; min-height: 100vh; padding-bottom: 100px; }
+      textarea { min-height: 200px !important; }
+
+      /* Section headers with orange dividers for fillable report */
+      h2 {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 8px !important;
+        margin-top: 16px !important;
       }
 
       @media print {
-        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-        * { color: black !important; }
-        .print\\:break-before-page { page-break-before: always; }
-        .print\\:break-after-page { page-break-after: always; }
-        .print\\:break-inside-avoid { page-break-inside: avoid; }
-        .print\\:text-black { color: black !important; }
-        .print\\:bg-white { background-color: white !important; }
-        .print\\:border-black { border-color: black !important; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid black !important; padding: 8px !important; color: black !important; }
-        th { background-color: #f0f0f0 !important; font-weight: bold !important; }
-        input, select, textarea { 
-          background-color: white !important; 
-          border: 1px solid black !important; 
+        * { 
           color: black !important;
+          background: white !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        html, body {
+          margin: 0;
+          padding: 0;
+          font-family: Arial, Helvetica, sans-serif !important;
+          font-size: 9px !important;
+          background: white !important;
+          line-height: 1 !important;
+        }
+        
+        /* Standard portrait page size with minimal margins */
+        @page { 
+          size: 8.5in 11in; 
+          margin: 0.2in;
+        }
+        
+        /* Hide all non-print elements */
+        .print\\:hidden { display: none !important; }
+        
+        /* Hide second title and back button in print only */
+        .flex.justify-between.items-center.mb-6 { display: none !important; }
+        .flex.items-center.gap-4 { display: none !important; }
+        button { display: none !important; }
+        
+        /* Section headers with orange line above - ultra compact */
+        h2 {
+          font-size: 9px !important;
+          font-weight: bold !important;
+          margin: 0 !important;
+          margin-top: 0 !important;
+          padding: 1px 0 !important;
+          background-color: transparent !important;
+          color: black !important;
+          text-transform: none !important;
+          border: none !important;
+          border-bottom: 1px solid black !important;
+          line-height: 1.2 !important;
+          padding-bottom: 2px !important;
+          padding-top: 0 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          position: relative !important;
+        }
+        
+        /* Remove pseudo-element - not working properly */
+        h2::before {
+          display: none !important;
+        }
+        
+        /* Create actual section dividers */
+        .mb-6 {
+          margin-top: 12px !important;
+          border-top: 1px solid #f26722 !important;
+          padding-top: 8px !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        /* First section shouldn't have top border */
+        .mb-6:first-of-type {
+          border-top: none !important;
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+        }
+        
+        /* Add extra spacing after tables to prevent overlap */
+        table {
+          margin-bottom: 8px !important;
+        }
+
+        /* Force PASS/FAIL colors to print */
+        .status-pass {
+          background-color: #22c55e !important;
+          border: 2px solid #16a34a !important;
+          color: white !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        .status-fail {
+          background-color: #ef4444 !important;
+          border: 2px solid #dc2626 !important;
+          color: white !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        /* Remove all card styling and shadows */
+        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow {
+          background: white !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          padding: 0 !important;
+          margin-bottom: 3px !important;
+          border: none !important;
+        }
+        
+        /* Remove ALL section styling - no boxes */
+        section {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          margin-bottom: 2px !important;
+        }
+        
+        /* Remove any div that might create boxes */
+        div[class*="border"], div[class*="shadow"], div[class*="rounded"] {
+          border: none !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+        }
+        
+        /* Ensure no padding on any containers */
+        div[class*="p-"], div[class*="px-"], div[class*="py-"], div[class*="pt-"], div[class*="pb-"], div[class*="pl-"], div[class*="pr-"] {
+          padding: 0 !important;
+        }
+        
+        /* FORCE remove all borders and boxes from everything except tables */
+        * {
+          border: none !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
+        
+        /* Specifically target and remove print borders */
+        .print\\:border {
+          border: none !important;
+        }
+        
+        .print\\:border-black {
+          border: none !important;
+        }
+        
+        /* Remove borders from divs with these specific classes */
+        div.bg-white, div.dark\\:bg-dark-150, div.print\\:border, div.print\\:border-black {
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+        
+        /* Only allow borders on table elements */
+        table, th, td, thead, tbody, tr {
+          border: 0.5px solid black !important;
+        }
+        
+        /* Allow borders on inputs */
+        input, select, textarea {
+          border-bottom: 1px solid black !important;
+        }
+        
+        textarea {
+          border: 1px solid black !important;
+        }
+        
+        /* Form grid layout - ultra compact */
+        .grid {
+          display: grid !important;
+          gap: 1px !important;
+          margin-bottom: 2px !important;
+        }
+        
+        /* Job info section - single line layout */
+        .grid-cols-1.md\\:grid-cols-2 {
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 8px !important;
+        }
+        
+        /* Labels and inputs - ultra compact */
+        label {
+          font-size: 8px !important;
+          font-weight: normal !important;
+          margin: 0 !important;
+          display: inline-block !important;
+          margin-right: 2px !important;
+        }
+        
+        input, select, textarea {
+          width: auto !important;
+          border: none !important;
+          border-bottom: 1px solid black !important;
+          background: transparent !important;
+          padding: 0 1px !important;
+          margin: 0 !important;
+          font-size: 8px !important;
+          height: 12px !important;
+          display: inline-block !important;
           -webkit-appearance: none !important;
           -moz-appearance: none !important;
           appearance: none !important;
         }
-        /* Hide dropdown arrows and form control indicators */
-        select {
-          background-image: none !important;
-          padding-right: 8px !important;
+        
+        /* Specific width for common inputs */
+        input[type="text"], input[type="number"] {
+          width: 80px !important;
         }
-        /* Hide spin buttons on number inputs */
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-          -webkit-appearance: none !important;
+        
+        /* Narrower inputs in Temperature Corrected Values table */
+        table input[type="text"] {
+          width: 50px !important;
+          max-width: 50px !important;
+        }
+        
+        input[type="date"] {
+          width: 70px !important;
+        }
+        
+
+        
+        textarea {
+          width: 100% !important;
+          height: auto !important;
+          min-height: 20px !important;
+          border: 1px solid black !important;
+          display: block !important;
+          margin-top: 1px !important;
+          font-size: 8px !important;
+          padding: 2px !important;
+        }
+        
+        /* Table styles - ultra compact */
+        table {
+          width: 100% !important;
+          border-collapse: collapse !important;
+          margin: 1px 0 !important;
+          font-size: 8px !important;
+          page-break-inside: avoid !important;
+          margin-bottom: 16px !important;
+        }
+        
+        th, td {
+          border: 0.5px solid black !important;
+          padding: 0px 1px !important;
+          text-align: center !important;
+          font-size: 8px !important;
+          height: 12px !important;
+          line-height: 1 !important;
+        }
+        
+        th {
+          background-color: #f0f0f0 !important;
+          font-weight: bold !important;
+        }
+        
+        /* Specific input styling in tables */
+        table input, table select {
+          border: none !important;
+          border-bottom: none !important;
+          padding: 0 !important;
           margin: 0 !important;
+          height: 10px !important;
+          text-align: center !important;
+          width: 100% !important;
+          font-size: 8px !important;
+          background: transparent !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
         }
-        input[type="number"] {
-          -moz-appearance: textfield !important;
+        
+        /* Force table cell inputs to not interfere with table borders */
+        td input, td select, td textarea {
+          border: none !important;
+          background: transparent !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          outline: none !important;
         }
-        .print\\:font-bold { font-weight: bold !important; }
-        .print\\:text-center { text-align: center !important; }
-        label { color: black !important; font-weight: 500 !important; }
-        h1, h2, h3, h4, h5, h6 { color: black !important; }
-        div[class*="bg-white"] { background-color: white !important; }
-        div[class*="shadow"] { box-shadow: none !important; }
-        .bg-green-100 { background-color: #dcfce7 !important; }
-        .text-green-800 { color: #166534 !important; }
-        .bg-red-100 { background-color: #fecaca !important; }
-        .text-red-800 { color: #991b1b !important; }
+        
+        /* Remove all spacing classes */
+        .space-y-4 > * + *, .space-y-6 > * + * { margin-top: 2px !important; }
+        .mb-4 { margin-bottom: 2px !important; }
+        .mb-6 { margin-bottom: 3px !important; }
+        .mb-8 { margin-bottom: 3px !important; }
+        .p-6 { padding: 0 !important; }
+        
+        /* PASS/FAIL status badge */
+        .bg-green-600, .bg-red-600 {
+          background-color: transparent !important;
+          color: black !important;
+          border: 1px solid black !important;
+          padding: 0px 2px !important;
+          font-weight: bold !important;
+          font-size: 9px !important;
+        }
+        
+        /* Status in header */
+        .text-green-600 { color: green !important; }
+        .text-red-600 { color: red !important; }
+        
+        /* Comments section */
+        .min-h-[250px] {
+          min-height: 20px !important;
+        }
+        
+        /* Footer text */
+        .text-xs {
+          font-size: 7px !important;
+        }
+        
+        /* Force single-line layout for form fields */
+        .flex.items-center {
+          display: inline-flex !important;
+          margin-right: 10px !important;
+        }
+        
+        /* Nameplate data specific styling */
+        div:has(> label:contains("Manufacturer")) {
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 5px !important;
+        }
+        
+        /* Page break control */
+        section { page-break-inside: avoid !important; }
+        
+        /* Ensure everything fits on one page */
+        .max-w-7xl { max-width: 100% !important; }
+        
+        /* Orange header bar for sections */
+        .border-b.dark\\:border-gray-700 {
+          border: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        
+        /* Specific section spacing */
+        section {
+          margin-bottom: 2px !important;
+          padding: 0 !important;
+        }
+        
+        /* Print header specific */
+        .print\\:flex {
+          margin-bottom: 3px !important;
+        }
+        
+        /* SUPER-SPECIFIC OVERRIDES - Must be last to override Tailwind */
+        div[class*='print:border'] {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+        
+        div[class*='print:border-black'] {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+        
+        div.bg-white, div[class*='bg-white'] {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+        
+        div[class*='shadow'], div[class*='rounded'] {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+          border-radius: 0 !important;
+        }
+        
+        /* Remove border from all direct children of .max-w-7xl in print */
+        .max-w-7xl > div {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+        
+        /* Nuclear option - remove borders from all divs except those containing tables */
+        div:not(:has(table)) {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
       }
     `;
     document.head.appendChild(style);
@@ -673,17 +1002,15 @@ const PanelboardReport: React.FC = () => {
     <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className={`hidden print:block mb-8 ${isPrintMode ? 'block' : ''}`}>
-        <div className="text-center border-b-2 border-gray-800 pb-4 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            PANELBOARD INSPECTION AND TEST REPORT
-          </h1>
-          <div className="text-lg font-semibold">
-            Status: <span className={`px-3 py-1 rounded ${formData.status === 'PASS' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {formData.status}
-            </span>
-          </div>
+                <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+            <div style={{ width: '120px', display: 'flex', justifyContent: 'flex-start' }}>
+              <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 35, marginLeft: '5px', marginTop: '2px' }} />
+            </div>
+        <div className="flex-1 text-center">
+          <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
+
         </div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c', width: '120px' }}>NETA</div>
       </div>
 
       {/* Header with Back button and Pass/Fail and Edit/Save buttons */}
@@ -693,9 +1020,7 @@ const PanelboardReport: React.FC = () => {
             onClick={() => navigate(`/jobs/${jobId}`)}
             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <ArrowLeft className="w-4 h-4" />
             Back to Job
           </button>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -748,8 +1073,31 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Job Information */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+        
+        {/* PASS/FAIL Status - Print Only, positioned to the right */}
+        <div className="hidden print:block" style={{ 
+          position: 'absolute', 
+          right: '90px',
+          top: '85px',
+          zIndex: 10
+        }}>
+          <div 
+            className={formData.status === 'PASS' ? 'status-pass' : 'status-fail'}
+            style={{ 
+              display: 'inline-block', 
+              padding: '6px 16px', 
+              fontSize: '14px',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              minWidth: '80px',
+              borderRadius: '4px'
+            }}>
+            {formData.status || 'PASS'}
+          </div>
+        </div>
+        
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="space-y-4">
             <div>
@@ -771,13 +1119,19 @@ const PanelboardReport: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
-              <textarea
-                value={formData.customerLocation}
-                readOnly={true}
-                rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
-              />
+              <div className="print:hidden">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                <textarea
+                  value={formData.customerLocation}
+                  readOnly={true}
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                />
+              </div>
+              <div className="hidden print:flex print:items-baseline">
+                <label style={{ fontSize: '8px', marginRight: '4px', display: 'inline-block', width: '50px' }}>Address</label>
+                <span style={{ fontSize: '8px', borderBottom: '1px solid black', display: 'inline-block', minWidth: '150px', paddingBottom: '1px' }}>{formData.customerLocation}</span>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier</label>
@@ -874,12 +1228,13 @@ const PanelboardReport: React.FC = () => {
                 />
               </div>
             </div>
+
           </div>
         </div>
       </div>
 
       {/* Nameplate Data */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-4">
@@ -970,7 +1325,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Visual and Mechanical Inspection */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -1024,7 +1379,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Electrical Tests - Insulation Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance</h2>
         <div className="flex justify-end mb-2">
           <div className="flex items-center space-x-2">
@@ -1110,7 +1465,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Temperature Corrected Values */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Values</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -1160,7 +1515,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Contact Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Contact Resistance</h2>
         <div className="flex justify-end mb-2">
           <div className="flex items-center space-x-2">
@@ -1243,7 +1598,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Test Equipment Used */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-6">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1285,7 +1640,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Comments */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-32" style={{ marginBottom: '150px' }}>
+      <div className="mb-32" style={{ marginBottom: '150px' }}>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         <div className="space-y-4">
         <textarea

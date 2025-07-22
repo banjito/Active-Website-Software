@@ -350,6 +350,25 @@ export default function OpportunityList() {
         throw error;
       }
 
+      // --- Add default subcontractor agreement PDF ---
+      try {
+        const publicURL = '/templates/subcontractor-agreement-template.pdf';
+        await supabase
+          .schema('business')
+          .from('subcontractor_agreements')
+          .insert({
+            opportunity_id: data.id,
+            user_id: user.id,
+            name: 'Default Subcontractor Agreement',
+            file_url: publicURL,
+            status: 'pending',
+            upload_date: new Date().toISOString()
+          });
+      } catch (err) {
+        console.error('Error adding default subcontractor agreement:', err);
+        // Don't block opportunity creation if this fails
+      }
+
       console.log('Created opportunity:', data);
       alert('Opportunity created successfully!');
       setIsOpen(false);

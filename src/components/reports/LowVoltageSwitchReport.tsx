@@ -1005,19 +1005,12 @@ export default function LowVoltageSwitchReport() {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:block hidden text-center border-b-2 border-gray-800 pb-4 mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {reportName}
-        </h1>
-        <div className="text-lg font-semibold">
-          Status: <span className={`px-3 py-1 rounded font-bold ${
-            status === 'PASS' ? 'bg-green-600 text-white' : 
-            status === 'FAIL' ? 'bg-red-600 text-white' : 
-            'bg-yellow-500 text-white'
-          }`}>
-            {status || 'PASS'}
-          </span>
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
+        <div className="flex-1 text-center">
+          <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
       </div>
       {/* End Print Header */}
       

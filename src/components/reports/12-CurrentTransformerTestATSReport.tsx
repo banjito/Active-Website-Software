@@ -215,147 +215,153 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         min-height: 200px !important;
       }
 
+      /* Section headers with orange dividers for fillable report */
+      h2 {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 8px !important;
+        margin-top: 16px !important;
+      }
       @media print {
-        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-        .print\\:break-before-page { page-break-before: always; }
-        .print\\:break-after-page { page-break-after: always; }
-        .print\\:break-inside-avoid { page-break-inside: avoid; }
-        .print\\:text-black { color: black !important; }
-        .print\\:bg-white { background-color: white !important; }
-        .print\\:border-black { border-color: black !important; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid black !important; padding: 4px !important; color: black !important; font-size: 10px !important; }
+        * { color: black !important; background: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif !important; font-size: 9px !important; background: white !important; line-height: 1 !important; }
+        @page { size: 8.5in 11in; margin: 0.2in; }
+        .print\\:hidden { display: none !important; }
+        .flex.justify-between.items-center.mb-6 { display: none !important; }
+        .flex.items-center.gap-4 { display: none !important; }
+        button { display: none !important; }
+        h2 { font-size: 9px !important; font-weight: bold !important; margin: 0 !important; margin-top: 0 !important; padding: 1px 0 !important; background-color: transparent !important; color: black !important; text-transform: none !important; border: none !important; border-bottom: 1px solid black !important; line-height: 1.2 !important; padding-bottom: 2px !important; padding-top: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; position: relative !important; }
+        h2::before { display: none !important; }
+        .mb-6 { margin-top: 12px !important; border-top: 2px solid #f26722 !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .mb-6:first-of-type { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
+        
+        /* Force orange dividers with higher specificity */
+        div.mb-6 { border-top: 2px solid #f26722 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        div.mb-6:first-of-type { border-top: none !important; }
+        table { margin-bottom: 8px !important; }
+        .status-pass { background-color: #22c55e !important; border: 2px solid #16a34a !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .status-fail { background-color: #ef4444 !important; border: 2px solid #dc2626 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow { background: white !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; margin-bottom: 3px !important; border: none !important; }
+        section { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; margin-bottom: 2px !important; }
+        div[class*="border"], div[class*="shadow"], div[class*="rounded"] { border: none !important; box-shadow: none !important; border-radius: 0 !important; }
+        div[class*="p-"], div[class*="px-"], div[class*="py-"], div[class*="pt-"], div[class*="pb-"], div[class*="pl-"], div[class*="pr-"] { padding: 0 !important; }
+        * { border: none !important; box-shadow: none !important; outline: none !important; }
+        .print\\:border { border: none !important; }
+        .print\\:border-black { border: none !important; }
+        div.bg-white, div[class*='bg-white'] { border: none !important; box-shadow: none !important; background: transparent !important; }
+        div[class*='shadow'], div[class*='rounded'] { border: none !important; box-shadow: none !important; background: transparent !important; border-radius: 0 !important; }
+        .max-w-7xl > div { border: none !important; box-shadow: none !important; background: transparent !important; }
+        div:not(:has(table)) { border: none !important; box-shadow: none !important; background: transparent !important; }
+        table, th, td, thead, tbody, tr { border: 0.5px solid black !important; }
+        input, select, textarea { border-bottom: 1px solid black !important; }
+        textarea { border: 1px solid black !important; }
+        .grid { display: grid !important; gap: 1px !important; margin-bottom: 2px !important; }
+        .grid-cols-1.md\\:grid-cols-2 { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+        label { font-size: 8px !important; font-weight: normal !important; margin: 0 !important; display: inline-block !important; margin-right: 2px !important; }
+        input, select, textarea { width: auto !important; border: none !important; border-bottom: 1px solid black !important; background: transparent !important; padding: 0 1px !important; margin: 0 !important; font-size: 8px !important; height: 12px !important; display: inline-block !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; }
+        input[type="text"], input[type="number"] { width: 80px !important; }
+        table input[type="text"] { width: 50px !important; max-width: 50px !important; }
+        input[type="date"] { width: 70px !important; }
+        textarea { width: 100% !important; height: auto !important; min-height: 20px !important; border: 1px solid black !important; display: block !important; margin-top: 1px !important; font-size: 8px !important; padding: 2px !important; }
+        table { width: 100% !important; border-collapse: collapse !important; margin: 1px 0 !important; font-size: 8px !important; page-break-inside: avoid !important; margin-bottom: 16px !important; }
+        th, td { border: 0.5px solid black !important; padding: 0px 1px !important; text-align: center !important; font-size: 8px !important; height: 12px !important; line-height: 1 !important; }
         th { background-color: #f0f0f0 !important; font-weight: bold !important; }
-        input, select, textarea { 
-          background-color: white !important; 
-          border: 1px solid black !important; 
-          color: black !important; 
-          padding: 2px !important; 
-          font-size: 10px !important;
+        table input, table select { border: none !important; border-bottom: none !important; padding: 0 !important; margin: 0 !important; height: 10px !important; text-align: center !important; width: 100% !important; font-size: 8px !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
+        td input, td select, td textarea { border: none !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; outline: none !important; }
+        .space-y-4 > * + *, .space-y-6 > * + * { margin-top: 2px !important; }
+        .mb-4 { margin-bottom: 2px !important; }
+        .mb-6 { margin-bottom: 3px !important; }
+        .mb-8 { margin-bottom: 3px !important; }
+        .p-6 { padding: 0 !important; }
+        .bg-green-600, .bg-red-600 { background-color: transparent !important; color: black !important; border: 1px solid black !important; padding: 0px 2px !important; font-weight: bold !important; font-size: 9px !important; }
+        .text-green-600 { color: green !important; }
+        .text-red-600 { color: red !important; }
+        .min-h-[250px] { min-height: 20px !important; }
+        .text-xs { font-size: 7px !important; }
+        .flex.items-center { display: inline-flex !important; margin-right: 10px !important; }
+        section { page-break-inside: avoid !important; }
+        .max-w-7xl { max-width: 100% !important; }
+        .border-b.dark\\:border-gray-700 { border: none !important; margin: 0 !important; padding: 0 !important; }
+        section { margin-bottom: 2px !important; padding: 0 !important; }
+        .print\\:flex { margin-bottom: 3px !important; }
+        div[class*='print:border'] { border: none !important; box-shadow: none !important; background: transparent !important; }
+        div[class*='print:border-black'] { border: none !important; box-shadow: none !important; background: transparent !important; }
+        
+        /* Orange dividers - must come after universal border removal */
+        div.mb-6 { border-top: 2px solid #f26722 !important; margin-top: 12px !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        div.mb-6:first-of-type { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
+        
+        /* Completely remove input borders in tables - highest specificity */
+        table td input, table td select, table td textarea { border: none !important; border-top: none !important; border-bottom: none !important; border-left: none !important; border-right: none !important; outline: none !important; box-shadow: none !important; }
+        tbody td input, tbody td select { border: none !important; outline: none !important; }
+        
+        /* Nuclear option - remove ALL styling from inputs in print */
+        input, select, textarea { border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; color: black !important; }
+        input[type="text"], input[type="number"], select option { border: none !important; outline: none !important; color: black !important; }
+        
+        /* Remove any unwanted lines from input elements */
+        input:focus, select:focus, textarea:focus { border: none !important; outline: none !important; }
+        input::before, input::after, select::before, select::after { display: none !important; }
+        
+        /* Ensure no bottom borders on inputs that might create lines */
+        input { border-bottom: none !important; text-decoration: none !important; color: black !important; }
+        td input { border-bottom: none !important; border-top: none !important; color: black !important; }
+        
+        /* Make sure dropdown values are visible */
+        select, option { color: black !important; background: transparent !important; }
+        table select { color: black !important; font-size: 8px !important; }
+        
+        /* Force dropdown values to show - highest priority */
+        select { display: inline-block !important; visibility: visible !important; opacity: 1 !important; color: black !important; font-family: Arial, sans-serif !important; }
+        table td select { color: black !important; font-size: 8px !important; display: inline-block !important; visibility: visible !important; }
+        select option:checked, select option:selected { color: black !important; background: white !important; }
+        
+        /* Ensure input values are also visible */
+        input[type="text"], input[type="number"] { color: black !important; display: inline-block !important; visibility: visible !important; }
+        
+        /* Override appearance for table selects only */
+        table select, tbody select, td select { -webkit-appearance: none !important; -moz-appearance: textfield !important; appearance: textfield !important; color: black !important; }
+        
+        /* Hide dropdown arrows and show only selected value as text */
+        select { 
           -webkit-appearance: none !important;
           -moz-appearance: none !important;
           appearance: none !important;
-        }
-        /* Hide dropdown arrows and form control indicators */
-        select {
           background-image: none !important;
-          padding-right: 8px !important;
-        }
-        /* Hide spin buttons on number inputs */
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-          -webkit-appearance: none !important;
+          background: transparent !important;
+          color: black !important;
+          border: none !important;
+          padding: 0 !important;
           margin: 0 !important;
-        }
-        input[type="number"] {
-          -moz-appearance: textfield !important;
-        }
-        .print\\:font-bold { font-weight: bold !important; }
-        .print\\:text-center { text-align: center !important; }
-        label { color: black !important; font-weight: 500 !important; }
-        h1, h2, h3, h4, h5, h6 { color: black !important; }
-        div[class*="bg-white"] { background-color: white !important; }
-        div[class*="shadow"] { box-shadow: none !important; }
-        .bg-green-100 { background-color: #dcfce7 !important; }
-        .text-green-800 { color: #166534 !important; }
-        .bg-red-100 { background-color: #fecaca !important; }
-        .text-red-800 { color: #991b1b !important; }
-        .bg-yellow-100 { background-color: #fef3c7 !important; }
-        .text-yellow-800 { color: #92400e !important; }
-        
-        /* Electrical tests table specific styling */
-        section h3 + div table {
           font-size: 8px !important;
-          width: 100% !important;
-        }
-        section h3 + div th,
-        section h3 + div td {
-          padding: 2px !important;
-          font-size: 8px !important;
-          border: 1px solid black !important;
-        }
-        section h3 + div input {
-          font-size: 8px !important;
-          padding: 1px !important;
-          width: 100% !important;
-          min-width: 0 !important;
-        }
-        section h3 + div select {
-          font-size: 8px !important;
-          padding: 1px !important;
-          width: 100% !important;
-          min-width: 0 !important;
-          -webkit-appearance: none !important;
-          -moz-appearance: none !important;
-          appearance: none !important;
-          background-image: none !important;
         }
         
-        /* Test Equipment section styling */
-        section[aria-labelledby="equipment-heading"] {
-          page-break-inside: avoid !important;
-          margin-bottom: 20px !important;
-        }
+        /* Remove dropdown arrow specifically */
+        select::-ms-expand { display: none !important; }
+        select::-webkit-outer-spin-button, select::-webkit-inner-spin-button { display: none !important; }
         
-        section[aria-labelledby="equipment-heading"] input {
-          font-size: 10px !important;
-          padding: 4px !important;
-          border: 1px solid black !important;
-          background-color: white !important;
+        /* Hide select elements completely in print and show values as text */
+        select { display: none !important; visibility: hidden !important; opacity: 0 !important; width: 0 !important; height: 0 !important; }
+        
+        /* Show select values using CSS content - this is a fallback approach */
+        select::after { 
+          content: attr(data-selected-value) !important; 
+          display: inline-block !important; 
           color: black !important;
-          height: auto !important;
-          min-height: 25px !important;
+          font-size: 8px !important; 
+          background: transparent !important;
         }
         
-        section[aria-labelledby="equipment-heading"] label {
-          font-size: 10px !important;
-          color: black !important;
-          font-weight: 500 !important;
-        }
+        /* Show print-only spans that contain the selected values */
+        .print\\:inline-block { display: inline-block !important; color: black !important; font-size: 8px !important; text-align: center !important; width: 100% !important; }
         
-        section[aria-labelledby="equipment-heading"] .grid {
-          display: grid !important;
-          grid-template-columns: 1fr 1fr 1fr !important;
-          gap: 10px !important;
-        }
+        /* Page break controls */
+        .page-break-before { page-break-before: always !important; }
+        .page-break-after { page-break-after: always !important; }
+        .page-break-inside-avoid { page-break-inside: avoid !important; }
         
-        /* Comments section specific styling */
-        section[aria-labelledby="comments-heading"] {
-          page-break-inside: avoid !important;
-          margin-bottom: 50px !important;
-          min-height: 250px !important;
-        }
-        
-        section[aria-labelledby="comments-heading"] textarea {
-          min-height: 180px !important;
-          height: 180px !important;
-          font-size: 10px !important;
-          padding: 8px !important;
-          border: 1px solid black !important;
-          background-color: white !important;
-          color: black !important;
-          resize: none !important;
-          overflow: visible !important;
-          page-break-inside: avoid !important;
-          width: 100% !important;
-          box-sizing: border-box !important;
-        }
-        
-        /* Force table to fit on page */
-        .overflow-x-auto {
-          overflow: visible !important;
-        }
-        
-        /* Force sections to be visible and prevent cutting */
-        section {
-          break-inside: avoid !important;
-          page-break-inside: avoid !important;
-        }
-        
-        /* Ensure proper spacing between sections */
-        .space-y-6 > * + * {
-          margin-top: 15px !important;
-        }
+        /* Specific page breaks for sections */
+        .mb-6:has(h2:contains("Test Equipment Used")) { page-break-before: always !important; }
+        .mb-6:has(h2:contains("Comments")) { page-break-before: always !important; }
       }
     `;
     document.head.appendChild(style);
@@ -742,21 +748,12 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className={`hidden print:block mb-8 ${isPrintMode ? 'block' : ''}`}>
-        <div className="text-center border-b-2 border-gray-800 pb-4 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            CURRENT TRANSFORMER TEST REPORT (ATS)
-          </h1>
-          <div className="text-lg font-semibold">
-            Status: <span className={`px-3 py-1 rounded ${
-              formData.status === 'PASS' ? 'bg-green-100 text-green-800' : 
-              formData.status === 'FAIL' ? 'bg-red-100 text-red-800' : 
-              'bg-yellow-100 text-yellow-800'
-            }`}>
-              {formData.status}
-            </span>
-          </div>
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 35, marginLeft: '5px', marginTop: '2px' }} />
+        <div className="flex-1 text-center">
+          <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c', width: '120px' }}>NETA</div>
       </div>
 
       <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
@@ -813,70 +810,151 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         </div>
 
         {/* Job Information Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          {/* Left Column */}
-          <div className="space-y-3">
-            <div>
-              <label className="form-label inline-block w-32">Customer:</label>
-              <input type="text" value={formData.customerName} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
-            </div>
-            <div>
-              <label className="form-label inline-block w-32">Address:</label>
-              <input type="text" value={formData.customerAddress} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
-            </div>
-             <div>
-              <label htmlFor="user" className="form-label inline-block w-32">User:</label>
-              <input id="user" name="user" type="text" value={formData.userName} onChange={(e) => handleChange('userName', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-            </div>
-            <div>
-              <label htmlFor="date" className="form-label inline-block w-32">Date:</label>
-              <input id="date" name="date" type="date" value={formData.date} onChange={(e) => handleChange('date', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-            </div>
-            <div>
-              <label htmlFor="identifier" className="form-label inline-block w-32">Identifier:</label>
-              <input id="identifier" name="identifier" type="text" value={formData.identifier} onChange={(e) => handleChange('identifier', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+          {/* PASS/FAIL Status - Print Only, positioned to the right */}
+          <div className="hidden print:block" style={{ position: 'absolute', right: '90px', top: '85px', zIndex: 10 }}>
+            <div className={formData.status === 'PASS' ? 'status-pass' : 'status-fail'}
+              style={{ display: 'inline-block', padding: '6px 16px', fontSize: '14px', fontWeight: 'bold', textAlign: 'center', minWidth: '80px', borderRadius: '4px' }}>
+              {formData.status || 'PASS'}
             </div>
           </div>
-          {/* Right Column */}
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="space-y-4">
             <div>
-              <label className="form-label inline-block w-32">Job #:</label>
-              <input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #</label>
+                <input
+                  type="text"
+                  value={formData.jobNumber}
+                  readOnly={true}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                />
             </div>
             <div>
-              <label htmlFor="technicians" className="form-label inline-block w-32">Technicians:</label>
-              <input id="technicians" name="technicians" type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-            </div>
-            <div className="flex items-center">
-              <label htmlFor="temperature.fahrenheit" className="form-label inline-block w-16">Temp:</label>
-              <input id="temperature.fahrenheit" name="temperature.fahrenheit" type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(Number(e.target.value))} readOnly={!isEditing} className={`form-input w-20 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              <span className="mx-1">°F</span>
-              <input id="temperature.celsius" name="temperature.celsius" type="number" value={formData.temperature.celsius} onChange={(e) => handleCelsiusChange(Number(e.target.value))} readOnly={!isEditing} className={`form-input w-20 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              <span className="mx-1">°C</span>
-              <label htmlFor="temperature.tcf" className="form-label inline-block w-10 ml-2">TCF:</label>
-              <input id="temperature.tcf" name="temperature.tcf" type="number" value={formData.temperature.tcf} readOnly className="form-input w-20 bg-gray-100 dark:bg-dark-200" />
-            </div>
-            <div>
-              <label htmlFor="temperature.humidity" className="form-label inline-block w-32">Humidity:</label>
-              <input id="temperature.humidity" name="temperature.humidity" type="number" value={formData.temperature.humidity} onChange={(e) => handleChange('temperature.humidity', Number(e.target.value))} readOnly={!isEditing} className={`form-input w-20 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              <span className="ml-1">%</span>
-            </div>
-            <div>
-              <label htmlFor="substation" className="form-label inline-block w-32">Substation:</label>
-              <input id="substation" name="substation" type="text" value={formData.substation} onChange={(e) => handleChange('substation', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer</label>
+                <input
+                  type="text"
+                  value={formData.customerName}
+                  readOnly={true}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                />
             </div>
              <div>
-              <label htmlFor="eqptLocation" className="form-label inline-block w-32">Eqpt. Location:</label>
-              <input id="eqptLocation" name="eqptLocation" type="text" value={formData.eqptLocation} onChange={(e) => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <div className="print:hidden">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                  <textarea
+                    value={formData.customerAddress}
+                    readOnly={true}
+                    rows={3}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                  />
+                </div>
+                <div className="hidden print:flex print:items-baseline">
+                  <label style={{ fontSize: '8px', marginRight: '4px', display: 'inline-block', width: '50px' }}>Address</label>
+                  <span style={{ fontSize: '8px', borderBottom: '1px solid black', display: 'inline-block', minWidth: '150px', paddingBottom: '1px' }}>{formData.customerAddress}</span>
+                </div>
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier</label>
+                <input
+                  type="text"
+                  value={formData.identifier}
+                  onChange={(e) => handleChange('identifier', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  placeholder="Enter Identifier"
+                />
+            </div>
+            </div>
+            <div className="space-y-4">
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Technicians</label>
+                <input
+                  type="text"
+                  value={formData.technicians}
+                  onChange={(e) => handleChange('technicians', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Substation</label>
+                <input
+                  type="text"
+                  value={formData.substation}
+                  onChange={(e) => handleChange('substation', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+          </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Equipment Location</label>
+                <input
+                  type="text"
+                  value={formData.eqptLocation}
+                  onChange={(e) => handleChange('eqptLocation', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+                <input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => handleChange('date', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User</label>
+                <input
+                  type="text"
+                  value={formData.userName}
+                  onChange={(e) => handleChange('userName', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  placeholder="Enter User Name"
+                />
+            </div>
+              <div className="grid grid-cols-3 gap-4">
+            <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. °F</label>
+                  <input
+                    type="number"
+                    value={formData.temperature.fahrenheit}
+                    onChange={(e) => handleFahrenheitChange(Number(e.target.value))}
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+            </div>
+            <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">°C</label>
+                  <input
+                    type="number"
+                    value={formData.temperature.celsius}
+                    onChange={(e) => handleCelsiusChange(Number(e.target.value))}
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+            </div>
+             <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">TCF</label>
+                  <input
+                    type="number"
+                    value={formData.temperature.tcf}
+                    readOnly
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                  />
             </div>
           </div>
         </div>
-      </section>
+          </div>
+        </div>
 
         {/* Device Data Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Device Data</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           {/* Left Column */}
@@ -894,10 +972,10 @@ const CurrentTransformerTestATSReport: React.FC = () => {
             <div><label htmlFor="deviceData.frequency" className="form-label inline-block w-32">Frequency:</label><input id="deviceData.frequency" type="text" value={formData.deviceData.frequency} onChange={(e) => handleChange('deviceData.frequency', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
           </div>
         </div>
-      </section>
+        </div>
 
         {/* Visual and Mechanical Inspection Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -917,22 +995,25 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     <select value={item.result} onChange={(e) => handleVisualInspectionChange(index, 'result', e.target.value)} disabled={!isEditing} className={`form-select ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
                       {visualInspectionResultOptions.map(option => <option key={option} value={option}>{option}</option>)}
                     </select>
+                    <span className="hidden print:inline-block text-xs" style={{ fontSize: '8px', color: 'black' }}>
+                      {item.result === 'Select One' ? '' : item.result}
+                    </span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </section>
+      </div>
 
         {/* CT Identification Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">CT Identification</h2>
         {renderCtIdentification()}
-      </section>
+      </div>
 
         {/* Electrical Tests Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 space-y-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests</h2>
         
         {/* Ratio and Polarity Table */}
@@ -1001,6 +1082,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                         <option value="Select One" disabled>Select One</option>
                         {ratioPolarityOptions.map(option => <option key={option} value={option}>{option}</option>)}
                       </select>
+                      <span className="hidden print:inline-block text-xs" style={{ fontSize: '8px', color: 'black' }}>
+                        {item.polarity === 'Select One' ? '' : item.polarity}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -1026,6 +1110,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     >
                       {insulationTestVoltageOptions.map(option => <option key={option} value={option}>{option}</option>)}
                     </select>
+                    <span className="hidden print:inline-block text-xs" style={{ fontSize: '8px', color: 'black' }}>
+                      {formData.electricalTests.primaryWindingInsulation.testVoltage}
+                    </span>
                   </th>
                   {['Phase 1', 'Phase 2', 'Phase 3', 'Neutral'].map(header => (
                     <th key={header} className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{header}</th>
@@ -1062,6 +1149,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     >
                       {insulationResistanceUnitOptions.map(option => <option key={option.symbol} value={option.symbol}>{option.symbol}</option>)}
                     </select>
+                    <span className="hidden print:inline-block text-xs" style={{ fontSize: '8px', color: 'black' }}>
+                      {formData.electricalTests.primaryWindingInsulation.units}
+                    </span>
                   </td>
                 </tr>
                 <tr>
@@ -1102,6 +1192,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     >
                       {insulationTestVoltageOptions.map(option => <option key={option} value={option}>{option}</option>)}
                     </select>
+                    <span className="hidden print:inline-block text-xs" style={{ fontSize: '8px', color: 'black' }}>
+                      {formData.electricalTests.secondaryWindingInsulation.testVoltage}
+                    </span>
                   </th>
                   {['Phase 1', 'Phase 2', 'Phase 3', 'Neutral'].map(header => (
                     <th key={header} className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{header}</th>
@@ -1138,6 +1231,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     >
                       {insulationResistanceUnitOptions.map(option => <option key={option.symbol} value={option.symbol}>{option.symbol}</option>)}
                     </select>
+                    <span className="hidden print:inline-block text-xs" style={{ fontSize: '8px', color: 'black' }}>
+                      {formData.electricalTests.secondaryWindingInsulation.units}
+                    </span>
                   </td>
                 </tr>
                 <tr>
@@ -1160,10 +1256,10 @@ const CurrentTransformerTestATSReport: React.FC = () => {
             </table>
           </div>
         </div>
-      </section>
+      </div>
 
         {/* Test Equipment Used Section */}
-        <section aria-labelledby="equipment-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+        <div className="mb-6 page-break-before">
           <h2 id="equipment-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1177,10 +1273,10 @@ const CurrentTransformerTestATSReport: React.FC = () => {
             <div><label htmlFor="testEquipmentUsed.ctRatioTestSetAmpId" className="form-label block">AMP ID:</label><input id="testEquipmentUsed.ctRatioTestSetAmpId" type="text" value={formData.testEquipmentUsed.ctRatioTestSetAmpId} onChange={(e) => handleChange('testEquipmentUsed.ctRatioTestSetAmpId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
           </div>
         </div>
-      </section>
+      </div>
 
         {/* Comments Section */}
-        <section aria-labelledby="comments-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-32" style={{ marginBottom: '150px' }}>
+        <div className="mb-6">
           <h2 id="comments-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         <textarea
           value={formData.comments}
@@ -1190,7 +1286,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           className={`form-textarea w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
           placeholder="Enter comments here..."
         />
-        </section>
+        </div>
       </div>
     </ReportWrapper>
     </div>

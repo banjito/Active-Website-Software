@@ -339,169 +339,101 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
       nav, header, .navigation, [class*="nav"], [class*="header"] {
         display: none !important;
       }
-      
-      /* Hide scrollbar */
-      ::-webkit-scrollbar {
-        display: none;
+      ::-webkit-scrollbar { display: none; }
+      html { -ms-overflow-style: none; scrollbar-width: none; height: 100%; }
+      body { overflow-x: hidden; min-height: 100vh; padding-bottom: 100px; }
+      textarea { min-height: 200px !important; }
+      h2 {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 8px !important;
+        margin-top: 16px !important;
       }
-      
-      html {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-        height: 100%;
-      }
-      
-      body {
-        overflow-x: hidden;
-        min-height: 100vh;
-        padding-bottom: 100px;
-      }
-      
-      /* Ensure comments section is visible */
-      textarea {
-        min-height: 200px !important;
-      }
-
       @media print {
-        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-        .print\\:break-before-page { page-break-before: always; }
-        .print\\:break-after-page { page-break-after: always; }
-        .print\\:break-inside-avoid { page-break-inside: avoid; }
-        .print\\:text-black { color: black !important; }
-        .print\\:bg-white { background-color: white !important; }
-        .print\\:border-black { border-color: black !important; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid black !important; padding: 4px !important; color: black !important; font-size: 10px !important; }
+        * { color: black !important; background: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif !important; font-size: 9px !important; background: white !important; line-height: 1 !important; }
+        @page { size: 8.5in 11in; margin: 0.2in; }
+        .print\\:hidden { display: none !important; }
+        .flex.justify-between.items-center.mb-6 { display: none !important; }
+        .flex.items-center.gap-4 { display: none !important; }
+        button { display: none !important; }
+        h2 { font-size: 9px !important; font-weight: bold !important; margin: 0 !important; margin-top: 0 !important; padding: 1px 0 !important; background-color: transparent !important; color: black !important; text-transform: none !important; border: none !important; border-bottom: 1px solid black !important; line-height: 1.2 !important; padding-bottom: 2px !important; padding-top: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; position: relative !important; }
+        h2::before { display: none !important; }
+        .mb-6 { margin-top: 12px !important; border-top: 1px solid #f26722 !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .mb-6:first-of-type { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
+        table { margin-bottom: 8px !important; }
+        .status-pass { background-color: #22c55e !important; border: 2px solid #16a34a !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .status-fail { background-color: #ef4444 !important; border: 2px solid #dc2626 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow { background: white !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; margin-bottom: 3px !important; border: none !important; }
+        section { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; margin-bottom: 2px !important; }
+        div[class*="border"], div[class*="shadow"], div[class*="rounded"] { border: none !important; box-shadow: none !important; border-radius: 0 !important; }
+        div[class*="p-"], div[class*="px-"], div[class*="py-"], div[class*="pt-"], div[class*="pb-"], div[class*="pl-"], div[class*="pr-"] { padding: 0 !important; }
+        * { border: none !important; box-shadow: none !important; outline: none !important; }
+        .print\\:border { border: none !important; }
+        .print\\:border-black { border: none !important; }
+        div.bg-white, div.dark\\:bg-dark-150, div.print\\:border, div.print\\:border-black { border: none !important; box-shadow: none !important; padding: 0 !important; }
+        table, th, td, thead, tbody, tr { border: 0.5px solid black !important; }
+        input, select, textarea { border-bottom: 1px solid black !important; }
+        textarea { border: 1px solid black !important; }
+        .grid { display: grid !important; gap: 1px !important; margin-bottom: 2px !important; }
+        .grid-cols-1.md\\:grid-cols-2 { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+        label { font-size: 8px !important; font-weight: normal !important; margin: 0 !important; display: inline-block !important; margin-right: 2px !important; }
+        input, select, textarea { width: auto !important; border: none !important; border-bottom: 1px solid black !important; background: transparent !important; padding: 0 1px !important; margin: 0 !important; font-size: 8px !important; height: 12px !important; display: inline-block !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; }
+        input[type="text"], input[type="number"] { width: 80px !important; }
+        /* Address and customer fields wide for print */
+        input[name="customer"], input[name="address"] { width: 200px !important; max-width: none !important; word-wrap: break-word !important; white-space: nowrap !important; overflow: visible !important; }
+        /* Hide select dropdowns in print, show value as text */
+        select { display: none !important; visibility: hidden !important; opacity: 0 !important; width: 0 !important; height: 0 !important; }
+        .print\\:inline-block { display: inline-block !important; color: black !important; font-size: 8px !important; text-align: left !important; width: auto !important; }
+        /* End custom fixes */
+        table input[type="text"] { width: 50px !important; max-width: 50px !important; }
+        input[type="date"] { width: 70px !important; }
+        textarea { width: 100% !important; height: auto !important; min-height: 20px !important; border: 1px solid black !important; display: block !important; margin-top: 1px !important; font-size: 8px !important; padding: 2px !important; }
+        th, td { border: 0.5px solid black !important; padding: 0px 1px !important; text-align: center !important; font-size: 8px !important; height: 12px !important; line-height: 1 !important; }
         th { background-color: #f0f0f0 !important; font-weight: bold !important; }
-        input, select, textarea { 
-          background-color: white !important; 
-          border: 1px solid black !important; 
-          color: black !important; 
-          padding: 2px !important; 
-          font-size: 10px !important;
-          -webkit-appearance: none !important;
-          -moz-appearance: none !important;
-          appearance: none !important;
+        table input, table select { border: none !important; border-bottom: none !important; padding: 0 !important; margin: 0 !important; height: 10px !important; text-align: center !important; width: 100% !important; font-size: 8px !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
+        td input, td select, td textarea { border: none !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; outline: none !important; }
+        .space-y-4 > * + *, .space-y-6 > * + * { margin-top: 2px !important; }
+        .mb-4 { margin-bottom: 2px !important; }
+        .mb-6 { margin-bottom: 3px !important; }
+        .mb-8 { margin-bottom: 3px !important; }
+        .p-6 { padding: 0 !important; }
+        .bg-green-600, .bg-red-600 { background-color: transparent !important; color: black !important; border: 1px solid black !important; padding: 0px 2px !important; font-weight: bold !important; font-size: 9px !important; }
+        .text-green-600 { color: green !important; }
+        .text-red-600 { color: red !important; }
+        .min-h-[250px] { min-height: 20px !important; }
+        .text-xs { font-size: 7px !important; }
+        .flex.items-center { display: inline-flex !important; margin-right: 10px !important; }
+        section { page-break-inside: avoid !important; }
+        .max-w-7xl { max-width: 100% !important; }
+        .border-b.dark\\:border-gray-700 { border: none !important; margin: 0 !important; padding: 0 !important; }
+        section { margin-bottom: 2px !important; padding: 0 !important; }
+        .print\\:flex { margin-bottom: 3px !important; }
+        div[class*='print:border'] { border: none !important; box-shadow: none !important; background: transparent !important; }
+        div[class*='print:border-black'] { border: none !important; box-shadow: none !important; background: transparent !important; }
+        div.bg-white, div[class*='bg-white'] { border: none !important; box-shadow: none !important; background: transparent !important; }
+        div[class*='shadow'], div[class*='rounded'] { border: none !important; box-shadow: none !important; background: transparent !important; border-radius: 0 !important; }
+        .max-w-7xl > div { border: none !important; box-shadow: none !important; background: transparent !important; }
+        div:not(:has(table)) { border: none !important; box-shadow: none !important; background: transparent !important; }
+        @media print {
+          textarea { display: none !important; }
         }
-        /* Hide dropdown arrows and form control indicators */
-        select {
-          background-image: none !important;
-          padding-right: 8px !important;
-        }
-        /* Hide spin buttons on number inputs */
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-          -webkit-appearance: none !important;
-          margin: 0 !important;
-        }
-        input[type="number"] {
-          -moz-appearance: textfield !important;
-        }
-        .print\\:font-bold { font-weight: bold !important; }
-        .print\\:text-center { text-align: center !important; }
-        label { color: black !important; font-weight: 500 !important; }
-        h1, h2, h3, h4, h5, h6 { color: black !important; }
-        div[class*="bg-white"] { background-color: white !important; }
-        div[class*="shadow"] { box-shadow: none !important; }
-        .bg-green-100 { background-color: #dcfce7 !important; }
-        .text-green-800 { color: #166534 !important; }
-        .bg-red-100 { background-color: #fecaca !important; }
-        .text-red-800 { color: #991b1b !important; }
-        .bg-yellow-100 { background-color: #fef3c7 !important; }
-        .text-yellow-800 { color: #92400e !important; }
-        
-        /* Electrical tests table specific styling */
-        section h3 + div table {
-          font-size: 8px !important;
-          width: 100% !important;
-        }
-        section h3 + div th,
-        section h3 + div td {
-          padding: 2px !important;
-          font-size: 8px !important;
-          border: 1px solid black !important;
-        }
-        section h3 + div input {
-          font-size: 8px !important;
-          padding: 1px !important;
-          width: 100% !important;
-          min-width: 0 !important;
-        }
-        section h3 + div select {
-          font-size: 8px !important;
-          padding: 1px !important;
-          width: 100% !important;
-          min-width: 0 !important;
-          -webkit-appearance: none !important;
-          -moz-appearance: none !important;
-          appearance: none !important;
-          background-image: none !important;
-        }
-        
-        /* Test Equipment section styling */
-        section[aria-labelledby="equipment-heading"] {
-          page-break-inside: avoid !important;
-          margin-bottom: 20px !important;
-        }
-        
-        section[aria-labelledby="equipment-heading"] input {
-          font-size: 10px !important;
-          padding: 4px !important;
-          border: 1px solid black !important;
-          background-color: white !important;
-          color: black !important;
-          height: auto !important;
-          min-height: 25px !important;
-        }
-        
-        section[aria-labelledby="equipment-heading"] label {
-          font-size: 10px !important;
-          color: black !important;
-          font-weight: 500 !important;
-        }
-        
-        section[aria-labelledby="equipment-heading"] .grid {
-          display: grid !important;
-          grid-template-columns: 1fr 1fr 1fr !important;
-          gap: 10px !important;
-        }
-        
-        /* Comments section specific styling */
-        section[aria-labelledby="comments-heading"] {
-          page-break-inside: avoid !important;
-          margin-bottom: 50px !important;
-          min-height: 250px !important;
-        }
-        
-        section[aria-labelledby="comments-heading"] textarea {
-          min-height: 180px !important;
-          height: 180px !important;
-          font-size: 10px !important;
-          padding: 8px !important;
-          border: 1px solid black !important;
-          background-color: white !important;
-          color: black !important;
-          resize: none !important;
-          overflow: visible !important;
-          page-break-inside: avoid !important;
-          width: 100% !important;
-          box-sizing: border-box !important;
-        }
-        
-        /* Force table to fit on page */
-        .overflow-x-auto {
-          overflow: visible !important;
-        }
-        
-        /* Force sections to be visible and prevent cutting */
-        section {
-          break-inside: avoid !important;
-          page-break-inside: avoid !important;
-        }
-        
-        /* Ensure proper spacing between sections */
-        .space-y-6 > * + * {
-          margin-top: 15px !important;
+        @media print {
+          /* ...existing print styles... */
+          .comments-section { 
+            page-break-before: always !important; 
+            page-break-inside: auto !important; 
+            min-height: 80px !important; 
+          }
+          .print-comments-box {
+            display: block !important;
+            border-bottom: 1px solid black !important;
+            min-height: 80px !important;
+            color: black !important;
+            background: white !important;
+            padding: 8px 0 !important;
+            font-size: 12px !important;
+            page-break-before: always !important;
+          }
         }
       }
     `;
@@ -621,7 +553,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
             value={formData.ctIdentification[item.topKey as keyof typeof formData.ctIdentification]}
             onChange={(e) => handleChange(`ctIdentification.${item.topKey}`, e.target.value)}
             readOnly={!isEditing}
-            className={`mt-1 block w-full p-2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-brand-orange focus:ring-brand-orange dark:bg-dark-100 dark:text-white ${
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${
               !isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''
             }`}
           />
@@ -635,7 +567,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
             value={formData.ctIdentification[item.serialKey as keyof typeof formData.ctIdentification]}
             onChange={(e) => handleChange(`ctIdentification.${item.serialKey}`, e.target.value)}
             readOnly={!isEditing}
-            className={`mt-1 block w-full p-2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-brand-orange focus:ring-brand-orange dark:bg-dark-100 dark:text-white ${
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${
               !isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''
             }`}
           />
@@ -650,58 +582,43 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
     <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className={`hidden print:block mb-8 ${isPrintMode ? 'block' : ''}`}>
-        <div className="text-center border-b-2 border-gray-800 pb-4 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            CURRENT TRANSFORMER TEST REPORT (MTS)
-          </h1>
-          <div className="text-lg font-semibold">
-            Status: <span className={`px-3 py-1 rounded ${
-              formData.status === 'PASS' ? 'bg-green-100 text-green-800' : 
-              formData.status === 'FAIL' ? 'bg-red-100 text-red-800' :
-              'bg-yellow-100 text-yellow-800'
-            }`}>
-              {formData.status}
-            </span>
-          </div>
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
+        <div className="flex-1 text-center">
+          <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
       </div>
 
-      {/* Main container with padding and centered layout */}
-      <div className="p-6 flex justify-center">
-        <div className="max-w-7xl w-full space-y-6">
-          {/* Header with Back button, title and buttons */}
-          <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''} print:hidden`}>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate(`/jobs/${jobId}`)}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to Job
-              </button>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
-            </div>
-            <div className="flex gap-2">
-          <select
-            value={formData.status}
-            onChange={(e) => {
-              if (isEditing) handleChange('status', e.target.value)
-            }}
-            disabled={!isEditing}
-            className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              formData.status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' :
-              formData.status === 'FAIL' ? 'bg-red-600 text-white focus:ring-red-500' :
-              'bg-yellow-500 text-white focus:ring-yellow-400' // LIMITED SERVICE
-            } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 dark:bg-opacity-80'}`}
+      {/* Header with Back button, title and buttons */}
+      <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''} print:hidden`}>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate(`/jobs/${jobId}`)}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
           >
-            {equipmentEvaluationResultOptions.map(option => (
-              <option key={option} value={option} className="bg-white dark:bg-dark-100 text-gray-900 dark:text-white">{option}</option>
-            ))}
-          </select>
-
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Job
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              if (isEditing) {
+                setFormData(prev => ({ ...prev, status: prev.status === 'PASS' ? 'FAIL' : 'PASS' }))
+              }
+            }}
+            className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              formData.status === 'PASS'
+                ? 'bg-green-600 text-white focus:ring-green-500'
+                : 'bg-red-600 text-white focus:ring-red-500'
+            } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+          >
+            {formData.status === 'PASS' ? 'PASS' : 'FAIL'}
+          </button>
           {reportId && !isEditing ? (
             <>
               <button onClick={() => setIsEditing(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -715,99 +632,122 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
               </button>
             </>
           ) : (
-            <button onClick={handleSave} disabled={!isEditing} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700'}`}>
-              Save Report
+            <button onClick={handleSave} disabled={!isEditing} className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}>
+              {reportId ? 'Update Report' : 'Save New Report'}
             </button>
           )}
         </div>
       </div>
 
       {/* Job Information Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          {/* Left Column */}
-          <div className="space-y-3">
+        {/* PASS/FAIL Status - Print Only, positioned to the right */}
+        <div className="hidden print:block" style={{ position: 'absolute', right: '10px', top: '55px', zIndex: 10 }}>
+          <div
+            className={formData.status === 'PASS' ? 'status-pass' : 'status-fail'}
+            style={{
+              display: 'inline-block',
+              padding: '6px 16px',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              minWidth: '100px',
+              borderRadius: '4px'
+            }}
+          >
+            {formData.status || 'PASS'}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="space-y-4">
             <div>
-              <label className="form-label inline-block w-32">Customer:</label>
-              <input type="text" value={formData.customerName} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer</label>
+              <input type="text" value={formData.customerName} readOnly className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
             </div>
             <div>
-              <label className="form-label inline-block w-32">Address:</label>
-              <input type="text" value={formData.customerAddress} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
-            </div>
-             <div>
-              <label htmlFor="user" className="form-label inline-block w-32">User:</label>
-              <input id="user" name="user" type="text" value={formData.userName} onChange={(e) => handleChange('userName', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-            </div>
-            <div>
-              <label htmlFor="date" className="form-label inline-block w-32">Date:</label>
-              <input id="date" name="date" type="date" value={formData.date} onChange={(e) => handleChange('date', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+              <span className="print:inline">{formData.customerAddress || ''}</span>
+              <textarea
+                value={formData.customerAddress}
+                readOnly
+                rows={3}
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white print:hidden"
+              />
             </div>
             <div>
-              <label htmlFor="identifier" className="form-label inline-block w-32">Identifier:</label>
-              <input id="identifier" name="identifier" type="text" value={formData.identifier} onChange={(e) => handleChange('identifier', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User</label>
+              <input type="text" value={formData.userName} onChange={e => handleChange('userName', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+              <input type="date" value={formData.date} onChange={e => handleChange('date', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier</label>
+              <input type="text" value={formData.identifier} onChange={e => handleChange('identifier', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
           </div>
-          {/* Right Column */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <label className="form-label inline-block w-32">Job #:</label>
-              <input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #</label>
+              <input type="text" value={formData.jobNumber} readOnly className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
             </div>
             <div>
-              <label htmlFor="technicians" className="form-label inline-block w-32">Technicians:</label>
-              <input id="technicians" name="technicians" type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Technicians</label>
+              <input type="text" value={formData.technicians} onChange={e => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
-            <div className="flex items-center">
-              <label htmlFor="temperature.fahrenheit" className="form-label inline-block w-16">Temp:</label>
-              <input id="temperature.fahrenheit" name="temperature.fahrenheit" type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(Number(e.target.value))} readOnly={!isEditing} className={`form-input w-20 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              <span className="mx-1">°F</span>
-              <input id="temperature.celsius" name="temperature.celsius" type="number" value={formData.temperature.celsius} onChange={(e) => handleCelsiusChange(Number(e.target.value))} readOnly={!isEditing} className={`form-input w-20 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              <span className="mx-1">°C</span>
-              <label htmlFor="temperature.tcf" className="form-label inline-block w-10 ml-2">TCF:</label>
-              <input id="temperature.tcf" name="temperature.tcf" type="number" value={formData.temperature.tcf} readOnly className="form-input w-20 bg-gray-100 dark:bg-dark-200" />
-            </div>
-            <div>
-              <label htmlFor="temperature.humidity" className="form-label inline-block w-32">Humidity:</label>
-              <input id="temperature.humidity" name="temperature.humidity" type="number" value={formData.temperature.humidity} onChange={(e) => handleChange('temperature.humidity', Number(e.target.value))} readOnly={!isEditing} className={`form-input w-20 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              <span className="ml-1">%</span>
-            </div>
-            <div>
-              <label htmlFor="substation" className="form-label inline-block w-32">Substation:</label>
-              <input id="substation" name="substation" type="text" value={formData.substation} onChange={(e) => handleChange('substation', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. °F</label>
+                <input type="number" value={formData.temperature.fahrenheit} onChange={e => handleFahrenheitChange(Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">°C</label>
+                <input type="number" value={formData.temperature.celsius} onChange={e => handleCelsiusChange(Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">TCF</label>
+                <input type="number" value={formData.temperature.tcf} readOnly className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
+              </div>
             </div>
             <div>
-              <label htmlFor="eqptLocation" className="form-label inline-block w-32">Eqpt. Location:</label>
-              <input id="eqptLocation" name="eqptLocation" type="text" value={formData.eqptLocation} onChange={(e) => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Humidity</label>
+              <input type="number" value={formData.temperature.humidity} onChange={e => handleChange('temperature.humidity', Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Substation</label>
+              <input type="text" value={formData.substation} onChange={e => handleChange('substation', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Eqpt. Location</label>
+              <input type="text" value={formData.eqptLocation} onChange={e => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Device Data Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Device Data</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          {/* Left Column */}
-          <div className="space-y-3">
-            <div><label htmlFor="deviceData.manufacturer" className="form-label inline-block w-32">Manufacturer:</label><input id="deviceData.manufacturer" type="text" value={formData.deviceData.manufacturer} onChange={(e) => handleChange('deviceData.manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-            <div><label htmlFor="deviceData.class" className="form-label inline-block w-32">Class:</label><input id="deviceData.class" type="text" value={formData.deviceData.class} onChange={(e) => handleChange('deviceData.class', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-            <div><label htmlFor="deviceData.ctRatio" className="form-label inline-block w-32">CT Ratio:</label><input id="deviceData.ctRatio" type="text" value={formData.deviceData.ctRatio} onChange={(e) => handleChange('deviceData.ctRatio', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-            <div><label htmlFor="deviceData.catalogNumber" className="form-label inline-block w-32">Catalog Number:</label><input id="deviceData.catalogNumber" type="text" value={formData.deviceData.catalogNumber} onChange={(e) => handleChange('deviceData.catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="space-y-4">
+            <div><label htmlFor="deviceData.manufacturer" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label><input id="deviceData.manufacturer" type="text" value={formData.deviceData.manufacturer} onChange={(e) => handleChange('deviceData.manufacturer', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+            <div><label htmlFor="deviceData.class" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Class</label><input id="deviceData.class" type="text" value={formData.deviceData.class} onChange={(e) => handleChange('deviceData.class', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+            <div><label htmlFor="deviceData.ctRatio" className="block text-sm font-medium text-gray-700 dark:text-gray-300">CT Ratio</label><input id="deviceData.ctRatio" type="text" value={formData.deviceData.ctRatio} onChange={(e) => handleChange('deviceData.ctRatio', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+            <div><label htmlFor="deviceData.catalogNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog Number</label><input id="deviceData.catalogNumber" type="text" value={formData.deviceData.catalogNumber} onChange={(e) => handleChange('deviceData.catalogNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
           </div>
-          {/* Right Column */}
-          <div className="space-y-3">
-            <div><label htmlFor="deviceData.voltageRating" className="form-label inline-block w-32">Voltage Rating (V):</label><input id="deviceData.voltageRating" type="text" value={formData.deviceData.voltageRating} onChange={(e) => handleChange('deviceData.voltageRating', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-            <div><label htmlFor="deviceData.polarityFacing" className="form-label inline-block w-32">Polarity Facing:</label><input id="deviceData.polarityFacing" type="text" value={formData.deviceData.polarityFacing} onChange={(e) => handleChange('deviceData.polarityFacing', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-            <div><label htmlFor="deviceData.type" className="form-label inline-block w-32">Type:</label><input id="deviceData.type" type="text" value={formData.deviceData.type} onChange={(e) => handleChange('deviceData.type', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-            <div><label htmlFor="deviceData.frequency" className="form-label inline-block w-32">Frequency:</label><input id="deviceData.frequency" type="text" value={formData.deviceData.frequency} onChange={(e) => handleChange('deviceData.frequency', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+          <div className="space-y-4">
+            <div><label htmlFor="deviceData.voltageRating" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Voltage Rating (V)</label><input id="deviceData.voltageRating" type="text" value={formData.deviceData.voltageRating} onChange={(e) => handleChange('deviceData.voltageRating', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+            <div><label htmlFor="deviceData.polarityFacing" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Polarity Facing</label><input id="deviceData.polarityFacing" type="text" value={formData.deviceData.polarityFacing} onChange={(e) => handleChange('deviceData.polarityFacing', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+            <div><label htmlFor="deviceData.type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label><input id="deviceData.type" type="text" value={formData.deviceData.type} onChange={(e) => handleChange('deviceData.type', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+            <div><label htmlFor="deviceData.frequency" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Frequency</label><input id="deviceData.frequency" type="text" value={formData.deviceData.frequency} onChange={(e) => handleChange('deviceData.frequency', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Visual and Mechanical Inspection Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -827,22 +767,23 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                     <select value={item.result} onChange={(e) => handleVisualInspectionChange(index, 'result', e.target.value)} disabled={!isEditing} className={`form-select ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
                       {visualInspectionResultOptions.map(option => <option key={option} value={option}>{option}</option>)}
                     </select>
+                    <span className="print:inline-block" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>{item.result === 'Select One' ? '' : item.result}</span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </section>
+      </div>
 
       {/* CT Identification Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">CT Identification</h2>
         {renderCtIdentification()}
-      </section>
+      </div>
 
       {/* Electrical Tests Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 space-y-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
+      <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests</h2>
         
         {/* Ratio and Polarity Table */}
@@ -890,8 +831,8 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
               <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                 {formData.electricalTests.ratioPolarity.map((item, index) => (
                   <tr key={item.id}>
-                    <td><input type="text" value={item.identifier} onChange={(e) => handleRatioPolarityChange(index, 'identifier', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
-                    <td><input type="text" value={item.ratio} onChange={(e) => handleRatioPolarityChange(index, 'ratio', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td><input type="text" value={item.identifier} onChange={(e) => handleRatioPolarityChange(index, 'identifier', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td><input type="text" value={item.ratio} onChange={(e) => handleRatioPolarityChange(index, 'ratio', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
                     <td>
                       <input 
                         type="text" 
@@ -899,18 +840,19 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                         onChange={(e) => handleRatioPolarityChange(index, 'testValue', e.target.value)} 
                         readOnly={!isEditing} 
                         placeholder={item.testType === 'voltage' ? 'Enter voltage' : 'Enter current'}
-                        className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td><input type="text" value={item.pri} onChange={(e) => handleRatioPolarityChange(index, 'pri', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
-                    <td><input type="text" value={item.sec} onChange={(e) => handleRatioPolarityChange(index, 'sec', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
-                    <td><input type="text" value={item.measuredRatio} onChange={(e) => handleRatioPolarityChange(index, 'measuredRatio', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
-                    <td><input type="text" value={item.ratioDev} onChange={(e) => handleRatioPolarityChange(index, 'ratioDev', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td><input type="text" value={item.pri} onChange={(e) => handleRatioPolarityChange(index, 'pri', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td><input type="text" value={item.sec} onChange={(e) => handleRatioPolarityChange(index, 'sec', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td><input type="text" value={item.measuredRatio} onChange={(e) => handleRatioPolarityChange(index, 'measuredRatio', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td><input type="text" value={item.ratioDev} onChange={(e) => handleRatioPolarityChange(index, 'ratioDev', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
                     <td>
                       <select value={item.polarity} onChange={(e) => handleRatioPolarityChange(index, 'polarity', e.target.value)} disabled={!isEditing} className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
                         <option value="Select One" disabled>Select One</option>
                         {ratioPolarityOptions.map(option => <option key={option} value={option}>{option}</option>)}
                       </select>
+                      <span className="print:inline-block" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>{item.polarity === 'Select One' ? '' : item.polarity}</span>
                     </td>
                   </tr>
                 ))}
@@ -959,7 +901,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                           handleChange(`electricalTests.primaryWindingInsulation.tempCorrection20C${fieldKey.replace('reading', '')}`, correctedValue);
                         }} 
                         readOnly={!isEditing} 
-                        className={`form-input w-full text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                        className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                       />
                     </td>
                   ))}
@@ -972,6 +914,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                     >
                       {insulationResistanceUnitOptions.map(option => <option key={option.symbol} value={option.symbol}>{option.symbol}</option>)}
                     </select>
+                    <span className="print:inline-block" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>{formData.electricalTests.primaryWindingInsulation.units}</span>
                   </td>
                 </tr>
                 <tr>
@@ -982,7 +925,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                         type="text" 
                         value={formData.electricalTests.primaryWindingInsulation[fieldKey as keyof typeof formData.electricalTests.primaryWindingInsulation]} 
                         readOnly
-                        className="form-input w-full text-center bg-gray-100 dark:bg-dark-200" 
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" 
                       />
                     </td>
                   ))}
@@ -1035,7 +978,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                           handleChange(`electricalTests.secondaryWindingInsulation.tempCorrection20C${fieldKey.replace('reading', '')}`, correctedValue);
                         }} 
                         readOnly={!isEditing} 
-                        className={`form-input w-full text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                        className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                       />
                     </td>
                   ))}
@@ -1048,6 +991,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                     >
                       {insulationResistanceUnitOptions.map(option => <option key={option.symbol} value={option.symbol}>{option.symbol}</option>)}
                     </select>
+                    <span className="print:inline-block" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>{formData.electricalTests.secondaryWindingInsulation.units}</span>
                   </td>
                 </tr>
                 <tr>
@@ -1058,7 +1002,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                         type="text" 
                         value={formData.electricalTests.secondaryWindingInsulation[fieldKey as keyof typeof formData.electricalTests.secondaryWindingInsulation]} 
                         readOnly
-                        className="form-input w-full text-center bg-gray-100 dark:bg-dark-200" 
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" 
                       />
                     </td>
                   ))}
@@ -1070,42 +1014,60 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
             </table>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Test Equipment Used Section */}
-      <section aria-labelledby="equipment-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
-        <h2 id="equipment-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><label htmlFor="testEquipmentUsed.megohmmeterName" className="form-label block">Megohmmeter:</label><input id="testEquipmentUsed.megohmmeterName" type="text" value={formData.testEquipmentUsed.megohmmeterName} onChange={(e) => handleChange('testEquipmentUsed.megohmmeterName', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-            <div><label htmlFor="testEquipmentUsed.megohmmeterSerial" className="form-label block">Serial Number:</label><input id="testEquipmentUsed.megohmmeterSerial" type="text" value={formData.testEquipmentUsed.megohmmeterSerial} onChange={(e) => handleChange('testEquipmentUsed.megohmmeterSerial', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-            <div><label htmlFor="testEquipmentUsed.megohmmeterAmpId" className="form-label block">AMP ID:</label><input id="testEquipmentUsed.megohmmeterAmpId" type="text" value={formData.testEquipmentUsed.megohmmeterAmpId} onChange={(e) => handleChange('testEquipmentUsed.megohmmeterAmpId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+          <div className="grid grid-cols-3 gap-4">
+            <div><label htmlFor="testEquipmentUsed.megohmmeterName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label><input id="testEquipmentUsed.megohmmeterName" type="text" value={formData.testEquipmentUsed.megohmmeterName} onChange={(e) => handleChange('testEquipmentUsed.megohmmeterName', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+            <div><label htmlFor="testEquipmentUsed.megohmmeterSerial" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label><input id="testEquipmentUsed.megohmmeterSerial" type="text" value={formData.testEquipmentUsed.megohmmeterSerial} onChange={(e) => handleChange('testEquipmentUsed.megohmmeterSerial', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+            <div><label htmlFor="testEquipmentUsed.megohmmeterAmpId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label><input id="testEquipmentUsed.megohmmeterAmpId" type="text" value={formData.testEquipmentUsed.megohmmeterAmpId} onChange={(e) => handleChange('testEquipmentUsed.megohmmeterAmpId', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><label htmlFor="testEquipmentUsed.ctRatioTestSetName" className="form-label block">CT Ratio Test Set:</label><input id="testEquipmentUsed.ctRatioTestSetName" type="text" value={formData.testEquipmentUsed.ctRatioTestSetName} onChange={(e) => handleChange('testEquipmentUsed.ctRatioTestSetName', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-            <div><label htmlFor="testEquipmentUsed.ctRatioTestSetSerial" className="form-label block">Serial Number:</label><input id="testEquipmentUsed.ctRatioTestSetSerial" type="text" value={formData.testEquipmentUsed.ctRatioTestSetSerial} onChange={(e) => handleChange('testEquipmentUsed.ctRatioTestSetSerial', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-            <div><label htmlFor="testEquipmentUsed.ctRatioTestSetAmpId" className="form-label block">AMP ID:</label><input id="testEquipmentUsed.ctRatioTestSetAmpId" type="text" value={formData.testEquipmentUsed.ctRatioTestSetAmpId} onChange={(e) => handleChange('testEquipmentUsed.ctRatioTestSetAmpId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+          <div className="grid grid-cols-3 gap-4">
+            <div><label htmlFor="testEquipmentUsed.ctRatioTestSetName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">CT Ratio Test Set</label><input id="testEquipmentUsed.ctRatioTestSetName" type="text" value={formData.testEquipmentUsed.ctRatioTestSetName} onChange={(e) => handleChange('testEquipmentUsed.ctRatioTestSetName', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+            <div><label htmlFor="testEquipmentUsed.ctRatioTestSetSerial" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label><input id="testEquipmentUsed.ctRatioTestSetSerial" type="text" value={formData.testEquipmentUsed.ctRatioTestSetSerial} onChange={(e) => handleChange('testEquipmentUsed.ctRatioTestSetSerial', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+            <div><label htmlFor="testEquipmentUsed.ctRatioTestSetAmpId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label><input id="testEquipmentUsed.ctRatioTestSetAmpId" type="text" value={formData.testEquipmentUsed.ctRatioTestSetAmpId} onChange={(e) => handleChange('testEquipmentUsed.ctRatioTestSetAmpId', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
           </div>
-                  </div>
-        </section>
+        </div>
+      </div>
 
-        {/* Comments Section */}
-        <section aria-labelledby="comments-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid mb-32" style={{ marginBottom: '150px' }}>
-          <h2 id="comments-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+      {/* Comments Section */}
+      <div className="mb-6 comments-section">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+        
+        {/* Table for print mode - always rendered but only visible in print */}
+        <table className="hidden print:table" style={{ width: '100%', marginTop: '10px', border: '1px solid black' }}>
+          <tbody>
+            <tr>
+              <td style={{ 
+                padding: '12px', 
+                minHeight: '120px', 
+                verticalAlign: 'top',
+                fontSize: '14px',
+                color: 'black',
+                border: '1px solid black'
+              }}>
+                {formData.comments && formData.comments.trim() !== '' ? formData.comments : '(No comments)'}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        {/* Textarea for screen mode - hidden in print */}
         <textarea
           value={formData.comments}
           onChange={(e) => handleChange('comments', e.target.value)}
           readOnly={!isEditing}
           rows={6}
-          className={`form-textarea w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+          className={`print:hidden mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
           placeholder="Enter comments here..."
         />
-        </section>
-        </div>
       </div>
-      </ReportWrapper>
-    </div>
-  );
+    </ReportWrapper>
+  </div>
+);
 };
 
 export default CurrentTransformerTestMTSReport; 

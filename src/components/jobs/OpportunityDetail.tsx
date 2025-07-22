@@ -239,6 +239,18 @@ export default function OpportunityDetail() {
         probability: opportunity.probability?.toString() || '0',
         amp_division: opportunity.amp_division || ''
       });
+      // Fetch all subcontractor agreements for this opportunity
+      (async () => {
+        const { data: agreements, error } = await supabase
+          .schema('business')
+          .from('subcontractor_agreements')
+          .select('*')
+          .eq('opportunity_id', opportunity.id)
+          .order('upload_date', { ascending: false });
+        if (!error && agreements) {
+          setSubcontractorAgreements(agreements);
+        }
+      })();
     }
   }, [opportunity]);
 
@@ -281,7 +293,7 @@ export default function OpportunityDetail() {
       });
       
       // Initialize subcontractor agreements
-      setSubcontractorAgreements(opportunityData.subcontractor_agreements || []);
+      // setSubcontractorAgreements(opportunityData.subcontractor_agreements || []); // This line is now handled by the useEffect
       
       // Initialize form data for editing
       setFormData({
@@ -672,9 +684,15 @@ export default function OpportunityDetail() {
       // Save to database
       const { error } = await supabase
         .schema('business')
-        .from('opportunities')
-        .update({ subcontractor_agreements: updatedAgreements })
-        .eq('id', id);
+        .from('subcontractor_agreements')
+        .insert({
+          opportunity_id: id,
+          name: newAgreement.name,
+          file_url: newAgreement.file_url,
+          upload_date: newAgreement.upload_date,
+          status: newAgreement.status,
+          description: newAgreement.description
+        });
 
       if (error) throw error;
 
@@ -696,9 +714,9 @@ export default function OpportunityDetail() {
 
       const { error } = await supabase
         .schema('business')
-        .from('opportunities')
-        .update({ subcontractor_agreements: updatedAgreements })
-        .eq('id', id);
+        .from('subcontractor_agreements')
+        .delete()
+        .eq('id', agreementId);
 
       if (error) throw error;
 
@@ -720,9 +738,9 @@ export default function OpportunityDetail() {
 
       const { error } = await supabase
         .schema('business')
-        .from('opportunities')
-        .update({ subcontractor_agreements: updatedAgreements })
-        .eq('id', id);
+        .from('subcontractor_agreements')
+        .update({ status: newStatus })
+        .eq('id', agreementId);
 
       if (error) throw error;
     } catch (error) {
@@ -800,9 +818,9 @@ export default function OpportunityDetail() {
       // Save to database
       const { error: dbError } = await supabase
         .schema('business')
-        .from('opportunities')
-        .update({ subcontractor_agreements: updatedAgreements })
-        .eq('id', id);
+        .from('subcontractor_agreements')
+        .update({ file_url: publicUrl, upload_date: new Date().toISOString() })
+        .eq('id', previewFile.id);
 
       if (dbError) {
         console.error('Database update error:', dbError);

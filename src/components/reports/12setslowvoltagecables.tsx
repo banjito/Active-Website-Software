@@ -546,93 +546,400 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
   const celsiusTemperature = convertFahrenheitToCelsius(formData.temperature);
   const tcf = getTCF(celsiusTemperature);
 
-  // Add print styles
+  // Add print styles - replace the existing useEffect with print styles
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
+      /* Hide navigation bar and scrollbar */
+      nav, header, .navigation, [class*="nav"], [class*="header"] {
+        display: none !important;
+      }
+      ::-webkit-scrollbar { display: none; }
+      html { -ms-overflow-style: none; scrollbar-width: none; height: 100%; }
+      body { overflow-x: hidden; min-height: 100vh; padding-bottom: 100px; }
+      textarea { min-height: 200px !important; }
+
+      /* Section headers with orange dividers for fillable report */
+      h2 {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 8px !important;
+        margin-top: 16px !important;
+      }
+
       @media print {
-        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-        * { color: black !important; }
-        
-        /* Form elements - hide interactive indicators */
-        input, select, textarea { 
-          background-color: white !important; 
-          border: 1px solid black !important; 
+        * { 
           color: black !important;
-          padding: 2px !important; 
-          font-size: 10px !important;
+          background: white !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        html, body {
+          margin: 0;
+          padding: 0;
+          font-family: Arial, Helvetica, sans-serif !important;
+          font-size: 9px !important;
+          background: white !important;
+          line-height: 1 !important;
+        }
+        
+        /* Standard portrait page size with minimal margins */
+        @page { 
+          size: 8.5in 11in; 
+          margin: 0.2in;
+        }
+        
+        /* Hide all non-print elements */
+        .print\\:hidden { display: none !important; }
+        
+        /* Hide second title and back button in print only */
+        .flex.justify-between.items-center.mb-6 { display: none !important; }
+        .flex.items-center.gap-4 { display: none !important; }
+        button { display: none !important; }
+        
+        /* Section headers with orange line above - ultra compact */
+        h2 {
+          font-size: 9px !important;
+          font-weight: bold !important;
+          margin: 0 !important;
+          margin-top: 0 !important;
+          padding: 1px 0 !important;
+          background-color: transparent !important;
+          color: black !important;
+          text-transform: none !important;
+          border: none !important;
+          border-bottom: 1px solid black !important;
+          line-height: 1.2 !important;
+          padding-bottom: 2px !important;
+          padding-top: 0 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          position: relative !important;
+        }
+        
+        /* Remove pseudo-element - not working properly */
+        h2::before {
+          display: none !important;
+        }
+        
+        /* Create actual section dividers */
+        .mb-6 {
+          margin-top: 12px !important;
+          border-top: 1px solid #f26722 !important;
+          padding-top: 8px !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        /* First section shouldn't have top border */
+        .mb-6:first-of-type {
+          border-top: none !important;
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+        }
+        
+        /* Add extra spacing after tables to prevent overlap */
+        table {
+          margin-bottom: 8px !important;
+        }
+
+        /* Force PASS/FAIL colors to print */
+        .status-pass {
+          background-color: #22c55e !important;
+          border: 2px solid #16a34a !important;
+          color: white !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        .status-fail {
+          background-color: #ef4444 !important;
+          border: 2px solid #dc2626 !important;
+          color: white !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        /* Remove all card styling and shadows */
+        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow {
+          background: white !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          padding: 0 !important;
+          margin-bottom: 3px !important;
+          border: none !important;
+        }
+        
+        /* Remove ALL section styling - no boxes */
+        section {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          margin-bottom: 2px !important;
+        }
+        
+        /* Remove any div that might create boxes */
+        div[class*="border"], div[class*="shadow"], div[class*="rounded"] {
+          border: none !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+        }
+        
+        /* Ensure no padding on any containers */
+        div[class*="p-"], div[class*="px-"], div[class*="py-"], div[class*="pt-"], div[class*="pb-"], div[class*="pl-"], div[class*="pr-"] {
+          padding: 0 !important;
+        }
+        
+        /* FORCE remove all borders and boxes from everything except tables */
+        * {
+          border: none !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
+        
+        /* Specifically target and remove print borders */
+        .print\\:border {
+          border: none !important;
+        }
+        
+        .print\\:border-black {
+          border: none !important;
+        }
+        
+        /* Remove borders from divs with these specific classes */
+        div.bg-white, div.dark\\:bg-dark-150, div.print\\:border, div.print\\:border-black {
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+        
+        /* Only allow borders on table elements */
+        table, th, td, thead, tbody, tr {
+          border: 0.5px solid black !important;
+        }
+        
+        /* Allow borders on inputs */
+        input, select, textarea {
+          border-bottom: 1px solid black !important;
+        }
+        
+        textarea {
+          border: 1px solid black !important;
+        }
+        
+        /* Form grid layout - ultra compact */
+        .grid {
+          display: grid !important;
+          gap: 1px !important;
+          margin-bottom: 2px !important;
+        }
+        
+        /* Job info section - single line layout */
+        .grid-cols-1.md\\:grid-cols-2 {
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 8px !important;
+        }
+        
+        /* Labels and inputs - ultra compact */
+        label {
+          font-size: 8px !important;
+          font-weight: normal !important;
+          margin: 0 !important;
+          display: inline-block !important;
+          margin-right: 2px !important;
+        }
+        
+        input, select, textarea {
+          width: auto !important;
+          border: none !important;
+          border-bottom: 1px solid black !important;
+          background: transparent !important;
+          padding: 0 1px !important;
+          margin: 0 !important;
+          font-size: 8px !important;
+          height: 12px !important;
+          display: inline-block !important;
           -webkit-appearance: none !important;
           -moz-appearance: none !important;
           appearance: none !important;
         }
         
-        /* Hide dropdown arrows and form control indicators */
-        select {
-          background-image: none !important;
-          padding-right: 8px !important;
+        /* Specific width for common inputs */
+        input[type="text"], input[type="number"] {
+          width: 80px !important;
         }
         
-        /* Hide spin buttons on number inputs */
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-          -webkit-appearance: none !important;
-          margin: 0 !important;
-        }
-        input[type="number"] {
-          -moz-appearance: textfield !important;
+        /* Narrower inputs in Temperature Corrected Values table */
+        table input[type="text"] {
+          width: 50px !important;
+          max-width: 50px !important;
         }
         
-        /* Table styling */
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid black !important; padding: 4px !important; }
-        th { background-color: #f0f0f0 !important; font-weight: bold !important; }
-        
-        /* Hide interactive elements */
-        button:not(.print-visible) { display: none !important; }
-        
-        /* Section styling */
-        section { break-inside: avoid !important; margin-bottom: 20px !important; }
-        
-        /* Electrical Tests table specific styling */
-        section[aria-labelledby="electrical-tests-heading"] {
-          page-break-inside: avoid !important;
-          margin-bottom: 30px !important;
+        input[type="date"] {
+          width: 70px !important;
         }
         
-        section[aria-labelledby="electrical-tests-heading"] table {
+        textarea {
           width: 100% !important;
-          font-size: 8px !important;
-          border-collapse: collapse !important;
-          page-break-inside: avoid !important;
-        }
-        
-        section[aria-labelledby="electrical-tests-heading"] th,
-        section[aria-labelledby="electrical-tests-heading"] td {
-          padding: 2px !important;
+          height: auto !important;
+          min-height: 20px !important;
           border: 1px solid black !important;
+          display: block !important;
+          margin-top: 1px !important;
           font-size: 8px !important;
-          text-align: center !important;
+          padding: 2px !important;
         }
         
-        section[aria-labelledby="electrical-tests-heading"] input,
-        section[aria-labelledby="electrical-tests-heading"] select {
-          font-size: 8px !important;
-          padding: 1px !important;
+        /* Table styles - ultra compact */
+        table {
           width: 100% !important;
+          border-collapse: collapse !important;
+          margin: 1px 0 !important;
+          font-size: 8px !important;
+          page-break-inside: avoid !important;
+          margin-bottom: 16px !important;
+        }
+        
+        th, td {
+          border: 0.5px solid black !important;
+          padding: 0px 1px !important;
+          text-align: center !important;
+          font-size: 8px !important;
+          height: 12px !important;
+          line-height: 1 !important;
+        }
+        
+        th {
+          background-color: #f0f0f0 !important;
+          font-weight: bold !important;
+        }
+        
+        /* Specific input styling in tables */
+        table input, table select {
+          border: none !important;
+          border-bottom: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          height: 10px !important;
+          text-align: center !important;
+          width: 100% !important;
+          font-size: 8px !important;
+          background: transparent !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+        }
+        
+        /* Force table cell inputs to not interfere with table borders */
+        td input, td select, td textarea {
           border: none !important;
           background: transparent !important;
-          text-align: center !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          outline: none !important;
         }
         
-        /* Print utility classes */
-        .print\\:break-before-page { page-break-before: always; }
-        .print\\:break-after-page { page-break-after: always; }
-        .print\\:break-inside-avoid { page-break-inside: avoid; }
-        .print\\:text-black { color: black !important; }
-        .print\\:bg-white { background-color: white !important; }
-        .print\\:border-black { border-color: black !important; }
-        .print\\:font-bold { font-weight: bold !important; }
-        .print\\:text-center { text-align: center !important; }
+        /* Remove all spacing classes */
+        .space-y-4 > * + *, .space-y-6 > * + * { margin-top: 2px !important; }
+        .mb-4 { margin-bottom: 2px !important; }
+        .mb-6 { margin-bottom: 3px !important; }
+        .mb-8 { margin-bottom: 3px !important; }
+        .p-6 { padding: 0 !important; }
+        
+        /* PASS/FAIL status badge */
+        .bg-green-600, .bg-red-600 {
+          background-color: transparent !important;
+          color: black !important;
+          border: 1px solid black !important;
+          padding: 0px 2px !important;
+          font-weight: bold !important;
+          font-size: 9px !important;
+        }
+        
+        /* Status in header */
+        .text-green-600 { color: green !important; }
+        .text-red-600 { color: red !important; }
+        
+        /* Comments section */
+        .min-h-[250px] {
+          min-height: 20px !important;
+        }
+        
+        /* Footer text */
+        .text-xs {
+          font-size: 7px !important;
+        }
+        
+        /* Force single-line layout for form fields */
+        .flex.items-center {
+          display: inline-flex !important;
+          margin-right: 10px !important;
+        }
+        
+        /* Page break control */
+        section { page-break-inside: avoid !important; }
+        
+        /* Ensure everything fits on one page */
+        .max-w-7xl { max-width: 100% !important; }
+        
+        /* Orange header bar for sections */
+        .border-b.dark\\:border-gray-700 {
+          border: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        
+        /* Specific section spacing */
+        section {
+          margin-bottom: 2px !important;
+          padding: 0 !important;
+        }
+        
+        /* Print header specific */
+        .print\\:flex {
+          margin-bottom: 3px !important;
+        }
+        
+        /* SUPER-SPECIFIC OVERRIDES - Must be last to override Tailwind */
+        div[class*='print:border'] {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+        
+        div[class*='print:border-black'] {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+        
+        div.bg-white, div[class*='bg-white'] {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+        
+        div[class*='shadow'], div[class*='rounded'] {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+          border-radius: 0 !important;
+        }
+        
+        /* Remove border from all direct children of .max-w-7xl in print */
+        .max-w-7xl > div {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+        
+        /* Nuclear option - remove borders from all divs except those containing tables */
+        div:not(:has(table)) {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
       }
     `;
     document.head.appendChild(style);
@@ -942,727 +1249,517 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
     }
   };
 
-  // Add print styles and hide navigation/scrollbar
-  React.useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      /* Hide navigation bar and scrollbar */
-      nav, header, .navigation, [class*="nav"], [class*="header"] {
-        display: none !important;
-      }
-      
-      /* Hide scrollbar */
-      ::-webkit-scrollbar {
-        display: none;
-      }
-      
-      html {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-        height: 100%;
-      }
-      
-      body {
-        overflow-x: hidden;
-        min-height: 100vh;
-        padding-bottom: 100px;
-      }
-      
-      /* Ensure comments section is visible */
-      textarea {
-        min-height: 200px !important;
-      }
-
-      @media print {
-        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-        .print\\:break-before-page { page-break-before: always; }
-        .print\\:break-after-page { page-break-after: always; }
-        .print\\:break-inside-avoid { page-break-inside: avoid; }
-        .print\\:text-black { color: black !important; }
-        .print\\:bg-white { background-color: white !important; }
-        .print\\:border-black { border-color: black !important; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid black !important; padding: 4px !important; color: black !important; font-size: 10px !important; }
-        th { background-color: #f0f0f0 !important; font-weight: bold !important; }
-        input, select, textarea { 
-          background-color: white !important; 
-          border: 1px solid black !important; 
-          color: black !important; 
-          padding: 2px !important; 
-          font-size: 10px !important;
-          -webkit-appearance: none !important;
-          -moz-appearance: none !important;
-          appearance: none !important;
-        }
-        /* Hide dropdown arrows and form control indicators */
-        select {
-          background-image: none !important;
-          padding-right: 8px !important;
-        }
-        /* Hide spin buttons on number inputs */
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-          -webkit-appearance: none !important;
-          margin: 0 !important;
-        }
-        input[type="number"] {
-          -moz-appearance: textfield !important;
-        }
-        .print\\:font-bold { font-weight: bold !important; }
-        .print\\:text-center { text-align: center !important; }
-        label { color: black !important; font-weight: 500 !important; }
-        h1, h2, h3, h4, h5, h6 { color: black !important; }
-        div[class*="bg-white"] { background-color: white !important; }
-        div[class*="shadow"] { box-shadow: none !important; }
-        .bg-green-100 { background-color: #dcfce7 !important; }
-        .text-green-800 { color: #166534 !important; }
-        .bg-red-100 { background-color: #fecaca !important; }
-        .text-red-800 { color: #991b1b !important; }
-        .bg-yellow-100 { background-color: #fef3c7 !important; }
-        .text-yellow-800 { color: #92400e !important; }
-        
-        /* Electrical tests table specific styling */
-        section[aria-labelledby="electrical-tests-heading"] {
-          page-break-inside: avoid !important;
-          margin-bottom: 20px !important;
-        }
-        
-        section[aria-labelledby="electrical-tests-heading"] table {
-          font-size: 8px !important;
-          width: 100% !important;
-        }
-        
-        section[aria-labelledby="electrical-tests-heading"] th,
-        section[aria-labelledby="electrical-tests-heading"] td {
-          padding: 2px !important;
-          font-size: 8px !important;
-          border: 1px solid black !important;
-        }
-        
-        section[aria-labelledby="electrical-tests-heading"] input {
-          font-size: 8px !important;
-          padding: 1px !important;
-          width: 100% !important;
-          min-width: 0 !important;
-          background-color: transparent !important;
-          border: none !important;
-        }
-        
-        section[aria-labelledby="electrical-tests-heading"] select {
-          font-size: 8px !important;
-          padding: 1px !important;
-          width: 100% !important;
-          min-width: 0 !important;
-          -webkit-appearance: none !important;
-          -moz-appearance: none !important;
-          appearance: none !important;
-          background-image: none !important;
-          background-color: transparent !important;
-          border: none !important;
-        }
-        
-        /* Comments section specific styling */
-        section[aria-labelledby="comments-heading"] {
-          page-break-inside: avoid !important;
-          margin-bottom: 50px !important;
-          min-height: 250px !important;
-        }
-        
-        section[aria-labelledby="comments-heading"] textarea {
-          min-height: 180px !important;
-          height: 180px !important;
-          font-size: 10px !important;
-          padding: 8px !important;
-          border: 1px solid black !important;
-          background-color: white !important;
-          color: black !important;
-          resize: none !important;
-          overflow: visible !important;
-          page-break-inside: avoid !important;
-          width: 100% !important;
-          box-sizing: border-box !important;
-        }
-        
-        /* Force table to fit on page */
-        .overflow-x-auto {
-          overflow: visible !important;
-        }
-        
-        /* Force sections to be visible and prevent cutting */
-        section {
-          break-inside: avoid !important;
-          page-break-inside: avoid !important;
-        }
-        
-        /* Ensure proper spacing between sections */
-        .space-y-6 > * + * {
-          margin-top: 15px !important;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
-
   if (loading) return <div className="p-4">Loading...</div>;
   if (error) return <div className="p-6 text-red-600 dark:text-red-400">Error: {error}</div>;
 
   return (
     <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>
-    <ReportWrapper isPrintMode={isPrintMode}>
-      {/* Print Header - Only visible when printing */}
-      <div className={`hidden print:block mb-8 ${isPrintMode ? 'block' : ''}`}>
-        <div className="text-center border-b-2 border-gray-800 pb-4 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            LOW VOLTAGE CABLE TEST REPORT (12 SETS)
-          </h1>
-          <div className="text-lg font-semibold">
-            Status: <span className={`px-3 py-1 rounded ${
-              status === 'PASS' ? 'bg-green-100 text-green-800' : 
-              status === 'FAIL' ? 'bg-red-100 text-red-800' : 
-              'bg-yellow-100 text-yellow-800'
-            }`}>
-              {status}
-            </span>
+      <ReportWrapper isPrintMode={isPrintMode}>
+        {/* Print Header - Only visible when printing */}
+        <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
+          <div className="flex-1 text-center">
+            <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
           </div>
+          <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
         </div>
-      </div>
 
-      <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
-        {/* Header */}
-        <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''} print:hidden`}>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate(`/jobs/${jobId}`)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to Job
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
-          </div>
-          <div className="flex gap-2">
-            <select
-              value={status}
-              onChange={(e) => {
-                if (isEditMode) setStatus(e.target.value as 'PASS' | 'FAIL' | 'LIMITED SERVICE')
-              }}
-              disabled={!isEditMode}
-              className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' :
-                status === 'FAIL' ? 'bg-red-600 text-white focus:ring-red-500' :
-                'bg-yellow-500 text-white focus:ring-yellow-400' // LIMITED SERVICE
-              } ${!isEditMode ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 dark:bg-opacity-80'}`}
-            >
-              {EVALUATION_RESULTS.map(option => (
-                <option key={option} value={option} className="bg-white dark:bg-dark-100 text-gray-900 dark:text-white">{option}</option>
-              ))}
-            </select>
-
-            {reportId && !isEditMode ? (
-              <>
-                <button onClick={() => setIsEditMode(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                  Edit Report
-                </button>
-                <button
-                  onClick={() => window.print()}
-                  className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                >
-                  Print Report
-                </button>
-              </>
-            ) : (
-              <button onClick={handleSave} disabled={!isEditMode} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditMode ? 'hidden' : 'hover:bg-orange-700'}`}>
-                Save Report
-              </button>
-            )}
-          </div>
-        </div>
-        {/* Job Information Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          {/* Left Column */}
-          <div className="space-y-3">
-            <div>
-              <label className="form-label inline-block w-32">Customer:</label>
-              <input type="text" value={formData.customer} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
-              </div>
-            <div>
-              <label className="form-label inline-block w-32">Address:</label>
-              <input type="text" value={formData.address} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
-              </div>
-             <div>
-                <label htmlFor="user" className="form-label inline-block w-32">User:</label>
-              <input id="user" name="user" type="text" value={formData.user} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-            <div>
-                <label htmlFor="date" className="form-label inline-block w-32">Date:</label>
-              <input id="date" name="date" type="date" value={formData.date} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-            <div>
-                <label htmlFor="identifier" className="form-label inline-block w-32">Identifier:</label>
-              <input id="identifier" name="identifier" type="text" value={formData.identifier} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-            </div>
-          {/* Right Column */}
-          <div className="space-y-3">
-            <div>
-              <label className="form-label inline-block w-32">Job #:</label>
-              <input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
-              </div>
-            <div>
-                <label htmlFor="technicians" className="form-label inline-block w-32">Technicians:</label>
-              <input id="technicians" name="technicians" type="text" value={formData.technicians} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-            <div className="flex items-center">
-              <label htmlFor="temperature" className="form-label inline-block w-16">Temp:</label>
-              <input id="temperature" name="temperature" type="number" value={formData.temperature} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-20 ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              <span className="mx-1">°F</span>
-              <input type="number" value={celsiusTemperature.toFixed(0)} readOnly className="form-input w-20 bg-gray-100 dark:bg-dark-200" />
-              <span className="mx-1">°C</span>
-              <label className="form-label inline-block w-10 ml-2">TCF:</label>
-              <input type="number" value={tcf} readOnly className="form-input w-20 bg-gray-100 dark:bg-dark-200" />
-              </div>
-            <div>
-                <label htmlFor="humidity" className="form-label inline-block w-32">Humidity:</label>
-              <input id="humidity" name="humidity" type="number" value={formData.humidity} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-20 ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              <span className="ml-1">%</span>
-              </div>
-            <div>
-                <label htmlFor="substation" className="form-label inline-block w-32">Substation:</label>
-              <input id="substation" name="substation" type="text" value={formData.substation} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-             <div>
-                <label htmlFor="eqptLocation" className="form-label inline-block w-32">Eqpt. Location:</label>
-              <input id="eqptLocation" name="eqptLocation" type="text" value={formData.eqptLocation} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-            </div>
-          </div>
-        </section>
-        
-        {/* Cable Data Section */}
-        <section aria-labelledby="cable-data-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
-          <h2 id="cable-data-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Cable Data</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-            {/* Column 1 */}
-            <div>
-              <div className="mb-4">
-                <label htmlFor="testedFrom" className="form-label inline-block w-32">Tested From:</label>
-                <input id="testedFrom" name="testedFrom" type="text" value={formData.testedFrom} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="manufacturer" className="form-label inline-block w-32">Manufacturer:</label>
-                <input id="manufacturer" name="manufacturer" type="text" value={formData.manufacturer} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="conductorMaterial" className="form-label inline-block w-32">Conductor Material:</label>
-                <input id="conductorMaterial" name="conductorMaterial" type="text" value={formData.conductorMaterial} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="insulationType" className="form-label inline-block w-32">Insulation Type:</label>
-                <input id="insulationType" name="insulationType" type="text" value={formData.insulationType} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-            </div>
-            {/* Column 2 */}
-            <div>
-              <div className="mb-4">
-                <label htmlFor="systemVoltage" className="form-label inline-block w-32">System Voltage:</label>
-                <input id="systemVoltage" name="systemVoltage" type="text" value={formData.systemVoltage} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="ratedVoltage" className="form-label inline-block w-32">Rated Voltage:</label>
-                <input id="ratedVoltage" name="ratedVoltage" type="text" value={formData.ratedVoltage} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="length" className="form-label inline-block w-32">Length:</label>
-                <input id="length" name="length" type="text" value={formData.length} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
-              </div>
-            </div>
-          </div>
-        </section>
-        
-        {/* Visual and Mechanical Inspection Section */}
-        <section aria-labelledby="inspection-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
-          <h2 id="inspection-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse min-w-[600px]">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-dark-200">
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">NETA Section</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">Description</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-48">Results</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {Object.entries({
-                  "7.3.1.A.1": "Compare cable data with drawings and specifications.",
-                  "7.3.1.A.2": "Inspect exposed sections of cables for physical damage.",
-                  "7.3.1.A.3.1": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
-                  "7.3.1.A.4": "Inspect compression-applied connectors for correct cable match and indentation."
-                }).map(([section, description]) => (
-                  <tr key={section} className="hover:bg-gray-50 dark:hover:bg-dark-200">
-                    <td className="px-4 py-2 text-sm font-mono text-gray-900 dark:text-white">{section}</td>
-                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{description}</td>
-                    <td className="px-4 py-2">
-                      <select
-                        id={`inspection-${section}`}
-                        value={formData.inspectionResults[section]}
-                        onChange={(e) => handleInspectionChange(section, e.target.value)}
-                        className="form-select w-full text-sm"
-                        disabled={!isEditMode}
-                      >
-                        {INSPECTION_RESULTS_OPTIONS.map(option => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-        
-        {/* Electrical Tests Section */}
-        <section aria-labelledby="electrical-tests-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
-          <h2 id="electrical-tests-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests</h2>
-          
-          <div className="flex justify-end mb-4">
-            <div className="w-48">
-              <label htmlFor="testVoltage" className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</label>
-              <select
-                id="testVoltage"
-                name="testVoltage"
-                value={formData.testVoltage}
-                onChange={handleChange}
-                className="form-select text-sm"
-                disabled={!isEditMode}
+        <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+          {/* Header */}
+          <div className={`flex justify-between items-center mb-6 ${isPrintMode ? 'hidden' : ''} print:hidden`}>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate(`/jobs/${jobId}`)}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                {TEST_VOLTAGES.map(voltage => (
-                  <option key={voltage} value={voltage}>{voltage}</option>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Job
+              </button>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
+            </div>
+            <div className="flex gap-2">
+              <select
+                value={status}
+                onChange={(e) => {
+                  if (isEditMode) setStatus(e.target.value as 'PASS' | 'FAIL' | 'LIMITED SERVICE')
+                }}
+                disabled={!isEditMode}
+                className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' :
+                  status === 'FAIL' ? 'bg-red-600 text-white focus:ring-red-500' :
+                  'bg-yellow-500 text-white focus:ring-yellow-400' // LIMITED SERVICE
+                } ${!isEditMode ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 dark:bg-opacity-80'}`}
+              >
+                {EVALUATION_RESULTS.map(option => (
+                  <option key={option} value={option} className="bg-white dark:bg-dark-100 text-gray-900 dark:text-white">{option}</option>
                 ))}
               </select>
+
+              {reportId && !isEditMode ? (
+                <>
+                  <button onClick={() => setIsEditMode(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Edit Report
+                  </button>
+                  <button
+                    onClick={() => window.print()}
+                    className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  >
+                    Print Report
+                  </button>
+                </>
+              ) : (
+                <button onClick={handleSave} disabled={!isEditMode} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditMode ? 'hidden' : 'hover:bg-orange-700'}`}>
+                  Save Report
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Job Information Section */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            {/* PASS/FAIL Status - Print Only, positioned to the right */}
+            <div className="hidden print:block" style={{ position: 'absolute', right: '90px', top: '40px', zIndex: 10 }}>
+              <div
+                className={status === 'PASS' ? 'status-pass' : status === 'FAIL' ? 'status-fail' : 'status-limited'}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  color: 'white',
+                  backgroundColor: status === 'PASS' ? '#22c55e' : status === 'FAIL' ? '#ef4444' : '#eab308'
+                }}
+              >
+                {status}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              {/* Left Column */}
+              <div className="space-y-3">
+                <div>
+                  <label className="form-label inline-block w-32">Customer:</label>
+                  <input type="text" value={formData.customer} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
+                </div>
+                <div>
+                  <label className="form-label inline-block w-32">Address:</label>
+                  <span className="print:inline">{formData.address || ''}</span>
+                  <input type="text" value={formData.address} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)] print:hidden" />
+                </div>
+                <div>
+                  <label htmlFor="user" className="form-label inline-block w-32">User:</label>
+                  <input id="user" name="user" type="text" value={formData.user} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </div>
+                <div>
+                  <label htmlFor="date" className="form-label inline-block w-32">Date:</label>
+                  <input id="date" name="date" type="date" value={formData.date} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </div>
+                <div>
+                  <label htmlFor="identifier" className="form-label inline-block w-32">Identifier:</label>
+                  <input id="identifier" name="identifier" type="text" value={formData.identifier} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </div>
+              </div>
+              {/* Right Column */}
+              <div className="space-y-3">
+                <div>
+                  <label className="form-label inline-block w-32">Job #:</label>
+                  <input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-[calc(100%-8rem)]" />
+                </div>
+                <div>
+                  <label htmlFor="technicians" className="form-label inline-block w-32">Technicians:</label>
+                  <input id="technicians" name="technicians" type="text" value={formData.technicians} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </div>
+                <div className="flex items-center">
+                  <label htmlFor="temperature" className="form-label inline-block w-16">Temp:</label>
+                  <input id="temperature" name="temperature" type="number" value={formData.temperature} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-20 ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  <span className="mx-1">°F</span>
+                  <input type="number" value={celsiusTemperature.toFixed(0)} readOnly className="form-input w-20 bg-gray-100 dark:bg-dark-200" />
+                  <span className="mx-1">°C</span>
+                  <label className="form-label inline-block w-10 ml-2">TCF:</label>
+                  <input type="number" value={tcf} readOnly className="form-input w-20 bg-gray-100 dark:bg-dark-200" />
+                </div>
+                <div>
+                  <label htmlFor="humidity" className="form-label inline-block w-32">Humidity:</label>
+                  <input id="humidity" name="humidity" type="number" value={formData.humidity} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-20 ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  <span className="ml-1">%</span>
+                </div>
+                <div>
+                  <label htmlFor="substation" className="form-label inline-block w-32">Substation:</label>
+                  <input id="substation" name="substation" type="text" value={formData.substation} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </div>
+                <div>
+                  <label htmlFor="eqptLocation" className="form-label inline-block w-32">Eqpt. Location:</label>
+                  <input id="eqptLocation" name="eqptLocation" type="text" value={formData.eqptLocation} onChange={handleChange} readOnly={!isEditMode} className={`form-input w-[calc(100%-8rem)] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </div>
+              </div>
             </div>
           </div>
           
-          {/* Test Sets Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
-              <caption className="caption-bottom text-xs text-gray-500 dark:text-gray-400 py-2">
-                Insulation Resistance Readings in MΩ (Mega-Ohms). RDG = Raw Reading, 20°C = Temperature Corrected Reading.
-              </caption>
-              <thead>
-                <tr className="bg-gray-50 dark:bg-dark-200">
-                  <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-28">From</th>
-                  <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-28">To</th>
-                  <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-20">Size</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-G</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-G</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-G</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">N-G</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-B</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-C</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-A</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-N</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-N</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-N</th>
-                  <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-20">Cont.</th>
-                  <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-24">Results</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {formData.testSets.slice(0, 12).map((set) => (
-                  <React.Fragment key={set.id}>
-                    {/* Raw Readings Row */}
-                    <tr className="hover:bg-gray-50 dark:hover:bg-dark-200">
-                      <td className="px-1 py-0.5">
-                        <input
-                          type="text"
-                          data-position={`${set.id - 1}-0`}
-                          aria-label={`Set ${set.id} From`}
-                          value={set.from}
-                          onChange={(e) => handleTestSetChange(set.id, 'from', e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 0 })}
-                          className="form-input text-xs py-1 px-1.5 text-gray-900 dark:text-white"
-                          readOnly={!isEditMode}
-                        />
-                      </td>
-                      <td className="px-1 py-0.5">
-                        <input
-                          type="text"
-                          data-position={`${set.id - 1}-1`}
-                          aria-label={`Set ${set.id} To`}
-                          value={set.to}
-                          onChange={(e) => handleTestSetChange(set.id, 'to', e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 1 })}
-                          className="form-input text-xs py-1 px-1.5 text-gray-900 dark:text-white"
-                          readOnly={!isEditMode}
-                        />
-                      </td>
-                      <td className="px-1 py-0.5">
+          {/* Cable Data Section */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Cable Data</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              {/* Column 1 */}
+              <div>
+                <div className="mb-4">
+                  <label htmlFor="testedFrom" className="form-label inline-block w-32">Tested From:</label>
+                  <input id="testedFrom" name="testedFrom" type="text" value={formData.testedFrom} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="manufacturer" className="form-label inline-block w-32">Manufacturer:</label>
+                  <input id="manufacturer" name="manufacturer" type="text" value={formData.manufacturer} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="conductorMaterial" className="form-label inline-block w-32">Conductor Material:</label>
+                  <input id="conductorMaterial" name="conductorMaterial" type="text" value={formData.conductorMaterial} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="insulationType" className="form-label inline-block w-32">Insulation Type:</label>
+                  <input id="insulationType" name="insulationType" type="text" value={formData.insulationType} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+              </div>
+              {/* Column 2 */}
+              <div>
+                <div className="mb-4">
+                  <label htmlFor="systemVoltage" className="form-label inline-block w-32">System Voltage:</label>
+                  <input id="systemVoltage" name="systemVoltage" type="text" value={formData.systemVoltage} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="ratedVoltage" className="form-label inline-block w-32">Rated Voltage:</label>
+                  <input id="ratedVoltage" name="ratedVoltage" type="text" value={formData.ratedVoltage} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="length" className="form-label inline-block w-32">Length:</label>
+                  <input id="length" name="length" type="text" value={formData.length} onChange={handleChange} className="form-input" readOnly={!isEditMode} />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Visual and Mechanical Inspection Section */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse min-w-[600px]">
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-dark-200">
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">NETA Section</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">Description</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-48">Results</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {Object.entries({
+                    "7.3.1.A.1": "Compare cable data with drawings and specifications.",
+                    "7.3.1.A.2": "Inspect exposed sections of cables for physical damage.",
+                    "7.3.1.A.3.1": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
+                    "7.3.1.A.4": "Inspect compression-applied connectors for correct cable match and indentation."
+                  }).map(([section, description]) => (
+                    <tr key={section} className="hover:bg-gray-50 dark:hover:bg-dark-200">
+                      <td className="px-4 py-2 text-sm font-mono text-gray-900 dark:text-white">{section}</td>
+                      <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{description}</td>
+                      <td className="px-4 py-2">
                         <select
-                          data-position={`${set.id - 1}-2`}
-                          aria-label={`Set ${set.id} Size`}
-                          value={set.size}
-                          onChange={(e) => handleTestSetChange(set.id, 'size', e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 2 })}
-                          className="form-select text-xs py-1 px-1.5 text-gray-900 dark:text-white"
+                          id={`inspection-${section}`}
+                          value={formData.inspectionResults[section]}
+                          onChange={(e) => handleInspectionChange(section, e.target.value)}
+                          className="form-select w-full text-sm"
                           disabled={!isEditMode}
                         >
-                          <option value="">Select</option>
-                          {CABLE_SIZES.map(size => (
-                            <option key={size} value={size}>{size}</option>
+                          {INSPECTION_RESULTS_OPTIONS.map(option => (
+                            <option key={option} value={option}>{option}</option>
                           ))}
                         </select>
+                        <span className="print:inline-block" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>
+                          {formData.inspectionResults[section] === 'Select One' ? '' : formData.inspectionResults[section]}
+                        </span>
                       </td>
-                      {/* Dynamically generate input cells for readings */}
-                      {Object.keys(set.readings).filter(k => k !== 'continuity').map((key, idx) => (
-                        <td className="px-1 py-0.5" key={`${set.id}-reading-${key}`}>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          {/* Electrical Tests Section */}
+          <section aria-labelledby="electrical-tests-heading" className="mb-6">
+            <h2 id="electrical-tests-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests</h2>
+            
+            <div className="flex justify-end mb-4">
+              <div className="w-48">
+                <label htmlFor="testVoltage" className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</label>
+                <select
+                  id="testVoltage"
+                  name="testVoltage"
+                  value={formData.testVoltage}
+                  onChange={handleChange}
+                  className="form-select text-sm"
+                  disabled={!isEditMode}
+                >
+                  {TEST_VOLTAGES.map(voltage => (
+                    <option key={voltage} value={voltage}>{voltage}</option>
+                  ))}
+                </select>
+                <span className="print:inline-block" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>
+                  {formData.testVoltage}
+                </span>
+              </div>
+            </div>
+            
+            {/* Test Sets Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <caption className="caption-bottom text-xs text-gray-500 dark:text-gray-400 py-2">
+                  Insulation Resistance Readings in MΩ (Mega-Ohms). RDG = Raw Reading, 20°C = Temperature Corrected Reading.
+                </caption>
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-dark-200">
+                    <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-28">From</th>
+                    <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-28">To</th>
+                    <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-20">Size</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-G</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-G</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-G</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">N-G</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-B</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-C</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-A</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">A-N</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">B-N</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-16">C-N</th>
+                    <th className="px-1.5 py-1.5 text-center text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-20">Cont.</th>
+                    <th className="px-1.5 py-1.5 text-left text-xs font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-24">Results</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {formData.testSets.slice(0, 12).map((set) => (
+                    <React.Fragment key={set.id}>
+                      {/* Raw Readings Row */}
+                      <tr className="hover:bg-gray-50 dark:hover:bg-dark-200">
+                        <td className="px-1 py-0.5">
                           <input
                             type="text"
-                            data-position={`${set.id - 1}-${idx + 3}`}
-                            aria-label={`Set ${set.id} Reading ${key}`}
-                            value={set.readings[key as keyof typeof set.readings]}
-                            onChange={(e) => handleReadingChange(set.id, key as keyof TestSet['readings'], e.target.value)}
-                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: idx + 3 })}
-                            className="form-input text-xs py-1 px-1.5 text-center w-full text-gray-900 dark:text-white"
+                            data-position={`${set.id - 1}-0`}
+                            aria-label={`Set ${set.id} From`}
+                            value={set.from}
+                            onChange={(e) => handleTestSetChange(set.id, 'from', e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 0 })}
+                            className="form-input text-xs py-1 px-1.5 text-gray-900 dark:text-white"
                             readOnly={!isEditMode}
                           />
                         </td>
-                      ))}
-                      <td className="px-1 py-0.5">
-                        <select
-                          data-position={`${set.id - 1}-13`}
-                          aria-label={`Set ${set.id} Continuity`}
-                          value={set.readings.continuity || ''}
-                          onChange={(e) => handleReadingChange(set.id, 'continuity', e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 13 })}
-                          className="form-select text-xs py-1 px-1.5 text-center text-gray-900 dark:text-white"
-                          disabled={!isEditMode}
-                        >
-                          <option value="">Select</option>
-                          <option value="Yes">Yes</option>
-                          <option value="No">No</option>
-                        </select>
-                      </td>
-                      <td className="px-1 py-0.5">
-                        <select
-                          data-position={`${set.id - 1}-14`}
-                          aria-label={`Set ${set.id} Result`}
-                          className="form-select text-xs py-1 px-1.5 text-gray-900 dark:text-white"
-                          value={set.result || ''}
-                          onChange={(e) => handleTestSetChange(set.id, 'result', e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 14 })}
-                          disabled={!isEditMode}
-                        >
-                          <option value="">Select</option>
-                          {EVALUATION_RESULTS.map(result => (
-                            <option key={result} value={result}>{result}</option>
-                          ))}
-                        </select>
-                      </td>
-                    </tr>
-                    
-                    {/* Temperature Corrected Row */}
-                    <tr className="bg-gray-50 dark:bg-dark-200 hover:bg-gray-100 dark:hover:bg-dark-300">
-                      <td colSpan={3} className="px-1.5 py-0.5 text-center text-xs text-gray-500 dark:text-gray-400">20°C Corrected Values</td>
-                      {/* Dynamically generate cells for corrected readings */}
-                      {Object.keys(set.correctedReadings).filter(k => k !== 'continuity').map(key => (
-                        <td className="px-1.5 py-0.5 text-center text-xs font-medium text-gray-900 dark:text-white" key={`${set.id}-corrected-${key}`}>
-                          {set.correctedReadings[key as keyof typeof set.correctedReadings]}
+                        <td className="px-1 py-0.5">
+                          <input
+                            type="text"
+                            data-position={`${set.id - 1}-1`}
+                            aria-label={`Set ${set.id} To`}
+                            value={set.to}
+                            onChange={(e) => handleTestSetChange(set.id, 'to', e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 1 })}
+                            className="form-input text-xs py-1 px-1.5 text-gray-900 dark:text-white"
+                            readOnly={!isEditMode}
+                          />
                         </td>
-                      ))}
-                      <td></td>
-                      <td></td>
-                    </tr>
-                  </React.Fragment>
-                ))}
+                        <td className="px-1 py-0.5">
+                          <select
+                            data-position={`${set.id - 1}-2`}
+                            aria-label={`Set ${set.id} Size`}
+                            value={set.size}
+                            onChange={(e) => handleTestSetChange(set.id, 'size', e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 2 })}
+                            className="form-select text-xs py-1 px-1.5 text-gray-900 dark:text-white"
+                            disabled={!isEditMode}
+                          >
+                            <option value="">Select</option>
+                            {CABLE_SIZES.map(size => (
+                              <option key={size} value={size}>{size}</option>
+                            ))}
+                          </select>
+                          <span className="print:inline-block" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>
+                            {set.size === '' ? '' : set.size}
+                          </span>
+                        </td>
+                        {/* Dynamically generate input cells for readings */}
+                        {Object.keys(set.readings).filter(k => k !== 'continuity').map((key, idx) => (
+                          <td className="px-1 py-0.5" key={`${set.id}-reading-${key}`}>
+                            <input
+                              type="text"
+                              data-position={`${set.id - 1}-${idx + 3}`}
+                              aria-label={`Set ${set.id} Reading ${key}`}
+                              value={set.readings[key as keyof typeof set.readings]}
+                              onChange={(e) => handleReadingChange(set.id, key as keyof TestSet['readings'], e.target.value)}
+                              onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: idx + 3 })}
+                              className="form-input text-xs py-1 px-1.5 text-center w-full text-gray-900 dark:text-white"
+                              readOnly={!isEditMode}
+                            />
+                          </td>
+                        ))}
+                        <td className="px-1 py-0.5">
+                          <select
+                            data-position={`${set.id - 1}-13`}
+                            aria-label={`Set ${set.id} Continuity`}
+                            value={set.readings.continuity || ''}
+                            onChange={(e) => handleReadingChange(set.id, 'continuity', e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 13 })}
+                            className="form-select text-xs py-1 px-1.5 text-center text-gray-900 dark:text-white"
+                            disabled={!isEditMode}
+                          >
+                            <option value="">Select</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                          </select>
+                          <span className="print:inline-block" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>
+                            {set.readings.continuity === '' ? '' : set.readings.continuity}
+                          </span>
+                        </td>
+                        <td className="px-1 py-0.5">
+                          <select
+                            data-position={`${set.id - 1}-14`}
+                            aria-label={`Set ${set.id} Result`}
+                            className="form-select text-xs py-1 px-1.5 text-gray-900 dark:text-white"
+                            value={set.result || ''}
+                            onChange={(e) => handleTestSetChange(set.id, 'result', e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, { row: set.id - 1, col: 14 })}
+                            disabled={!isEditMode}
+                          >
+                            <option value="">Select</option>
+                            {EVALUATION_RESULTS.map(result => (
+                              <option key={result} value={result}>{result}</option>
+                            ))}
+                          </select>
+                          <span className="print:inline-block" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>
+                            {set.result === '' ? '' : set.result}
+                          </span>
+                        </td>
+                      </tr>
+                      
+                      {/* Temperature Corrected Row */}
+                      <tr className="bg-gray-50 dark:bg-dark-200 hover:bg-gray-100 dark:hover:bg-dark-300">
+                        <td colSpan={3} className="px-1.5 py-0.5 text-center text-xs text-gray-500 dark:text-gray-400">20°C Corrected Values</td>
+                        {/* Dynamically generate cells for corrected readings */}
+                        {Object.keys(set.correctedReadings).filter(k => k !== 'continuity').map(key => (
+                          <td className="px-1.5 py-0.5 text-center text-xs font-medium text-gray-900 dark:text-white" key={`${set.id}-corrected-${key}`}>
+                            {set.correctedReadings[key as keyof typeof set.correctedReadings]}
+                          </td>
+                        ))}
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+          
+          {/* Test Equipment Used */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="megohmmeter" className="form-label inline-block w-32">Megohmmeter:</label>
+                <input
+                  id="megohmmeter"
+                  name="testEquipment.megohmmeter"
+                  type="text"
+                  value={formData.testEquipment.megohmmeter}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    testEquipment: {
+                      ...prev.testEquipment,
+                      megohmmeter: e.target.value
+                    }
+                  }))}
+                  className="form-input"
+                  readOnly={!isEditMode}
+                />
+              </div>
+              <div>
+                <label htmlFor="serialNumber" className="form-label inline-block w-32">Serial Number:</label>
+                <input
+                  id="serialNumber"
+                  name="testEquipment.serialNumber"
+                  type="text"
+                  value={formData.testEquipment.serialNumber}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    testEquipment: {
+                      ...prev.testEquipment,
+                      serialNumber: e.target.value
+                    }
+                  }))}
+                  className="form-input"
+                  readOnly={!isEditMode}
+                />
+              </div>
+              <div>
+                <label htmlFor="ampId" className="form-label inline-block w-32">AMP ID:</label>
+                <input
+                  id="ampId"
+                  name="testEquipment.ampId"
+                  type="text"
+                  value={formData.testEquipment.ampId}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    testEquipment: {
+                      ...prev.testEquipment,
+                      ampId: e.target.value
+                    }
+                  }))}
+                  className="form-input"
+                  readOnly={!isEditMode}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Comments Section */}
+          <div className="mb-6 comments-section">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+            
+            {/* Table for print mode - always rendered but only visible in print */}
+            <table className="hidden print:table" style={{ width: '100%', marginTop: '10px', border: '1px solid black' }}>
+              <tbody>
+                <tr>
+                  <td style={{ 
+                    padding: '12px', 
+                    minHeight: '120px', 
+                    verticalAlign: 'top',
+                    fontSize: '14px',
+                    color: 'black',
+                    border: '1px solid black'
+                  }}>
+                    {formData.testEquipment.comments && formData.testEquipment.comments.trim() !== '' ? formData.testEquipment.comments : '(No comments)'}
+                  </td>
+                </tr>
               </tbody>
             </table>
+            
+            {/* Textarea for screen mode - hidden in print */}
+            <textarea
+              id="equipmentComments"
+              name="testEquipment.comments"
+              value={formData.testEquipment.comments}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                testEquipment: {
+                  ...prev.testEquipment,
+                  comments: e.target.value
+                }
+              }))}
+              rows={4}
+              className="w-full form-textarea resize-none print:hidden"
+              placeholder="Enter any additional comments..."
+              readOnly={!isEditMode}
+            />
           </div>
-        </section>
-        
-        {/* Test Equipment Used */}
-        <section aria-labelledby="equipment-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
-          <h2 id="equipment-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="megohmmeter" className="form-label inline-block w-32">Megohmmeter:</label>
-              <input
-                id="megohmmeter"
-                name="testEquipment.megohmmeter"
-                type="text"
-                value={formData.testEquipment.megohmmeter}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    megohmmeter: e.target.value
-                  }
-                }))}
-                className="form-input"
-                readOnly={!isEditMode}
-              />
-            </div>
-            <div>
-              <label htmlFor="serialNumber" className="form-label inline-block w-32">Serial Number:</label>
-              <input
-                id="serialNumber"
-                name="testEquipment.serialNumber"
-                type="text"
-                value={formData.testEquipment.serialNumber}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    serialNumber: e.target.value
-                  }
-                }))}
-                className="form-input"
-                readOnly={!isEditMode}
-              />
-            </div>
-            <div>
-              <label htmlFor="ampId" className="form-label inline-block w-32">AMP ID:</label>
-              <input
-                id="ampId"
-                name="testEquipment.ampId"
-                type="text"
-                value={formData.testEquipment.ampId}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    ampId: e.target.value
-                  }
-                }))}
-                className="form-input"
-                readOnly={!isEditMode}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Comments Section */}
-        <section aria-labelledby="comments-heading" className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border print:border-black print:bg-white print:break-inside-avoid">
-          <h2 id="comments-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
-          <textarea
-            id="equipmentComments"
-            name="testEquipment.comments"
-            value={formData.testEquipment.comments}
-            onChange={(e) => setFormData(prev => ({
-              ...prev,
-              testEquipment: {
-                ...prev.testEquipment,
-                comments: e.target.value
-              }
-            }))}
-            rows={4}
-            className="w-full form-textarea resize-none"
-            placeholder="Enter any additional comments..."
-            readOnly={!isEditMode}
-          />
-        </section>
-      </div>
-    </ReportWrapper>
+        </div>
+      </ReportWrapper>
     </div>
   );
 };
 
-// Add print styles
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
-  style.textContent = `
-    @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-      * { color: black !important; }
-      
-      /* Form elements - hide interactive indicators */
-      input, select, textarea { 
-        background-color: white !important; 
-        border: 1px solid black !important; 
-        color: black !important;
-        padding: 2px !important; 
-        font-size: 10px !important;
-        -webkit-appearance: none !important;
-        -moz-appearance: none !important;
-        appearance: none !important;
-      }
-      
-      /* Hide dropdown arrows and form control indicators */
-      select {
-        background-image: none !important;
-        padding-right: 8px !important;
-      }
-      
-      /* Hide spin buttons on number inputs */
-      input[type="number"]::-webkit-outer-spin-button,
-      input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: none !important;
-        margin: 0 !important;
-      }
-      input[type="number"] {
-        -moz-appearance: textfield !important;
-      }
-      
-      /* Table styling */
-      table { border-collapse: collapse; width: 100%; }
-      th, td { border: 1px solid black !important; padding: 4px !important; }
-      th { background-color: #f0f0f0 !important; font-weight: bold !important; }
-      
-      /* Hide interactive elements */
-      button:not(.print-visible) { display: none !important; }
-      
-      /* Section styling */
-      section { break-inside: avoid !important; margin-bottom: 20px !important; }
-      
-      /* Electrical Tests Table - Enhanced Print Styling */
-      section[aria-labelledby="electrical-tests-heading"] {
-        page-break-inside: avoid !important;
-        margin-bottom: 30px !important;
-      }
-      
-      section[aria-labelledby="electrical-tests-heading"] table {
-        font-size: 8px !important;
-        width: 100% !important;
-        border-collapse: collapse !important;
-      }
-      
-      section[aria-labelledby="electrical-tests-heading"] th,
-      section[aria-labelledby="electrical-tests-heading"] td {
-        padding: 2px !important;
-        border: 1px solid black !important;
-        font-size: 8px !important;
-        text-align: center !important;
-      }
-      
-      section[aria-labelledby="electrical-tests-heading"] input,
-      section[aria-labelledby="electrical-tests-heading"] select {
-        font-size: 8px !important;
-        padding: 1px !important;
-        border: none !important;
-        background: transparent !important;
-        width: 100% !important;
-        text-align: center !important;
-      }
-      
-      /* Print utility classes */
-      .print\\:break-before-page { page-break-before: always; }
-      .print\\:break-after-page { page-break-after: always; }
-      .print\\:break-inside-avoid { page-break-inside: avoid; }
-      .print\\:text-black { color: black !important; }
-      .print\\:bg-white { background-color: white !important; }
-      .print\\:border-black { border-color: black !important; }
-      .print\\:font-bold { font-weight: bold !important; }
-      .print\\:text-center { text-align: center !important; }
-    }
-  `;
-  document.head.appendChild(style);
-}
-
+// Remove the duplicate print styles at the bottom
 export default TwelveSetsLowVoltageCableTestForm;

@@ -316,6 +316,143 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   
+  // Add print styles and hide navigation/scrollbar
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      /* Hide navigation bar and scrollbar */
+      nav, header, .navigation, [class*="nav"], [class*="header"] {
+        display: none !important;
+      }
+      
+      /* Hide scrollbar */
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      
+      html {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        height: 100%;
+      }
+      
+      body {
+        overflow-x: hidden;
+        min-height: 100vh;
+        padding-bottom: 100px;
+      }
+      
+      /* Ensure comments section is visible */
+      textarea {
+        min-height: 200px !important;
+      }
+
+      /* Section headers with orange dividers for fillable report */
+      h2 {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 8px !important;
+        margin-top: 16px !important;
+      }
+      
+      @media print {
+        * { color: black !important; background: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif !important; font-size: 9px !important; background: white !important; line-height: 1 !important; }
+        @page { size: 8.5in 11in; margin: 0.2in; }
+        .print\\:hidden { display: none !important; }
+        .flex.justify-between.items-center.mb-6 { display: none !important; }
+        .flex.items-center.gap-4 { display: none !important; }
+        button { display: none !important; }
+        h2 { font-size: 9px !important; font-weight: bold !important; margin: 0 !important; margin-top: 0 !important; padding: 1px 0 !important; background-color: transparent !important; color: black !important; text-transform: none !important; border: none !important; border-bottom: 1px solid black !important; line-height: 1.2 !important; padding-bottom: 2px !important; padding-top: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; position: relative !important; }
+        h2::before { display: none !important; }
+        .mb-6 { margin-top: 12px !important; border-top: 2px solid #f26722 !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .mb-6:first-of-type { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
+        table { margin-bottom: 8px !important; }
+        .status-pass { background-color: #22c55e !important; border: 2px solid #16a34a !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .status-fail { background-color: #ef4444 !important; border: 2px solid #dc2626 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow { background: white !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; margin-bottom: 3px !important; border: none !important; }
+        section { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; margin-bottom: 2px !important; }
+        div[class*="border"], div[class*="shadow"], div[class*="rounded"] { border: none !important; box-shadow: none !important; border-radius: 0 !important; }
+        div[class*="p-"], div[class*="px-"], div[class*="py-"], div[class*="pt-"], div[class*="pb-"], div[class*="pl-"], div[class*="pr-"] { padding: 0 !important; }
+        * { border: none !important; box-shadow: none !important; outline: none !important; }
+        .print\\:border { border: none !important; }
+        .print\\:border-black { border: none !important; }
+        div.bg-white, div[class*='bg-white'] { border: none !important; box-shadow: none !important; background: transparent !important; }
+        div[class*='shadow'], div[class*='rounded'] { border: none !important; box-shadow: none !important; background: transparent !important; border-radius: 0 !important; }
+        .max-w-7xl > div { border: none !important; box-shadow: none !important; background: transparent !important; }
+        div:not(:has(table)) { border: none !important; box-shadow: none !important; background: transparent !important; }
+        table, th, td, thead, tbody, tr { border: 0.5px solid black !important; }
+        input, select, textarea { border-bottom: 1px solid black !important; }
+        textarea { border: 1px solid black !important; }
+        .grid { display: grid !important; gap: 1px !important; margin-bottom: 2px !important; }
+        .grid-cols-1.md\\:grid-cols-2 { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+        label { font-size: 8px !important; font-weight: normal !important; margin: 0 !important; display: inline-block !important; margin-right: 2px !important; }
+        input, select, textarea { width: auto !important; border: none !important; border-bottom: 1px solid black !important; background: transparent !important; padding: 0 1px !important; margin: 0 !important; font-size: 8px !important; height: 12px !important; display: inline-block !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; }
+        input[type="text"], input[type="number"] { width: 80px !important; }
+        table input[type="text"] { width: 50px !important; max-width: 50px !important; }
+        input[type="date"] { width: 70px !important; }
+        textarea { width: 100% !important; height: auto !important; min-height: 20px !important; border: 1px solid black !important; display: block !important; margin-top: 1px !important; font-size: 8px !important; padding: 2px !important; }
+        table { width: 100% !important; border-collapse: collapse !important; margin: 1px 0 !important; font-size: 8px !important; page-break-inside: avoid !important; margin-bottom: 16px !important; }
+        th, td { border: 0.5px solid black !important; padding: 0px 1px !important; text-align: center !important; font-size: 8px !important; height: 12px !important; line-height: 1 !important; }
+        th { background-color: #f0f0f0 !important; font-weight: bold !important; }
+        table input, table select { border: none !important; border-bottom: none !important; padding: 0 !important; margin: 0 !important; height: 10px !important; text-align: center !important; width: 100% !important; font-size: 8px !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
+        td input, td select, td textarea { border: none !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; outline: none !important; }
+        .space-y-4 > * + *, .space-y-6 > * + * { margin-top: 2px !important; }
+        .mb-4 { margin-bottom: 2px !important; }
+        .mb-6 { margin-bottom: 3px !important; }
+        .mb-8 { margin-bottom: 3px !important; }
+        .p-6 { padding: 0 !important; }
+        .bg-green-600, .bg-red-600 { background-color: transparent !important; color: black !important; border: 1px solid black !important; padding: 0px 2px !important; font-weight: bold !important; font-size: 9px !important; }
+        .text-green-600 { color: green !important; }
+        .text-red-600 { color: red !important; }
+        .min-h-[250px] { min-height: 20px !important; }
+        .text-xs { font-size: 7px !important; }
+        .flex.items-center { display: inline-flex !important; margin-right: 10px !important; }
+        section { page-break-inside: avoid !important; }
+        .max-w-7xl { max-width: 100% !important; }
+        .border-b.dark\\:border-gray-700 { border: none !important; margin: 0 !important; padding: 0 !important; }
+        section { margin-bottom: 2px !important; padding: 0 !important; }
+        .print\\:flex { margin-bottom: 3px !important; }
+        div[class*='print:border'] { border: none !important; box-shadow: none !important; background: transparent !important; }
+        div[class*='print:border-black'] { border: none !important; box-shadow: none !important; background: transparent !important; }
+        
+        /* Completely remove input borders in tables - highest specificity */
+        table td input, table td select, table td textarea { border: none !important; border-top: none !important; border-bottom: none !important; border-left: none !important; border-right: none !important; outline: none !important; box-shadow: none !important; }
+        tbody td input, tbody td select { border: none !important; outline: none !important; }
+        
+        /* Nuclear option - remove ALL styling from inputs in print */
+        input, select, textarea { border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; color: black !important; }
+        input[type="text"], input[type="number"], select option { border: none !important; outline: none !important; color: black !important; }
+        
+        /* Remove any unwanted lines from input elements */
+        input:focus, select:focus, textarea:focus { border: none !important; outline: none !important; }
+        input::before, input::after, select::before, select::after { display: none !important; }
+        
+        /* Ensure no bottom borders on inputs that might create lines */
+        input { border-bottom: none !important; text-decoration: none !important; color: black !important; }
+        td input { border-bottom: none !important; border-top: none !important; color: black !important; }
+        
+        /* Hide select elements completely in print and show values as text */
+        select { display: none !important; visibility: hidden !important; opacity: 0 !important; width: 0 !important; height: 0 !important; }
+        
+        /* Show print-only spans that contain the selected values */
+        .print\\:inline-block { display: inline-block !important; color: black !important; font-size: 8px !important; text-align: center !important; width: 100% !important; }
+        
+        /* Page break controls */
+        .page-break-before { page-break-before: always !important; }
+        .page-break-after { page-break-after: always !important; }
+        .page-break-inside-avoid { page-break-inside: avoid !important; }
+        
+        /* Orange dividers - must come after universal border removal */
+        div.mb-6 { border-top: 2px solid #f26722 !important; margin-top: 12px !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        div.mb-6:first-of-type { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+  
   const [formData, setFormData] = useState<CableTestData>({
     customer: "",
     address: "",
@@ -770,59 +907,6 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
     }
   };
 
-  const renderHeader = () => (
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        3-Set Low Voltage Cable Test Report (ATS)
-      </h1>
-      <div className="flex items-center space-x-4">
-        {isEditMode ? (
-          <>
-            <button
-              onClick={() => setStatus(status === 'PASS' ? 'FAIL' : 'PASS')}
-              className={`px-4 py-2 rounded-md text-white font-medium ${
-                status === 'PASS' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
-              }`}
-            >
-              {status}
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="bg-[#f26722] hover:bg-[#e55611] text-white font-medium px-4 py-2 rounded-md disabled:opacity-50"
-            >
-              {isSaving ? 'Saving...' : reportId ? 'Update Report' : 'Save Report'}
-            </button>
-          </>
-        ) : (
-          <>
-            <span className={`px-4 py-2 rounded-md text-white font-medium ${
-                status === 'PASS' ? 'bg-green-600' : 'bg-red-600'
-              }`}>{status}</span>
-            <button
-              onClick={() => setIsEditMode(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md"
-            >
-              Edit
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-
-  const getInputClassName = (additionalClasses: string = "") => {
-    return `form-input ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''} ${additionalClasses}`;
-  };
-
-  const getSelectClassName = (additionalClasses: string = "") => {
-    return `form-select ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''} ${additionalClasses}`;
-  };
-
-  const getTextAreaClassName = (additionalClasses: string = "") => {
-    return `form-textarea ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''} ${additionalClasses}`;
-  };
-
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -832,18 +916,252 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
   }
   
   return (
-    <div className="p-6 bg-gray-50 dark:bg-dark-200 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        {renderHeader()}
-        
-        {/* Main report content */}
-        <div className="space-y-6">
-            {/* Job Information Section */}
-            <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
-                {/* ... form fields for job info ... */}
-            </section>
-            {/* ... other sections ... */}
+    <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>
+      {/* Print Header - Only visible when printing */}
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 35, marginLeft: '5px', marginTop: '2px' }} />
+        <div className="flex-1 text-center">
+          <h1 className="text-2xl font-bold text-black mb-1">3-Set Low Voltage Cable Test Report (ATS)</h1>
+        </div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c', width: '120px' }}>NETA</div>
+      </div>
+
+      <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6 print:hidden">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(`/jobs/${jobId}`)}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Job
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">3-Set Low Voltage Cable Test Report (ATS)</h1>
+          </div>
+          <div className="flex gap-2">
+            <select
+              value={status}
+              onChange={(e) => {
+                if (isEditMode) setStatus(e.target.value as 'PASS' | 'FAIL')
+              }}
+              disabled={!isEditMode}
+              className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' :
+                'bg-red-600 text-white focus:ring-red-500'
+              } ${!isEditMode ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 dark:bg-opacity-80'}`}
+            >
+              <option value="PASS" className="bg-white dark:bg-dark-100 text-gray-900 dark:text-white">PASS</option>
+              <option value="FAIL" className="bg-white dark:bg-dark-100 text-gray-900 dark:text-white">FAIL</option>
+            </select>
+
+            {reportId && !isEditMode ? (
+              <>
+                <button onClick={() => setIsEditMode(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  Edit Report
+                </button>
+            <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+                  Print Report
+            </button>
+          </>
+            ) : (
+              <button onClick={handleSave} disabled={!isEditMode || isSaving} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditMode ? 'hidden' : 'hover:bg-orange-700'}`}>
+                {isSaving ? 'Saving...' : reportId ? 'Update Report' : 'Save Report'}
+              </button>
+        )}
+      </div>
+    </div>
+
+        {/* Job Information Section */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+          {/* PASS/FAIL Status - Print Only, positioned to the right */}
+          <div className="hidden print:block" style={{ position: 'absolute', right: '90px', top: '85px', zIndex: 10 }}>
+            <div className={status === 'PASS' ? 'status-pass' : 'status-fail'}
+              style={{ display: 'inline-block', padding: '6px 16px', fontSize: '14px', fontWeight: 'bold', textAlign: 'center', minWidth: '80px', borderRadius: '4px' }}>
+              {status || 'PASS'}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #</label>
+                <input
+                  type="text"
+                  value={formData.jobNumber}
+                  readOnly={true}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer</label>
+                <input
+                  type="text"
+                  value={formData.customer}
+                  readOnly={true}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                />
+              </div>
+              <div>
+                <div className="print:hidden">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                  <textarea
+                    value={formData.address}
+                    readOnly={true}
+                    rows={3}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                  />
+                </div>
+                <div className="hidden print:flex print:items-baseline">
+                  <label style={{ fontSize: '8px', marginRight: '4px', display: 'inline-block', width: '50px' }}>Address</label>
+                  <span style={{ fontSize: '8px', borderBottom: '1px solid black', display: 'inline-block', minWidth: '150px', paddingBottom: '1px' }}>{formData.address}</span>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier</label>
+                <input
+                  type="text"
+                  value={formData.identifier}
+                  onChange={(e) => setFormData(prev => ({ ...prev, identifier: e.target.value }))}
+                  readOnly={!isEditMode}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  placeholder="Enter Identifier"
+                />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Technicians</label>
+                <input
+                  type="text"
+                  value={formData.technicians}
+                  onChange={(e) => setFormData(prev => ({ ...prev, technicians: e.target.value }))}
+                  readOnly={!isEditMode}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Substation</label>
+                <input
+                  type="text"
+                  value={formData.substation}
+                  onChange={(e) => setFormData(prev => ({ ...prev, substation: e.target.value }))}
+                  readOnly={!isEditMode}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Equipment Location</label>
+                <input
+                  type="text"
+                  value={formData.eqptLocation}
+                  onChange={(e) => setFormData(prev => ({ ...prev, eqptLocation: e.target.value }))}
+                  readOnly={!isEditMode}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+                <input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                  readOnly={!isEditMode}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User</label>
+                <input
+                  type="text"
+                  value={formData.user}
+                  onChange={(e) => setFormData(prev => ({ ...prev, user: e.target.value }))}
+                  readOnly={!isEditMode}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  placeholder="Enter User Name"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. °F</label>
+                  <input
+                    type="number"
+                    value={formData.temperature}
+                    onChange={(e) => setFormData(prev => ({ ...prev, temperature: Number(e.target.value) }))}
+                    readOnly={!isEditMode}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">°C</label>
+                  <input
+                    type="number"
+                    value={celsiusTemperature}
+                    readOnly
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">TCF</label>
+                  <input
+                    type="number"
+                    value={tcf}
+                    readOnly
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Placeholder for additional sections - to be completed */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Cable Information</h2>
+          <div className="text-gray-500 dark:text-gray-400 p-4 border border-gray-300 dark:border-gray-600 rounded">
+            Cable information section - to be implemented
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual Inspection</h2>
+          <div className="text-gray-500 dark:text-gray-400 p-4 border border-gray-300 dark:border-gray-600 rounded">
+            Visual inspection section - to be implemented
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Results</h2>
+          <div className="text-gray-500 dark:text-gray-400 p-4 border border-gray-300 dark:border-gray-600 rounded">
+            Test results section - to be implemented
+          </div>
+        </div>
+
+        <div className="mb-6 page-break-before">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+          <div className="text-gray-500 dark:text-gray-400 p-4 border border-gray-300 dark:border-gray-600 rounded">
+            Test equipment section - to be implemented
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+          <textarea
+            value={formData.testEquipment.comments}
+            onChange={(e) => setFormData(prev => ({ 
+              ...prev, 
+              testEquipment: { ...prev.testEquipment, comments: e.target.value } 
+            }))}
+            readOnly={!isEditMode}
+            rows={6}
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            placeholder="Enter comments here..."
+          />
         </div>
       </div>
     </div>

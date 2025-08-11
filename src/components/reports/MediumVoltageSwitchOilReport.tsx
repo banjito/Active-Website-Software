@@ -382,7 +382,7 @@ export default function MediumVoltageSwitchOilReport() {
     ],
     dielectricVFITests: [
       {
-        vfiIdentifier: 'VFI 1',
+        vfiIdentifier: '',
         serialNumber: '',
         counterAsFound: '',
         counterAsLeft: '',
@@ -751,11 +751,11 @@ export default function MediumVoltageSwitchOilReport() {
           }}
           className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
             status === 'PASS'
-              ? 'bg-green-600 text-white focus:ring-green-500'
+              ? 'bg-green-600 text-white focus:ring-green-500 hover:bg-green-700'
               : status === 'FAIL'
-              ? 'bg-red-600 text-white focus:ring-red-500'
-              : 'bg-yellow-600 text-white focus:ring-yellow-500'
-          } ${!isEditMode ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+              ? 'bg-red-600 text-white focus:ring-red-500 hover:bg-red-700'
+              : 'bg-yellow-500 text-black focus:ring-yellow-400 hover:bg-yellow-600'
+          } ${!isEditMode ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           {status}
         </button>
@@ -799,20 +799,46 @@ export default function MediumVoltageSwitchOilReport() {
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA
+          <div className="hidden print:block mt-2">
+            <div
+              className="pass-fail-status-box"
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: status === 'PASS' ? '2px solid #16a34a' : status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
+                backgroundColor: status === 'PASS' ? '#22c55e' : status === 'FAIL' ? '#ef4444' : '#eab308',
+                color: 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
+              }}
+            >
+              {status || 'PASS'}
+            </div>
+          </div>
+        </div>
       </div>
       {/* End Print Header */}
       
-      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
-        <div className="max-w-7xl w-full space-y-2">
+      <div className="p-6 flex justify-center">
+        <div className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
           <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
             {renderHeader()}
           </div>
 
         {/* Job Information */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+        <section className="mb-6">
+          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Job Information
           </h2>
           <div className="grid grid-cols-2 gap-x-8 gap-y-4">
@@ -962,8 +988,9 @@ export default function MediumVoltageSwitchOilReport() {
         </section>
 
         {/* Nameplate Data Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mt-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+        <section className="mb-6">
+          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Nameplate Data
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -1011,8 +1038,9 @@ export default function MediumVoltageSwitchOilReport() {
         </section>
 
         {/* VFI Data Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mt-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+        <section className="mb-6">
+          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             VFI Data
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -1043,64 +1071,18 @@ export default function MediumVoltageSwitchOilReport() {
           </div>
         </section>
 
-        {/* Visual and Mechanical Inspection Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mt-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-            Visual and Mechanical Inspection
-          </h2>
-          <div className={tableStyles.container}>
-            <table className={tableStyles.table}>
-              <thead className="bg-gray-50 dark:bg-dark-200">
-                <tr>
-                  <th className={`${tableStyles.headerCell} w-1/6`}>NETA Section</th>
-                  <th className={`${tableStyles.headerCell} w-3/6`}>Description</th>
-                  <th className={`${tableStyles.headerCell} w-2/6`}>Results</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-                {formData.visualInspectionResults.map((item, index) => (
-                  <tr key={item.netaSection}>
-                    <td className={tableStyles.cell}>{item.netaSection}</td>
-                    <td className={tableStyles.cell}>{item.description}</td>
-                    <td className={tableStyles.cell}>
-                      <select
-                        value={item.result}
-                        onChange={(e) => {
-                          const newResults = [...formData.visualInspectionResults];
-                          newResults[index].result = e.target.value;
-                          handleChange('visualInspectionResults', newResults);
-                        }}
-                        disabled={!isEditMode}
-                        className={tableStyles.select}
-                      >
-                        {VISUAL_RESULTS_OPTIONS.map((option) => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
         {/* Insulation Resistance Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mt-6">
+        <section className="mb-6">
+          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
           {/* Measured Values Table */}
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Electrical Tests - Measured Insulation Resistance Values
           </h2>
-          <div className={tableStyles.container}>
-            <table className={tableStyles.table}>
-              <thead className="bg-gray-50 dark:bg-dark-200">
-                <tr>
-                  <th colSpan={7} className={`${tableStyles.headerCell} text-center`}>
-                    <div className="flex justify-between items-center px-4">
-                      <span>Insulation Resistance</span>
-                      <div className="flex items-center">
-                        <span className="mr-2">Test Voltage:</span>
-                        <select 
+          <div className="mb-4">
+            <div className="flex items-center mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">INSULATION RESISTANCE TEST VOLTAGE:</span>
+              <input 
+                type="text" 
                           value={formData.s1_insulationResistance.testVoltage}
                           onChange={(e) => {
                             const newValue = e.target.value;
@@ -1115,36 +1097,42 @@ export default function MediumVoltageSwitchOilReport() {
                             });
                             setFormData(prev => ({ ...prev, ...updates }));
                           }}
-                          disabled={!isEditMode}
-                          className={`${tableStyles.select} w-32`}
-                        >
-                          {TEST_VOLTAGE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
+                readOnly={!isEditMode}
+                className="w-20 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
+              />
                       </div>
                     </div>
-                  </th>
-                </tr>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: '60px' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: '50px' }} />
+              </colgroup>
+              <thead>
                 <tr>
-                  <th className={`${tableStyles.headerCell} w-[10%]`}>Way Section</th>
-                  <th colSpan={6} className={`${tableStyles.headerCell} text-center`}>Way Closed</th>
-                  <th colSpan={3} className={`${tableStyles.headerCell} text-center`}>Line to Load (Way Open)</th>
-                  <th className={`${tableStyles.headerCell} w-[10%]`}>Units</th>
-                </tr>
-                <tr>
-                  <th className={`${tableStyles.headerCell}`}></th>
-                  <th className={`${tableStyles.headerCell}`}>A-G</th>
-                  <th className={`${tableStyles.headerCell}`}>B-G</th>
-                  <th className={`${tableStyles.headerCell}`}>C-G</th>
-                  <th className={`${tableStyles.headerCell}`}>A-B</th>
-                  <th className={`${tableStyles.headerCell}`}>B-C</th>
-                  <th className={`${tableStyles.headerCell}`}>C-A</th>
-                  <th className={`${tableStyles.headerCell}`}>A</th>
-                  <th className={`${tableStyles.headerCell}`}>B</th>
-                  <th className={`${tableStyles.headerCell}`}>C</th>
-                  <th className={`${tableStyles.headerCell}`}></th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">WAY SECTION</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">A-G</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">B-G</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">C-G</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">A-B</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">B-C</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">C-A</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">A</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">B</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">C</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">UNITS</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody>
                 {(['s1', 's2', 't1', 't2', 't3'] as const).map((wayKey) => {
                   const dataKey = `${wayKey}_insulationResistance` as const;
                   const currentData = formData[dataKey];
@@ -1153,39 +1141,35 @@ export default function MediumVoltageSwitchOilReport() {
                   };
                   return (
                     <tr key={wayKey}>
-                      <td className={`${tableStyles.cell} text-center font-medium`}>{wayKey.toUpperCase()}</td>
-                      <td className={tableStyles.cell}>
-                        <input type="text" value={currentData.ag} onChange={(e) => handleInsulationChange('ag', e.target.value)} readOnly={!isEditMode} className={`${tableStyles.input} text-center`} />
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs font-medium">{wayKey.toUpperCase()}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.ag} onChange={(e) => handleInsulationChange('ag', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                       </td>
-                      <td className={tableStyles.cell}>
-                        <input type="text" value={currentData.bg} onChange={(e) => handleInsulationChange('bg', e.target.value)} readOnly={!isEditMode} className={`${tableStyles.input} text-center`} />
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.bg} onChange={(e) => handleInsulationChange('bg', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                       </td>
-                      <td className={tableStyles.cell}>
-                        <input type="text" value={currentData.cg} onChange={(e) => handleInsulationChange('cg', e.target.value)} readOnly={!isEditMode} className={`${tableStyles.input} text-center`} />
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.cg} onChange={(e) => handleInsulationChange('cg', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                       </td>
-                      <td className={tableStyles.cell}>
-                        <input type="text" value={currentData.ab} onChange={(e) => handleInsulationChange('ab', e.target.value)} readOnly={!isEditMode} className={`${tableStyles.input} text-center`} />
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.ab} onChange={(e) => handleInsulationChange('ab', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                       </td>
-                      <td className={tableStyles.cell}>
-                        <input type="text" value={currentData.bc} onChange={(e) => handleInsulationChange('bc', e.target.value)} readOnly={!isEditMode} className={`${tableStyles.input} text-center`} />
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.bc} onChange={(e) => handleInsulationChange('bc', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                       </td>
-                      <td className={tableStyles.cell}>
-                        <input type="text" value={currentData.ca} onChange={(e) => handleInsulationChange('ca', e.target.value)} readOnly={!isEditMode} className={`${tableStyles.input} text-center`} />
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.ca} onChange={(e) => handleInsulationChange('ca', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                       </td>
-                      <td className={tableStyles.cell}>
-                        <input type="text" value={currentData.lineA} onChange={(e) => handleInsulationChange('lineA', e.target.value)} readOnly={!isEditMode} className={`${tableStyles.input} text-center`} />
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.lineA} onChange={(e) => handleInsulationChange('lineA', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                       </td>
-                      <td className={tableStyles.cell}>
-                        <input type="text" value={currentData.lineB} onChange={(e) => handleInsulationChange('lineB', e.target.value)} readOnly={!isEditMode} className={`${tableStyles.input} text-center`} />
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.lineB} onChange={(e) => handleInsulationChange('lineB', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                       </td>
-                      <td className={tableStyles.cell}>
-                        <input type="text" value={currentData.lineC} onChange={(e) => handleInsulationChange('lineC', e.target.value)} readOnly={!isEditMode} className={`${tableStyles.input} text-center`} />
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.lineC} onChange={(e) => handleInsulationChange('lineC', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                       </td>
-                      <td className={tableStyles.cell}>
-                        <select value={currentData.units} onChange={(e) => handleInsulationChange('units', e.target.value)} disabled={!isEditMode} className={tableStyles.select}>
-                          {INSULATION_UNITS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
-                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs">{currentData.units}</td>
                     </tr>
                   );
                 })}
@@ -1194,59 +1178,61 @@ export default function MediumVoltageSwitchOilReport() {
           </div>
 
           {/* Temperature Corrected Values Table */}
-          <h2 className="text-xl font-semibold my-6 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+          <h2 className="text-xl font-semibold my-6 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Electrical Tests - Temperature Corrected Insulation Resistance Values
           </h2>
-          <div className={tableStyles.container}>
-            <table className={tableStyles.table}>
-              <thead className="bg-gray-50 dark:bg-dark-200">
-                <tr>
-                  <th colSpan={7} className={`${tableStyles.headerCell} text-center`}>
-                    <div className="flex justify-between items-center px-4">
-                      <span>Insulation Resistance</span>
-                      <div className="flex items-center">
-                        <span className="mr-2">Test Voltage: {formData.s1_insulationResistance.testVoltage}</span>
+          <div className="mb-4">
+            <div className="flex items-center mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">INSULATION RESISTANCE TEST VOLTAGE: {formData.s1_insulationResistance.testVoltage}</span>
                       </div>
                     </div>
-                  </th>
-                </tr>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: '60px' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: '50px' }} />
+              </colgroup>
+              <thead>
                 <tr>
-                  <th className={`${tableStyles.headerCell} w-[10%]`}>Way Section</th>
-                  <th colSpan={6} className={`${tableStyles.headerCell} text-center`}>Way Closed</th>
-                  <th colSpan={3} className={`${tableStyles.headerCell} text-center`}>Line to Load (Way Open)</th>
-                  <th className={`${tableStyles.headerCell} w-[10%]`}>Units</th>
-                </tr>
-                <tr>
-                  <th className={`${tableStyles.headerCell}`}></th>
-                  <th className={`${tableStyles.headerCell}`}>A-G</th>
-                  <th className={`${tableStyles.headerCell}`}>B-G</th>
-                  <th className={`${tableStyles.headerCell}`}>C-G</th>
-                  <th className={`${tableStyles.headerCell}`}>A-B</th>
-                  <th className={`${tableStyles.headerCell}`}>B-C</th>
-                  <th className={`${tableStyles.headerCell}`}>C-A</th>
-                  <th className={`${tableStyles.headerCell}`}>A</th>
-                  <th className={`${tableStyles.headerCell}`}>B</th>
-                  <th className={`${tableStyles.headerCell}`}>C</th>
-                  <th className={`${tableStyles.headerCell}`}></th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">WAY SECTION</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">A-G</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">B-G</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">C-G</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">A-B</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">B-C</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">C-A</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">A</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">B</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">C</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">UNITS</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody>
                 {(['s1', 's2', 't1', 't2', 't3'] as const).map((wayKey) => {
                   const dataKey = `${wayKey}_correctedInsulationResistance` as const;
                   const currentData = formData[dataKey];
                   return (
                     <tr key={wayKey}>
-                      <td className={`${tableStyles.cell} text-center font-medium`}>{wayKey.toUpperCase()}</td>
-                      <td className={`${tableStyles.cell} text-center`}>{currentData.ag}</td>
-                      <td className={`${tableStyles.cell} text-center`}>{currentData.bg}</td>
-                      <td className={`${tableStyles.cell} text-center`}>{currentData.cg}</td>
-                      <td className={`${tableStyles.cell} text-center`}>{currentData.ab}</td>
-                      <td className={`${tableStyles.cell} text-center`}>{currentData.bc}</td>
-                      <td className={`${tableStyles.cell} text-center`}>{currentData.ca}</td>
-                      <td className={`${tableStyles.cell} text-center`}>{currentData.lineA}</td>
-                      <td className={`${tableStyles.cell} text-center`}>{currentData.lineB}</td>
-                      <td className={`${tableStyles.cell} text-center`}>{currentData.lineC}</td>
-                      <td className={`${tableStyles.cell} text-center`}>{currentData.units}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs font-medium">{wayKey.toUpperCase()}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-sm">{currentData.ag}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-sm">{currentData.bg}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-sm">{currentData.cg}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-sm">{currentData.ab}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-sm">{currentData.bc}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-sm">{currentData.ca}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-sm">{currentData.lineA}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-sm">{currentData.lineB}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-sm">{currentData.lineC}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs">{currentData.units}</td>
                     </tr>
                   );
                 })}
@@ -1256,25 +1242,36 @@ export default function MediumVoltageSwitchOilReport() {
         </section>
 
         {/* Contact Resistance Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mt-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-            Contact Resistance µΩ
+        <section className="mb-6">
+          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            Contact Resistance μΩ
           </h2>
-          <div className={tableStyles.container}>
-            <table className={tableStyles.table}>
-              <thead className="bg-gray-50 dark:bg-dark-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: '60px' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: '50px' }} />
+              </colgroup>
+              <thead>
                 <tr>
-                  <th className={`${tableStyles.headerCell} w-[12.5%]`}>Way Section</th>
-                  <th className={`${tableStyles.headerCell} w-[12.5%]`}>A-Phase</th>
-                  <th className={`${tableStyles.headerCell} w-[12.5%]`}>A-Ground</th>
-                  <th className={`${tableStyles.headerCell} w-[12.5%]`}>B-Phase</th>
-                  <th className={`${tableStyles.headerCell} w-[12.5%]`}>B-Ground</th>
-                  <th className={`${tableStyles.headerCell} w-[12.5%]`}>C-Phase</th>
-                  <th className={`${tableStyles.headerCell} w-[12.5%]`}>C-Ground</th>
-                  <th className={`${tableStyles.headerCell} w-[12.5%]`}>Units</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">WAY SECTION</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">A-PHASE</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">A-GROUND</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">B-PHASE</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">B-GROUND</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">C-PHASE</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">C-GROUND</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">UNITS</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody>
                 {(['s1', 's2', 't1', 't2', 't3'] as const).map((wayKey) => {
                   const dataKey = `${wayKey}_contactResistance` as const;
                   const currentData = formData[dataKey];
@@ -1283,17 +1280,26 @@ export default function MediumVoltageSwitchOilReport() {
                   };
                   return (
                     <tr key={wayKey}>
-                      <td className={`${tableStyles.cell} text-center font-medium`}>{wayKey.toUpperCase()}</td>
-                      {(Object.keys(initialWaySectionContact) as Array<keyof ContactResistance>).filter(k => k !== 'units').map(field => (
-                        <td key={field} className={tableStyles.cell}>
-                          <input type="text" value={currentData[field]} onChange={(e) => handleContactResistanceChange(field, e.target.value)} readOnly={!isEditMode} className={`${tableStyles.input} text-center`} />
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs font-medium">{wayKey.toUpperCase()}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.aPhase} onChange={(e) => handleContactResistanceChange('aPhase', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                         </td>
-                      ))}
-                      <td className={tableStyles.cell}>
-                        <select value={currentData.units} onChange={(e) => handleContactResistanceChange('units', e.target.value)} disabled={!isEditMode} className={tableStyles.select}>
-                          {CONTACT_RESISTANCE_UNITS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.aGround} onChange={(e) => handleContactResistanceChange('aGround', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
                       </td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.bPhase} onChange={(e) => handleContactResistanceChange('bPhase', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.bGround} onChange={(e) => handleContactResistanceChange('bGround', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.cPhase} onChange={(e) => handleContactResistanceChange('cPhase', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input type="text" value={currentData.cGround} onChange={(e) => handleContactResistanceChange('cGround', e.target.value)} readOnly={!isEditMode} className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm" />
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs">{currentData.units}</td>
                     </tr>
                   );
                 })}
@@ -1303,23 +1309,19 @@ export default function MediumVoltageSwitchOilReport() {
         </section>
 
         {/* Dielectric Withstand Tests Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mt-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+        <section className="mb-6">
+          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Electrical Tests - Dielectric Withstand
           </h2>
           
           {/* Part 1: Way Section Tests */}
           <h3 className="text-lg font-semibold my-3 text-gray-800 dark:text-gray-200">Dielectric Withstand</h3>
-          <div className={tableStyles.container}>
-            <table className={tableStyles.table}>
-              <thead className="bg-gray-50 dark:bg-dark-200">
-                <tr>
-                  <th colSpan={4} className={`${tableStyles.headerCell} text-center`}>
-                    <div className="flex justify-between items-center px-4">
-                      <span>Dielectric Withstand</span>
-                      <div className="flex items-center">
-                        <span className="mr-2">Test Voltage:</span>
-                        <select 
+          <div className="mb-4">
+            <div className="flex items-center mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">DIELECTRIC WITHSTAND TEST VOLTAGE:</span>
+              <input 
+                type="text" 
                           value={formData.dielectricWaySectionTests[0]?.testVoltageApplied || '30 KVAC'}
                           onChange={(e) => {
                             const newValue = e.target.value;
@@ -1329,28 +1331,34 @@ export default function MediumVoltageSwitchOilReport() {
                             }));
                             handleChange('dielectricWaySectionTests', updatedTests);
                           }}
-                          disabled={!isEditMode}
-                          className={`${tableStyles.select} w-32`}
-                        >
-                          {DIELECTRIC_TEST_VOLTAGE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
+                readOnly={!isEditMode}
+                className="w-20 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
+              />
                       </div>
                     </div>
-                  </th>
-                </tr>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: '60px' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: 'auto' }} />
+                <col style={{ width: '50px' }} />
+              </colgroup>
+              <thead>
                 <tr>
-                  <th className={`${tableStyles.headerCell} w-[25%]`}>Way Section</th>
-                  <th className={`${tableStyles.headerCell} w-[25%]`}>A-G</th>
-                  <th className={`${tableStyles.headerCell} w-[25%]`}>B-G</th>
-                  <th className={`${tableStyles.headerCell} w-[25%]`}>C-G</th>
-                  <th className={`${tableStyles.headerCell} w-[10%]`}>Units</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">WAY SECTION</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">A-G</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">B-G</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">C-G</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">UNITS</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody>
                 {formData.dielectricWaySectionTests.map((test, index) => (
                   <tr key={index}>
-                    <td className={`${tableStyles.cell} font-medium`}>{test.waySection}</td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs font-medium">{test.waySection}</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <input
                         type="text"
                         value={test.ag}
@@ -1360,10 +1368,10 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricWaySectionTests', newTests);
                         }}
                         readOnly={!isEditMode}
-                        className={`${tableStyles.input} text-center`}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <input
                         type="text"
                         value={test.bg}
@@ -1373,10 +1381,10 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricWaySectionTests', newTests);
                         }}
                         readOnly={!isEditMode}
-                        className={`${tableStyles.input} text-center`}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <input
                         type="text"
                         value={test.cg}
@@ -1386,58 +1394,66 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricWaySectionTests', newTests);
                         }}
                         readOnly={!isEditMode}
-                        className={`${tableStyles.input} text-center`}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
-                      <select
-                        value={test.units}
-                        onChange={(e) => {
-                          const newTests = [...formData.dielectricWaySectionTests];
-                          newTests[index].units = e.target.value;
-                          handleChange('dielectricWaySectionTests', newTests);
-                        }}
-                        disabled={!isEditMode}
-                        className={tableStyles.select}
-                      >
-                        {DIELECTRIC_UNITS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                      </select>
-                    </td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs">{test.units}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        </section>
 
-          {/* Part 2: VFI Specific Tests */}
-          <h3 className="text-lg font-semibold my-3 text-gray-800 dark:text-gray-200">VFI Tests</h3>
-          <div className={tableStyles.container}>
-            <table className={tableStyles.table}>
-              <thead className="bg-gray-50 dark:bg-dark-200">
+        {/* Dielectric Withstand - VFI specific tests (bottom table in image) */}
+        <section className="mb-6">
+          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+            Electrical Tests - Dielectric Withstand - VFI specific tests
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: '80px' }} />
+                <col style={{ width: '120px' }} />
+                <col style={{ width: '80px' }} />
+                <col style={{ width: '80px' }} />
+                <col style={{ width: '80px' }} />
+                <col style={{ width: '80px' }} />
+                <col style={{ width: '80px' }} />
+                <col style={{ width: '60px' }} />
+              </colgroup>
+              <thead>
                 <tr>
-                  <th colSpan={4} className={`${tableStyles.headerCell} text-center`}>Counter</th>
-                  <th colSpan={2} className={`${tableStyles.headerCell} text-center`}>Vacuum Integrity (VFI Open)</th>
-                  <th colSpan={2} className={`${tableStyles.headerCell} text-center`}>
-                    <div className="flex justify-between items-center px-4">
-                      <span>Test Voltage: 30 KVAC</span>
-                    </div>
-                  </th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700"></th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700"></th>
+                  <th colSpan={2} className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">Counter</th>
+                  <th colSpan={3} className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">Vacuum Integrity (VFI Open)</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700"></th>
                 </tr>
                 <tr>
-                  <th className={`${tableStyles.headerCell} w-[12%]`}>VFI</th>
-                  <th className={`${tableStyles.headerCell} w-[13%]`}>Serial Number</th>
-                  <th className={`${tableStyles.headerCell} w-[12%]`}>As-Found</th>
-                  <th className={`${tableStyles.headerCell} w-[12%]`}>As-Left</th>
-                  <th className={`${tableStyles.headerCell} w-[13%]`}>A</th>
-                  <th className={`${tableStyles.headerCell} w-[13%]`}>B</th>
-                  <th className={`${tableStyles.headerCell} w-[13%]`}>C</th>
-                  <th className={`${tableStyles.headerCell} w-[12%]`}>Units</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">VFI</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">Serial Number</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">As-Found</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">As-Left</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">A</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">B</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">C</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">Units</th>
+                </tr>
+                <tr>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700"></th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700"></th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700"></th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700"></th>
+                  <th colSpan={3} className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700">Test Voltage: 30 KVAC</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm font-medium bg-gray-100 dark:bg-gray-700"></th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody>
                 {formData.dielectricVFITests.map((vfiTest, index) => (
                   <tr key={index}>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <input
                         type="text"
                         value={vfiTest.vfiIdentifier}
@@ -1447,10 +1463,10 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricVFITests', newTests);
                         }}
                         readOnly={!isEditMode}
-                        className={tableStyles.input}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <input
                         type="text"
                         value={vfiTest.serialNumber}
@@ -1460,10 +1476,10 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricVFITests', newTests);
                         }}
                         readOnly={!isEditMode}
-                        className={tableStyles.input}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <input
                         type="text"
                         value={vfiTest.counterAsFound}
@@ -1473,10 +1489,10 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricVFITests', newTests);
                         }}
                         readOnly={!isEditMode}
-                        className={`${tableStyles.input} text-center`}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <input
                         type="text"
                         value={vfiTest.counterAsLeft}
@@ -1486,10 +1502,10 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricVFITests', newTests);
                         }}
                         readOnly={!isEditMode}
-                        className={`${tableStyles.input} text-center`}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <input
                         type="text"
                         value={vfiTest.vacuumIntegrityA}
@@ -1499,10 +1515,10 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricVFITests', newTests);
                         }}
                         readOnly={!isEditMode}
-                        className={`${tableStyles.input} text-center`}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <input
                         type="text"
                         value={vfiTest.vacuumIntegrityB}
@@ -1512,10 +1528,10 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricVFITests', newTests);
                         }}
                         readOnly={!isEditMode}
-                        className={`${tableStyles.input} text-center`}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <input
                         type="text"
                         value={vfiTest.resultC}
@@ -1525,10 +1541,10 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricVFITests', newTests);
                         }}
                         readOnly={!isEditMode}
-                        className={`${tableStyles.input} text-center`}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
                       <select
                         value={vfiTest.unitsC}
                         onChange={(e) => {
@@ -1537,7 +1553,7 @@ export default function MediumVoltageSwitchOilReport() {
                           handleChange('dielectricVFITests', newTests);
                         }}
                         disabled={!isEditMode}
-                        className={tableStyles.select}
+                        className="w-full h-6 text-center border-none bg-transparent focus:outline-none text-sm"
                       >
                         <option value="mA">mA</option>
                         <option value="µA">µA</option>
@@ -1552,7 +1568,7 @@ export default function MediumVoltageSwitchOilReport() {
                 type="button"
                 onClick={() => {
                   const newVFITestEntry: DielectricVFITestData = {
-                    vfiIdentifier: `VFI ${formData.dielectricVFITests.length + 1}`,
+                    vfiIdentifier: '',
                     serialNumber: '',
                     counterAsFound: '',
                     counterAsLeft: '',
@@ -1572,8 +1588,9 @@ export default function MediumVoltageSwitchOilReport() {
         </section>
 
         {/* Test Equipment Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mt-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+        <section className="mb-6">
+          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Test Equipment Used
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
@@ -1621,8 +1638,9 @@ export default function MediumVoltageSwitchOilReport() {
         </section>
 
         {/* Comments Section */}
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mt-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+        <section className="mb-6">
+          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Comments
           </h2>
           <textarea
@@ -1707,6 +1725,35 @@ if (typeof document !== 'undefined') {
       
       /* Section styling */
       section { break-inside: avoid !important; margin-bottom: 20px !important; }
+      
+      /* Table column sizing for print */
+      table {
+        table-layout: fixed !important;
+        width: 100% !important;
+      }
+
+      /* WAY SECTION column - make it narrow */
+      table th:first-child,
+      table td:first-child {
+        width: 80px !important;
+        max-width: 80px !important;
+        min-width: 80px !important;
+      }
+
+      /* Reading input fields - make them wider */
+      table td:not(:first-child):not(:last-child) input {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 60px !important;
+      }
+
+      /* UNITS column - keep it narrow */
+      table th:last-child,
+      table td:last-child {
+        width: 60px !important;
+        max-width: 60px !important;
+        min-width: 60px !important;
+      }
       
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }

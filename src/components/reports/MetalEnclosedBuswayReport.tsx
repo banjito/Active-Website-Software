@@ -827,22 +827,25 @@ const MetalEnclosedBuswayReport: React.FC = () => {
     <div className="flex justify-between items-center">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
       <div className="flex gap-2">
-        <select
-          value={formData.status}
-          onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'PASS' | 'FAIL' | 'LIMITED SERVICE' }))}
-          disabled={!isEditing}
+        <button
+          onClick={() => {
+            if (isEditing) {
+              setFormData(prev => ({
+                ...prev,
+                status: prev.status === 'PASS' ? 'FAIL' : prev.status === 'FAIL' ? 'LIMITED SERVICE' : 'PASS'
+              }));
+            }
+          }}
           className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
             formData.status === 'PASS'
-              ? 'bg-green-600 text-white focus:ring-green-500'
+              ? 'bg-green-600 text-white focus:ring-green-500 hover:bg-green-700'
               : formData.status === 'FAIL'
-              ? 'bg-red-600 text-white focus:ring-red-500'
-              : 'bg-yellow-600 text-white focus:ring-yellow-500'
-          } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+              ? 'bg-red-600 text-white focus:ring-red-500 hover:bg-red-700'
+              : 'bg-yellow-500 text-black focus:ring-yellow-400 hover:bg-yellow-600'
+          } ${!isEditing ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
-          {EQUIPMENT_EVALUATION_RESULTS.map(result => (
-            <option key={result} value={result}>{result}</option>
-          ))}
-        </select>
+          {formData.status}
+        </button>
 
         {reportId && !isEditing ? (
           <>
@@ -863,7 +866,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           <button
             onClick={handleSave}
             disabled={!isEditing || isSaving}
-            className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700 disabled:opacity-50'}`}
+            className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90 disabled:opacity-50'}`}
           >
             {isSaving ? 'Saving...' : reportId ? 'Update Report' : 'Save Report'}
           </button>
@@ -880,11 +883,36 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA
+          <div className="hidden print:block mt-2">
+            <div
+              className="pass-fail-status-box"
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: formData.status === 'PASS' ? '2px solid #16a34a' : formData.status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
+                backgroundColor: formData.status === 'PASS' ? '#22c55e' : formData.status === 'FAIL' ? '#ef4444' : '#eab308',
+                color: 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
+              }}
+            >
+              {formData.status || 'PASS'}
+            </div>
+          </div>
+        </div>
       </div>
       {/* End Print Header */}
       
-      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
+      <div className="p-6 flex justify-center">
         <div className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
           <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
@@ -892,8 +920,9 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           </div>
 
       {/* Job Information */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-4">
             <div>
@@ -1045,11 +1074,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Nameplate Data */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-4">
             <div>
@@ -1144,11 +1174,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </section>
       
       {/* Visual and Mechanical Inspection */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
@@ -1196,11 +1227,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
       
       {/* Electrical Tests - Contact/Pole Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Contact/Pole Resistance</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Contact/Pole Resistance</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
@@ -1264,11 +1296,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
       
       {/* Electrical Tests - Insulation Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Insulation Resistance</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance</h2>
         <div className="flex justify-end mb-2 space-x-4">
           <div className="w-48 border border-gray-300 dark:border-gray-700 p-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Test Voltage:</label>
@@ -1342,11 +1375,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
       
       {/* Electrical Tests - Temperature Corrected Insulation Resistance Values */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Temperature Corrected Insulation Resistance Values</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Temperature Corrected Insulation Resistance Values</h2>
         <div className="flex justify-end mb-2">
           <div className="w-48 border border-gray-300 dark:border-gray-700 p-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Test Voltage:</label>
@@ -1398,11 +1432,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
       
       {/* Test Equipment Used */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
         <div className="grid grid-cols-1 gap-6">
           <div className="grid grid-cols-3 gap-4">
             <div>
@@ -1475,11 +1510,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </section>
       
       {/* Comments */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         <textarea
           name="comments"
           value={formData.comments}
@@ -1488,7 +1524,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           rows={4}
           className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
         />
-      </div>
+      </section>
         </div>
       </div>
     </ReportWrapper>
@@ -1571,6 +1607,67 @@ if (typeof document !== 'undefined') {
       
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }
+      
+      /* Table input sizing for print */
+      table input, table select, table textarea {
+        width: 80% !important;
+        max-width: 80% !important;
+        min-width: 30px !important;
+        font-size: 7px !important;
+        padding: 0px !important;
+        border: 1px solid black !important;
+        background-color: white !important;
+        color: black !important;
+        box-sizing: border-box !important;
+        margin: 0px !important;
+      }
+      
+      /* Specific table column sizing */
+      table th, table td {
+        padding: 1px !important;
+        font-size: 7px !important;
+        width: 8% !important;
+        min-width: 40px !important;
+        max-width: 8% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+      
+      /* Ensure tables don't break across pages */
+      table { 
+        page-break-inside: avoid !important; 
+        border-collapse: collapse !important;
+        width: 100% !important;
+        table-layout: fixed !important;
+      }
+      
+      /* Force table columns to be more compact */
+      table th:first-child,
+      table td:first-child {
+        width: 8% !important;
+        max-width: 8% !important;
+      }
+      
+      table th:last-child,
+      table td:last-child {
+        width: 8% !important;
+        max-width: 8% !important;
+      }
+      
+      /* Additional table constraints */
+      table * {
+        box-sizing: border-box !important;
+      }
+      
+      /* Prevent any overflow */
+      table, table th, table td, table input, table select, table textarea {
+        overflow: hidden !important;
+        word-wrap: break-word !important;
+      }
+      
+      /* Section styling */
+      section { break-inside: avoid !important; margin-bottom: 20px !important; }
     }
   `;
   document.head.appendChild(style);

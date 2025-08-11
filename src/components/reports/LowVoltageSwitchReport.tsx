@@ -565,8 +565,8 @@ export default function LowVoltageSwitchReport() {
     });
   }, [jobId, reportId, location]);
 
-  const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
-  const [isEditMode, setIsEditMode] = useState(!reportId);
+  const [status, setStatus] = useState<'PASS' | 'FAIL' | 'LIMITED SERVICE'>('PASS');
+  const [isEditing, setIsEditing] = useState(!reportId);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tcf, setTcf] = useState(1);
@@ -736,7 +736,7 @@ export default function LowVoltageSwitchReport() {
     const loadReport = async () => {
       if (!reportId) {
         setLoading(false);
-        setIsEditMode(true);
+        setIsEditing(true);
         return;
       }
 
@@ -765,8 +765,8 @@ export default function LowVoltageSwitchReport() {
               enclosure: data.comments || ''
             }
           });
-          setStatus(data.status || 'PENDING');
-          setIsEditMode(false);
+          setStatus((data.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS');
+          setIsEditing(false);
         }
       } catch (error) {
         console.error('Error loading report:', error);
@@ -835,14 +835,14 @@ export default function LowVoltageSwitchReport() {
   };
 
   const handleSave = async () => {
-    console.log('Save attempt with params:', { jobId, reportId, user: user?.id, isEditMode });
+    console.log('Save attempt with params:', { jobId, reportId, user: user?.id, isEditing });
     
-    if (!jobId || !user?.id || !isEditMode) {
-      console.log('Save conditions not met:', { jobId, userId: user?.id, isEditMode });
+    if (!jobId || !user?.id || !isEditing) {
+      console.log('Save conditions not met:', { jobId, userId: user?.id, isEditing });
       toast.error('Missing required information: ' + 
         (!jobId ? 'Job ID is missing. ' : '') +
         (!user?.id ? 'User is not logged in. ' : '') +
-        (!isEditMode ? 'Not in edit mode. ' : '')
+        (!isEditing ? 'Not in edit mode. ' : '')
       );
       return;
     }
@@ -855,6 +855,7 @@ export default function LowVoltageSwitchReport() {
       const reportData = {
         job_id: jobId,
         user_id: user.id,
+        status: status,
         report_info: {
           customer: formData.customer,
           address: formData.address,
@@ -876,8 +877,7 @@ export default function LowVoltageSwitchReport() {
           ratedVoltage: formData.ratedVoltage,
           ratedCurrent: formData.ratedCurrent,
           aicRating: formData.aicRating,
-          phaseConfiguration: formData.phaseConfiguration,
-          status
+          phaseConfiguration: formData.phaseConfiguration
         },
         switch_data: formData.switchData,
         fuse_data: formData.fuseData,
@@ -959,7 +959,7 @@ export default function LowVoltageSwitchReport() {
 
         if (result.error) throw result.error;
 
-        setIsEditMode(false);
+        setIsEditing(false);
         toast.success(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
         navigate(`/jobs/${jobId}?tab=assets`);
       } catch (error: any) {
@@ -1010,7 +1010,32 @@ export default function LowVoltageSwitchReport() {
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA
+          <div className="hidden print:block mt-2">
+            <div 
+              className="pass-fail-status-box"
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: status === 'PASS' ? '2px solid #16a34a' : status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
+                backgroundColor: status === 'PASS' ? '#22c55e' : status === 'FAIL' ? '#ef4444' : '#eab308',
+                color: 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
+              }}
+            >
+              {status || 'PASS'}
+            </div>
+          </div>
+        </div>
       </div>
       {/* End Print Header */}
       
@@ -1022,23 +1047,25 @@ export default function LowVoltageSwitchReport() {
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  if (isEditMode) {
-                    setStatus(status === 'PASS' ? 'FAIL' : 'PASS');
+                  if (isEditing) {
+                    setStatus(status === 'PASS' ? 'FAIL' : status === 'FAIL' ? 'LIMITED SERVICE' : 'PASS');
                   }
                 }}
                 className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   status === 'PASS'
-                    ? 'bg-green-600 text-white focus:ring-green-500'
-                    : 'bg-red-600 text-white focus:ring-red-500'
-                } ${!isEditMode ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+                    ? 'bg-green-600 text-white focus:ring-green-500 hover:bg-green-700'
+                    : status === 'FAIL'
+                    ? 'bg-red-600 text-white focus:ring-red-500 hover:bg-red-700'
+                    : 'bg-yellow-500 text-black focus:ring-yellow-400 hover:bg-yellow-600'
+                } ${!isEditing ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
                 {status}
               </button>
 
-              {reportId && !isEditMode ? (
+              {reportId && !isEditing ? (
                 <>
                   <button
-                    onClick={() => setIsEditMode(true)}
+                    onClick={() => setIsEditing(true)}
                     className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Edit Report
@@ -1053,9 +1080,9 @@ export default function LowVoltageSwitchReport() {
               ) : (
                 <button
                   onClick={handleSave}
-                  disabled={!isEditMode || saving}
+                  disabled={!isEditing || saving}
                   className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${
-                    !isEditMode || saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-orange-700'
+                    !isEditing || saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-orange-700'
                   }`}
                 >
                   {saving ? 'Saving...' : 'Save Report'}
@@ -1065,269 +1092,241 @@ export default function LowVoltageSwitchReport() {
           </div>
 
           {/* Job Information */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Job Information
-            </h2>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Customer
-                </label>
+                <label htmlFor="customer" className="form-label inline-block w-32">Customer:</label>
                 <input
+                  id="customer"
                   type="text"
                   value={formData.customer}
                   onChange={(e) => handleChange('customer', e.target.value)}
-                  readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  readOnly={!isEditing}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Job #
-                </label>
+                <label htmlFor="jobNumber" className="form-label inline-block w-32">Job #:</label>
                 <input
+                  id="jobNumber"
                   type="text"
                   value={formData.jobNumber}
                   onChange={(e) => handleChange('jobNumber', e.target.value)}
-                  readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  readOnly={!isEditing}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Address
-                </label>
+                <label htmlFor="address" className="form-label inline-block w-32">Address:</label>
                 <input
+                  id="address"
                   type="text"
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
-                  readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  readOnly={!isEditing}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Identifier
-                </label>
+                <label htmlFor="identifier" className="form-label inline-block w-32">Identifier:</label>
                 <input
+                  id="identifier"
                   type="text"
                   value={formData.identifier}
                   onChange={(e) => handleChange('identifier', e.target.value)}
-                  readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  readOnly={!isEditing}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Technicians
-                </label>
+                <label htmlFor="technicians" className="form-label inline-block w-32">Technicians:</label>
                 <input
+                  id="technicians"
                   type="text"
                   value={formData.technicians}
                   onChange={(e) => handleChange('technicians', e.target.value)}
-                  readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  readOnly={!isEditing}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Substation
-                </label>
+                <label htmlFor="substation" className="form-label inline-block w-32">Substation:</label>
                 <input
+                  id="substation"
                   type="text"
                   value={formData.substation}
                   onChange={(e) => handleChange('substation', e.target.value)}
-                  readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  readOnly={!isEditing}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Date
-                </label>
+                <label htmlFor="date" className="form-label inline-block w-32">Date:</label>
                 <input
+                  id="date"
                   type="date"
                   value={formData.date}
                   onChange={(e) => handleChange('date', e.target.value)}
-                  readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  readOnly={!isEditing}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Eqpt. Location
-                </label>
+                <label htmlFor="eqptLocation" className="form-label inline-block w-32">Eqpt. Location:</label>
                 <input
+                  id="eqptLocation"
                   type="text"
                   value={formData.eqptLocation}
                   onChange={(e) => handleChange('eqptLocation', e.target.value)}
-                  readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  readOnly={!isEditing}
+                  className="form-input"
                 />
               </div>
-              <div className="flex gap-4 items-start">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Temperature
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      value={formData.temperature.fahrenheit}
-                      onChange={(e) => handleChange('temperature', { ...formData.temperature, fahrenheit: Number(e.target.value) })}
-                      readOnly={!isEditMode}
-                      className={`block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
-                    <span className="text-gray-600 dark:text-gray-400">°F</span>
-                    <input
-                      type="number"
-                      value={formData.temperature.celsius}
-                      readOnly
-                      className="block w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-400 text-base"
-                    />
-                    <span className="text-gray-600 dark:text-gray-400">°C</span>
-                    <span className="text-gray-600 dark:text-gray-400 ml-4">TCF</span>
-                    <input
-                      type="number"
-                      value={tcf}
-                      readOnly
-                      className="block w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-400 text-base"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Humidity
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      value={formData.humidity}
-                      onChange={(e) => handleChange('humidity', Number(e.target.value))}
-                      readOnly={!isEditMode}
-                      className={`block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
-                    <span className="text-gray-600 dark:text-gray-400">%</span>
-                  </div>
-                </div>
+              <div className="flex items-center">
+                <label htmlFor="temperature" className="form-label inline-block w-32">Temp:</label>
+                <input
+                  id="temperature"
+                  type="number"
+                  value={formData.temperature.fahrenheit}
+                  onChange={(e) => handleChange('temperature', { ...formData.temperature, fahrenheit: Number(e.target.value) })}
+                  readOnly={!isEditing}
+                  className="form-input w-20"
+                />
+                <span className="mx-2">°F</span>
+                <span className="mx-2">{formData.temperature.celsius}</span>
+                <span>°C</span>
+                <span className="mx-5">TCF</span>
+                <span>{tcf}</span>
+              </div>
+              <div className="flex items-center">
+                <label htmlFor="humidity" className="form-label inline-block w-32">Humidity:</label>
+                <input
+                  id="humidity"
+                  type="number"
+                  value={formData.humidity}
+                  onChange={(e) => handleChange('humidity', Number(e.target.value))}
+                  readOnly={!isEditing}
+                  className="form-input w-20"
+                />
+                <span className="mx-2">%</span>
               </div>
             </div>
           </section>
 
           {/* Enclosure Data */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Enclosure Data
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Enclosure Data</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
               <div>
-                <label htmlFor="manufacturer" className="form-label">Manufacturer:</label>
+                <label htmlFor="manufacturer" className="form-label inline-block w-32">Manufacturer:</label>
                 <input
                   type="text"
                   id="manufacturer"
                   value={formData.manufacturer}
                   onChange={(e) => handleChange('manufacturer', e.target.value)}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   className="form-input"
                 />
               </div>
               <div>
-                <label htmlFor="catalogNo" className="form-label">Catalog No:</label>
+                <label htmlFor="catalogNo" className="form-label inline-block w-32">Catalog No:</label>
                 <input
                   type="text"
                   id="catalogNo"
                   value={formData.catalogNo}
                   onChange={(e) => handleChange('catalogNo', e.target.value)}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   className="form-input"
                 />
               </div>
               <div>
-                <label htmlFor="serialNumber" className="form-label">Serial Number:</label>
+                <label htmlFor="serialNumber" className="form-label inline-block w-32">Serial Number:</label>
                 <input
                   type="text"
                   id="serialNumber"
                   value={formData.serialNumber}
                   onChange={(e) => handleChange('serialNumber', e.target.value)}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   className="form-input"
                 />
               </div>
               <div>
-                <label htmlFor="series" className="form-label">Series:</label>
+                <label htmlFor="series" className="form-label inline-block w-32">Series:</label>
                 <input
                   type="text"
                   id="series"
                   value={formData.series}
                   onChange={(e) => handleChange('series', e.target.value)}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   className="form-input"
                 />
               </div>
               <div>
-                <label htmlFor="type" className="form-label">Type:</label>
+                <label htmlFor="type" className="form-label inline-block w-32">Type:</label>
                 <input
                   type="text"
                   id="type"
                   value={formData.type}
                   onChange={(e) => handleChange('type', e.target.value)}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   className="form-input"
                 />
               </div>
               <div>
-                <label htmlFor="systemVoltage" className="form-label">System Voltage:</label>
+                <label htmlFor="systemVoltage" className="form-label inline-block w-32">System Voltage:</label>
                 <input
                   type="text"
                   id="systemVoltage"
                   value={formData.systemVoltage}
                   onChange={(e) => handleChange('systemVoltage', e.target.value)}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   className="form-input"
                 />
               </div>
               <div>
-                <label htmlFor="ratedVoltage" className="form-label">Rated Voltage:</label>
+                <label htmlFor="ratedVoltage" className="form-label inline-block w-32">Rated Voltage:</label>
                 <input
                   type="text"
                   id="ratedVoltage"
                   value={formData.ratedVoltage}
                   onChange={(e) => handleChange('ratedVoltage', e.target.value)}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   className="form-input"
                 />
               </div>
               <div>
-                <label htmlFor="ratedCurrent" className="form-label">Rated Current:</label>
+                <label htmlFor="ratedCurrent" className="form-label inline-block w-32">Rated Current:</label>
                 <input
                   type="text"
                   id="ratedCurrent"
                   value={formData.ratedCurrent}
                   onChange={(e) => handleChange('ratedCurrent', e.target.value)}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   className="form-input"
                 />
               </div>
               <div>
-                <label htmlFor="aicRating" className="form-label">AIC Rating:</label>
+                <label htmlFor="aicRating" className="form-label inline-block w-32">AIC Rating:</label>
                 <input
                   type="text"
                   id="aicRating"
                   value={formData.aicRating}
                   onChange={(e) => handleChange('aicRating', e.target.value)}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   className="form-input"
                 />
               </div>
               <div>
-                <label htmlFor="phaseConfiguration" className="form-label">Phase Configuration:</label>
+                <label htmlFor="phaseConfiguration" className="form-label inline-block w-32">Phase Configuration:</label>
                 <input
                   type="text"
                   id="phaseConfiguration"
                   value={formData.phaseConfiguration}
                   onChange={(e) => handleChange('phaseConfiguration', e.target.value)}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   className="form-input"
                 />
               </div>
@@ -1335,10 +1334,9 @@ export default function LowVoltageSwitchReport() {
           </section>
 
           {/* Switch Data Section */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Switch Data
-            </h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Switch Data</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
                 <thead>
@@ -1368,7 +1366,7 @@ export default function LowVoltageSwitchReport() {
                             newSwitchData[index] = { ...item, position: e.target.value };
                             setFormData({ ...formData, switchData: newSwitchData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1381,7 +1379,7 @@ export default function LowVoltageSwitchReport() {
                             newSwitchData[index] = { ...item, manufacturer: e.target.value };
                             setFormData({ ...formData, switchData: newSwitchData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1394,7 +1392,7 @@ export default function LowVoltageSwitchReport() {
                             newSwitchData[index] = { ...item, catalogNo: e.target.value };
                             setFormData({ ...formData, switchData: newSwitchData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1407,7 +1405,7 @@ export default function LowVoltageSwitchReport() {
                             newSwitchData[index] = { ...item, serialNo: e.target.value };
                             setFormData({ ...formData, switchData: newSwitchData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1420,7 +1418,7 @@ export default function LowVoltageSwitchReport() {
                             newSwitchData[index] = { ...item, type: e.target.value };
                             setFormData({ ...formData, switchData: newSwitchData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1433,7 +1431,7 @@ export default function LowVoltageSwitchReport() {
                             newSwitchData[index] = { ...item, ratedAmperage: e.target.value };
                             setFormData({ ...formData, switchData: newSwitchData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1446,7 +1444,7 @@ export default function LowVoltageSwitchReport() {
                             newSwitchData[index] = { ...item, ratedVoltage: e.target.value };
                             setFormData({ ...formData, switchData: newSwitchData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1458,10 +1456,9 @@ export default function LowVoltageSwitchReport() {
           </section>
 
           {/* Fuse Data Section */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Fuse Data
-            </h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Fuse Data</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
                 <thead>
@@ -1491,7 +1488,7 @@ export default function LowVoltageSwitchReport() {
                             newFuseData[index] = { ...item, position: e.target.value };
                             setFormData({ ...formData, fuseData: newFuseData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1504,7 +1501,7 @@ export default function LowVoltageSwitchReport() {
                             newFuseData[index] = { ...item, manufacturer: e.target.value };
                             setFormData({ ...formData, fuseData: newFuseData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1517,7 +1514,7 @@ export default function LowVoltageSwitchReport() {
                             newFuseData[index] = { ...item, catalogNo: e.target.value };
                             setFormData({ ...formData, fuseData: newFuseData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1530,7 +1527,7 @@ export default function LowVoltageSwitchReport() {
                             newFuseData[index] = { ...item, class: e.target.value };
                             setFormData({ ...formData, fuseData: newFuseData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1543,7 +1540,7 @@ export default function LowVoltageSwitchReport() {
                             newFuseData[index] = { ...item, amperage: e.target.value };
                             setFormData({ ...formData, fuseData: newFuseData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1556,7 +1553,7 @@ export default function LowVoltageSwitchReport() {
                             newFuseData[index] = { ...item, aic: e.target.value };
                             setFormData({ ...formData, fuseData: newFuseData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1569,7 +1566,7 @@ export default function LowVoltageSwitchReport() {
                             newFuseData[index] = { ...item, voltage: e.target.value };
                             setFormData({ ...formData, fuseData: newFuseData });
                           }}
-                          readOnly={!isEditMode}
+                          readOnly={!isEditing}
                           className="form-input w-full"
                         />
                       </td>
@@ -1581,19 +1578,18 @@ export default function LowVoltageSwitchReport() {
           </section>
 
           {/* Measured Insulation Resistance Values */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Measured Insulation Resistance Values
-            </h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Measured Insulation Resistance Values</h2>
             <div className="mb-4 flex items-center gap-4">
               <div>
-                <label htmlFor="testVoltage" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Test Voltage:</label>
+                <label htmlFor="testVoltage" className="form-label inline-block w-32">Test Voltage:</label>
                 <select
                   id="testVoltage"
                   value={formData.insulationResistance.testVoltage}
                   onChange={(e) => handleChange('insulationResistance.testVoltage', e.target.value)}
-                  disabled={!isEditMode}
-                  className={`block w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  disabled={!isEditing}
+                  className="form-select w-32"
                 >
                   {TEST_VOLTAGE_OPTIONS.map(voltage => (
                     <option key={voltage} value={voltage}>{voltage}</option>
@@ -1601,13 +1597,13 @@ export default function LowVoltageSwitchReport() {
                 </select>
               </div>
               <div>
-                <label htmlFor="irUnits" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Units:</label>
+                <label htmlFor="irUnits" className="form-label inline-block w-24">Units:</label>
                 <select
                   id="irUnits"
                   value={formData.insulationResistance.units}
                   onChange={(e) => handleChange('insulationResistance.units', e.target.value)}
-                  disabled={!isEditMode}
-                  className={`block w-24 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  disabled={!isEditing}
+                  className="form-select w-24"
                 >
                   {INSULATION_RESISTANCE_UNITS.map(unit => (
                     <option key={unit} value={unit}>{unit}</option>
@@ -1645,8 +1641,8 @@ export default function LowVoltageSwitchReport() {
                           ...formData.insulationResistance.poleToPole, 
                           'P1-P2': createMeasurement(e.target.value) 
                         })}
-                        readOnly={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1657,8 +1653,8 @@ export default function LowVoltageSwitchReport() {
                           ...formData.insulationResistance.poleToPole, 
                           'P2-P3': createMeasurement(e.target.value) 
                         })}
-                        readOnly={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1669,8 +1665,8 @@ export default function LowVoltageSwitchReport() {
                           ...formData.insulationResistance.poleToPole, 
                           'P3-P1': createMeasurement(e.target.value) 
                         })}
-                        readOnly={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1681,8 +1677,8 @@ export default function LowVoltageSwitchReport() {
                           ...formData.insulationResistance.poleToFrame, 
                           'P1': createMeasurement(e.target.value) 
                         })}
-                        readOnly={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1693,8 +1689,8 @@ export default function LowVoltageSwitchReport() {
                           ...formData.insulationResistance.poleToFrame, 
                           'P2': createMeasurement(e.target.value) 
                         })}
-                        readOnly={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1705,8 +1701,8 @@ export default function LowVoltageSwitchReport() {
                           ...formData.insulationResistance.poleToFrame, 
                           'P3': createMeasurement(e.target.value) 
                         })}
-                        readOnly={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1717,8 +1713,8 @@ export default function LowVoltageSwitchReport() {
                           ...formData.insulationResistance.lineToLoad, 
                           'P1': createMeasurement(e.target.value) 
                         })}
-                        readOnly={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1729,8 +1725,8 @@ export default function LowVoltageSwitchReport() {
                           ...formData.insulationResistance.lineToLoad, 
                           'P2': createMeasurement(e.target.value) 
                         })}
-                        readOnly={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1741,8 +1737,8 @@ export default function LowVoltageSwitchReport() {
                           ...formData.insulationResistance.lineToLoad, 
                           'P3': createMeasurement(e.target.value) 
                         })}
-                        readOnly={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                   </tr>
@@ -1752,10 +1748,9 @@ export default function LowVoltageSwitchReport() {
           </section>
 
           {/* Temperature Corrected Insulation Resistance Values */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Temperature Corrected Insulation Resistance Values
-            </h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Insulation Resistance Values</h2>
             <div className="mb-4">
               <p className="text-gray-700 dark:text-gray-300">
                 Temperature Correction Factor (TCF): {tcf}
@@ -1835,18 +1830,17 @@ export default function LowVoltageSwitchReport() {
           </section>
 
           {/* Contact Resistance */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Contact Resistance
-            </h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Contact Resistance</h2>
             <div className="mb-4">
-              <label htmlFor="crUnits" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Units:</label>
+              <label htmlFor="crUnits" className="form-label inline-block w-24">Units:</label>
               <select
                 id="crUnits"
                 value={formData.contactResistance.units}
                 onChange={(e) => handleChange('contactResistance.units', e.target.value)}
-                disabled={!isEditMode}
-                className={`block w-24 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                disabled={!isEditing}
+                className="form-select w-24"
               >
                 {CONTACT_RESISTANCE_UNITS.map(unit => (
                   <option key={unit} value={unit}>{unit}</option>
@@ -1880,7 +1874,7 @@ export default function LowVoltageSwitchReport() {
                         type="number"
                         value={formData.contactResistance.poleToPole['P1-P2']}
                         onChange={(e) => handleChange('contactResistance.poleToPole', { ...formData.contactResistance.poleToPole, 'P1-P2': Number(e.target.value) })}
-                        readOnly={!isEditMode}
+                        readOnly={!isEditing}
                         className="form-input w-full"
                       />
                     </td>
@@ -1889,7 +1883,7 @@ export default function LowVoltageSwitchReport() {
                         type="number"
                         value={formData.contactResistance.poleToPole['P2-P3']}
                         onChange={(e) => handleChange('contactResistance.poleToPole', { ...formData.contactResistance.poleToPole, 'P2-P3': Number(e.target.value) })}
-                        readOnly={!isEditMode}
+                        readOnly={!isEditing}
                         className="form-input w-full"
                       />
                     </td>
@@ -1898,7 +1892,7 @@ export default function LowVoltageSwitchReport() {
                         type="number"
                         value={formData.contactResistance.poleToPole['P3-P1']}
                         onChange={(e) => handleChange('contactResistance.poleToPole', { ...formData.contactResistance.poleToPole, 'P3-P1': Number(e.target.value) })}
-                        readOnly={!isEditMode}
+                        readOnly={!isEditing}
                         className="form-input w-full"
                       />
                     </td>
@@ -1907,7 +1901,7 @@ export default function LowVoltageSwitchReport() {
                         type="number"
                         value={formData.contactResistance.poleToFrame['P1']}
                         onChange={(e) => handleChange('contactResistance.poleToFrame', { ...formData.contactResistance.poleToFrame, 'P1': Number(e.target.value) })}
-                        readOnly={!isEditMode}
+                        readOnly={!isEditing}
                         className="form-input w-full"
                       />
                     </td>
@@ -1916,7 +1910,7 @@ export default function LowVoltageSwitchReport() {
                         type="number"
                         value={formData.contactResistance.poleToFrame['P2']}
                         onChange={(e) => handleChange('contactResistance.poleToFrame', { ...formData.contactResistance.poleToFrame, 'P2': Number(e.target.value) })}
-                        readOnly={!isEditMode}
+                        readOnly={!isEditing}
                         className="form-input w-full"
                       />
                     </td>
@@ -1925,7 +1919,7 @@ export default function LowVoltageSwitchReport() {
                         type="number"
                         value={formData.contactResistance.poleToFrame['P3']}
                         onChange={(e) => handleChange('contactResistance.poleToFrame', { ...formData.contactResistance.poleToFrame, 'P3': Number(e.target.value) })}
-                        readOnly={!isEditMode}
+                        readOnly={!isEditing}
                         className="form-input w-full"
                       />
                     </td>
@@ -1934,7 +1928,7 @@ export default function LowVoltageSwitchReport() {
                         type="number"
                         value={formData.contactResistance.lineToLoad['P1']}
                         onChange={(e) => handleChange('contactResistance.lineToLoad', { ...formData.contactResistance.lineToLoad, 'P1': Number(e.target.value) })}
-                        readOnly={!isEditMode}
+                        readOnly={!isEditing}
                         className="form-input w-full"
                       />
                     </td>
@@ -1943,7 +1937,7 @@ export default function LowVoltageSwitchReport() {
                         type="number"
                         value={formData.contactResistance.lineToLoad['P2']}
                         onChange={(e) => handleChange('contactResistance.lineToLoad', { ...formData.contactResistance.lineToLoad, 'P2': Number(e.target.value) })}
-                        readOnly={!isEditMode}
+                        readOnly={!isEditing}
                         className="form-input w-full"
                       />
                     </td>
@@ -1952,7 +1946,7 @@ export default function LowVoltageSwitchReport() {
                         type="number"
                         value={formData.contactResistance.lineToLoad['P3']}
                         onChange={(e) => handleChange('contactResistance.lineToLoad', { ...formData.contactResistance.lineToLoad, 'P3': Number(e.target.value) })}
-                        readOnly={!isEditMode}
+                        readOnly={!isEditing}
                         className="form-input w-full"
                       />
                     </td>
@@ -1963,10 +1957,9 @@ export default function LowVoltageSwitchReport() {
           </section>
 
           {/* Visual & Mechanical Inspection */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Visual & Mechanical Inspection
-            </h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual & Mechanical Inspection</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
                 <thead>
@@ -1987,8 +1980,8 @@ export default function LowVoltageSwitchReport() {
                         <select
                           value={value}
                           onChange={(e) => handleChange('visualMechanicalInspection', { ...formData.visualMechanicalInspection, [key]: e.target.value })}
-                          disabled={!isEditMode}
-                          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          disabled={!isEditing}
+                          className="form-select w-full"
                         >
                           <option value="">Select One</option>
                           <option value="Satisfactory">Satisfactory</option>
@@ -2006,10 +1999,9 @@ export default function LowVoltageSwitchReport() {
           </section>
 
           {/* Test Equipment */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Test Equipment Used
-            </h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-4 gap-4 items-center">
                 <div className="text-right font-medium text-gray-700 dark:text-white">
@@ -2024,8 +2016,8 @@ export default function LowVoltageSwitchReport() {
                       megohmmeter: { ...formData.testEquipment.megohmmeter, model: e.target.value }
                     })}
                     placeholder="Fluke 1587FC"
-                    readOnly={!isEditMode}
-                    className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    readOnly={!isEditing}
+                    className="form-input w-full"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -2038,8 +2030,8 @@ export default function LowVoltageSwitchReport() {
                       megohmmeter: { ...formData.testEquipment.megohmmeter, serialNumber: e.target.value }
                     })}
                     placeholder="Test"
-                    readOnly={!isEditMode}
-                    className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    readOnly={!isEditing}
+                    className="form-input w-full"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -2052,8 +2044,8 @@ export default function LowVoltageSwitchReport() {
                       megohmmeter: { ...formData.testEquipment.megohmmeter, ampId: e.target.value }
                     })}
                     placeholder="Test"
-                    readOnly={!isEditMode}
-                    className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    readOnly={!isEditing}
+                    className="form-input w-full"
                   />
                 </div>
               </div>
@@ -2070,8 +2062,8 @@ export default function LowVoltageSwitchReport() {
                       lowResistance: { ...formData.testEquipment.lowResistance, model: e.target.value }
                     })}
                     placeholder="Megger DLRO"
-                    readOnly={!isEditMode}
-                    className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    readOnly={!isEditing}
+                    className="form-input w-full"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -2084,8 +2076,8 @@ export default function LowVoltageSwitchReport() {
                       lowResistance: { ...formData.testEquipment.lowResistance, serialNumber: e.target.value }
                     })}
                     placeholder="Test"
-                    readOnly={!isEditMode}
-                    className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    readOnly={!isEditing}
+                    className="form-input w-full"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -2098,8 +2090,8 @@ export default function LowVoltageSwitchReport() {
                       lowResistance: { ...formData.testEquipment.lowResistance, ampId: e.target.value }
                     })}
                     placeholder="Test"
-                    readOnly={!isEditMode}
-                    className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    readOnly={!isEditing}
+                    className="form-input w-full"
                   />
                 </div>
               </div>
@@ -2107,21 +2099,19 @@ export default function LowVoltageSwitchReport() {
           </section>
 
           {/* Comments */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Comments
-            </h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                  Enclosure:
-                </label>
+                <label htmlFor="enclosureComments" className="form-label block mb-2">Enclosure:</label>
                 <textarea
+                  id="enclosureComments"
                   value={formData.comments.enclosure}
                   onChange={(e) => handleChange('comments', { ...formData.comments, enclosure: e.target.value })}
-                  readOnly={!isEditMode}
+                  readOnly={!isEditing}
                   rows={6}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className="form-textarea w-full"
                 />
               </div>
             </div>

@@ -165,23 +165,24 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string; reportId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-
-  // Print Mode Detection
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  
+  // Check if we're in print mode
   const isPrintMode = searchParams.get('print') === 'true';
-
-  const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
-  const [isEditMode, setIsEditMode] = useState(!reportId);
   
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
-  const reportSlug = 'low-voltage-panelboard-small-breaker-report'; // This component handles the low-voltage-panelboard-small-breaker-report route
+  const reportSlug = 'low-voltage-panelboard-small-breaker-report';
   const reportName = getReportName(reportSlug);
-  const [loading, setLoading] = useState(true);
+  
+  // State management
+  const [isEditing, setIsEditing] = useState<boolean>(!reportId);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [tcf, setTcf] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<'PASS' | 'FAIL' | 'LIMITED SERVICE'>('PASS');
 
   const [formData, setFormData] = useState<FormData>(() => {
     const initialSpaces = 120;
@@ -235,23 +236,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
       numberOfCircuitSpaces: initialSpaces.toString(),
       electricalTestOrdering: 'Sequential',
       tripCurveNumbers: '',
-      breakers: Array(initialSpaces).fill(null).map((_, i) => ({
-        result: '',
-        circuitNumber: (i + 1).toString(),
-        poles: '1',
-        manuf: '',
-        type: '',
-        frameA: '',
-        tripA: '',
-        ratedCurrentA: '',
-        testCurrentA: '',
-        tripToleranceMin: '',
-        tripToleranceMax: '',
-        tripTime: '',
-        insulationLL: '',
-        insulationLP: '',
-        insulationPP: ''
-      }))
+      breakers: Array(initialSpaces).fill(null).map((_, i) => initialBreakerData(i+1))
     };
   });
 
@@ -363,14 +348,14 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
               tripCurveNumbers: loadedElectricalTests.tripCurveNumbers || prev.tripCurveNumbers,
               comments: reportData.comments_text || prev.comments,
             }));
-            setIsEditMode(false);
+            setIsEditing(false);
           }
         } catch (error) {
           console.error("Error loading report data:", error);
           // Don't automatically set edit mode on load errors - let user click Edit if needed
         }
       } else {
-        setIsEditMode(true); // New report, start in edit mode (this is correct for new reports)
+        setIsEditing(true); // New report, start in edit mode (this is correct for new reports)
       }
       setLoading(false);
     };
@@ -400,7 +385,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
 
   const handleChange = (field: string, value: any, index?: number, subField?: string) => {
-    if (!isEditMode) return;
+    if (!isEditing) return;
     setFormData(prev => {
       const newState = JSON.parse(JSON.stringify(prev)); // Deep copy
 
@@ -454,7 +439,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
   };
 
   const handleBreakerChange = (index: number, field: string, value: any) => {
-    if (!isEditMode) return;
+    if (!isEditing) return;
     setFormData(prev => {
       const newState = JSON.parse(JSON.stringify(prev)); // Deep copy
       if (field === 'poles') {
@@ -468,7 +453,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!jobId || !user?.id || !isEditMode) return;
+    if (!jobId || !user?.id || !isEditing) return;
 
     const { breakers, visualInspectionItems, comments, ...reportInfoSubset } = formData;
 
@@ -539,7 +524,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
       if (result.error) throw result.error;
       
       toast.success('Report saved successfully!');
-      setIsEditMode(false);
+      setIsEditing(false);
       
       // Use the navigateAfterSave utility function
       navigateAfterSave(navigate, jobId, location);
@@ -561,9 +546,9 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
             type={type}
             value={getValue(formData, fieldKey) || ''}
             onChange={(e) => handleChange(fieldKey, type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)}
-            readOnly={!isEditMode || isReadOnly}
+            readOnly={!isEditing || isReadOnly}
             placeholder={placeholder}
-            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${(!isEditMode || isReadOnly) ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${(!isEditing || isReadOnly) ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
         />
         </div>
     );
@@ -580,38 +565,70 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
         <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
-        <div className="flex-1 text-center">
+        <div className="flex-1 text-center flex flex-col items-center justify-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA
+          <div className="hidden print:block mt-2">
+            <div
+              className="pass-fail-status-box"
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: status === 'PASS' ? '2px solid #16a34a' : status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
+                backgroundColor: status === 'PASS' ? '#22c55e' : status === 'FAIL' ? '#ef4444' : '#eab308',
+                color: 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
+              }}
+            >
+              {status || 'PASS'}
+            </div>
+          </div>
+        </div>
       </div>
       {/* End Print Header */}
       
-      <div className="p-6 flex justify-center">
+      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
         <div className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
-          <div className={`${isPrintMode ? 'hidden' : ''} print:hidden flex justify-end items-center mb-6`}>
+          <div className={`${isPrintMode ? 'hidden' : ''} print:hidden flex justify-between items-center mb-6`}>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Low Voltage Panelboard Small Breaker Test ATS
+            </h1>
             <div className="flex gap-2">
+              {/* Status Button */}
               <button
                 onClick={() => {
-                  if (isEditMode) {
-                    setStatus(status === 'PASS' ? 'FAIL' : 'PASS');
+                  if (isEditing) {
+                    const nextStatus = status === 'PASS' ? 'FAIL' : status === 'FAIL' ? 'LIMITED SERVICE' : 'PASS';
+                    setStatus(nextStatus);
                   }
                 }}
                 className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  status === 'PASS'
-                    ? 'bg-green-600 text-white focus:ring-green-500'
-                    : 'bg-red-600 text-white focus:ring-red-500'
-                } ${!isEditMode ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+                  status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500 hover:bg-green-700' :
+                  status === 'FAIL' ? 'bg-red-600 text-white focus:ring-red-500 hover:bg-red-700' :
+                  'bg-yellow-500 text-black focus:ring-yellow-400 hover:bg-yellow-600'
+                } ${!isEditing ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
                 {status}
               </button>
-              {reportId && !isEditMode ? (
+
+              {/* Edit/Save/Print Buttons */}
+              {reportId && !isEditing ? (
                 <>
                   <button
-                    onClick={() => setIsEditMode(true)}
+                    onClick={() => setIsEditing(true)}
                     className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Edit Report
@@ -626,8 +643,8 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
               ) : (
                 <button
                   onClick={handleSave}
-                  disabled={!isEditMode || saving}
-                  className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditMode ? 'hidden' : 'hover:bg-orange-700 disabled:opacity-50'}`}
+                  disabled={!isEditing || saving}
+                  className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700 disabled:opacity-50'}`}
                 >
                   {saving ? 'Saving...' : reportId ? 'Update Report' : 'Save Report'}
                 </button>
@@ -635,250 +652,368 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
             </div>
           </div>
 
-          {/* Job Information Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-            {renderInputField("Customer", "customer", "", "text", "md:col-span-1", true)}
-            {renderInputField("Job #", "jobNumber", "", "text", "md:col-span-1", true)}
-            {renderInputField("Address", "address", "", "text", "md:col-span-1", true)}
-            {renderInputField("Technicians", "technicians")}
-            {renderInputField("User", "user")}
-            <div className="flex items-end space-x-2 md:col-span-1 mb-2">
-                {renderInputField("Temp.", "temperature.fahrenheit", "", "number", "flex-grow")}
-                <span className="pb-1">°F</span>
-                <input type="text" value={formData.temperature.celsius} readOnly className="form-input mt-1 w-16 bg-gray-100 dark:bg-dark-200 text-center cursor-not-allowed" />
-                <span className="pb-1">°C</span>
-                <label className="form-label inline-block pb-1 ml-2">TCF:</label>
-                <input type="text" value={formData.temperature.tcf.toFixed(3)} readOnly className="form-input mt-1 w-20 bg-gray-100 dark:bg-dark-200 text-center cursor-not-allowed" />
+          {/* --- Job Information Section --- */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              {/* Column 1 */}
+              <div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="customer" className="form-label inline-block w-32">Customer:</label>
+                  <input id="customer" type="text" value={formData.customer} onChange={(e) => handleChange('customer', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="address" className="form-label inline-block w-32">Address:</label>
+                  <input id="address" type="text" value={formData.address} onChange={(e) => handleChange('address', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="jobNumber" className="form-label inline-block w-32">Job Number:</label>
+                  <input id="jobNumber" type="text" value={formData.jobNumber} onChange={(e) => handleChange('jobNumber', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="date" className="form-label inline-block w-32">Date:</label>
+                  <input id="date" type="date" value={formData.date} onChange={(e) => handleChange('date', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="technicians" className="form-label inline-block w-32">Technician(s):</label>
+                  <input id="technicians" type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="identifier" className="form-label inline-block w-32">Equipment Identifier:</label>
+                  <input id="identifier" type="text" value={formData.identifier} onChange={(e) => handleChange('identifier', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+              </div>
+              {/* Column 2 */}
+              <div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="substation" className="form-label inline-block w-32">Substation:</label>
+                  <input id="substation" type="text" value={formData.substation} onChange={(e) => handleChange('substation', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="eqptLocation" className="form-label inline-block w-32">Equipment Location:</label>
+                  <input id="eqptLocation" type="text" value={formData.eqptLocation} onChange={(e) => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="user" className="form-label inline-block w-32">User:</label>
+                  <input id="user" type="text" value={formData.user} onChange={(e) => handleChange('user', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                {/* Temperature Fields */}
+                <div className="mb-4 flex items-center space-x-2">
+                  <label className="form-label inline-block w-auto">Temp:</label>
+                  <input type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleChange('temperature.fahrenheit', Number(e.target.value))} readOnly={!isEditing} className="form-input w-20" />
+                  <span>°F</span>
+                  <input type="number" value={formData.temperature.celsius} readOnly className="form-input w-20 bg-gray-100 dark:bg-dark-200" />
+                  <span>°C</span>
+                  <label className="form-label inline-block w-auto ml-4">TCF:</label>
+                  <input type="number" value={formData.temperature.tcf.toFixed(3)} readOnly className="form-input w-24 bg-gray-100 dark:bg-dark-200" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="humidity" className="form-label inline-block w-32">Humidity:</label>
+                  <input id="humidity" type="number" value={formData.humidity} onChange={(e) => handleChange('humidity', Number(e.target.value))} readOnly={!isEditing} className="form-input w-20" />
+                  <span className="ml-2">%</span>
+                </div>
+              </div>
             </div>
-            {renderInputField("Date", "date", "", "date")}
-            <div className="flex items-center space-x-2 md:col-span-1 mb-2">
-             {renderInputField("Humidity", "humidity", "", "number", "w-20")}
-             <span className="pt-7">%</span>
+          </div>
+
+          {/* --- Nameplate Data Section --- */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              {/* Panelboard Column */}
+              <div>
+                <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Panelboard</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <label htmlFor="panelboardManufacturer" className="form-label inline-block w-32">Manufacturer:</label>
+                    <input id="panelboardManufacturer" type="text" value={formData.panelboardManufacturer} onChange={(e) => handleChange('panelboardManufacturer', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                  </div>
+                  <div className="flex items-center">
+                    <label htmlFor="panelboardTypeCat" className="form-label inline-block w-32">Type / Cat #:</label>
+                    <input id="panelboardTypeCat" type="text" value={formData.panelboardTypeCat} onChange={(e) => handleChange('panelboardTypeCat', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                  </div>
+                  <div className="flex items-center">
+                    <label htmlFor="panelboardSizeA" className="form-label inline-block w-32">Size (A):</label>
+                    <input id="panelboardSizeA" type="text" value={formData.panelboardSizeA} onChange={(e) => handleChange('panelboardSizeA', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                  </div>
+                  <div className="flex items-center">
+                    <label htmlFor="panelboardVoltageV" className="form-label inline-block w-32">Voltage (V):</label>
+                    <input id="panelboardVoltageV" type="text" value={formData.panelboardVoltageV} onChange={(e) => handleChange('panelboardVoltageV', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                  </div>
+                  <div className="flex items-center">
+                    <label htmlFor="panelboardSCCRkA" className="form-label inline-block w-32">SCCR (kA):</label>
+                    <input id="panelboardSCCRkA" type="text" value={formData.panelboardSCCRkA} onChange={(e) => handleChange('panelboardSCCRkA', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                  </div>
+                </div>
+              </div>
+              {/* Main Breaker Column */}
+              <div>
+                <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Main Breaker</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <label htmlFor="mainBreakerManufacturer" className="form-label inline-block w-32">Manufacturer:</label>
+                    <input id="mainBreakerManufacturer" type="text" value={formData.mainBreakerManufacturer} onChange={(e) => handleChange('mainBreakerManufacturer', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                  </div>
+                  <div className="flex items-center">
+                    <label htmlFor="mainBreakerType" className="form-label inline-block w-32">Type:</label>
+                    <input id="mainBreakerType" type="text" value={formData.mainBreakerType} onChange={(e) => handleChange('mainBreakerType', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                  </div>
+                  <div className="flex items-center">
+                    <label htmlFor="mainBreakerFrameSizeA" className="form-label inline-block w-32">Frame Size (A):</label>
+                    <input id="mainBreakerFrameSizeA" type="text" value={formData.mainBreakerFrameSizeA} onChange={(e) => handleChange('mainBreakerFrameSizeA', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                  </div>
+                  <div className="flex items-center">
+                    <label htmlFor="mainBreakerRatingPlugA" className="form-label inline-block w-32">Rating Plug (A):</label>
+                    <input id="mainBreakerRatingPlugA" type="text" value={formData.mainBreakerRatingPlugA} onChange={(e) => handleChange('mainBreakerRatingPlugA', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                  </div>
+                  <div className="flex items-center">
+                    <label htmlFor="mainBreakerICRatingkA" className="form-label inline-block w-32">I.C. Rating (kA):</label>
+                    <input id="mainBreakerICRatingkA" type="text" value={formData.mainBreakerICRatingkA} onChange={(e) => handleChange('mainBreakerICRatingkA', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                  </div>
+                </div>
+              </div>
             </div>
-            {renderInputField("Identifier", "identifier")}
-            {renderInputField("Substation", "substation")}
-            <div className="md:col-span-1"></div>
-            {renderInputField("Eqpt. Location", "eqptLocation")}
-        </div>
-      </section>
+          </div>
 
-      {/* Nameplate Data Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-            <div>
-                <h3 className="text-lg font-medium mb-2 dark:text-gray-200">Panelboard</h3>
-                {renderInputField("Manufacturer", "panelboardManufacturer")}
-                {renderInputField("Type / Cat #", "panelboardTypeCat")}
-                {renderInputField("Size (A)", "panelboardSizeA")}
-                {renderInputField("Voltage (V)", "panelboardVoltageV")}
-                {renderInputField("SCCR (kA)", "panelboardSCCRkA")}
-            </div>
-            <div>
-                <h3 className="text-lg font-medium mb-2 dark:text-gray-200">Main Breaker</h3>
-                {renderInputField("Manufacturer", "mainBreakerManufacturer")}
-                {renderInputField("Type", "mainBreakerType")}
-                {renderInputField("Frame Size (A)", "mainBreakerFrameSizeA")}
-                {renderInputField("Rating Plug (A)", "mainBreakerRatingPlugA")}
-                {renderInputField("I.C. Rating (kA)", "mainBreakerICRatingkA")}
-            </div>
-        </div>
-      </section>
-
-      {/* Visual and Mechanical Inspection Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-dark-200">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/5">NETA Section</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-3/5">Description</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/5">Results</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-              {formData.visualInspectionItems.map((item, index) => (
-                <tr key={index}>
-                  <td className="px-3 py-1 text-sm">{item.netaSection}</td>
-                  <td className="px-3 py-1 text-sm">{item.description}</td>
-                  <td className="px-3 py-1 text-sm">
-                    <select
-                      value={item.results}
-                      onChange={(e) => handleChange('visualInspectionItems', e.target.value, index, 'results')}
-                      disabled={!isEditMode}
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
-                    >
-                      {visualInspectionResultOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Test Equipment Used Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-1">
-            {renderInputField("Megohmmeter", "megohmmeterName")}
-            {renderInputField("Serial Number", "megohmmeterSerial")}
-            {renderInputField("AMP ID", "megohmmeterAmpId")}
-
-            {renderInputField("Low-Resistance Ohmmeter", "lowResistanceOhmmeterName")}
-            {renderInputField("Serial Number", "lowResistanceOhmmeterSerial")}
-            {renderInputField("AMP ID", "lowResistanceOhmmeterAmpId")}
-
-            {renderInputField("Primary Injection Test Set", "primaryInjectionTestSetName")}
-            {renderInputField("Serial Number", "primaryInjectionTestSetSerial")}
-            {renderInputField("AMP ID", "primaryInjectionTestSetAmpId")}
-        </div>
-      </section>
-
-      {/* Comments Section */}
-      <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
-        <textarea
-          value={formData.comments}
-          onChange={(e) => handleChange('comments', e.target.value)}
-          readOnly={!isEditMode}
-          rows={3}
-          className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
-        />
-      </section>
-
-             {/* Electrical Tests Section */}
-       <section className="electrical-tests-section bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-         <div className="flex justify-between items-center mb-2">
-             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Electrical Tests</h2>
-         </div>
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 mb-4">
-             <div className="flex items-center">
-                 <label className="text-sm font-medium mr-2"># of circuit spaces:</label>
-                 <input type="number" min="0" max="120" value={formData.numberOfCircuitSpaces} onChange={(e) => handleChange('numberOfCircuitSpaces', e.target.value)} readOnly={!isEditMode} className={`form-input mt-1 w-20 ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}/>
-             </div>
-             <div className="flex items-center">
-                 <label className="text-sm font-medium mr-2">Ordering:</label>
-                 <select value={formData.electricalTestOrdering} onChange={(e) => handleChange('electricalTestOrdering', e.target.value)} disabled={!isEditMode} className={`form-input mt-1 ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}>
-                     {electricalTestOrderingOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                 </select>
-             </div>
-             <div className="flex items-center">
-                 <label className="text-sm font-medium mr-2">Trip Curve #'s:</label>
-                 <input type="text" value={formData.tripCurveNumbers} onChange={(e) => handleChange('tripCurveNumbers', e.target.value)} readOnly={!isEditMode} className={`form-input mt-1 ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}/>
-             </div>
-         </div>
-         <div className="w-full">
-           <table className="electrical-tests-table w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-300 dark:border-gray-600 text-sm">
-            <thead className="bg-gray-50 dark:bg-dark-200">
-              <tr>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 w-20">Result</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 w-12">Circuit</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 w-16"># of Poles</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 w-24">Manuf.</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 w-24">Type</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 w-20">Frame (A)</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 w-20">Trip (A)</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 w-24">Rated Current (A)</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 w-24">Test Current (A)</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 text-center w-16">Min</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 text-center w-16">Max</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 text-center w-16">L-L</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 text-center w-16">L-P</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 text-center w-16">P-P</th>
-              </tr>
-              <tr>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 text-center w-16">Min</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 text-center w-16">Max</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600"></th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 text-center w-16">L-L</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 border-r border-gray-300 dark:border-gray-600 text-center w-16">L-P</th>
-                <th className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-300 text-center w-16">P-P</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-              {formData.breakers.map((breaker, index) => (
-                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-dark-200">
-                  <td className="px-2 py-1 border-r border-gray-300 dark:border-gray-600">
-                    <select
-                      value={breaker.result || ''}
-                      onChange={(e) => handleChange('breakers', e.target.value, index, 'result')}
-                      disabled={!isEditMode}
-                      className={`w-full text-xs rounded-md border-gray-300 dark:border-gray-600 
-                        ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'} 
-                        ${breaker.result === 'FAIL' ? 'text-red-600' : 'text-green-600'}`}
-                    >
-                      <option value="">Select...</option>
-                      <option value="PASS" className="text-green-600">PASS</option>
-                      <option value="FAIL" className="text-red-600">FAIL</option>
-                    </select>
-                  </td>
-                  <td className="px-2 py-1 border-r border-gray-300 dark:border-gray-600 text-center">{breaker.circuitNumber}</td>
-                  <td className="px-2 py-1 border-r border-gray-300 dark:border-gray-600">
-                    <select
-                      value={breaker.poles || ''}
-                      onChange={(e) => handleBreakerChange(index, 'poles', e.target.value)}
-                      disabled={!isEditMode}
-                      className={`w-full text-xs rounded-md border-gray-300 dark:border-gray-600 
-                        ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'} 
-                        ${breaker.poles ? '' : 'text-gray-400'}`}
-                    >
-                      <option value="">Select</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                    </select>
-                  </td>
-                  {['manuf', 'type', 'frameA', 'tripA', 'ratedCurrentA'].map(field => (
-                    <td key={field} className="px-2 py-1 border-r border-gray-300 dark:border-gray-600">
-                      <input 
-                        type="text" 
-                        value={(breaker as any)[field]} 
-                        onChange={(e) => handleChange('breakers', e.target.value, index, field)} 
-                        readOnly={!isEditMode} 
-                        className={`w-full text-sm border-0 focus:ring-0 ${!isEditMode ? 'cursor-not-allowed bg-transparent' : ''}`}
-                      />
-                    </td>
+          {/* --- Visual and Mechanical Inspection Section --- */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <thead className="bg-gray-50 dark:bg-dark-200">
+                  <tr>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/4">NETA Section</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/2">Description</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-1/4">Results</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  {formData.visualInspectionItems.map((item, index) => (
+                    <tr key={index}>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">{item.netaSection}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">{item.description}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                        <select
+                          value={item.results}
+                          onChange={(e) => handleChange('visualInspectionItems', e.target.value, index, 'results')}
+                          disabled={!isEditing}
+                          className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        >
+                          {visualInspectionResultOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      </td>
+                    </tr>
                   ))}
-                  <td className="px-2 py-1 border-r border-gray-300 dark:border-gray-600">
-                    <input 
-                      type="text" 
-                      value={breaker.testCurrentA} 
-                      readOnly={true} 
-                      className="w-full text-sm border-0 focus:ring-0 bg-gray-50 cursor-not-allowed"
-                    />
-                  </td>
-                  {['tripToleranceMin', 'tripToleranceMax', 'tripTime', 'insulationLL', 'insulationLP', 'insulationPP'].map(field => (
-                    <td key={field} className="px-2 py-1 border-r border-gray-300 dark:border-gray-600">
-                      <input 
-                        type="text" 
-                        value={(breaker as any)[field]} 
-                        onChange={(e) => handleChange('breakers', e.target.value, index, field)} 
-                        readOnly={!isEditMode} 
-                        className={`w-full text-sm border-0 focus:ring-0 ${!isEditMode ? 'cursor-not-allowed bg-transparent' : ''}`}
-                      />
-                    </td>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* --- Test Equipment Used Section --- */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-4">
+              {/* Megohmmeter */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Megohmmeter</h3>
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="megohmmeterName" className="form-label w-20 flex-shrink-0">Name:</label>
+                  <input id="megohmmeterName" type="text" value={formData.megohmmeterName} onChange={(e) => handleChange('megohmmeterName', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="megohmmeterSerial" className="form-label w-20 flex-shrink-0">Serial #:</label>
+                  <input id="megohmmeterSerial" type="text" value={formData.megohmmeterSerial} onChange={(e) => handleChange('megohmmeterSerial', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="megohmmeterAmpId" className="form-label w-20 flex-shrink-0">AMP ID:</label>
+                  <input id="megohmmeterAmpId" type="text" value={formData.megohmmeterAmpId} onChange={(e) => handleChange('megohmmeterAmpId', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+              </div>
+              {/* Low-Resistance Ohmmeter */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Low-Resistance Ohmmeter</h3>
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="lowResistanceOhmmeterName" className="form-label w-20 flex-shrink-0">Name:</label>
+                  <input id="lowResistanceOhmmeterName" type="text" value={formData.lowResistanceOhmmeterName} onChange={(e) => handleChange('lowResistanceOhmmeterName', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="lowResistanceOhmmeterSerial" className="form-label w-20 flex-shrink-0">Serial #:</label>
+                  <input id="lowResistanceOhmmeterSerial" type="text" value={formData.lowResistanceOhmmeterSerial} onChange={(e) => handleChange('lowResistanceOhmmeterSerial', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="lowResistanceOhmmeterAmpId" className="form-label w-20 flex-shrink-0">AMP ID:</label>
+                  <input id="lowResistanceOhmmeterAmpId" type="text" value={formData.lowResistanceOhmmeterAmpId} onChange={(e) => handleChange('lowResistanceOhmmeterAmpId', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+              </div>
+              {/* Primary Injection Test Set */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Primary Injection Test Set</h3>
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="primaryInjectionTestSetName" className="form-label w-20 flex-shrink-0">Name:</label>
+                  <input id="primaryInjectionTestSetName" type="text" value={formData.primaryInjectionTestSetName} onChange={(e) => handleChange('primaryInjectionTestSetName', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="primaryInjectionTestSetSerial" className="form-label w-20 flex-shrink-0">Serial #:</label>
+                  <input id="primaryInjectionTestSetSerial" type="text" value={formData.primaryInjectionTestSetSerial} onChange={(e) => handleChange('primaryInjectionTestSetSerial', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="primaryInjectionTestSetAmpId" className="form-label w-20 flex-shrink-0">AMP ID:</label>
+                  <input id="primaryInjectionTestSetAmpId" type="text" value={formData.primaryInjectionTestSetAmpId} onChange={(e) => handleChange('primaryInjectionTestSetAmpId', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* --- Comments Section --- */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+            <textarea
+              value={formData.comments}
+              onChange={(e) => handleChange('comments', e.target.value)}
+              readOnly={!isEditing}
+              rows={4}
+              className={`form-textarea resize-none w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            />
+          </div>
+
+          {/* --- Electrical Tests Section --- */}
+          <div className="mb-6 electrical-tests-section">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests</h2>
+            
+            {/* Test Configuration */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-6">
+              <div className="flex items-center">
+                <label className="form-label mr-2"># of circuit spaces:</label>
+                <input 
+                  type="number" 
+                  min="0" 
+                  max="120" 
+                  value={formData.numberOfCircuitSpaces} 
+                  onChange={(e) => handleChange('numberOfCircuitSpaces', e.target.value)} 
+                  readOnly={!isEditing} 
+                  className={`form-input w-20 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div className="flex items-center">
+                <label className="form-label mr-2">Ordering:</label>
+                <select 
+                  value={formData.electricalTestOrdering} 
+                  onChange={(e) => handleChange('electricalTestOrdering', e.target.value)} 
+                  disabled={!isEditing} 
+                  className={`form-select ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                >
+                  {electricalTestOrderingOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              </div>
+              <div className="flex items-center">
+                <label className="form-label mr-2">Trip Curve #'s:</label>
+                <input 
+                  type="text" 
+                  value={formData.tripCurveNumbers} 
+                  onChange={(e) => handleChange('tripCurveNumbers', e.target.value)} 
+                  readOnly={!isEditing} 
+                  className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+            </div>
+            
+            {/* Breakers Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 text-xs">
+                <thead className="bg-gray-50 dark:bg-dark-200">
+                  <tr>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white w-16">Result</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white w-12">Circuit</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white w-14">Poles</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white w-20">Manuf.</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white w-20">Type</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white w-16">Frame</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white w-16">Trip</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white w-20">Rated</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white w-20">Test</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white text-center w-12">Min</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white text-center w-12">Max</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white text-center w-12">Time</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white text-center w-12">L-L</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white text-center w-12">L-P</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-xs font-medium text-gray-900 dark:text-white text-center w-12">P-P</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  {formData.breakers.map((breaker, index) => (
+                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-dark-200">
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <select
+                          value={breaker.result || ''}
+                          onChange={(e) => handleChange('breakers', e.target.value, index, 'result')}
+                          disabled={!isEditing}
+                          className={`w-full text-xs rounded border-gray-300 dark:border-gray-600 
+                            ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'} 
+                            ${breaker.result === 'FAIL' ? 'text-red-600' : 'text-green-600'}`}
+                        >
+                          <option value="">-</option>
+                          <option value="PASS" className="text-green-600">PASS</option>
+                          <option value="FAIL" className="text-red-600">FAIL</option>
+                        </select>
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1 text-center text-xs">{breaker.circuitNumber}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <select
+                          value={breaker.poles || ''}
+                          onChange={(e) => handleBreakerChange(index, 'poles', e.target.value)}
+                          disabled={!isEditing}
+                          className={`w-full text-xs rounded border-gray-300 dark:border-gray-600 
+                            ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'} 
+                            ${breaker.poles ? '' : 'text-gray-400'}`}
+                        >
+                          <option value="">-</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                        </select>
+                      </td>
+                      {['manuf', 'type', 'frameA', 'tripA', 'ratedCurrentA'].map(field => (
+                        <td key={field} className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                          <input 
+                            type="text" 
+                            value={(breaker as any)[field]} 
+                            onChange={(e) => handleChange('breakers', e.target.value, index, field)} 
+                            readOnly={!isEditing} 
+                            className={`w-full text-xs border-0 focus:ring-0 ${!isEditing ? 'cursor-not-allowed bg-transparent' : ''}`}
+                          />
+                        </td>
+                      ))}
+                      <td className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                        <input 
+                          type="text" 
+                          value={breaker.testCurrentA} 
+                          readOnly={true} 
+                          className="w-full text-xs border-0 focus:ring-0 bg-gray-50 cursor-not-allowed"
+                        />
+                      </td>
+                      {['tripToleranceMin', 'tripToleranceMax', 'tripTime', 'insulationLL', 'insulationLP', 'insulationPP'].map(field => (
+                        <td key={field} className="border border-gray-300 dark:border-gray-600 px-1 py-1">
+                          <input 
+                            type="text" 
+                            value={(breaker as any)[field]} 
+                            onChange={(e) => handleChange('breakers', e.target.value, index, field)} 
+                            readOnly={!isEditing} 
+                            className={`w-full text-xs border-0 focus:ring-0 ${!isEditing ? 'cursor-not-allowed bg-transparent' : ''}`}
+                          />
+                        </td>
+                      ))}
+                    </tr>
                   ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-                 </div>
-       </section>
+                </tbody>
+              </table>
+            </div>
+          </div>
          </div>
        </div>
      </ReportWrapper>
@@ -890,7 +1025,8 @@ if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
     @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; font-size: 12px; }
+      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      * { color: black !important; }
       
       /* Hide all navigation and header elements */
       header, nav, .navigation, [class*="nav"], [class*="header"], 
@@ -907,45 +1043,7 @@ if (typeof document !== 'undefined') {
         display: none !important;
       }
       
-      .print\\:break-before-page { page-break-before: always; }
-      .print\\:break-after-page { page-break-after: always; }
-      .print\\:break-inside-avoid { page-break-inside: avoid; }
-      .print\\:text-black { color: black !important; }
-      .print\\:bg-white { background-color: white !important; }
-      .print\\:border-black { border-color: black !important; }
-      .print\\:font-bold { font-weight: bold !important; }
-      .print\\:text-center { text-align: center !important; }
-      
-             /* Table styling with better layout control */
-       table { 
-         border-collapse: collapse; 
-         width: 100%; 
-         table-layout: fixed !important;
-         font-size: 9px !important;
-         page-break-inside: auto !important;
-         margin: 0 !important;
-       }
-       
-       th, td { 
-         border: 1px solid black !important; 
-         padding: 2px !important; 
-         font-size: 8px !important;
-         vertical-align: top !important;
-         line-height: 1.1 !important;
-         word-wrap: break-word !important;
-         overflow-wrap: break-word !important;
-         height: auto !important;
-         min-height: 0 !important;
-       }
-       
-       th { 
-         background-color: #f0f0f0 !important; 
-         font-weight: bold !important; 
-         font-size: 8px !important;
-         padding: 1px !important;
-       }
-      
-      /* Form element styling */
+      /* Form elements - hide interactive indicators */
       input, select, textarea { 
         background-color: white !important; 
         border: 1px solid black !important; 
@@ -955,8 +1053,6 @@ if (typeof document !== 'undefined') {
         -webkit-appearance: none !important;
         -moz-appearance: none !important;
         appearance: none !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
       }
       
       /* Hide dropdown arrows and form control indicators */
@@ -975,75 +1071,120 @@ if (typeof document !== 'undefined') {
         -moz-appearance: textfield !important;
       }
       
+      /* Table styling */
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid black !important; padding: 4px !important; }
+      th { background-color: #f0f0f0 !important; font-weight: bold !important; }
+      
       /* Hide interactive elements */
       button:not(.print-visible) { display: none !important; }
       
-             /* Section styling */
-       section { 
-         break-inside: auto !important; 
-         margin-bottom: 15px !important; 
-         page-break-inside: auto !important;
-       }
-       
-       /* Special handling for electrical tests section */
-       section:last-child {
-         break-inside: auto !important;
-         page-break-inside: auto !important;
-         margin-bottom: 0 !important;
-       }
-       
-       /* Ensure all text is black for maximum readability */
-       * { color: black !important; }
-       
-       /* Specific fixes for this report's large table */
-       .electrical-tests-table {
-         font-size: 8px !important;
-         page-break-inside: auto !important;
-       }
-       
-       .electrical-tests-table th,
-       .electrical-tests-table td {
-         padding: 1px !important;
-         font-size: 7px !important;
-         line-height: 1 !important;
-       }
-       
-       /* Better handling of wide tables */
-       .w-full { width: 100% !important; }
-       .overflow-x-auto { overflow: visible !important; }
-       
-              /* Prevent excessive spacing in electrical tests */
-       .electrical-tests-section .mb-4 { margin-bottom: 0.5rem !important; }
-       .electrical-tests-section .mb-2 { margin-bottom: 0.25rem !important; }
-       .electrical-tests-section { margin-bottom: 0 !important; }
-       
-       /* Force table to start immediately after header */
-       .electrical-tests-section table {
-         margin-top: 0 !important;
-         page-break-before: auto !important;
-       }
-       
-       /* Reduce tbody height to prevent blank pages */
-       .electrical-tests-section tbody {
-         page-break-inside: auto !important;
-       }
-       
-       .electrical-tests-section tbody tr {
-         page-break-inside: avoid !important;
-         height: auto !important;
-         min-height: 0 !important;
-       }
-       
-       /* Reduce padding in electrical tests section */
-       .electrical-tests-section { padding: 0.5rem !important; }
-       
-       /* Grid layouts for forms */
+      /* Section styling */
+      section { break-inside: avoid !important; margin-bottom: 20px !important; }
+      
+      /* Print utility classes */
+      .print\\:break-before-page { page-break-before: always; }
+      .print\\:break-after-page { page-break-after: always; }
+      .print\\:break-inside-avoid { page-break-inside: avoid; }
+      .print\\:text-black { color: black !important; }
+      .print\\:bg-white { background-color: white !important; }
+      .print\\:border-black { border-color: black !important; }
+      .print\\:font-bold { font-weight: bold !important; }
+      .print\\:text-center { text-align: center !important; }
+      
+      /* Force orange dividers for sections */
+      .w-full.h-1.bg-\\[\\#f26722\\] { 
+        background-color: #f26722 !important; 
+        height: 4px !important; 
+      }
+      
+      /* Ensure proper page breaks */
+      .mb-6 { margin-bottom: 1.5rem !important; }
+      
+      /* Table specific styling for this report */
+      .electrical-tests-table {
+        font-size: 8px !important;
+        page-break-inside: auto !important;
+      }
+      
+      .electrical-tests-table th,
+      .electrical-tests-table td {
+        padding: 1px !important;
+        font-size: 7px !important;
+        line-height: 1 !important;
+      }
+      
+      /* Allow the Electrical Tests table to break across pages */
+      .mb-6:last-child {
+        page-break-inside: auto !important;
+      }
+      
+      .mb-6:last-child table {
+        page-break-inside: auto !important;
+      }
+      
+      .mb-6:last-child tbody {
+        page-break-inside: auto !important;
+      }
+      
+      .mb-6:last-child tr {
+        page-break-inside: avoid !important;
+      }
+      
+      /* Ensure the table container allows page breaks */
+      .overflow-x-auto {
+        page-break-inside: auto !important;
+      }
+      
+      /* Prevent excessive spacing in electrical tests */
+      .electrical-tests-section .mb-4 { margin-bottom: 0.5rem !important; }
+      .electrical-tests-section .mb-2 { margin-bottom: 0.25rem !important; }
+      .electrical-tests-section { margin-bottom: 0 !important; }
+      
+      /* Force table to start immediately after header */
+      .electrical-tests-section table {
+        margin-top: 0 !important;
+        page-break-before: auto !important;
+      }
+      
+      /* Reduce tbody height to prevent blank pages */
+      .electrical-tests-section tbody {
+        page-break-inside: auto !important;
+      }
+      
+      .electrical-tests-section tbody tr {
+        page-break-inside: avoid !important;
+        height: auto !important;
+        min-height: 0 !important;
+      }
+      
+      /* Reduce padding in electrical tests section */
+      .electrical-tests-section { padding: 0.5rem !important; }
+      
+      /* Specific page break handling for electrical tests */
+      .electrical-tests-section {
+        page-break-inside: auto !important;
+      }
+      
+      .electrical-tests-section table {
+        page-break-inside: auto !important;
+      }
+      
+      .electrical-tests-section tbody {
+        page-break-inside: auto !important;
+      }
+      
+      .electrical-tests-section tr {
+        page-break-inside: avoid !important;
+      }
+      
+      /* Grid layouts for forms */
       .grid { display: grid !important; }
       .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
       .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
       .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
       .gap-x-6 { column-gap: 1.5rem !important; }
-      .gap-y-1 { row-gap: 0.25rem !important; }
+      .gap-y-4 { row-gap: 1rem !important; }
       
       /* Preserve flexbox layouts */
       .flex { display: flex !important; }
@@ -1052,11 +1193,13 @@ if (typeof document !== 'undefined') {
       .justify-center { justify-content: center !important; }
       .justify-between { justify-content: space-between !important; }
       .space-x-2 > * + * { margin-left: 0.5rem !important; }
-      .space-y-6 > * + * { margin-top: 1.5rem !important; }
+      .space-y-4 > * + * { margin-top: 1rem !important; }
       
       /* Width utilities */
       .w-16 { width: 4rem !important; }
       .w-20 { width: 5rem !important; }
+      .w-24 { width: 6rem !important; }
+      .w-32 { width: 8rem !important; }
       .max-w-7xl { max-width: 80rem !important; }
       
       /* Margin and padding */
@@ -1085,6 +1228,34 @@ if (typeof document !== 'undefined') {
       .tracking-wider { letter-spacing: 0.05em !important; }
       .text-center { text-align: center !important; }
       .text-left { text-align: left !important; }
+      
+      /* Form input styling */
+      .form-input, .form-select, .form-textarea {
+        border: 1px solid black !important;
+        padding: 2px 3px !important;
+        font-size: 8px !important;
+        height: 12px !important;
+        background-color: white !important;
+        color: black !important;
+      }
+      
+      /* Status box styling */
+      .pass-fail-status-box {
+        display: inline-block !important;
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        width: fit-content !important;
+        border-radius: 6px !important;
+        border: 2px solid black !important;
+        background-color: #f0f0f0 !important;
+        color: black !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-sizing: border-box !important;
+        min-width: 50px !important;
+      }
     }
   `;
   document.head.appendChild(style);

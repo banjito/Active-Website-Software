@@ -863,9 +863,9 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
   // Create header function
   const renderHeader = () => (
-    <div className="flex justify-between items-center mb-6">
+    <div className="print:hidden flex justify-between items-center mb-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        8-Low Voltage Circuit Breaker Electronic Trip Unit ATS {/* Updated Title */}
+        8-Low Voltage Circuit Breaker Electronic Trip Unit ATS
       </h1>
       <div className="flex gap-2">
         {/* Status Button */}
@@ -877,11 +877,12 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
               setFormData(prev => ({ ...prev, status: nextStatus }));
             }
           }}
+          disabled={!isEditing}
           className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
             formData.status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' :
             formData.status === 'FAIL' ? 'bg-red-600 text-white focus:ring-red-500' :
             'bg-yellow-500 text-black focus:ring-yellow-400' // Style for LIMITED SERVICE
-          } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+          } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 dark:bg-opacity-80'}`}
         >
           {formData.status}
         </button>
@@ -919,183 +920,172 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
         <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
-        <div className="flex-1 text-center">
+        <div className="flex-1 text-center flex flex-col items-center justify-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA
+          <div className="hidden print:block mt-2">
+            <div 
+              className="pass-fail-status-box"
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: formData.status === 'PASS' ? '2px solid #16a34a' : formData.status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
+                backgroundColor: formData.status === 'PASS' ? '#22c55e' : formData.status === 'FAIL' ? '#ef4444' : '#eab308',
+                color: 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
+              }}
+            >
+              {formData.status || 'PASS'}
+            </div>
+          </div>
+        </div>
       </div>
       {/* End Print Header */}
       
-      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
-        <div className="max-w-7xl w-full space-y-2">
-          {/* Header with title and buttons */}
-          <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
-            {renderHeader()}
+      <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+        {/* Header */}
+        <div className="print:hidden flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            8-Low Voltage Circuit Breaker Electronic Trip Unit ATS
+          </h1>
+          <div className="flex gap-2">
+            {/* Status Button */}
+            <button
+              onClick={() => {
+                if (isEditing) {
+                  // Cycle through PASS -> FAIL -> LIMITED SERVICE -> PASS
+                  const nextStatus = formData.status === 'PASS' ? 'FAIL' : formData.status === 'FAIL' ? 'LIMITED SERVICE' : 'PASS';
+                  setFormData(prev => ({ ...prev, status: nextStatus }));
+                }
+              }}
+              disabled={!isEditing}
+              className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                formData.status === 'PASS' ? 'bg-green-600 text-white focus:ring-green-500' :
+                formData.status === 'FAIL' ? 'bg-red-600 text-white focus:ring-red-500' :
+                'bg-yellow-500 text-black focus:ring-yellow-400' // Style for LIMITED SERVICE
+              } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 dark:bg-opacity-80'}`}
+            >
+              {formData.status}
+            </button>
+
+            {/* Edit/Save Button */}
+            {reportId && !isEditing ? (
+              <>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Edit Report
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Print Report
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleSave}
+                disabled={!isEditing}
+                className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700'}`}
+              >
+                Save Report
+              </button>
+            )}
+          </div>
           </div>
           
           <div className="space-y-6">
             {/* --- Job Information Section --- */}
-            <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                  {/* Column 1 */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2">
+              <div><label className="form-label">Customer:</label><input type="text" value={formData.customer} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
+              <div className="md:col-span-2"><label htmlFor="address" className="form-label">Address:</label><input id="address" type="text" value={formData.address} onChange={(e) => handleChange('address', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
+              <div><label htmlFor="technicians" className="form-label">Technicians:</label><input id="technicians" type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="date" className="form-label">Date:</label><input id="date" type="date" value={formData.date} onChange={(e) => handleChange('date', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="identifier" className="form-label">Identifier:</label><input id="identifier" type="text" value={formData.identifier} onChange={(e) => handleChange('identifier', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div className="flex items-center space-x-1">
                   <div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="customer" className="form-label inline-block w-32 dark:text-gray-300">Customer:</label>
-                          <input id="customer" type="text" value={formData.customer} readOnly={true} className="form-input bg-gray-100 dark:bg-dark-200" />
+                  <label htmlFor="temperature.fahrenheit" className="form-label">Temp:</label>
+                  <input id="temperature.fahrenheit" type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(Number(e.target.value))} readOnly={!isEditing} className={`form-input w-16 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  <span className="ml-1 text-xs">°F</span>
                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="address" className="form-label inline-block w-32 dark:text-gray-300">Address:</label>
-                          <input id="address" type="text" value={formData.address} readOnly={true} className="form-input bg-gray-100 dark:bg-dark-200" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="user" className="form-label inline-block w-32 dark:text-gray-300">User:</label>
-                          <input id="user" type="text" value={formData.user} onChange={(e) => handleChange('user', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="date" className="form-label inline-block w-32 dark:text-gray-300">Date:</label>
-                          <input id="date" type="date" value={formData.date} onChange={(e) => handleChange('date', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="identifier" className="form-label inline-block w-32 dark:text-gray-300">Identifier:</label>
-                          <input id="identifier" type="text" value={formData.identifier} onChange={(e) => handleChange('identifier', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                  </div>
-                  {/* Column 2 */}
                   <div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="jobNumber" className="form-label inline-block w-32 dark:text-gray-300">Job #:</label>
-                          <input id="jobNumber" type="text" value={formData.jobNumber} readOnly={true} className="form-input bg-gray-100 dark:bg-dark-200" />
+                  <label htmlFor="temperature.celsius" className="form-label sr-only">Celsius</label>
+                  <input id="temperature.celsius" type="number" value={formData.temperature.celsius} onChange={(e) => handleCelsiusChange(Number(e.target.value))} readOnly={!isEditing} className={`form-input w-16 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  <span className="ml-1 text-xs">°C</span>
                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="technicians" className="form-label inline-block w-32 dark:text-gray-300">Technicians:</label>
-                          <input id="technicians" type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className="form-input" />
                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="substation" className="form-label inline-block w-32 dark:text-gray-300">Substation:</label>
-                          <input id="substation" type="text" value={formData.substation} onChange={(e) => handleChange('substation', e.target.value)} readOnly={!isEditing} className="form-input" />
+              <div><label htmlFor="temperature.tcf" className="form-label">TCF:</label><input id="temperature.tcf" type="number" value={formData.temperature.tcf} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-16" /></div>
+              <div><label htmlFor="temperature.humidity" className="form-label">Humidity:</label><input id="temperature.humidity" type="number" value={formData.temperature.humidity} onChange={(e) => handleChange('temperature.humidity', Number(e.target.value))} readOnly={!isEditing} className={`form-input w-16 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /><span className="ml-1 text-xs">%</span></div>
+              <div><label htmlFor="substation" className="form-label">Substation:</label><input id="substation" type="text" value={formData.substation} onChange={(e) => handleChange('substation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="eqptLocation" className="form-label">Eqpt. Location:</label><input id="eqptLocation" type="text" value={formData.eqptLocation} onChange={(e) => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div className="md:col-span-2"><label htmlFor="user" className="form-label">User:</label><input id="user" type="text" value={formData.user} onChange={(e) => handleChange('user', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="eqptLocation" className="form-label inline-block w-32 dark:text-gray-300">Eqpt. Location:</label>
-                          <input id="eqptLocation" type="text" value={formData.eqptLocation} onChange={(e) => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className="form-input" />
                       </div>
-                      {/* Temperature Fields */}
-                      <div className="mb-4 flex items-center space-x-2">
-                        <label className="form-label inline-block w-auto dark:text-gray-300">Temp:</label>
-                        <input type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(Number(e.target.value))} readOnly={!isEditing} className="form-input w-20" />
-                        <span className="dark:text-gray-300">°F</span>
-                        <input type="number" value={formData.temperature.celsius} readOnly className="form-input w-20 bg-gray-100 dark:bg-dark-200" />
-                        <span className="dark:text-gray-300">°C</span>
-                        <label className="form-label inline-block w-auto dark:text-gray-300 ml-4">TCF:</label>
-                        <input type="number" value={formData.temperature.tcf} readOnly className="form-input w-24 bg-gray-100 dark:bg-dark-200" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="humidity" className="form-label inline-block w-32 dark:text-gray-300">Humidity:</label>
-                          <input id="humidity" type="number" value={formData.temperature.humidity} onChange={(e) => handleChange('temperature.humidity', Number(e.target.value))} readOnly={!isEditing} className="form-input w-20" />
-                          <span className="ml-2 dark:text-gray-300">%</span>
-                      </div>
-                  </div>
-              </div>
-          </section>
-
 
           {/* --- Nameplate Data Section --- */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
-                  {/* Column 1 */}
-                  <div>
-                       <div className="mb-4 flex items-center">
-                           <label htmlFor="manufacturer" className="form-label inline-block w-32 dark:text-gray-300">Manufacturer:</label>
-                           <input id="manufacturer" type="text" value={formData.manufacturer} onChange={(e) => handleChange('manufacturer', e.target.value)} readOnly={!isEditing} className="form-input" />
+              <div><label htmlFor="manufacturer" className="form-label">Manufacturer:</label><input id="manufacturer" type="text" value={formData.manufacturer} onChange={(e) => handleChange('manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="catalogNumber" className="form-label">Catalog Number:</label><input id="catalogNumber" type="text" value={formData.catalogNumber} onChange={(e) => handleChange('catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="serialNumber" className="form-label">Serial Number:</label><input id="serialNumber" type="text" value={formData.serialNumber} onChange={(e) => handleChange('serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="type" className="form-label">Type:</label><input id="type" type="text" value={formData.type} onChange={(e) => handleChange('type', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="frameSize" className="form-label">Frame Size (A):</label><input id="frameSize" type="text" value={formData.frameSize} onChange={(e) => handleChange('frameSize', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="icRating" className="form-label">I.C. Rating (kA):</label><input id="icRating" type="text" value={formData.icRating} onChange={(e) => handleChange('icRating', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="tripUnitType" className="form-label">Trip Unit Type:</label><input id="tripUnitType" type="text" value={formData.tripUnitType} onChange={(e) => handleChange('tripUnitType', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="ratingPlug" className="form-label">Rating Plug (A):</label><input id="ratingPlug" type="text" value={formData.ratingPlug} onChange={(e) => handleChange('ratingPlug', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="curveNo" className="form-label">Curve No.:</label><input id="curveNo" type="text" value={formData.curveNo} onChange={(e) => handleChange('curveNo', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="chargeMotorVoltage" className="form-label">Charge Motor V:</label><input id="chargeMotorVoltage" type="text" value={formData.chargeMotorVoltage} onChange={(e) => handleChange('chargeMotorVoltage', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="operation" className="form-label">Operation:</label><input id="operation" type="text" value={formData.operation} onChange={(e) => handleChange('operation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="mounting" className="form-label">Mounting:</label><input id="mounting" type="text" value={formData.mounting} onChange={(e) => handleChange('mounting', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="zoneInterlock" className="form-label">Zone Interlock:</label><input id="zoneInterlock" type="text" value={formData.zoneInterlock} onChange={(e) => handleChange('zoneInterlock', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="thermalMemory" className="form-label">Thermal Memory:</label><input id="thermalMemory" type="text" value={formData.thermalMemory} onChange={(e) => handleChange('thermalMemory', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                        </div>
-                       <div className="mb-4 flex items-center">
-                           <label htmlFor="catalogNumber" className="form-label inline-block w-32 dark:text-gray-300">Catalog Number:</label>
-                           <input id="catalogNumber" type="text" value={formData.catalogNumber} onChange={(e) => handleChange('catalogNumber', e.target.value)} readOnly={!isEditing} className="form-input" />
                        </div>
-                       <div className="mb-4 flex items-center">
-                           <label htmlFor="serialNumber" className="form-label inline-block w-32 dark:text-gray-300">Serial Number:</label>
-                           <input id="serialNumber" type="text" value={formData.serialNumber} onChange={(e) => handleChange('serialNumber', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                       <div className="mb-4 flex items-center">
-                           <label htmlFor="type" className="form-label inline-block w-32 dark:text-gray-300">Type:</label>
-                           <input id="type" type="text" value={formData.type} onChange={(e) => handleChange('type', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                       <div className="mb-4 flex items-center">
-                           <label htmlFor="frameSize" className="form-label inline-block w-32 dark:text-gray-300">Frame Size (A):</label>
-                           <input id="frameSize" type="text" value={formData.frameSize} onChange={(e) => handleChange('frameSize', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                  </div>
-                  {/* Column 2 */}
-                  <div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="icRating" className="form-label inline-block w-32 dark:text-gray-300">I.C. Rating (kA):</label>
-                          <input id="icRating" type="text" value={formData.icRating} onChange={(e) => handleChange('icRating', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="tripUnitType" className="form-label inline-block w-32 dark:text-gray-300">Trip Unit Type:</label>
-                          <input id="tripUnitType" type="text" value={formData.tripUnitType} onChange={(e) => handleChange('tripUnitType', e.target.value)} readOnly={!isEditing} className="form-input" />
-                        </div>
-                      <div className="mb-4 flex items-center">
-                        <label htmlFor="ratingPlug" className="form-label inline-block w-32 dark:text-gray-300">Rating Plug (A):</label>
-                        <input id="ratingPlug" type="text" value={formData.ratingPlug} onChange={(e) => handleChange('ratingPlug', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                        <label htmlFor="curveNo" className="form-label inline-block w-32 dark:text-gray-300">Curve No.:</label>
-                        <input id="curveNo" type="text" value={formData.curveNo} onChange={(e) => handleChange('curveNo', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                        <label htmlFor="chargeMotorVoltage" className="form-label inline-block w-32 dark:text-gray-300">Charge Motor V:</label>
-                        <input id="chargeMotorVoltage" type="text" value={formData.chargeMotorVoltage} onChange={(e) => handleChange('chargeMotorVoltage', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                  </div>
-                  {/* Column 3 */}
-                  <div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="operation" className="form-label inline-block w-32 dark:text-gray-300">Operation:</label>
-                          <input id="operation" type="text" value={formData.operation} onChange={(e) => handleChange('operation', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="mounting" className="form-label inline-block w-32 dark:text-gray-300">Mounting:</label>
-                          <input id="mounting" type="text" value={formData.mounting} onChange={(e) => handleChange('mounting', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="zoneInterlock" className="form-label inline-block w-32 dark:text-gray-300">Zone Interlock:</label>
-                          <input id="zoneInterlock" type="text" value={formData.zoneInterlock} onChange={(e) => handleChange('zoneInterlock', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="thermalMemory" className="form-label inline-block w-32 dark:text-gray-300">Thermal Memory:</label>
-                          <input id="thermalMemory" type="text" value={formData.thermalMemory} onChange={(e) => handleChange('thermalMemory', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                  </div>
-              </div>
-          </section>
 
           {/* --- Visual and Mechanical Inspection Section */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
-            <div className={tableStyles.container}>
-              <table className={tableStyles.table}>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className={`${tableStyles.headerCell} w-1/6`}>NETA Section</th>
-                    <th className={`${tableStyles.headerCell} w-4/6`}>Description</th>
-                    <th className={`${tableStyles.headerCell} text-center w-1/6`}>Results</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/6">NETA Section</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-4/6">Description</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-1/6">Results</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={item.id}>
-                      <td className={tableStyles.cell}>{item.id}</td>
-                      <td className={tableStyles.cell}>{item.description}</td>
-                      <td className={`${tableStyles.cell} text-center`}>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">{item.id}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">{item.description}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                         <select
                           value={item.result}
                           onChange={(e) => handleChange(`visualInspectionItems[${index}].result`, e.target.value)}
                           disabled={!isEditing}
-                          className={tableStyles.select}
+                          className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           <option value=""></option>
                           {visualInspectionResultsOptions.map(option => (
@@ -1108,56 +1098,57 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </section>
+          </div>
 
           {/* --- Device Settings Section */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Device Settings</h2>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Device Settings</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
               {/* As Found Table */}
               <div>
                 <h3 className="text-lg font-medium mb-2 text-center dark:text-white">Settings As Found</h3>
-                <div className={tableStyles.container}>
-                  <table className={tableStyles.table}>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                     <thead className="bg-gray-50 dark:bg-dark-200">
                       <tr>
-                        <th className={tableStyles.headerCell}></th>
-                        <th className={`${tableStyles.headerCell} text-center`}>Setting</th>
-                        <th className={`${tableStyles.headerCell} text-center`}>Delay</th>
-                        <th className={`${tableStyles.headerCell} text-center`}>I²t</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Setting</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Delay</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">I²t</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                       {['longTime', 'shortTime', 'instantaneous', 'groundFault'].map((settingType) => (
                         <tr key={`found-${settingType}`}>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
                             {settingType.replace('Time', ' Time').replace('Fault', ' Fault')}
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             <input
                               type="text"
                               value={formData.deviceSettings.asFound[settingType]?.setting || ''}
                               onChange={(e) => handleChange(`deviceSettings.asFound.${settingType}.setting`, e.target.value)}
                               readOnly={!isEditing}
-                              className={`${tableStyles.input} text-center`}
+                              className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                             />
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             <input
                               type="text"
                               value={formData.deviceSettings.asFound[settingType]?.delay || ''}
                               onChange={(e) => handleChange(`deviceSettings.asFound.${settingType}.delay`, e.target.value)}
                               readOnly={!isEditing}
-                              className={`${tableStyles.input} text-center`}
+                              className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                             />
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             {settingType === 'shortTime' || settingType === 'groundFault' ? (
                               <select
                                 value={formData.deviceSettings.asFound[settingType]?.i2t || ''}
                                 onChange={(e) => handleChange(`deviceSettings.asFound.${settingType}.i2t`, e.target.value)}
                                 disabled={!isEditing}
-                                className={tableStyles.select}
+                                className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                               >
                                 {tripUnitTypeOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                               </select>
@@ -1166,7 +1157,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                                 type="text"
                                 value=""
                                 readOnly
-                                className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                               />
                             )}
                           </td>
@@ -1179,47 +1170,47 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
               {/* As Left Table */}
               <div>
                 <h3 className="text-lg font-medium mb-2 text-center dark:text-white">Settings As Left</h3>
-                <div className={tableStyles.container}>
-                  <table className={tableStyles.table}>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                     <thead className="bg-gray-50 dark:bg-dark-200">
                       <tr>
-                        <th className={tableStyles.headerCell}></th>
-                        <th className={`${tableStyles.headerCell} text-center`}>Setting</th>
-                        <th className={`${tableStyles.headerCell} text-center`}>Delay</th>
-                        <th className={`${tableStyles.headerCell} text-center`}>I²t</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Setting</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Delay</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">I²t</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                       {['longTime', 'shortTime', 'instantaneous', 'groundFault'].map((settingType) => (
                         <tr key={`left-${settingType}`}>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
                             {settingType.replace('Time', ' Time').replace('Fault', ' Fault')}
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             <input
                               type="text"
                               value={formData.deviceSettings.asLeft[settingType]?.setting || ''}
                               onChange={(e) => handleChange(`deviceSettings.asLeft.${settingType}.setting`, e.target.value)}
                               readOnly={!isEditing}
-                              className={`${tableStyles.input} text-center`}
+                              className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                             />
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             <input
                               type="text"
                               value={formData.deviceSettings.asLeft[settingType]?.delay || ''}
                               onChange={(e) => handleChange(`deviceSettings.asLeft.${settingType}.delay`, e.target.value)}
                               readOnly={!isEditing}
-                              className={`${tableStyles.input} text-center`}
+                              className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                             />
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             {settingType === 'shortTime' || settingType === 'groundFault' ? (
                               <select
                                 value={formData.deviceSettings.asLeft[settingType]?.i2t || ''}
                                 onChange={(e) => handleChange(`deviceSettings.asLeft.${settingType}.i2t`, e.target.value)}
                                 disabled={!isEditing}
-                                className={tableStyles.select}
+                                className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                               >
                                 {tripUnitTypeOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                               </select>
@@ -1228,7 +1219,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                                 type="text"
                                 value=""
                                 readOnly
-                                className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                               />
                             )}
                           </td>
@@ -1239,60 +1230,61 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 </div>
               </div>
             </div>
-          </section>
+          </div>
 
           {/* --- Electrical Tests - Contact/Pole Resistance Section --- */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Contact/Pole Resistance</h2>
-            <div className={tableStyles.container}>
-              <table className={tableStyles.table}>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Contact/Pole Resistance</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className={`${tableStyles.headerCell} text-center`} colSpan={3}>Contact Resistance</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>Units</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Contact Resistance</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Units</th>
                   </tr>
                   <tr>
-                    <th className={`${tableStyles.headerCell} text-center`}>P1</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>P2</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>P3</th>
-                    <th className={`${tableStyles.headerCell} text-center`}></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">P1</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">P2</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">P3</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   <tr>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.contactResistance.p1}
                         onChange={(e) => handleChange('contactResistance.p1', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.contactResistance.p2}
                         onChange={(e) => handleChange('contactResistance.p2', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.contactResistance.p3}
                         onChange={(e) => handleChange('contactResistance.p3', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={`${tableStyles.cell} text-center`}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <select
                         value={formData.contactResistance.unit}
                         onChange={(e) => handleChange('contactResistance.unit', e.target.value)}
                         disabled={!isEditing}
-                        className={tableStyles.select}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       >
                         {contactResistanceUnitsOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                       </select>
@@ -1301,7 +1293,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </section>
+          </div>
 
           {/* --- Electrical Tests - Insulation Resistance Section --- */}
           <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
@@ -1547,55 +1539,54 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           </section>
 
           {/* --- Electrical Tests - Primary Injection Section --- */}
-          <section className="mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
-              Electrical Tests - Primary Injection
-            </h2>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Primary Injection</h2>
             
             {/* Add Tested Settings Table */}
             <div className="mb-4">
               <h3 className="text-lg font-medium mb-2 text-center dark:text-white">Tested Settings</h3>
-              <div className={tableStyles.container}>
-                <table className={tableStyles.table}>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table">
                   <thead className="bg-gray-50 dark:bg-dark-200">
                     <tr>
-                      <th className={tableStyles.headerCell}></th>
-                      <th className={`${tableStyles.headerCell} text-center`}>Setting</th>
-                      <th className={`${tableStyles.headerCell} text-center`}>Delay</th>
-                      <th className={`${tableStyles.headerCell} text-center`}>I²t</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Setting</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Delay</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">I²t</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                     {['longTime', 'shortTime', 'instantaneous', 'groundFault'].map((settingType) => (
                       <tr key={`tested-${settingType}`}>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
                           {settingType.replace('Time', ' Time').replace('Fault', ' Fault')}
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.primaryInjection.testedSettings[settingType]?.setting || ''}
                             onChange={(e) => handleChange(`primaryInjection.testedSettings.${settingType}.setting`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.primaryInjection.testedSettings[settingType]?.delay || ''}
                             onChange={(e) => handleChange(`primaryInjection.testedSettings.${settingType}.delay`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           {settingType === 'shortTime' || settingType === 'groundFault' ? (
                             <select
                               value={formData.primaryInjection.testedSettings[settingType]?.i2t || ''}
                               onChange={(e) => handleChange(`primaryInjection.testedSettings.${settingType}.i2t`, e.target.value)}
                               disabled={!isEditing}
-                              className={tableStyles.select}
+                              className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                             >
                               {tripUnitTypeOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                             </select>
@@ -1604,7 +1595,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                               type="text"
                               value=""
                               readOnly
-                              className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                             />
                           )}
                         </td>
@@ -1615,29 +1606,28 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
               </div>
             </div>
 
-            <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-              <table className="w-full text-sm text-left">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table">
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className={`${tableStyles.headerCell}`} rowSpan={2}>Function</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>Rated Amperes</th>
-                    <th className={`${tableStyles.headerCell} text-center`} colSpan={2}>Multiplier %</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>Test Amperes</th>
-                    <th className={`${tableStyles.headerCell} text-center`} colSpan={2}>Tolerance</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>Pole 1</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>Pole 2</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>Pole 3</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Function</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Rated Amperes</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Multiplier %</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Test Amperes</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Tolerance</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 1</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 2</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 3</th>
                   </tr>
                   <tr>
-                    <th className={`${tableStyles.headerCell} text-center`}></th>
-                    <th className={`${tableStyles.headerCell} text-center`}>Tolerance</th>
-                    <th className={`${tableStyles.headerCell} text-center`}></th>
-                    <th className={`${tableStyles.headerCell} text-center`}></th>
-                    <th className={`${tableStyles.headerCell} text-center`}>Min</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>Max</th>
-                    <th className={`${tableStyles.headerCell} text-center`}></th>
-                    <th className={`${tableStyles.headerCell} text-center`}></th>
-                    <th className={`${tableStyles.headerCell} text-center`}></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Tolerance</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Min</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Max</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -1986,55 +1976,38 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </section>
+          </div>
 
           {/* --- Test Equipment Used Section --- */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
-            <div className="grid grid-cols-1 gap-y-4">
-              {/* Megohmmeter */}
-              <div className="flex items-center">
-                <label className="form-label inline-block w-32 dark:text-gray-300">Megohmmeter:</label>
-                <input type="text" value={formData.testEquipment.megohmmeter.name} onChange={(e) => handleChange('testEquipment.megohmmeter.name', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-32 ml-4 dark:text-gray-300">Serial Number:</label>
-                <input type="text" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.megohmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-24 ml-4 dark:text-gray-300">AMP ID:</label>
-                <input type="text" value={formData.testEquipment.megohmmeter.ampId} onChange={(e) => handleChange('testEquipment.megohmmeter.ampId', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div><label className="form-label">Megohmmeter:</label><input type="text" value={formData.testEquipment.megohmmeter.name} onChange={(e) => handleChange('testEquipment.megohmmeter.name', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Serial Number:</label><input type="text" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.megohmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">AMP ID:</label><input type="text" value={formData.testEquipment.megohmmeter.ampId} onChange={(e) => handleChange('testEquipment.megohmmeter.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Low-Resistance Ohmmeter:</label><input type="text" value={formData.testEquipment.lowResistanceOhmmeter.name} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.name', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Serial Number:</label><input type="text" value={formData.testEquipment.lowResistanceOhmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">AMP ID:</label><input type="text" value={formData.testEquipment.lowResistanceOhmmeter.ampId} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Primary Injection Test Set:</label><input type="text" value={formData.testEquipment.primaryInjectionTestSet.name} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.name', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Serial Number:</label><input type="text" value={formData.testEquipment.primaryInjectionTestSet.serialNumber} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">AMP ID:</label><input type="text" value={formData.testEquipment.primaryInjectionTestSet.ampId} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               </div>
-              {/* Low Resistance Ohmmeter */}
-              <div className="flex items-center">
-                <label className="form-label inline-block w-32 dark:text-gray-300">Low-Resistance Ohmmeter:</label>
-                <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.name} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.name', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-32 ml-4 dark:text-gray-300">Serial Number:</label>
-                <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-24 ml-4 dark:text-gray-300">AMP ID:</label>
-                <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.ampId} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.ampId', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
               </div>
-              {/* Primary Injection Test Set */}
-              <div className="flex items-center">
-                <label className="form-label inline-block w-32 dark:text-gray-300">Primary Injection Test Set:</label>
-                <input type="text" value={formData.testEquipment.primaryInjectionTestSet.name} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.name', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-32 ml-4 dark:text-gray-300">Serial Number:</label>
-                <input type="text" value={formData.testEquipment.primaryInjectionTestSet.serialNumber} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.serialNumber', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-24 ml-4 dark:text-gray-300">AMP ID:</label>
-                <input type="text" value={formData.testEquipment.primaryInjectionTestSet.ampId} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.ampId', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-              </div>
-            </div>
-          </section>
 
           {/* --- Comments Section --- */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <div className="mb-4">
               <textarea 
                 value={formData.comments} 
                 onChange={(e) => handleChange('comments', e.target.value)}
                 readOnly={!isEditing}
-                className={`w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`form-textarea w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 rows={4}
               />
             </div>
-          </section>
           </div>
         </div>
       </div>
@@ -2048,150 +2021,891 @@ export default LowVoltageCircuitBreakerElectronicTripATSReport;
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
+    /* Hide navigation bar and scrollbar */
+    nav, header, .navigation, [class*="nav"], [class*="header"] {
+      display: none !important;
+    }
+    ::-webkit-scrollbar { display: none; }
+    html { -ms-overflow-style: none; scrollbar-width: none; height: 100%; }
+    body { overflow-x: hidden; min-height: 100vh; padding-bottom: 100px; }
+    textarea { min-height: 200px !important; }
+
     @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-      * { color: black !important; }
-      
-      /* Hide all navigation and header elements */
-      header, nav, .navigation, [class*="nav"], [class*="header"], 
-      .sticky, [class*="sticky"], .print\\:hidden { 
-        display: none !important; 
+      * { 
+        color: black !important;
+        background: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       
-      /* Hide Back to Job button and division headers specifically */
-      button[class*="Back"], 
-      *[class*="Back to Job"], 
-      h2[class*="Division"],
-      .mobile-nav-text,
-      [class*="formatDivisionName"] {
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-size: 9px !important;
+        background: white !important;
+        line-height: 1 !important;
+      }
+      
+      /* Standard portrait page size with minimal margins */
+      @page { 
+        size: 8.5in 11in; 
+        margin: 0.1in;
+      }
+      
+      /* Hide all non-print elements */
+      .print\\:hidden { display: none !important; }
+      
+      /* Hide second title and back button in print only */
+      .flex.justify-between.items-center.mb-6 { display: none !important; }
+      .flex.items-center.gap-4 { display: none !important; }
+      button { display: none !important; }
+      
+      /* Print header styling */
+      .print\\:flex {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        border-bottom: 2px solid black !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 12px !important;
+        page-break-after: avoid !important;
+      }
+      
+      /* Print header logo */
+      .print\\:flex img {
+        height: 40px !important;
+        width: auto !important;
+        max-height: 40px !important;
+      }
+      
+      /* Print header title */
+      .print\\:flex h1 {
+        font-size: 18px !important;
+        font-weight: bold !important;
+        color: black !important;
+        margin: 0 !important;
+        text-align: center !important;
+      }
+      
+      /* Print header NETA text */
+      .print\\:flex div[style*="color: #1a4e7c"] {
+        color: #1a4e7c !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        text-align: right !important;
+      }
+      
+      /* Print header status box */
+      .pass-fail-status-box {
+        background-color: #22c55e !important;
+        border: 2px solid #16a34a !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        display: inline-block !important;
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        width: fit-content !important;
+        border-radius: 6px !important;
+        box-sizing: border-box !important;
+        min-width: 50px !important;
+        margin-top: 4px !important;
+      }
+      
+      /* Section headers with orange line above - ultra compact */
+      h2 {
+        font-size: 9px !important;
+        font-weight: bold !important;
+        margin: 0 !important;
+        margin-top: 0 !important;
+        padding: 1px 0 !important;
+        background-color: transparent !important;
+        color: black !important;
+        text-transform: none !important;
+        border: none !important;
+        border-bottom: 1px solid black !important;
+        line-height: 1.2 !important;
+        padding-bottom: 2px !important;
+        padding-top: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        position: relative !important;
+      }
+      
+      /* Orange divider lines */
+      .w-full.h-1.bg-\\[\\#f26722\\] {
+        background-color: #f26722 !important;
+        height: 4px !important;
+        margin-bottom: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      
+      /* Remove pseudo-element - not working properly */
+      h2::before {
         display: none !important;
       }
       
-      /* Hide interactive elements */
-      button:not(.print-visible) { display: none !important; }
+      /* Add extra spacing after tables to prevent overlap */
+      table { 
+        margin-bottom: 8px !important;
+        page-break-inside: avoid !important;
+      }
+
+      /* Force PASS/FAIL colors to print */
+      .status-pass {
+        background-color: #22c55e !important;
+        border: 2px solid #16a34a !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
       
-      /* Form elements - hide interactive indicators but preserve layout */
+      .status-fail {
+        background-color: #ef4444 !important;
+        border: 2px solid #dc2626 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Remove all card styling and shadows */
+      .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow {
+        background: white !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin-bottom: 3px !important;
+        border: none !important;
+      }
+      
+      /* Remove ALL section styling - no boxes */
+      section {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        margin-bottom: 2px !important;
+        page-break-inside: avoid !important;
+      }
+      
+      /* Remove any div that might create boxes */
+      div[class*="border"], div[class*="shadow"], div[class*="rounded"] {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+      
+      /* Ensure no padding on any containers */
+      div[class*="p-"], div[class*="px-"], div[class*="py-"], div[class*="pt-"], div[class*="pb-"], div[class*="pl-"], div[class*="pr-"] {
+        padding: 0 !important;
+      }
+      
+      /* FORCE remove all borders and boxes from everything except tables */
+      * {
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
+      
+      /* Specifically target and remove print borders */
+      .print\\:border {
+        border: none !important;
+      }
+      
+      .print\\:border-black {
+        border: none !important;
+      }
+      
+      /* Remove borders from divs with these specific classes */
+      div.bg-white, div.dark\\:bg-dark-150, div.print\\:border, div.print\\:border-black {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      
+      /* Only allow borders on table elements */
+      table, th, td, thead, tbody, tr {
+        border: 1px solid black !important;
+      }
+      
+      /* Ensure table has outer border */
+      table {
+        border: 1.5px solid black !important;
+      }
+      
+      /* Allow borders on inputs */
       input, select, textarea { 
-        background-color: white !important; 
+        border-bottom: 1px solid black !important;
+      }
+      
+      textarea {
         border: 1px solid black !important; 
-        color: black !important;
-        padding: 2px !important; 
-        font-size: 11px !important;
+      }
+      
+      /* Form grid layout - ultra compact */
+      .grid {
+        display: grid !important;
+        gap: 1px !important;
+        margin-bottom: 2px !important;
+      }
+      
+      /* Job info section - ultra compact horizontal layout */
+      .grid-cols-1.md\\:grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 4px !important;
+      }
+      
+      /* Large screen job info - 6 columns */
+      .grid-cols-1.md\\:grid-cols-4.lg\\:grid-cols-6 {
+        grid-template-columns: repeat(6, 1fr) !important;
+        gap: 4px !important;
+      }
+      
+      /* Nameplate data section - 3 columns */
+      .grid-cols-1.md\\:grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 4px !important;
+      }
+      
+      /* Labels and inputs - better fit for data */
+      label {
+        font-size: 8px !important;
+        font-weight: normal !important;
+        margin: 0 !important;
+        display: inline-block !important;
+        margin-right: 2px !important;
+        width: auto !important;
+      }
+      
+      input, select, textarea { 
+        width: 70px !important;
+        border: 1px solid black !important; 
+        background: white !important;
+        padding: 2px 3px !important;
+        margin: 0 !important;
+        font-size: 8px !important;
+        height: 12px !important;
+        display: inline-block !important;
         -webkit-appearance: none !important;
         -moz-appearance: none !important;
         appearance: none !important;
       }
       
-      /* Hide dropdown arrows and form control indicators */
-      select {
-        background-image: none !important;
-        padding-right: 8px !important;
+      /* Specific width for common inputs */
+      input[type="text"], input[type="number"] {
+        width: 70px !important;
       }
       
-      /* Hide spin buttons on number inputs */
-      input[type="number"]::-webkit-outer-spin-button,
-      input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: none !important;
-        margin: 0 !important;
-      }
-      input[type="number"] {
-        -moz-appearance: textfield !important;
+      /* Wider inputs for certain fields */
+      input[type="date"] {
+        width: 80px !important;
       }
       
-      /* Preserve table structure */
+      /* Temperature inputs */
+      input[id*="temperature"] {
+        width: 50px !important;
+      }
+      
+      /* Job info specific inputs */
+      .grid-cols-1.md\\:grid-cols-4 input[type="text"] {
+        width: 90px !important;
+      }
+      
+      /* Large screen job info inputs */
+      .grid-cols-1.md\\:grid-cols-4.lg\\:grid-cols-6 input[type="text"] {
+        width: 80px !important;
+      }
+      
+      /* Nameplate data specific inputs */
+      .grid-cols-1.md\\:grid-cols-3 input[type="text"] {
+        width: 80px !important;
+      }
+      
+      /* Customer field - smaller font for long names */
+      input[value*="Cadell"], input[id*="customer"], input[name*="customer"] {
+        font-size: 6px !important;
+      }
+      
+      /* Table inputs - better fit for data */
+      table input[type="text"], table select {
+        width: 60px !important;
+        max-width: 60px !important;
+        border: 1px solid black !important;
+        background: white !important;
+      }
+      
+      textarea {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 20px !important;
+        border: 1px solid black !important;
+        display: block !important;
+        margin-top: 1px !important;
+        font-size: 8px !important;
+        padding: 2px !important;
+      }
+      
+      /* Table styles - proper fillable report format */
       table { 
-        border-collapse: collapse !important; 
         width: 100% !important; 
-        font-size: 12px !important;
+        border-collapse: collapse !important;
+        margin: 1px 0 !important;
+        font-size: 8px !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 16px !important;
+        border: 1.5px solid black !important;
       }
       
-      th, td { 
+      /* Table headers */
+      th {
         border: 1px solid black !important; 
         padding: 4px !important; 
-        font-size: 11px !important;
+        background-color: #f0f0f0 !important;
+        font-weight: bold !important;
+        color: black !important;
+        font-size: 8px !important;
+        text-align: left !important;
+        vertical-align: middle !important;
       }
       
-      th { 
-        background-color: #f0f0f0 !important; 
+      /* Table cells */
+      td {
+        border: 1px solid black !important;
+        padding: 4px !important;
+        vertical-align: middle !important;
+        text-align: left !important;
+        background: white !important;
+        color: black !important;
+        font-size: 8px !important;
+        line-height: 1.2 !important;
+        min-height: 16px !important;
+        display: table-cell !important;
+      }
+      
+      /* Specific input styling in tables */
+      table input, table select {
+        border: 1px solid black !important;
+        padding: 2px 3px !important;
+        margin: 0 !important;
+        height: 12px !important;
+        text-align: left !important;
+        width: 60px !important;
+        font-size: 8px !important;
+        background: white !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        vertical-align: middle !important;
+        display: inline-block !important;
+      }
+      
+      /* Form label specific styling */
+      .form-label {
+        font-size: 8px !important;
+        font-weight: normal !important;
+        margin: 0 !important;
+        display: inline-block !important;
+        margin-right: 4px !important;
+        width: auto !important;
+        min-width: 0 !important;
+      }
+      
+      /* Ensure form inputs are properly sized */
+      .form-input, .form-select {
+        width: 70px !important;
+        border: 1px solid black !important;
+        background: white !important;
+        padding: 2px 3px !important;
+        font-size: 8px !important;
+        height: 12px !important;
+      }
+      
+      /* Form textarea styling */
+      .form-textarea {
+        width: 100% !important;
+        border: 1px solid black !important;
+        background: white !important;
+        padding: 2px !important;
+        font-size: 8px !important;
+        min-height: 20px !important;
+      }
+      
+      /* Remove all spacing classes */
+      .space-y-4 > * + *, .space-y-6 > * + * { margin-top: 2px !important; }
+      .mb-4 { margin-bottom: 2px !important; }
+      .mb-6 { margin-bottom: 3px !important; }
+      .mb-8 { margin-bottom: 3px !important; }
+      .p-6 { padding: 0 !important; }
+      
+      /* Force full page width */
+      body, html {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      /* Remove any max-width constraints */
+      * {
+        max-width: none !important;
+      }
+      
+      /* Ensure containers use full width */
+      div {
+        width: 100% !important;
+        max-width: none !important;
+      }
+      
+      /* PASS/FAIL status badge */
+      .bg-green-600, .bg-red-600, .bg-yellow-500 {
+        background-color: transparent !important;
+        color: black !important;
+        border: 1px solid black !important;
+        padding: 0px 2px !important;
         font-weight: bold !important; 
+        font-size: 9px !important;
       }
       
-      /* Preserve grid layouts - don't override to block */
-      .grid {
-        display: grid !important;
+      /* Status in header */
+      .text-green-600 { color: green !important; }
+      .text-red-600 { color: red !important; }
+      .text-yellow-500 { color: orange !important; }
+      
+      /* Comments section */
+      .min-h-[250px] {
+        min-height: 20px !important;
       }
       
-      /* Preserve flexbox layouts */
-      .flex {
-        display: flex !important;
+      /* Footer text */
+      .text-xs {
+        font-size: 7px !important;
       }
       
-      /* Section styling */
+      /* Force single-line layout for form fields */
+      .flex.items-center {
+        display: inline-flex !important;
+        margin-right: 10px !important;
+      }
+      
+      /* Page break control */
+      section { page-break-inside: avoid !important; }
+      
+      /* Ensure everything fits on one page */
+      .max-w-7xl { 
+        max-width: 100% !important; 
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      /* Force full width layout */
+      .p-6 { 
+        padding: 0 !important; 
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      
+      /* Remove any container constraints */
+      .space-y-6 > * + * { 
+        margin-top: 4px !important; 
+      }
+      
+      /* Orange header bar for sections */
+      .border-b.dark\\:border-gray-700 {
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      /* Specific section spacing */
       section { 
-        break-inside: avoid !important; 
-        margin-bottom: 20px !important; 
-        page-break-inside: avoid !important;
+        margin-bottom: 2px !important;
+        padding: 0 !important;
       }
       
-      /* Preserve spacing classes */
-      .space-x-2 > * + * { margin-left: 0.5rem !important; }
-      .space-x-4 > * + * { margin-left: 1rem !important; }
-      .space-y-2 > * + * { margin-top: 0.5rem !important; }
-      .space-y-4 > * + * { margin-top: 1rem !important; }
-      .space-y-6 > * + * { margin-top: 1.5rem !important; }
+      /* Print header specific */
+      .print\\:flex {
+        margin-bottom: 3px !important;
+      }
       
-      /* Preserve gap classes */
-      .gap-2 { gap: 0.5rem !important; }
-      .gap-4 { gap: 1rem !important; }
-      .gap-6 { gap: 1.5rem !important; }
-      .gap-x-8 { column-gap: 2rem !important; }
-      .gap-y-4 { row-gap: 1rem !important; }
+      /* Center the title and status in print */
+      .print\\:flex .flex-1.text-center {
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: absolute !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: auto !important;
+      }
       
-      /* Preserve width classes */
-      .w-16 { width: 4rem !important; }
-      .w-20 { width: 5rem !important; }
-      .w-24 { width: 6rem !important; }
-      .w-32 { width: 8rem !important; }
-      .w-full { width: 100% !important; }
-      .flex-1 { flex: 1 1 0% !important; }
+      /* Status badge in print header */
+      .print\\:flex .bg-green-600, .print\\:flex .bg-red-600, .print\\:flex .bg-yellow-500 {
+        background-color: transparent !important;
+        color: black !important;
+        border: 2px solid black !important;
+        padding: 2px 8px !important;
+        font-weight: bold !important;
+        font-size: 12px !important;
+        margin-top: 4px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
       
-      /* Preserve text alignment */
-      .text-center { text-align: center !important; }
-      .text-left { text-align: left !important; }
-      .text-right { text-align: right !important; }
+      /* PASS/FAIL status badge styling */
+      .status-pass {
+        background-color: #22c55e !important;
+        border: 2px solid #16a34a !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
       
-      /* Preserve borders */
-      .border-b { border-bottom: 1px solid black !important; }
-      .border-r { border-right: 1px solid black !important; }
-      .border { border: 1px solid black !important; }
+      .status-fail {
+        background-color: #ef4444 !important;
+        border: 2px solid #dc2626 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
       
-      /* Preserve padding and margins */
-      .p-6 { padding: 1.5rem !important; }
-      .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
-      .py-2 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
-      .mb-2 { margin-bottom: 0.5rem !important; }
-      .mb-4 { margin-bottom: 1rem !important; }
-      .mb-6 { margin-bottom: 1.5rem !important; }
-      .ml-1 { margin-left: 0.25rem !important; }
-      .ml-4 { margin-left: 1rem !important; }
+      /* LIMITED SERVICE status badge styling */
+      .status-limited-service {
+        background-color: #eab308 !important;
+        border: 2px solid #ca8a04 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
       
-      /* Preserve font sizes */
-      .text-xs { font-size: 0.75rem !important; }
-      .text-sm { font-size: 0.875rem !important; }
-      .text-lg { font-size: 1.125rem !important; }
-      .text-xl { font-size: 1.25rem !important; }
-      .text-2xl { font-size: 1.5rem !important; }
-      .text-3xl { font-size: 1.875rem !important; }
+      /* Force green background for PASS status */
+      div[style*="background-color: #22c55e"] {
+        background-color: #22c55e !important;
+        border: 2px solid #16a34a !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
       
-      /* Preserve font weights */
-      .font-medium { font-weight: 500 !important; }
-      .font-semibold { font-weight: 600 !important; }
-      .font-bold { font-weight: 700 !important; }
+      /* Specific class for PASS/FAIL status box */
+      .pass-fail-status-box {
+        background-color: #22c55e !important;
+        border: 2px solid #16a34a !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        display: inline-block !important;
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        width: fit-content !important;
+        border-radius: 6px !important;
+        box-sizing: border-box !important;
+        min-width: 50px !important;
+      }
       
-      /* Page break controls */
-      .print\\:page-break-before { page-break-before: always !important; }
-      .print\\:page-break-after { page-break-after: always !important; }
-      .print\\:page-break-inside-avoid { page-break-inside: avoid !important; }
+      /* SUPER-SPECIFIC OVERRIDES - Must be last to override Tailwind */
+      div[class*='print:border'] {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+      
+      div[class*='print:border-black'] {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+      
+      div.bg-white, div[class*='bg-white'] {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+      
+      div[class*='shadow'], div[class*='rounded'] {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+      }
+      
+      /* Remove border from all direct children of .max-w-7xl in print */
+      .max-w-7xl > div {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+      
+      /* Nuclear option - remove borders from all divs except those containing tables */
+      div:not(:has(table)) {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+      
+      /* FINAL OVERRIDE: Force orange dividers for specific sections */
+      /* Job Information divider */
+      .max-w-7xl h2.section-job-information {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 4px !important;
+        margin-top: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Nameplate Data divider */
+      .max-w-7xl h2.section-nameplate-data {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 4px !important;
+        margin-top: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Visual and Mechanical Inspection divider */
+      .max-w-7xl h2.section-visual-mechanical {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 4px !important;
+        margin-top: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Device Settings divider */
+      .max-w-7xl h2.section-device-settings {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 4px !important;
+        margin-top: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Contact Resistance divider */
+      .max-w-7xl h2.section-contact-resistance {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 4px !important;
+        margin-top: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Insulation Resistance divider */
+      .max-w-7xl h2.section-insulation-resistance {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 4px !important;
+        margin-top: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Primary Injection divider */
+      .max-w-7xl h2.section-primary-injection {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 4px !important;
+        margin-top: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Test Equipment divider */
+      .max-w-7xl h2.section-test-equipment {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 4px !important;
+        margin-top: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Comments divider */
+      .max-w-7xl h2.section-comments {
+        border-top: 2px solid #f26722 !important;
+        padding-top: 4px !important;
+        margin-top: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Primary Injection table specific styles to prevent input box merging */
+      .max-w-7xl table {
+        table-layout: fixed !important;
+        width: 100% !important;
+        border-collapse: collapse !important;
+        border-spacing: 0 !important;
+      }
+      
+      .max-w-7xl table th,
+      .max-w-7xl table td {
+        border: 1px solid black !important;
+        padding: 2px 1px !important;
+        font-size: 8px !important;
+        line-height: 1 !important;
+        vertical-align: middle !important;
+        text-align: center !important;
+        position: relative !important;
+        overflow: visible !important;
+      }
+      
+      /* Force individual input boxes in all tables */
+      .max-w-7xl table input,
+      .max-w-7xl table select {
+        width: 100% !important;
+        min-width: 20px !important;
+        max-width: 40px !important;
+        height: 12px !important;
+        padding: 1px !important;
+        margin: 0 !important;
+        border: 1px solid black !important;
+        background: white !important;
+        font-size: 7px !important;
+        text-align: center !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        position: relative !important;
+        z-index: 1 !important;
+        display: inline-block !important;
+        float: none !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* Smaller input boxes specifically for Primary Injection table */
+      .primary-injection-table input,
+      .primary-injection-table select {
+        width: 80% !important;
+        min-width: 15px !important;
+        max-width: 25px !important;
+        height: 10px !important;
+        padding: 0px !important;
+        margin: 0 !important;
+        border: 1px solid black !important;
+        background: white !important;
+        font-size: 6px !important;
+        text-align: center !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        position: relative !important;
+        z-index: 1 !important;
+        display: inline-block !important;
+        float: none !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* Prevent input boxes from merging */
+      .max-w-7xl table td {
+        position: relative !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+      }
+      
+      .max-w-7xl table input {
+        position: relative !important;
+        z-index: 1 !important;
+        display: inline-block !important;
+        float: none !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* Ensure proper spacing between input boxes and text */
+      .max-w-7xl table td input + span,
+      .max-w-7xl table td span {
+        margin-left: 2px !important;
+        font-size: 7px !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+      }
+      
+      /* Force table layout to prevent merging */
+      .max-w-7xl table {
+        table-layout: fixed !important;
+        width: 100% !important;
+        border-collapse: collapse !important;
+        border-spacing: 0 !important;
+      }
+      
+      /* Specific column widths for all tables */
+      .max-w-7xl table th:nth-child(1) { width: 12% !important; }
+      .max-w-7xl table th:nth-child(2) { width: 8% !important; }
+      .max-w-7xl table th:nth-child(3) { width: 8% !important; }
+      .max-w-7xl table th:nth-child(4) { width: 8% !important; }
+      .max-w-7xl table th:nth-child(5) { width: 8% !important; }
+      .max-w-7xl table th:nth-child(6) { width: 8% !important; }
+      .max-w-7xl table th:nth-child(7) { width: 8% !important; }
+      .max-w-7xl table th:nth-child(8) { width: 8% !important; }
+      .max-w-7xl table th:nth-child(9) { width: 8% !important; }
+      .max-w-7xl table th:nth-child(10) { width: 8% !important; }
+      .max-w-7xl table th:nth-child(11) { width: 8% !important; }
+      
+      /* Additional spacing fixes */
+      .max-w-7xl table td {
+        word-spacing: 0 !important;
+        letter-spacing: 0 !important;
+      }
+      
+      /* Force input boxes to stay within their cells */
+      .max-w-7xl table input {
+        max-width: calc(100% - 2px) !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* Fix PDF cutoff issues */
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 100vh !important;
+      }
+      
+      .max-w-7xl {
+        margin: 0 !important;
+        padding: 20px !important;
+        min-height: 100vh !important;
+      }
+      
+      /* Ensure proper page breaks */
+      .mb-6 {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        margin-bottom: 20px !important;
+      }
+      
+      /* Force page breaks at appropriate sections */
+      h2:contains('Primary Injection') {
+        page-break-before: auto !important;
+        break-before: auto !important;
+      }
+      
+      /* Add bottom margin to prevent cutoff */
+      .space-y-6 > *:last-child {
+        margin-bottom: 40px !important;
+        padding-bottom: 20px !important;
+      }
+      
+      /* Ensure comments section doesn't get cut off */
+      .mb-6:last-child {
+        margin-bottom: 60px !important;
+        padding-bottom: 40px !important;
+      }
+      
+      /* Force page size and margins */
+      @page {
+        size: A4 !important;
+        margin: 0.5in !important;
+      }
+      
+      /* Ensure all content fits on page */
+      * {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
     }
   `;
   document.head.appendChild(style);

@@ -702,19 +702,47 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
         <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
-        <div className="flex-1 text-center">
+        <div className="flex-1 text-center flex flex-col items-center justify-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA
+          <div className="hidden print:block mt-2">
+            <div 
+              className="pass-fail-status-box"
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: formData.status === 'PASS' ? '2px solid #16a34a' : formData.status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
+                backgroundColor: formData.status === 'PASS' ? '#22c55e' : formData.status === 'FAIL' ? '#ef4444' : '#eab308',
+                color: 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
+              }}
+            >
+              {formData.status || 'PASS'}
+            </div>
+          </div>
+        </div>
       </div>
       {/* End Print Header */}
       
       <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
         <div className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
-          <div className={`${isPrintMode ? 'hidden' : ''} print:hidden flex justify-end items-center mb-6`}>
+          <div className={`${isPrintMode ? 'hidden' : ''} print:hidden flex justify-between items-center mb-6`}>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Low Voltage Circuit Breaker Electronic Trip Unit ATS Secondary Injection
+            </h1>
             <div className="flex gap-2">
               {/* Status Button */}
               <button
@@ -763,165 +791,82 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           </div>
 
           {/* --- Job Information Section --- */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                  {/* Column 1 */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2">
+              <div><label className="form-label">Customer:</label><input type="text" value={formData.customer} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
+              <div className="md:col-span-2"><label htmlFor="address" className="form-label">Address:</label><input id="address" type="text" value={formData.address} onChange={(e) => handleChange('address', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
+              <div><label htmlFor="technicians" className="form-label">Technicians:</label><input id="technicians" type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="date" className="form-label">Date:</label><input id="date" type="date" value={formData.date} onChange={(e) => handleChange('date', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="identifier" className="form-label">Identifier:</label><input id="identifier" type="text" value={formData.identifier} onChange={(e) => handleChange('identifier', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div className="flex items-center space-x-1">
                   <div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="customer" className="form-label inline-block w-32 dark:text-gray-300">Customer:</label>
-                          <input id="customer" type="text" value={formData.customer} readOnly={true} className="form-input bg-gray-100 dark:bg-dark-200" />
+                  <label htmlFor="temperature.fahrenheit" className="form-label">Temp:</label>
+                  <input id="temperature.fahrenheit" type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(Number(e.target.value))} readOnly={!isEditing} className={`form-input w-16 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  <span className="ml-1 text-xs">°F</span>
                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="address" className="form-label inline-block w-32 dark:text-gray-300">Address:</label>
-                          <input id="address" type="text" value={formData.address} readOnly={true} className="form-input bg-gray-100 dark:bg-dark-200" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="user" className="form-label inline-block w-32 dark:text-gray-300">User:</label>
-                          <input id="user" type="text" value={formData.user} onChange={(e) => handleChange('user', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="date" className="form-label inline-block w-32 dark:text-gray-300">Date:</label>
-                          <input id="date" type="date" value={formData.date} onChange={(e) => handleChange('date', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="identifier" className="form-label inline-block w-32 dark:text-gray-300">Identifier:</label>
-                          <input id="identifier" type="text" value={formData.identifier} onChange={(e) => handleChange('identifier', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                  </div>
-                  {/* Column 2 */}
                   <div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="jobNumber" className="form-label inline-block w-32 dark:text-gray-300">Job #:</label>
-                          <input id="jobNumber" type="text" value={formData.jobNumber} readOnly={true} className="form-input bg-gray-100 dark:bg-dark-200" />
+                  <label htmlFor="temperature.celsius" className="form-label sr-only">Celsius</label>
+                  <input id="temperature.celsius" type="number" value={formData.temperature.celsius} onChange={(e) => handleCelsiusChange(Number(e.target.value))} readOnly={!isEditing} className={`form-input w-16 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  <span className="ml-1 text-xs">°C</span>
                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="technicians" className="form-label inline-block w-32 dark:text-gray-300">Technicians:</label>
-                          <input id="technicians" type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className="form-input" />
                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="substation" className="form-label inline-block w-32 dark:text-gray-300">Substation:</label>
-                          <input id="substation" type="text" value={formData.substation} onChange={(e) => handleChange('substation', e.target.value)} readOnly={!isEditing} className="form-input" />
+              <div><label htmlFor="temperature.tcf" className="form-label">TCF:</label><input id="temperature.tcf" type="number" value={formData.temperature.tcf} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-16" /></div>
+              <div><label htmlFor="temperature.humidity" className="form-label">Humidity:</label><input id="temperature.humidity" type="number" value={formData.temperature.humidity} onChange={(e) => handleChange('temperature.humidity', Number(e.target.value))} readOnly={!isEditing} className={`form-input w-16 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /><span className="ml-1 text-xs">%</span></div>
+              <div><label htmlFor="substation" className="form-label">Substation:</label><input id="substation" type="text" value={formData.substation} onChange={(e) => handleChange('substation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="eqptLocation" className="form-label">Eqpt. Location:</label><input id="eqptLocation" type="text" value={formData.eqptLocation} onChange={(e) => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div className="md:col-span-2"><label htmlFor="user" className="form-label">User:</label><input id="user" type="text" value={formData.user} onChange={(e) => handleChange('user', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="eqptLocation" className="form-label inline-block w-32 dark:text-gray-300">Eqpt. Location:</label>
-                          <input id="eqptLocation" type="text" value={formData.eqptLocation} onChange={(e) => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className="form-input" />
                       </div>
-                      {/* Temperature Fields */}
-                      <div className="mb-4 flex items-center space-x-2">
-                        <label className="form-label inline-block w-auto dark:text-gray-300">Temp:</label>
-                        <input type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(Number(e.target.value))} readOnly={!isEditing} className="form-input w-20" />
-                        <span className="dark:text-gray-300">°F</span>
-                        <input type="number" value={formData.temperature.celsius} readOnly className="form-input w-20 bg-gray-100 dark:bg-dark-200" />
-                        <span className="dark:text-gray-300">°C</span>
-                        <label className="form-label inline-block w-auto dark:text-gray-300 ml-4">TCF:</label>
-                        <input type="number" value={formData.temperature.tcf} readOnly className="form-input w-24 bg-gray-100 dark:bg-dark-200" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="humidity" className="form-label inline-block w-32 dark:text-gray-300">Humidity:</label>
-                          <input id="humidity" type="number" value={formData.temperature.humidity} onChange={(e) => handleChange('temperature.humidity', Number(e.target.value))} readOnly={!isEditing} className="form-input w-20" />
-                          <span className="ml-2 dark:text-gray-300">%</span>
-                      </div>
-                  </div>
-              </div>
-          </section>
-
 
           {/* --- Nameplate Data Section --- */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
-                  {/* Column 1 */}
-                  <div>
-                       <div className="mb-4 flex items-center">
-                           <label htmlFor="manufacturer" className="form-label inline-block w-32 dark:text-gray-300">Manufacturer:</label>
-                           <input id="manufacturer" type="text" value={formData.manufacturer} onChange={(e) => handleChange('manufacturer', e.target.value)} readOnly={!isEditing} className="form-input" />
+              <div><label htmlFor="manufacturer" className="form-label">Manufacturer:</label><input id="manufacturer" type="text" value={formData.manufacturer} onChange={(e) => handleChange('manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="catalogNumber" className="form-label">Catalog Number:</label><input id="catalogNumber" type="text" value={formData.catalogNumber} onChange={(e) => handleChange('catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="serialNumber" className="form-label">Serial Number:</label><input id="serialNumber" type="text" value={formData.serialNumber} onChange={(e) => handleChange('serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="type" className="form-label">Type:</label><input id="type" type="text" value={formData.type} onChange={(e) => handleChange('type', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="frameSize" className="form-label">Frame Size (A):</label><input id="frameSize" type="text" value={formData.frameSize} onChange={(e) => handleChange('frameSize', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="icRating" className="form-label">I.C. Rating (kA):</label><input id="icRating" type="text" value={formData.icRating} onChange={(e) => handleChange('icRating', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="tripUnitType" className="form-label">Trip Unit Type:</label><input id="tripUnitType" type="text" value={formData.tripUnitType} onChange={(e) => handleChange('tripUnitType', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="ratingPlug" className="form-label">Rating Plug (A):</label><input id="ratingPlug" type="text" value={formData.ratingPlug} onChange={(e) => handleChange('ratingPlug', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="curveNo" className="form-label">Curve No.:</label><input id="curveNo" type="text" value={formData.curveNo} onChange={(e) => handleChange('curveNo', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="chargeMotorVoltage" className="form-label">Charge Motor V:</label><input id="chargeMotorVoltage" type="text" value={formData.chargeMotorVoltage} onChange={(e) => handleChange('chargeMotorVoltage', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="operation" className="form-label">Operation:</label><input id="operation" type="text" value={formData.operation} onChange={(e) => handleChange('operation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="mounting" className="form-label">Mounting:</label><input id="mounting" type="text" value={formData.mounting} onChange={(e) => handleChange('mounting', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="zoneInterlock" className="form-label">Zone Interlock:</label><input id="zoneInterlock" type="text" value={formData.zoneInterlock} onChange={(e) => handleChange('zoneInterlock', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label htmlFor="thermalMemory" className="form-label">Thermal Memory:</label><input id="thermalMemory" type="text" value={formData.thermalMemory} onChange={(e) => handleChange('thermalMemory', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                        </div>
-                       <div className="mb-4 flex items-center">
-                           <label htmlFor="catalogNumber" className="form-label inline-block w-32 dark:text-gray-300">Catalog Number:</label>
-                           <input id="catalogNumber" type="text" value={formData.catalogNumber} onChange={(e) => handleChange('catalogNumber', e.target.value)} readOnly={!isEditing} className="form-input" />
                        </div>
-                       <div className="mb-4 flex items-center">
-                           <label htmlFor="serialNumber" className="form-label inline-block w-32 dark:text-gray-300">Serial Number:</label>
-                           <input id="serialNumber" type="text" value={formData.serialNumber} onChange={(e) => handleChange('serialNumber', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                       <div className="mb-4 flex items-center">
-                           <label htmlFor="type" className="form-label inline-block w-32 dark:text-gray-300">Type:</label>
-                           <input id="type" type="text" value={formData.type} onChange={(e) => handleChange('type', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                       <div className="mb-4 flex items-center">
-                           <label htmlFor="frameSize" className="form-label inline-block w-32 dark:text-gray-300">Frame Size (A):</label>
-                           <input id="frameSize" type="text" value={formData.frameSize} onChange={(e) => handleChange('frameSize', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                  </div>
-                  {/* Column 2 */}
-                  <div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="icRating" className="form-label inline-block w-32 dark:text-gray-300">I.C. Rating (kA):</label>
-                          <input id="icRating" type="text" value={formData.icRating} onChange={(e) => handleChange('icRating', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="tripUnitType" className="form-label inline-block w-32 dark:text-gray-300">Trip Unit Type:</label>
-                          <input id="tripUnitType" type="text" value={formData.tripUnitType} onChange={(e) => handleChange('tripUnitType', e.target.value)} readOnly={!isEditing} className="form-input" />
-                        </div>
-                      <div className="mb-4 flex items-center">
-                        <label htmlFor="ratingPlug" className="form-label inline-block w-32 dark:text-gray-300">Rating Plug (A):</label>
-                        <input id="ratingPlug" type="text" value={formData.ratingPlug} onChange={(e) => handleChange('ratingPlug', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                        <label htmlFor="curveNo" className="form-label inline-block w-32 dark:text-gray-300">Curve No.:</label>
-                        <input id="curveNo" type="text" value={formData.curveNo} onChange={(e) => handleChange('curveNo', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                      <div className="mb-4 flex items-center">
-                        <label htmlFor="chargeMotorVoltage" className="form-label inline-block w-32 dark:text-gray-300">Charge Motor V:</label>
-                        <input id="chargeMotorVoltage" type="text" value={formData.chargeMotorVoltage} onChange={(e) => handleChange('chargeMotorVoltage', e.target.value)} readOnly={!isEditing} className="form-input" />
-                      </div>
-                  </div>
-                  {/* Column 3 */}
-                  <div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="operation" className="form-label inline-block w-32 dark:text-gray-300">Operation:</label>
-                          <input id="operation" type="text" value={formData.operation} onChange={(e) => handleChange('operation', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="mounting" className="form-label inline-block w-32 dark:text-gray-300">Mounting:</label>
-                          <input id="mounting" type="text" value={formData.mounting} onChange={(e) => handleChange('mounting', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="zoneInterlock" className="form-label inline-block w-32 dark:text-gray-300">Zone Interlock:</label>
-                          <input id="zoneInterlock" type="text" value={formData.zoneInterlock} onChange={(e) => handleChange('zoneInterlock', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                      <div className="mb-4 flex items-center">
-                          <label htmlFor="thermalMemory" className="form-label inline-block w-32 dark:text-gray-300">Thermal Memory:</label>
-                          <input id="thermalMemory" type="text" value={formData.thermalMemory} onChange={(e) => handleChange('thermalMemory', e.target.value)} readOnly={!isEditing} className="form-input" />
-                       </div>
-                  </div>
-              </div>
-          </section>
 
           {/* --- Visual and Mechanical Inspection Section */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
-            <div className={tableStyles.container}>
-              <table className={tableStyles.table}>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className={`${tableStyles.headerCell} w-1/6`}>NETA Section</th>
-                    <th className={`${tableStyles.headerCell} w-4/6`}>Description</th>
-                    <th className={`${tableStyles.headerCell} text-center w-1/6`}>Results</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/3">NETA Section</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/2">Description</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-1/6">Results</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={item.id}>
-                      <td className={tableStyles.cell}>{item.id}</td>
-                      <td className={tableStyles.cell}>{item.description}</td>
-                      <td className={`${tableStyles.cell} text-center`}>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white break-words">{item.id}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">{item.description}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                         <select
                           value={item.result}
                           onChange={(e) => handleChange(`visualInspectionItems[${index}].result`, e.target.value)}
                           disabled={!isEditing}
-                          className={tableStyles.select}
+                          className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           <option value=""></option>
                           {visualInspectionResultsOptions.map(option => (
@@ -934,56 +879,57 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                 </tbody>
               </table>
             </div>
-          </section>
+          </div>
 
           {/* --- Device Settings Section */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Device Settings</h2>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Device Settings</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
               {/* As Found Table */}
               <div>
                 <h3 className="text-lg font-medium mb-2 text-center dark:text-white">Settings As Found</h3>
-                <div className={tableStyles.container}>
-                  <table className={tableStyles.table}>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                     <thead className="bg-gray-50 dark:bg-dark-200">
                       <tr>
-                        <th className={tableStyles.headerCell}></th>
-                        <th className={`${tableStyles.headerCell} text-center`}>Setting</th>
-                        <th className={`${tableStyles.headerCell} text-center`}>Delay</th>
-                        <th className={`${tableStyles.headerCell} text-center`}>I²t</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Setting</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Delay</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">I²t</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                       {['longTime', 'shortTime', 'instantaneous', 'groundFault'].map((settingType) => (
                         <tr key={`found-${settingType}`}>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
                             {settingType.replace('Time', ' Time').replace('Fault', ' Fault')}
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             <input
                               type="text"
                               value={formData.deviceSettings.asFound[settingType]?.setting || ''}
                               onChange={(e) => handleChange(`deviceSettings.asFound.${settingType}.setting`, e.target.value)}
                               readOnly={!isEditing}
-                              className={`${tableStyles.input} text-center`}
+                              className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                             />
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             <input
                               type="text"
                               value={formData.deviceSettings.asFound[settingType]?.delay || ''}
                               onChange={(e) => handleChange(`deviceSettings.asFound.${settingType}.delay`, e.target.value)}
                               readOnly={!isEditing}
-                              className={`${tableStyles.input} text-center`}
+                              className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                             />
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             {settingType === 'shortTime' || settingType === 'groundFault' ? (
                               <select
                                 value={formData.deviceSettings.asFound[settingType]?.i2t || ''}
                                 onChange={(e) => handleChange(`deviceSettings.asFound.${settingType}.i2t`, e.target.value)}
                                 disabled={!isEditing}
-                                className={tableStyles.select}
+                                className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                               >
                                 {tripUnitTypeOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                               </select>
@@ -992,7 +938,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                                 type="text"
                                 value=""
                                 readOnly
-                                className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                               />
                             )}
                           </td>
@@ -1005,47 +951,47 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
               {/* As Left Table */}
               <div>
                 <h3 className="text-lg font-medium mb-2 text-center dark:text-white">Settings As Left</h3>
-                <div className={tableStyles.container}>
-                  <table className={tableStyles.table}>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                     <thead className="bg-gray-50 dark:bg-dark-200">
                       <tr>
-                        <th className={tableStyles.headerCell}></th>
-                        <th className={`${tableStyles.headerCell} text-center`}>Setting</th>
-                        <th className={`${tableStyles.headerCell} text-center`}>Delay</th>
-                        <th className={`${tableStyles.headerCell} text-center`}>I²t</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Setting</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Delay</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">I²t</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                       {['longTime', 'shortTime', 'instantaneous', 'groundFault'].map((settingType) => (
                         <tr key={`left-${settingType}`}>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
                             {settingType.replace('Time', ' Time').replace('Fault', ' Fault')}
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             <input
                               type="text"
                               value={formData.deviceSettings.asLeft[settingType]?.setting || ''}
                               onChange={(e) => handleChange(`deviceSettings.asLeft.${settingType}.setting`, e.target.value)}
                               readOnly={!isEditing}
-                              className={`${tableStyles.input} text-center`}
+                              className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                             />
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             <input
                               type="text"
                               value={formData.deviceSettings.asLeft[settingType]?.delay || ''}
                               onChange={(e) => handleChange(`deviceSettings.asLeft.${settingType}.delay`, e.target.value)}
                               readOnly={!isEditing}
-                              className={`${tableStyles.input} text-center`}
+                              className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                             />
                           </td>
-                          <td className={tableStyles.cell}>
+                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                             {settingType === 'shortTime' || settingType === 'groundFault' ? (
                               <select
                                 value={formData.deviceSettings.asLeft[settingType]?.i2t || ''}
                                 onChange={(e) => handleChange(`deviceSettings.asLeft.${settingType}.i2t`, e.target.value)}
                                 disabled={!isEditing}
-                                className={tableStyles.select}
+                                className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                               >
                                 {tripUnitTypeOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                               </select>
@@ -1054,7 +1000,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                                 type="text"
                                 value=" "
                                 readOnly
-                                className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                               />
                             )}
                           </td>
@@ -1065,60 +1011,61 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                 </div>
               </div>
             </div>
-          </section>
+          </div>
 
           {/* --- Electrical Tests - Contact/Pole Resistance Section --- */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Contact/Pole Resistance</h2>
-            <div className={tableStyles.container}>
-              <table className={tableStyles.table}>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Contact/Pole Resistance</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className={`${tableStyles.headerCell} text-center`} colSpan={3}>Contact Resistance</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>Units</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Contact Resistance</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Units</th>
                   </tr>
                   <tr>
-                    <th className={`${tableStyles.headerCell} text-center`}>P1</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>P2</th>
-                    <th className={`${tableStyles.headerCell} text-center`}>P3</th>
-                    <th className={`${tableStyles.headerCell} text-center`}></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">P1</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">P2</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">P3</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   <tr>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.contactResistance.p1}
                         onChange={(e) => handleChange('contactResistance.p1', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.contactResistance.p2}
                         onChange={(e) => handleChange('contactResistance.p2', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.contactResistance.p3}
                         onChange={(e) => handleChange('contactResistance.p3', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={`${tableStyles.cell} text-center`}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <select
                         value={formData.contactResistance.unit}
                         onChange={(e) => handleChange('contactResistance.unit', e.target.value)}
                         disabled={!isEditing}
-                        className={tableStyles.select}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       >
                         {contactResistanceUnitsOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                       </select>
@@ -1127,11 +1074,12 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                 </tbody>
               </table>
             </div>
-          </section>
+          </div>
 
           {/* --- Electrical Tests - Insulation Resistance Section --- */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Insulation Resistance</h2>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance</h2>
             <div className="flex justify-end mb-4">
               <label htmlFor="insulationTestVoltage" className="form-label mr-2 dark:text-gray-300">Test Voltage:</label>
               <select
@@ -1139,93 +1087,93 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                 value={formData.insulationResistance.testVoltage}
                 onChange={(e) => handleChange('insulationResistance.testVoltage', e.target.value)}
                 disabled={!isEditing}
-                className="form-select w-32" // Using general form-select as it's outside the table
+                className="form-select w-32"
               >
                 {insulationTestVoltageOptions.map(option => (<option key={option} value={option}>{option}</option>))}
               </select>
             </div>
-            <div className={tableStyles.container}>
-              <table className={tableStyles.table}>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className={`${tableStyles.headerCell} w-[16.6%]`} rowSpan={2}></th>
-                    <th className={`${tableStyles.headerCell} text-center`} colSpan={3}>Measured Values</th>
-                    <th className={`${tableStyles.headerCell} text-center`} colSpan={3}>Temperature Corrected</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`} rowSpan={2}>Units</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-[16.6%]" rowSpan={2}></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Measured Values</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Temperature Corrected</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]" rowSpan={2}>Units</th>
                   </tr>
                   <tr>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P1</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P2</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P3</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P1</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P2</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P3</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P1</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P2</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P3</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P1</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P2</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P3</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {/* Pole to Pole (Closed) */}
                   <tr>
-                    <td className={tableStyles.cell}>Pole to Pole (Closed)</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">Pole to Pole (Closed)</td>
                     {/* Measured Values */}
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.measured.poleToPole.p1p2}
                         onChange={(e) => handleChange('insulationResistance.measured.poleToPole.p1p2', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.measured.poleToPole.p2p3}
                         onChange={(e) => handleChange('insulationResistance.measured.poleToPole.p2p3', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.measured.poleToPole.p3p1}
                         onChange={(e) => handleChange('insulationResistance.measured.poleToPole.p3p1', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     {/* Corrected Values */}
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.corrected.poleToPole.p1p2}
                         readOnly
-                        className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.corrected.poleToPole.p2p3}
                         readOnly
-                        className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.corrected.poleToPole.p3p1}
                         readOnly
-                        className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                       />
                     </td>
                     {/* Units */}
-                    <td className={`${tableStyles.cell} text-center`}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <select
                         value={formData.insulationResistance.unit}
                         onChange={(e) => handleChange('insulationResistance.unit', e.target.value)}
                         disabled={!isEditing}
-                        className={tableStyles.select}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       >
                         {insulationResistanceUnitsOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                       </select>
@@ -1233,67 +1181,67 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                   </tr>
                   {/* Pole to Frame (Closed) */}
                   <tr>
-                    <td className={tableStyles.cell}>Pole to Frame (Closed)</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">Pole to Frame (Closed)</td>
                     {/* Measured Values */}
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.measured.poleToFrame.p1}
                         onChange={(e) => handleChange('insulationResistance.measured.poleToFrame.p1', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.measured.poleToFrame.p2}
                         onChange={(e) => handleChange('insulationResistance.measured.poleToFrame.p2', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.measured.poleToFrame.p3}
                         onChange={(e) => handleChange('insulationResistance.measured.poleToFrame.p3', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     {/* Corrected Values */}
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.corrected.poleToFrame.p1}
                         readOnly
-                        className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.corrected.poleToFrame.p2}
                         readOnly
-                        className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.corrected.poleToFrame.p3}
                         readOnly
-                        className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                       />
                     </td>
                     {/* Units */}
-                    <td className={`${tableStyles.cell} text-center`}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <select
                         value={formData.insulationResistance.unit}
                         onChange={(e) => handleChange('insulationResistance.unit', e.target.value)}
                         disabled={!isEditing}
-                        className={tableStyles.select}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       >
                         {insulationResistanceUnitsOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                       </select>
@@ -1301,67 +1249,67 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                   </tr>
                   {/* Line to Load (Open) */}
                   <tr>
-                    <td className={tableStyles.cell}>Line to Load (Open)</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">Line to Load (Open)</td>
                     {/* Measured Values */}
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.measured.lineToLoad.p1}
                         onChange={(e) => handleChange('insulationResistance.measured.lineToLoad.p1', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.measured.lineToLoad.p2}
                         onChange={(e) => handleChange('insulationResistance.measured.lineToLoad.p2', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.measured.lineToLoad.p3}
                         onChange={(e) => handleChange('insulationResistance.measured.lineToLoad.p3', e.target.value)}
                         readOnly={!isEditing}
-                        className={`${tableStyles.input} text-center`}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     {/* Corrected Values */}
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.corrected.lineToLoad.p1}
                         readOnly
-                        className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.corrected.lineToLoad.p2}
                         readOnly
-                        className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                       />
                     </td>
-                    <td className={tableStyles.cell}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
                         value={formData.insulationResistance.corrected.lineToLoad.p3}
                         readOnly
-                        className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                       />
                     </td>
                     {/* Units */}
-                    <td className={`${tableStyles.cell} text-center`}>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <select
                         value={formData.insulationResistance.unit}
                         onChange={(e) => handleChange('insulationResistance.unit', e.target.value)}
                         disabled={!isEditing}
-                        className={tableStyles.select}
+                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       >
                         {insulationResistanceUnitsOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                       </select>
@@ -1370,56 +1318,57 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                 </tbody>
               </table>
             </div>
-          </section>
+          </div>
 
           {/* --- Electrical Tests - Trip Testing Section --- */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Trip Testing</h2>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Trip Testing</h2>
 
             {/* Tested Settings Table */}
-            <div>
+            <div className="mb-4">
               <h3 className="text-lg font-medium mb-2 text-center dark:text-white">Tested Settings</h3>
-              <div className={tableStyles.container}>
-                <table className={tableStyles.table}>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                   <thead className="bg-gray-50 dark:bg-dark-200">
                     <tr>
-                      <th className={`${tableStyles.headerCell} w-1/4`}></th>
-                      <th className={`${tableStyles.headerCell} text-center w-1/4`}>Setting</th>
-                      <th className={`${tableStyles.headerCell} text-center w-1/4`}>Delay</th>
-                      <th className={`${tableStyles.headerCell} text-center w-1/4`}>I²t</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/4"></th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-1/4">Setting</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-1/4">Delay</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-1/4">I²t</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                     {['longTime', 'shortTime', 'instantaneous', 'groundFault'].map((settingType) => (
                       <tr key={`tested-${settingType}`}>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
                           {settingType.replace('Time', ' Time').replace('Fault', ' Fault')}
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.tripTesting.testedSettings[settingType]?.setting || ''}
                             onChange={(e) => handleChange(`tripTesting.testedSettings.${settingType}.setting`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.tripTesting.testedSettings[settingType]?.delay || ''}
                             onChange={(e) => handleChange(`tripTesting.testedSettings.${settingType}.delay`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           {settingType === 'shortTime' || settingType === 'groundFault' ? (
                             <select
                               value={formData.tripTesting.testedSettings[settingType]?.i2t || ''}
                               onChange={(e) => handleChange(`tripTesting.testedSettings.${settingType}.i2t`, e.target.value)}
                               disabled={!isEditing}
-                              className={tableStyles.select}
+                              className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                             >
                               {tripUnitTypeOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                             </select>
@@ -1428,7 +1377,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                               type="text"
                               value=""
                               readOnly
-                              className={`${tableStyles.input} text-center bg-gray-100 dark:bg-dark-200`}
+                              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                             />
                           )}
                         </td>
@@ -1442,112 +1391,112 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             {/* Secondary Injection Table */}
             <div>
               <h3 className="text-lg font-medium mb-2 text-center dark:text-white">Secondary Injection</h3>
-              <div className={tableStyles.container}>
-                <table className={tableStyles.table}>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                   <thead className="bg-gray-50 dark:bg-dark-200">
                     <tr>
-                      <th className={`${tableStyles.headerCell} w-[10%]`} rowSpan={2}>Function</th>
-                      <th className={`${tableStyles.headerCell} text-center`} colSpan={2}>Amperes</th>
-                      <th className={`${tableStyles.headerCell} text-center`} colSpan={2}>Tolerance</th>
-                      <th className={`${tableStyles.headerCell} text-center`} colSpan={3}>Results</th>
-                      <th className={`${tableStyles.headerCell} text-center w-[10%]`} rowSpan={2}>Units</th>
-                      <th className={`${tableStyles.headerCell} text-center w-[10%]`} rowSpan={2}>Pass/Fail</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-[10%]" rowSpan={2}>Function</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Amperes</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Tolerance</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Results</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]" rowSpan={2}>Units</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]" rowSpan={2}>Pass/Fail</th>
                     </tr>
                     <tr>
-                      <th className={`${tableStyles.headerCell} text-center w-[10%]`}>1</th>
-                      <th className={`${tableStyles.headerCell} text-center w-[10%]`}>2</th>
-                      <th className={`${tableStyles.headerCell} text-center w-[10%]`}>Min</th>
-                      <th className={`${tableStyles.headerCell} text-center w-[10%]`}>Max</th>
-                      <th className={`${tableStyles.headerCell} text-center w-[10%]`}>Pole 1</th>
-                      <th className={`${tableStyles.headerCell} text-center w-[10%]`}>Pole 2</th>
-                      <th className={`${tableStyles.headerCell} text-center w-[10%]`}>Pole 3</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">1</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">2</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">Min</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">Max</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">Pole 1</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">Pole 2</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">Pole 3</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                     {['longTime', 'shortTime', 'instantaneous', 'groundFault'].map((funcType) => (
                       <tr key={`inj-${funcType}`}>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">
                           {funcType.replace('Time', ' Time').replace('Fault', ' Fault')}
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.tripTesting.secondaryInjection[funcType]?.amperes1 || ''}
                             onChange={(e) => handleChange(`tripTesting.secondaryInjection.${funcType}.amperes1`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.tripTesting.secondaryInjection[funcType]?.amperes2 || ''}
                             onChange={(e) => handleChange(`tripTesting.secondaryInjection.${funcType}.amperes2`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.tripTesting.secondaryInjection[funcType]?.toleranceMin || ''}
                             onChange={(e) => handleChange(`tripTesting.secondaryInjection.${funcType}.toleranceMin`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.tripTesting.secondaryInjection[funcType]?.toleranceMax || ''}
                             onChange={(e) => handleChange(`tripTesting.secondaryInjection.${funcType}.toleranceMax`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.tripTesting.secondaryInjection[funcType]?.pole1 || ''}
                             onChange={(e) => handleChange(`tripTesting.secondaryInjection.${funcType}.pole1`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.tripTesting.secondaryInjection[funcType]?.pole2 || ''}
                             onChange={(e) => handleChange(`tripTesting.secondaryInjection.${funcType}.pole2`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={tableStyles.cell}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <input
                             type="text"
                             value={formData.tripTesting.secondaryInjection[funcType]?.pole3 || ''}
                             onChange={(e) => handleChange(`tripTesting.secondaryInjection.${funcType}.pole3`, e.target.value)}
                             readOnly={!isEditing}
-                            className={`${tableStyles.input} text-center`}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                        <td className={`${tableStyles.cell} text-center`}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <select
                             value={formData.tripTesting.secondaryInjection[funcType]?.unit || 'sec.'}
                             onChange={(e) => handleChange(`tripTesting.secondaryInjection.${funcType}.unit`, e.target.value)}
                             disabled={!isEditing}
-                            className={tableStyles.select}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           >
                             {tripTestingUnitsOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                           </select>
                         </td>
-                        <td className={`${tableStyles.cell} text-center`}>
+                        <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                           <select
-                            value={formData.tripTesting.secondaryInjection[funcType]?.passFail || 'PASS'} // Default to PASS
+                            value={formData.tripTesting.secondaryInjection[funcType]?.passFail || 'PASS'}
                             onChange={(e) => handleChange(`tripTesting.secondaryInjection.${funcType}.passFail`, e.target.value)}
                             disabled={!isEditing}
-                            className={tableStyles.select}
+                            className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           >
                             {equipmentEvaluationResultOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                           </select>
@@ -1558,45 +1507,29 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                 </table>
               </div>
             </div>
-          </section>
+          </div>
 
           {/* --- Test Equipment Used Section --- */}
-           <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
-                <div className="space-y-4">
-                    {/* Megohmmeter */}
-                    <div className="grid grid-cols-7 gap-x-4 items-center">
-                        <label className="form-label col-span-1 text-right dark:text-gray-300">Megohmmeter:</label>
-                        <input type="text" placeholder="Name/Model" value={formData.testEquipment.megohmmeter.name} onChange={(e) => handleChange('testEquipment.megohmmeter.name', e.target.value)} readOnly={!isEditing} className="form-input col-span-2"/>
-                        <label className="form-label col-span-1 text-right dark:text-gray-300">Serial Number:</label>
-                        <input type="text" placeholder="Serial #" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.megohmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className="form-input col-span-1"/>
-                        <label className="form-label col-span-1 text-right dark:text-gray-300">AMP ID:</label>
-                        <input type="text" placeholder="AMP ID" value={formData.testEquipment.megohmmeter.ampId} onChange={(e) => handleChange('testEquipment.megohmmeter.ampId', e.target.value)} readOnly={!isEditing} className="form-input col-span-1"/>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div><label className="form-label">Megohmmeter:</label><input type="text" value={formData.testEquipment.megohmmeter.name} onChange={(e) => handleChange('testEquipment.megohmmeter.name', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Serial Number:</label><input type="text" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.megohmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">AMP ID:</label><input type="text" value={formData.testEquipment.megohmmeter.ampId} onChange={(e) => handleChange('testEquipment.megohmmeter.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Low-Res Ohmmeter:</label><input type="text" value={formData.testEquipment.lowResistanceOhmmeter.name} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.name', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Serial Number:</label><input type="text" value={formData.testEquipment.lowResistanceOhmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">AMP ID:</label><input type="text" value={formData.testEquipment.lowResistanceOhmmeter.ampId} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Secondary Inj Test Set:</label><input type="text" value={formData.testEquipment.secondaryInjectionTestSet.name} onChange={(e) => handleChange('testEquipment.secondaryInjectionTestSet.name', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">Serial Number:</label><input type="text" value={formData.testEquipment.secondaryInjectionTestSet.serialNumber} onChange={(e) => handleChange('testEquipment.secondaryInjectionTestSet.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              <div><label className="form-label">AMP ID:</label><input type="text" value={formData.testEquipment.secondaryInjectionTestSet.ampId} onChange={(e) => handleChange('testEquipment.secondaryInjectionTestSet.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                     </div>
-                     {/* Low-Resistance Ohmmeter */}
-                    <div className="grid grid-cols-7 gap-x-4 items-center">
-                        <label className="form-label col-span-1 text-right dark:text-gray-300">Low-Res Ohmmeter:</label>
-                        <input type="text" placeholder="Name/Model" value={formData.testEquipment.lowResistanceOhmmeter.name} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.name', e.target.value)} readOnly={!isEditing} className="form-input col-span-2"/>
-                        <label className="form-label col-span-1 text-right dark:text-gray-300">Serial Number:</label>
-                        <input type="text" placeholder="Serial #" value={formData.testEquipment.lowResistanceOhmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className="form-input col-span-1"/>
-                        <label className="form-label col-span-1 text-right dark:text-gray-300">AMP ID:</label>
-                        <input type="text" placeholder="AMP ID" value={formData.testEquipment.lowResistanceOhmmeter.ampId} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.ampId', e.target.value)} readOnly={!isEditing} className="form-input col-span-1"/>
                     </div>
-                    {/* Secondary Injection Test Set */}
-                    <div className="grid grid-cols-7 gap-x-4 items-center">
-                        <label className="form-label col-span-1 text-right dark:text-gray-300">Secondary Inj Test Set:</label>
-                        <input type="text" placeholder="Name/Model" value={formData.testEquipment.secondaryInjectionTestSet.name} onChange={(e) => handleChange('testEquipment.secondaryInjectionTestSet.name', e.target.value)} readOnly={!isEditing} className="form-input col-span-2"/>
-                        <label className="form-label col-span-1 text-right dark:text-gray-300">Serial Number:</label>
-                        <input type="text" placeholder="Serial #" value={formData.testEquipment.secondaryInjectionTestSet.serialNumber} onChange={(e) => handleChange('testEquipment.secondaryInjectionTestSet.serialNumber', e.target.value)} readOnly={!isEditing} className="form-input col-span-1"/>
-                        <label className="form-label col-span-1 text-right dark:text-gray-300">AMP ID:</label>
-                        <input type="text" placeholder="AMP ID" value={formData.testEquipment.secondaryInjectionTestSet.ampId} onChange={(e) => handleChange('testEquipment.secondaryInjectionTestSet.ampId', e.target.value)} readOnly={!isEditing} className="form-input col-span-1"/>
-                    </div>
-                </div>
-            </section>
 
           {/* --- Comments Section --- */}
-          <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <textarea
               value={formData.comments}
               onChange={(e) => handleChange('comments', e.target.value)}
@@ -1604,7 +1537,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
               rows={4}
               className={`form-textarea w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
-          </section>
+          </div>
         </div>
       </div>
 
@@ -1652,107 +1585,6 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
         }
         .form-label {
             @apply text-sm font-medium text-gray-700 dark:text-white;
-        }
-
-        /* Table specific styles */
-        table {
-          border-collapse: separate;
-          border-spacing: 0;
-          width: 100%;
-        }
-        
-        /* Table cell styles */
-        td.border, th.border {
-          height: 32px;
-          padding: 0;
-          position: relative;
-          vertical-align: middle;
-          border: 1px solid #e5e7eb;
-          background: white;
-        }
-
-        html.dark td.border, html.dark th.border {
-          border-color: #374151;
-          background: #1f2937;
-        }
-
-        /* Table input styles */
-        .form-input-table {
-            @apply w-full bg-white dark:bg-dark-150 text-center focus:ring-0 focus:outline-none dark:text-white;
-            height: 32px;
-            padding: 0 4px;
-            margin: 0;
-            line-height: 32px;
-            border: none;
-            box-shadow: inset 0 0 0 1px #e5e7eb;
-        }
-
-        html.dark .form-input-table {
-            box-shadow: inset 0 0 0 1px #374151;
-        }
-
-        .form-input-table[readonly] {
-             background-color: #f3f4f6;
-             cursor: not-allowed;
-        }
-        html.dark .form-input-table[readonly] {
-            background-color: #374151;
-            color: #d1d5db;
-        }
-
-        /* Table select styles */
-        .form-select-table {
-            @apply w-full bg-white dark:bg-dark-150 text-center focus:ring-0 focus:outline-none dark:text-white appearance-none;
-            height: 32px;
-            padding: 0 4px;
-            margin: 0;
-            line-height: 32px;
-            border: none;
-            box-shadow: inset 0 0 0 1px #e5e7eb;
-        }
-
-        html.dark .form-select-table {
-            box-shadow: inset 0 0 0 1px #374151;
-        }
-
-        .form-select-table[disabled] {
-             opacity: 0.7;
-             cursor: not-allowed;
-             -webkit-appearance: none;
-             -moz-appearance: none;
-             appearance: none;
-             background-color: #f3f4f6;
-        }
-        html.dark .form-select-table[disabled] {
-            background-color: #374151;
-            color: #d1d5db;
-        }
-
-        /* Table header styles */
-        th {
-          @apply bg-gray-50 dark:bg-dark-200 text-xs font-medium text-gray-500 dark:text-gray-300 uppercase;
-          padding: 8px 4px;
-          text-align: center;
-          vertical-align: middle;
-          border: 1px solid #e5e7eb;
-        }
-
-        html.dark th {
-          border-color: #374151;
-        }
-
-        /* Table row styles */
-        tr {
-          @apply border-b border-gray-200 dark:border-gray-700;
-        }
-
-        /* Checkbox styles */
-        .form-checkbox-table {
-            @apply h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded block mx-auto;
-        }
-        .form-checkbox-table[disabled] {
-             opacity: 0.7;
-             cursor: not-allowed;
         }
 
         @media print {
@@ -1821,6 +1653,77 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           
           /* Ensure all text is black for maximum readability */
           * { color: black !important; }
+          
+          /* Page setup */
+          @page { 
+            margin: 0.5in !important; 
+            size: A4 !important;
+          }
+          
+          /* Fix PDF cutoff issues */
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 100vh !important;
+          }
+          
+          .max-w-7xl {
+            margin: 0 !important;
+            padding: 20px !important;
+            min-height: 100vh !important;
+          }
+          
+          /* Ensure proper page breaks */
+          .mb-6 {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            margin-bottom: 20px !important;
+          }
+          
+          /* Force input boxes to stay within their cells */
+          .max-w-7xl table input {
+            max-width: calc(100% - 2px) !important;
+            box-sizing: border-box !important;
+          }
+          
+          /* Specific styles for Visual and Mechanical Inspection table */
+          .max-w-7xl table td:first-child {
+            word-wrap: break-word !important;
+            word-break: break-all !important;
+            max-width: 200px !important;
+            font-size: 6px !important;
+            line-height: 1.0 !important;
+            padding: 2px 4px !important;
+          }
+          
+          .max-w-7xl table th:first-child {
+            max-width: 200px !important;
+            font-size: 6px !important;
+            padding: 2px 4px !important;
+          }
+          
+          /* Ensure description column has enough space */
+          .max-w-7xl table td:nth-child(2) {
+            font-size: 6px !important;
+            line-height: 1.0 !important;
+            padding: 2px 4px !important;
+          }
+          
+          .max-w-7xl table th:nth-child(2) {
+            font-size: 6px !important;
+            padding: 2px 4px !important;
+          }
+          
+          /* Compact results column */
+          .max-w-7xl table td:nth-child(3) {
+            font-size: 7px !important;
+            padding: 2px 2px !important;
+          }
+          
+          .max-w-7xl table th:nth-child(3) {
+            font-size: 7px !important;
+            padding: 2px 2px !important;
+          }
         }
       `}</style>
 

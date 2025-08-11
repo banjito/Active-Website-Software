@@ -371,7 +371,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           }
         }
         if (data) {
-          setFormData(prev => ({ ...prev, ...data.report_data, status: data.report_data.status || 'PASS' }));
+          setFormData(prev => ({ ...prev, ...data.report_data, status: (data.report_data.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS' }));
           setIsEditing(false);
         }
       } catch (error) {
@@ -528,14 +528,19 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
         <button
           onClick={() => {
             if (isEditing) {
-              setFormData(prev => ({ ...prev, status: prev.status === 'PASS' ? 'FAIL' : 'PASS' }));
+              setFormData(prev => ({ 
+                ...prev, 
+                status: prev.status === 'PASS' ? 'FAIL' : prev.status === 'FAIL' ? 'LIMITED SERVICE' : 'PASS' 
+              }));
             }
           }}
           className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
             formData.status === 'PASS'
-              ? 'bg-green-600 text-white focus:ring-green-500'
-              : 'bg-red-600 text-white focus:ring-red-500'
-          } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+              ? 'bg-green-600 text-white focus:ring-green-500 hover:bg-green-700'
+              : formData.status === 'FAIL'
+              ? 'bg-red-600 text-white focus:ring-red-500 hover:bg-red-700'
+              : 'bg-yellow-500 text-black focus:ring-yellow-400 hover:bg-yellow-600'
+          } ${!isEditing ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           {formData.status}
         </button>
@@ -608,71 +613,115 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA
+          <div className="hidden print:block mt-2">
+            <div 
+              className="pass-fail-status-box"
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: formData.status === 'PASS' ? '2px solid #16a34a' : formData.status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
+                backgroundColor: formData.status === 'PASS' ? '#22c55e' : formData.status === 'FAIL' ? '#ef4444' : '#eab308',
+                color: 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
+              }}
+            >
+              {formData.status || 'PASS'}
+            </div>
+          </div>
+        </div>
       </div>
       {/* End Print Header */}
       
-      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
-        <div className="max-w-7xl w-full space-y-8">
+      <div className="p-6 flex justify-center">
+        <div className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
           <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
             {renderHeader()}
           </div>
 
           {/* Job Information */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer:</label>{renderInput("customer", "", "text", true)}</div>
-          <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #:</label>{renderInput("jobNumber", "", "text", true)}</div>
-          <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address:</label>{renderInput("address", "", "text", true)}</div>
-          <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Technicians:</label>{renderInput("technicians")}</div>
-          <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User:</label>{renderInput("user", "", "text", true)}</div>
-          <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Substation:</label>{renderInput("substation")}</div>
-          <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date:</label>{renderInput("date", "", "date")}</div>
-          <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Eqpt. Location:</label>{renderInput("eqptLocation")}</div>
-          <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier:</label>{renderInput("identifier")}</div>
-        </div>
-        <div className="grid grid-cols-4 gap-4 mt-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. °F:</label>
-            <input
-              type="number"
-              value={formData.temperature.fahrenheit}
-              onChange={(e) => handleFahrenheitChange(Number(e.target.value))}
-              readOnly={!isEditing}
-              className={`mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">°C:</label>
-            <input
-              type="number"
-              value={formData.temperature.celsius}
-              onChange={(e) => handleCelsiusChange(Number(e.target.value))}
-              readOnly={!isEditing}
-              className={`mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">TCF:</label>
-            <input
-              type="number"
-              value={formData.temperature.tcf}
-              readOnly
-              className="mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-dark-200 shadow-sm dark:text-white"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Humidity %:</label>
-            {renderInput("humidity", "", "number")}
-          </div>
-        </div>
-      </div>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              {/* Column 1 */}
+              <div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="customer" className="form-label inline-block w-32">Customer:</label>
+                  <input id="customer" type="text" value={formData.customer} onChange={(e) => handleInputChange(e)} name="customer" readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="address" className="form-label inline-block w-32">Address:</label>
+                  <input id="address" type="text" value={formData.address} onChange={(e) => handleInputChange(e)} name="address" readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="jobNumber" className="form-label inline-block w-32">Job #:</label>
+                  <input id="jobNumber" type="text" value={formData.jobNumber} onChange={(e) => handleInputChange(e)} name="jobNumber" readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="date" className="form-label inline-block w-32">Date:</label>
+                  <input id="date" type="date" value={formData.date} onChange={(e) => handleInputChange(e)} name="date" readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="technicians" className="form-label inline-block w-32">Technicians:</label>
+                  <input id="technicians" type="text" value={formData.technicians} onChange={(e) => handleInputChange(e)} name="technicians" readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="identifier" className="form-label inline-block w-32">Identifier:</label>
+                  <input id="identifier" type="text" value={formData.identifier} onChange={(e) => handleInputChange(e)} name="identifier" readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+              </div>
+              {/* Column 2 */}
+              <div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="user" className="form-label inline-block w-32">User:</label>
+                  <input id="user" type="text" value={formData.user} onChange={(e) => handleInputChange(e)} name="user" readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="substation" className="form-label inline-block w-32">Substation:</label>
+                  <input id="substation" type="text" value={formData.substation} onChange={(e) => handleInputChange(e)} name="substation" readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="eqptLocation" className="form-label inline-block w-32">Eqpt. Location:</label>
+                  <input id="eqptLocation" type="text" value={formData.eqptLocation} onChange={(e) => handleInputChange(e)} name="eqptLocation" readOnly={!isEditing} className="form-input flex-1" />
+                </div>
+                {/* Temperature Fields */}
+                <div className="mb-4">
+                  <div className="flex items-center space-x-1 mb-2">
+                    <label className="form-label inline-block w-auto">Temp:</label>
+                    <input type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(Number(e.target.value))} readOnly={!isEditing} className="form-input w-12" />
+                    <span className="text-xs">°F</span>
+                    <input type="number" value={formData.temperature.celsius} readOnly className="form-input w-12 bg-gray-100 dark:bg-dark-200" />
+                    <span className="text-xs">°C</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <label className="form-label inline-block w-auto">TCF:</label>
+                    <input type="number" value={formData.temperature.tcf.toFixed(3)} readOnly className="form-input w-20 bg-gray-100 dark:bg-dark-200" />
+                  </div>
+                </div>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="humidity" className="form-label inline-block w-32">Humidity:</label>
+                  <input id="humidity" type="number" value={formData.humidity} onChange={(e) => handleInputChange(e)} name="humidity" readOnly={!isEditing} className="form-input w-20" />
+                  <span className="ml-2">%</span>
+                </div>
+              </div>
+            </div>
+          </section>
 
       {/* Nameplate Data */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer:</label>{renderInput("manufacturer")}</div>
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">I.C. Rating (kA):</label>{renderInput("icRating")}</div>
@@ -685,11 +734,12 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturing Date:</label>{renderInput("manufacturingDate")}</div>
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">MVA Rating:</label>{renderInput("mvaRating")}</div>
         </div>
-      </div>
+      </section>
 
       {/* Visual and Mechanical Inspection */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-dark-200">
@@ -781,11 +831,12 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
       {/* Contact/Pole Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Contact/Pole Resistance</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Contact/Pole Resistance</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Contact Resistance (As Found) */}
           <div>
@@ -857,11 +908,12 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
             </table>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Insulation Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Insulation Resistance</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance</h2>
         <div className="overflow-x-auto">
           <div className="flex items-center mb-2">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Test Voltage:</span>
@@ -1005,11 +1057,12 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
       {/* Dielectric Withstand */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Dielectric Withstand</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Dielectric Withstand</h2>
         <div className="space-y-6">
           {/* Dielectric Withstand - Breaker in Closed Position */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -1127,11 +1180,12 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Test Equipment Used */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
         <div className="space-y-4">
           {/* Megohmmeter */}
           <div className="flex items-center space-x-4">
@@ -1163,11 +1217,12 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
             {renderInput("testEquipment.hipot.ampId", "", "text", false, "w-32")}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Comments */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
+      <section className="mb-6">
+        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         <textarea
           name="comments"
           value={formData.comments}
@@ -1177,7 +1232,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           rows={4}
           className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
         />
-          </div>
+      </section>
         </div>
       </div>
     </ReportWrapper>
@@ -1251,6 +1306,44 @@ if (typeof document !== 'undefined') {
       
       /* Section styling */
       section { break-inside: avoid !important; margin-bottom: 20px !important; }
+      
+      /* Print-specific form input sizing */
+      .form-input {
+        width: auto !important;
+        max-width: 120px !important;
+        min-width: 60px !important;
+      }
+      
+      /* Temperature fields specific sizing */
+      input[type="number"] {
+        width: 40px !important;
+        max-width: 40px !important;
+        min-width: 40px !important;
+      }
+      
+      /* Job information fields */
+      .mb-4.flex.items-center .form-input {
+        width: 150px !important;
+        max-width: 150px !important;
+      }
+      
+      /* Nameplate data fields */
+      .grid.grid-cols-2 .form-input {
+        width: 120px !important;
+        max-width: 120px !important;
+      }
+      
+      /* Test equipment fields */
+      .space-y-4 .form-input {
+        width: 100px !important;
+        max-width: 100px !important;
+      }
+      
+      /* Comments textarea */
+      textarea {
+        width: 100% !important;
+        max-width: none !important;
+      }
       
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }

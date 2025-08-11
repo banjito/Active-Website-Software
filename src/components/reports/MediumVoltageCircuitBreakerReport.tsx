@@ -69,7 +69,7 @@ interface FormData {
   substation: string;
   eqptLocation: string;
   identifier: string;
-  status: string; // PASS, FAIL, LIMITED SERVICE
+  status: 'PASS' | 'FAIL' | 'LIMITED SERVICE';
 
   // Temperature Data
   temperature: {
@@ -322,7 +322,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           }
         }
         if (data) {
-          setFormData(prev => ({ ...prev, ...data.report_data, status: data.report_data.status || 'PASS' }));
+          setFormData(prev => ({ ...prev, ...data.report_data, status: (data.report_data.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS' }));
           setIsEditing(false);
         }
       } catch (error) {
@@ -479,14 +479,19 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
         <button
           onClick={() => {
             if (isEditing) {
-              setFormData(prev => ({ ...prev, status: prev.status === 'PASS' ? 'FAIL' : 'PASS' }));
+              setFormData(prev => ({
+                ...prev,
+                status: prev.status === 'PASS' ? 'FAIL' : prev.status === 'FAIL' ? 'LIMITED SERVICE' : 'PASS'
+              }));
             }
           }}
           className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
             formData.status === 'PASS'
-              ? 'bg-green-600 text-white focus:ring-green-500'
-              : 'bg-red-600 text-white focus:ring-red-500'
-          } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+              ? 'bg-green-600 text-white focus:ring-green-500 hover:bg-green-700'
+              : formData.status === 'FAIL'
+              ? 'bg-red-600 text-white focus:ring-red-500 hover:bg-red-700'
+              : 'bg-yellow-500 text-black focus:ring-yellow-400 hover:bg-yellow-600'
+          } ${!isEditing ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           {formData.status}
         </button>
@@ -559,19 +564,45 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA
+          <div className="hidden print:block mt-2">
+            <div
+              className="pass-fail-status-box"
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: formData.status === 'PASS' ? '2px solid #16a34a' : formData.status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
+                backgroundColor: formData.status === 'PASS' ? '#22c55e' : formData.status === 'FAIL' ? '#ef4444' : '#eab308',
+                color: 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
+              }}
+            >
+              {formData.status || 'PASS'}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
-        <div className="max-w-7xl w-full space-y-2">
+      <div className="p-6 flex justify-center">
+        <div className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
           <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
             {renderHeader()}
           </div>
 
           {/* Job Information */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer:</label>{renderInput("customer", "", "text", true)}</div>
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #:</label>{renderInput("jobNumber", "", "text", true)}</div>
@@ -618,11 +649,12 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 {renderInput("humidity", "", "number")}
               </div>
             </div>
-          </div>
+          </section>
 
           {/* Nameplate Data */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer:</label>{renderInput("manufacturer")}</div>
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">I.C. Rating (kA):</label>{renderInput("icRating")}</div>
@@ -635,11 +667,12 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturing Date:</label>{renderInput("manufacturingDate")}</div>
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">MVA Rating:</label>{renderInput("mvaRating")}</div>
             </div>
-          </div>
+          </section>
 
           {/* Visual and Mechanical Inspection */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-dark-200">
@@ -686,11 +719,12 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </section>
 
           {/* Contact/Pole Resistance */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Contact/Pole Resistance</h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Contact/Pole Resistance</h2>
             <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
               <tbody>
                 <tr>
@@ -715,11 +749,12 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </section>
 
           {/* Insulation Resistance */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Insulation Resistance</h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance</h2>
             <div className="overflow-x-auto">
               <div className="flex items-center mb-2">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Test Voltage:</span>
@@ -863,11 +898,12 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </section>
 
           {/* Dielectric Withstand */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Dielectric Withstand</h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Dielectric Withstand</h2>
             <div className="space-y-6">
               {/* Dielectric Withstand - Breaker CLOSED */}
               <div>
@@ -902,9 +938,6 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                   <tbody>
                     <tr>
                       <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Result:</td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                        {renderInput("dielectricWithstandClosed.result", "", "text", false, "w-full")}
-                      </td>
                       <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
                         {renderInput("dielectricWithstandClosed.p1Ground", "", "text", false, "w-full")}
                       </td>
@@ -964,9 +997,6 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     <tr>
                       <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Result:</td>
                       <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                        {renderInput("vacuumIntegrityOpen.result", "", "text", false, "w-full")}
-                      </td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
                         {renderInput("vacuumIntegrityOpen.p1", "", "text", false, "w-full")}
                       </td>
                       <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
@@ -991,11 +1021,12 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
           {/* Test Equipment Used */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
                 <thead>
@@ -1046,21 +1077,22 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </section>
 
           {/* Comments */}
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
+          <section className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <textarea
               name="comments"
               value={formData.comments}
               onChange={handleInputChange}
               placeholder="Enter any comments or notes here..."
               readOnly={!isEditing}
-              rows={4}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              rows={6}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''} print:bg-white print:border-black print:text-black`}
             />
-          </div>
+          </section>
         </div>
       </div>
     </ReportWrapper>
@@ -1136,6 +1168,14 @@ if (typeof document !== 'undefined') {
       
       /* Section styling */
       section { break-inside: avoid !important; margin-bottom: 20px !important; }
+      
+      /* Comments textarea specific styling */
+      textarea {
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 120px !important;
+        resize: none !important;
+      }
       
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }

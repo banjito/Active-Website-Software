@@ -143,7 +143,7 @@ interface FormData {
   };
 
   comments: string;
-  status: string;
+  status: 'PASS' | 'FAIL' | 'LIMITED SERVICE';
 
   // New fields
   jobTitle: string;
@@ -454,6 +454,30 @@ const SwitchgearReport: React.FC = () => {
     }));
   }, [formData.temperature.celsius, formData.insulationResistanceTests]);
 
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .section-insulation-resistance table,
+      .section-temp-corrected table,
+      .section-contact-resistance table,
+      .section-dielectric table { table-layout: fixed; width: 100%; }
+      .section-insulation-resistance thead th:first-child,
+      .section-temp-corrected thead th:first-child,
+      .section-contact-resistance thead th:first-child,
+      .section-dielectric thead th:first-child { width: 14%; }
+      .section-contact-resistance thead th:last-child,
+      .section-insulation-resistance thead th:last-child,
+      .section-temp-corrected thead th:last-child,
+      .section-dielectric thead th:last-child { width: 10%; }
+      .section-insulation-resistance td input,
+      .section-temp-corrected td input,
+      .section-contact-resistance td input,
+      .section-dielectric td input { width: 100%; }
+    `;
+    document.head.appendChild(style);
+    return () => { try { document.head.removeChild(style); } catch { /* ignore */ } };
+  }, []);
+
   const loadJobInfo = async () => {
     if (!jobId) return;
 
@@ -712,905 +736,450 @@ const SwitchgearReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
         <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
-        <div className="flex-1 text-center">
+        <div className="flex-1 text-center flex flex-col items-center justify-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA
+          <div className="hidden print:block mt-2">
+            <div
+              className="pass-fail-status-box"
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: formData.status === 'PASS' ? '2px solid #16a34a' : formData.status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
+                backgroundColor: formData.status === 'PASS' ? '#22c55e' : formData.status === 'FAIL' ? '#ef4444' : '#eab308',
+                color: formData.status === 'LIMITED SERVICE' ? 'black' : 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
+              }}
+            >
+              {formData.status || 'PASS'}
+            </div>
+          </div>
+        </div>
       </div>
       {/* End Print Header */}
       
-      <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
+      <div className="p-6 flex justify-center">
         <div className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
           <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
             <div className="flex justify-between items-center">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
               <div className="flex gap-2">
-          <button
-            onClick={() => {
-              if (isEditing) {
-                 setFormData(prev => ({ ...prev, status: prev.status === 'PASS' ? 'FAIL' : 'PASS' }))
-              }
-            }}
-            className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              formData.status === 'PASS'
-                ? 'bg-green-600 text-white focus:ring-green-500'
-                : 'bg-red-600 text-white focus:ring-red-500'
-            } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
-          >
-            {formData.status === 'PASS' ? 'PASS' : 'FAIL'}
-          </button>
+                <button
+                  onClick={() => {
+                    if (isEditing) {
+                      setFormData(prev => ({
+                        ...prev,
+                        status: prev.status === 'PASS' ? 'FAIL' : prev.status === 'FAIL' ? 'LIMITED SERVICE' : 'PASS'
+                      }));
+                    }
+                  }}
+                  className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    formData.status === 'PASS'
+                      ? 'bg-green-600 text-white focus:ring-green-500 hover:bg-green-700'
+                      : formData.status === 'FAIL'
+                      ? 'bg-red-600 text-white focus:ring-red-500 hover:bg-red-700'
+                      : 'bg-yellow-500 text-black focus:ring-yellow-400 hover:bg-yellow-600'
+                  } ${!isEditing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  disabled={!isEditing}
+                >
+                  {formData.status}
+                </button>
 
-          {reportId && !isEditing ? (
-            <>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Edit Report
-              </button>
-              <button
-                onClick={() => window.print()}
-                className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-              >
-                Print Report
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={handleSave}
-              disabled={!isEditing}
-              className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
-            >
-              Save Report
-            </button>
-          )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Job Information */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #</label>
-              <input
-                type="text"
-                name="jobNumber"
-                value={formData.jobNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, jobNumber: e.target.value }))}
-                readOnly={!isEditing}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer</label>
-              <input
-                type="text"
-                value={formData.customerName}
-                onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
-                readOnly={!isEditing}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
-              <textarea
-                value={formData.customerLocation}
-                onChange={(e) => setFormData(prev => ({ ...prev, customerLocation: e.target.value }))}
-                readOnly={!isEditing}
-                rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
-              />
-            </div>
-            <div>
-              <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier</label>
-              <input
-                type="text"
-                id="identifier"
-                name="identifier"
-                value={formData.identifier}
-                onChange={(e) => setFormData(prev => ({ ...prev, identifier: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                placeholder="Enter Identifier"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Technicians</label>
-              <input
-                type="text"
-                value={formData.technicians}
-                onChange={(e) => setFormData(prev => ({ ...prev, technicians: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Substation</label>
-              <input
-                type="text"
-                value={formData.substation}
-                onChange={(e) => setFormData(prev => ({ ...prev, substation: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Equipment Location</label>
-              <input
-                type="text"
-                value={formData.eqptLocation}
-                onChange={(e) => setFormData(prev => ({ ...prev, eqptLocation: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User</label>
-              <input
-                type="text"
-                id="userName"
-                name="userName"
-                value={formData.userName}
-                onChange={(e) => setFormData(prev => ({ ...prev, userName: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                placeholder="Enter User Name"
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. °F</label>
-                <input
-                  type="number"
-                  value={formData.temperature.fahrenheit}
-                  onChange={(e) => handleFahrenheitChange(Number(e.target.value))}
-                  readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">°C</label>
-                <input
-                  type="number"
-                  value={formData.temperature.celsius}
-                  onChange={(e) => handleCelsiusChange(Number(e.target.value))}
-                  readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">TCF</label>
-                <input
-                  type="number"
-                  value={formData.temperature.tcf}
-                  readOnly
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Nameplate Data */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
-              <input
-                type="text"
-                value={formData.manufacturer}
-                onChange={(e) => setFormData(prev => ({ ...prev, manufacturer: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog No.</label>
-              <input
-                type="text"
-                value={formData.catalogNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, catalogNumber: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-              <input
-                type="text"
-                value={formData.serialNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, serialNumber: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
-              <input
-                type="text"
-                value={formData.type}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">System Voltage (V)</label>
-              <input
-                type="text"
-                value={formData.systemVoltage}
-                onChange={(e) => setFormData(prev => ({ ...prev, systemVoltage: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rated Voltage (V)</label>
-              <input
-                type="text"
-                value={formData.ratedVoltage}
-                onChange={(e) => setFormData(prev => ({ ...prev, ratedVoltage: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rated Current (A)</label>
-              <input
-                type="text"
-                value={formData.ratedCurrent}
-                onChange={(e) => setFormData(prev => ({ ...prev, ratedCurrent: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phase Configuration</label>
-              <input
-                type="text"
-                value={formData.phaseConfiguration}
-                onChange={(e) => setFormData(prev => ({ ...prev, phaseConfiguration: e.target.value }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Visual and Mechanical Inspection */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-              <tr>
-                <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
-                <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Comments</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-              {formData.visualInspectionItems.map((item, index) => (
-                <tr key={item.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{item.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <select
-                      value={item.result}
-                      onChange={(e) => {
-                        const newItems = [...formData.visualInspectionItems];
-                        newItems[index].result = e.target.value;
-                        setFormData({ ...formData, visualInspectionItems: newItems });
-                      }}
-                      disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                {reportId && !isEditing ? (
+                  <>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
-                      {visualInspectionOptions.map(option => (
-                        <option key={option} value={option}>{option}</option>
+                      Edit Report
+                    </button>
+                    <button
+                      onClick={() => window.print()}
+                      className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    >
+                      Print Report
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={handleSave}
+                    disabled={!isEditing}
+                    className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
+                  >
+                    Save Report
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Job Information */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              {/* Left Column */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #</label>
+                  <input type="text" name="jobNumber" value={formData.jobNumber} onChange={(e) => setFormData(prev => ({ ...prev, jobNumber: e.target.value }))} readOnly={!isEditing} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer</label>
+                  <input type="text" value={formData.customerName} onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))} readOnly={!isEditing} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
+                  <textarea value={formData.customerLocation} onChange={(e) => setFormData(prev => ({ ...prev, customerLocation: e.target.value }))} readOnly={!isEditing} rows={3} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
+                </div>
+                <div>
+                  <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier</label>
+                  <input type="text" id="identifier" name="identifier" value={formData.identifier} onChange={(e) => setFormData(prev => ({ ...prev, identifier: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Enter Identifier" />
+                </div>
+              </div>
+              {/* Right Column */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Technicians</label>
+                  <input type="text" value={formData.technicians} onChange={(e) => setFormData(prev => ({ ...prev, technicians: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Substation</label>
+                  <input type="text" value={formData.substation} onChange={(e) => setFormData(prev => ({ ...prev, substation: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Equipment Location</label>
+                  <input type="text" value={formData.eqptLocation} onChange={(e) => setFormData(prev => ({ ...prev, eqptLocation: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+                  <input type="date" value={formData.date} onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User</label>
+                  <input type="text" id="userName" name="userName" value={formData.userName} onChange={(e) => setFormData(prev => ({ ...prev, userName: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Enter User Name" />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. °F</label>
+                    <input type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">°C</label>
+                    <input type="number" value={formData.temperature.celsius} onChange={(e) => handleCelsiusChange(Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  </div>
+                  <div>
+                    <label className="block text sm font-medium text-gray-700 dark:text-gray-300">TCF</label>
+                    <input type="number" value={formData.temperature.tcf} readOnly className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Nameplate Data */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label><input type="text" value={formData.manufacturer} onChange={(e) => setFormData(prev => ({ ...prev, manufacturer: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog No.</label><input type="text" value={formData.catalogNumber} onChange={(e) => setFormData(prev => ({ ...prev, catalogNumber: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label><input type="text" value={formData.serialNumber} onChange={(e) => setFormData(prev => ({ ...prev, serialNumber: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label><input type="text" value={formData.type} onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              </div>
+              <div className="space-y-4">
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">System Voltage (V)</label><input type="text" value={formData.systemVoltage} onChange={(e) => setFormData(prev => ({ ...prev, systemVoltage: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rated Voltage (V)</label><input type="text" value={formData.ratedVoltage} onChange={(e) => setFormData(prev => ({ ...prev, ratedVoltage: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rated Current (A)</label><input type="text" value={formData.ratedCurrent} onChange={(e) => setFormData(prev => ({ ...prev, ratedCurrent: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phase Configuration</label><input type="text" value={formData.phaseConfiguration} onChange={(e) => setFormData(prev => ({ ...prev, phaseConfiguration: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Visual and Mechanical Inspection */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead>
+                  <tr>
+                    <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                    <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
+                    <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Comments</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  {formData.visualInspectionItems.map((item, index) => (
+                    <tr key={item.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{item.description}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select value={item.result} onChange={(e) => { const newItems = [...formData.visualInspectionItems]; newItems[index].result = e.target.value; setFormData({ ...formData, visualInspectionItems: newItems }); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                          {visualInspectionOptions.map(option => (<option key={option} value={option}>{option}</option>))}
+                        </select>
+                      </td>
+                      <td className="px-6 py-4">
+                        <input type="text" value={item.comments} onChange={(e) => { const newItems = [...formData.visualInspectionItems]; newItems[index].comments = e.target.value; setFormData({ ...formData, visualInspectionItems: newItems }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Electrical Tests - Measured Insulation Resistance */}
+          <div className="mb-6 section-insulation-resistance">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Measured Insulation Resistance Values</h2>
+            <div className="flex justify-end mb-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
+                <select value={formData.insulationResistanceTests[0]?.testVoltage || ''} onChange={(e) => { const newTests = formData.insulationResistanceTests.map(test => ({ ...test, testVoltage: e.target.value })); setFormData({ ...formData, insulationResistanceTests: newTests }); }} disabled={!isEditing} className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                  <option value="">Select...</option>
+                  <option value="250V">250V</option>
+                  <option value="500V">500V</option>
+                  <option value="1000V">1000V</option>
+                  <option value="2500V">2500V</option>
+                  <option value="5000V">5000V</option>
+                </select>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+                <colgroup>
+                  <col style={{ width: '14%' }} />
+                  <col span={9} />
+                  <col style={{ width: '10%' }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={9}>Insulation Resistance</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
+                  </tr>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200"></th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-G</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-G</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-G</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-B</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-C</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-A</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-N</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-N</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-N</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"></th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  {formData.insulationResistanceTests.map((test, index) => (
+                    <tr key={index}>
+                      <td className="px-3 py-2">
+                        <input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" />
+                      </td>
+                      {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
+                        <td key={key} className="px-3 py-2">
+                          <input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.insulationResistanceTests]; newTests[index].values[key] = e.target.value; setFormData(prev => ({ ...prev, insulationResistanceTests: newTests, temperatureCorrectedTests: newTests.map(test => ({ ...test, values: { ag: test.values.ag ? (parseFloat(test.values.ag) * prev.temperature.tcf).toFixed(2) : '', bg: test.values.bg ? (parseFloat(test.values.bg) * prev.temperature.tcf).toFixed(2) : '', cg: test.values.cg ? (parseFloat(test.values.cg) * prev.temperature.tcf).toFixed(2) : '', ab: test.values.ab ? (parseFloat(test.values.ab) * prev.temperature.tcf).toFixed(2) : '', bc: test.values.bc ? (parseFloat(test.values.bc) * prev.temperature.tcf).toFixed(2) : '', ca: test.values.ca ? (parseFloat(test.values.ca) * prev.temperature.tcf).toFixed(2) : '', an: test.values.an ? (parseFloat(test.values.an) * prev.temperature.tcf).toFixed(2) : '', bn: test.values.bn ? (parseFloat(test.values.bn) * prev.temperature.tcf).toFixed(2) : '', cn: test.values.cn ? (parseFloat(test.values.cn) * prev.temperature.tcf).toFixed(2) : '' }, unit: test.unit })) })); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                        </td>
                       ))}
-                    </select>
-                  </td>
-                  <td className="px-6 py-4">
-                    <input
-                      type="text"
-                      value={item.comments}
-                      onChange={(e) => {
-                        const newItems = [...formData.visualInspectionItems];
-                        newItems[index].comments = e.target.value;
-                        setFormData({ ...formData, visualInspectionItems: newItems });
-                      }}
-                      readOnly={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Electrical Tests */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Measured Insulation Resistance Values</h2>
-        <div className="flex justify-end mb-2">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
-            <select
-              value={formData.insulationResistanceTests[0]?.testVoltage || ''}
-              onChange={(e) => {
-                const newTests = formData.insulationResistanceTests.map(test => ({
-                  ...test,
-                  testVoltage: e.target.value
-                }));
-                setFormData({ ...formData, insulationResistanceTests: newTests });
-              }}
-              disabled={!isEditing}
-              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              <option value="">Select...</option>
-              <option value="250V">250V</option>
-              <option value="500V">500V</option>
-              <option value="1000V">1000V</option>
-              <option value="2500V">2500V</option>
-              <option value="5000V">5000V</option>
-            </select>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-              <tr>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={9}>Insulation Resistance</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
-              </tr>
-              <tr>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200"></th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-G</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-G</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-G</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-B</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-C</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-A</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-N</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-N</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-N</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"></th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-              {formData.insulationResistanceTests.map((test, index) => (
-                <tr key={index}>
-                  <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={test.busSection}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
-                  </td>
-                  {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
-                    <td key={key} className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={test.values[key]}
-                        onChange={(e) => {
-                          const newTests = [...formData.insulationResistanceTests];
-                          newTests[index].values[key] = e.target.value;
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            insulationResistanceTests: newTests,
-                            temperatureCorrectedTests: newTests.map(test => ({
-                              ...test,
-                              values: {
-                                ag: test.values.ag ? (parseFloat(test.values.ag) * prev.temperature.tcf).toFixed(2) : '',
-                                bg: test.values.bg ? (parseFloat(test.values.bg) * prev.temperature.tcf).toFixed(2) : '',
-                                cg: test.values.cg ? (parseFloat(test.values.cg) * prev.temperature.tcf).toFixed(2) : '',
-                                ab: test.values.ab ? (parseFloat(test.values.ab) * prev.temperature.tcf).toFixed(2) : '',
-                                bc: test.values.bc ? (parseFloat(test.values.bc) * prev.temperature.tcf).toFixed(2) : '',
-                                ca: test.values.ca ? (parseFloat(test.values.ca) * prev.temperature.tcf).toFixed(2) : '',
-                                an: test.values.an ? (parseFloat(test.values.an) * prev.temperature.tcf).toFixed(2) : '',
-                                bn: test.values.bn ? (parseFloat(test.values.bn) * prev.temperature.tcf).toFixed(2) : '',
-                                cn: test.values.cn ? (parseFloat(test.values.cn) * prev.temperature.tcf).toFixed(2) : ''
-                              },
-                              unit: test.unit
-                            }))
-                          }));
-                        }}
-                        readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                      />
-                    </td>
+                      <td className="px-3 py-2">
+                        <select value={test.unit} onChange={(e) => { const newTests = [...formData.insulationResistanceTests]; newTests[index].unit = e.target.value; setFormData(prev => ({ ...prev, insulationResistanceTests: newTests })); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                          {insulationResistanceUnits.map(unit => (<option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>))}
+                        </select>
+                      </td>
+                    </tr>
                   ))}
-                  <td className="px-3 py-2">
-                    <select
-                      value={test.unit}
-                      onChange={(e) => {
-                        const newTests = [...formData.insulationResistanceTests];
-                        newTests[index].unit = e.target.value;
-                        setFormData(prev => ({ ...prev, insulationResistanceTests: newTests }));
-                      }}
-                      disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    >
-                      {insulationResistanceUnits.map(unit => (
-                        <option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Temperature Corrected Values */}
+          <div className="mb-6 section-temp-corrected">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Values</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={9}>Insulation Resistance</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
+                  </tr>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200"></th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-G</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-G</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-G</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-B</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-C</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-A</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-N</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-N</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-N</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"></th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  {formData.temperatureCorrectedTests.map((test, index) => (
+                    <tr key={index}>
+                      <td className="px-3 py-2"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></td>
+                      {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
+                        <td key={key} className="px-3 py-2"><input type="text" value={formData.insulationResistanceTests[index]?.values[key] ? (parseFloat(formData.insulationResistanceTests[index].values[key]) * formData.temperature.tcf).toFixed(2) : ''} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></td>
                       ))}
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Temperature Corrected Values */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Temperature Corrected Values</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-              <tr>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={9}>Insulation Resistance</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
-              </tr>
-              <tr>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200"></th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-G</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-G</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-G</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-B</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-C</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-A</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-N</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-N</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-N</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"></th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-              {formData.temperatureCorrectedTests.map((test, index) => (
-                <tr key={index}>
-                  <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={test.busSection}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
-                  </td>
-                  {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
-                    <td key={key} className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={formData.insulationResistanceTests[index]?.values[key] ? 
-                          (parseFloat(formData.insulationResistanceTests[index].values[key]) * formData.temperature.tcf).toFixed(2) : ''}
-                        readOnly
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                      />
-                    </td>
+                      <td className="px-3 py-2"><input type="text" value={test.unit} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></td>
+                    </tr>
                   ))}
-                  <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={test.unit}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Contact Resistance */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Contact Resistance</h2>
-        <div className="flex justify-end mb-2">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
-            <select
-              value={formData.contactResistanceTests[0]?.testVoltage || ''}
-              onChange={(e) => {
-                const newTests = formData.contactResistanceTests.map(test => ({
-                  ...test,
-                  testVoltage: e.target.value
-                }));
-                setFormData({ ...formData, contactResistanceTests: newTests });
-              }}
-              disabled={!isEditing}
-              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              <option value="">Select...</option>
-              <option value="250V">250V</option>
-              <option value="500V">500V</option>
-              <option value="1000V">1000V</option>
-              <option value="2500V">2500V</option>
-              <option value="5000V">5000V</option>
-            </select>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-              <tr>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={5}>Contact Resistance</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
-              </tr>
-              <tr>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200"></th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A Phase</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B Phase</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C Phase</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Neutral</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Ground</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"></th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-              {formData.contactResistanceTests.map((test, index) => (
-                <tr key={index}>
-                  <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={test.busSection}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
-                  </td>
-                  {['aPhase', 'bPhase', 'cPhase', 'neutral', 'ground'].map((key) => (
-                    <td key={key} className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={test.values[key]}
-                        onChange={(e) => {
-                          const newTests = [...formData.contactResistanceTests];
-                          if (!newTests[index]) {
-                            newTests[index] = {
-                              busSection: '',
-                              values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' },
-                              testVoltage: newTests[0]?.testVoltage || '',
-                              unit: 'µΩ'
-                            };
-                          }
-                          newTests[index].values[key] = e.target.value;
-                          setFormData({ ...formData, contactResistanceTests: newTests });
-                        }}
-                        readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                      />
-                    </td>
-                  ))}
-                  <td className="px-3 py-2">
-                    <select
-                      value={test.unit}
-                      onChange={(e) => {
-                        const newTests = [...formData.contactResistanceTests];
-                        newTests[index].unit = e.target.value;
-                        setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
-                      }}
-                      disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    >
-                      {contactResistanceUnits.map(unit => (
-                        <option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>
+
+          {/* Contact Resistance */}
+          <div className="mb-6 section-contact-resistance">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Contact Resistance</h2>
+            <div className="flex justify-end mb-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
+                <select value={formData.contactResistanceTests[0]?.testVoltage || ''} onChange={(e) => { const newTests = formData.contactResistanceTests.map(test => ({ ...test, testVoltage: e.target.value })); setFormData({ ...formData, contactResistanceTests: newTests }); }} disabled={!isEditing} className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                  <option value="">Select...</option>
+                  <option value="250V">250V</option>
+                  <option value="500V">500V</option>
+                  <option value="1000V">1000V</option>
+                  <option value="2500V">2500V</option>
+                  <option value="5000V">5000V</option>
+                </select>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={5}>Contact Resistance</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
+                  </tr>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200"></th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A Phase</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B Phase</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C Phase</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Neutral</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Ground</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"></th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  {formData.contactResistanceTests.map((test, index) => (
+                    <tr key={index}>
+                      <td className="px-3 py-2"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></td>
+                      {['aPhase', 'bPhase', 'cPhase', 'neutral', 'ground'].map((key) => (
+                        <td key={key} className="px-3 py-2"><input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.contactResistanceTests]; if (!newTests[index]) { newTests[index] = { busSection: '', values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' }, testVoltage: newTests[0]?.testVoltage || '', unit: 'µΩ' }; } newTests[index].values[key] = e.target.value; setFormData({ ...formData, contactResistanceTests: newTests }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
                       ))}
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Dielectric Withstand */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Dielectric Withstand</h2>
-        <div className="flex justify-end mb-2">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
-            <select
-              value={formData.dielectricWithstandTests[0]?.testVoltage || ''}
-              onChange={(e) => {
-                const newTests = formData.dielectricWithstandTests.map(test => ({
-                  ...test,
-                  testVoltage: e.target.value
-                }));
-                setFormData({ ...formData, dielectricWithstandTests: newTests });
-              }}
-              disabled={!isEditing}
-              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              <option value="">Select...</option>
-              <option value="250V">250V</option>
-              <option value="500V">500V</option>
-              <option value="1000V">1000V</option>
-              <option value="2500V">2500V</option>
-              <option value="5000V">5000V</option>
-            </select>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-              <tr>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={3}>Dielectric Withstand</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
-              </tr>
-              <tr>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200"></th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-G</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-G</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-G</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"></th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-              {formData.dielectricWithstandTests.map((test, index) => (
-                <tr key={index}>
-                  <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={test.busSection}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
-                  </td>
-                  {['ag', 'bg', 'cg'].map((key) => (
-                    <td key={key} className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={test.values[key]}
-                        onChange={(e) => {
-                          const newTests = [...formData.dielectricWithstandTests];
-                          if (!newTests[index]) {
-                            newTests[index] = {
-                              busSection: '',
-                              values: { ag: '', bg: '', cg: '' },
-                              testVoltage: newTests[0]?.testVoltage || '',
-                              unit: 'µA'
-                            };
-                          }
-                          newTests[index].values[key] = e.target.value;
-                          setFormData({ ...formData, dielectricWithstandTests: newTests });
-                        }}
-                        readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                      />
-                    </td>
+                      <td className="px-3 py-2"><select value={test.unit} onChange={(e) => { const newTests = [...formData.contactResistanceTests]; newTests[index].unit = e.target.value; setFormData(prev => ({ ...prev, contactResistanceTests: newTests })); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}><option value="µΩ">µΩ</option><option value="mΩ">mΩ</option><option value="Ω">Ω</option></select></td>
+                    </tr>
                   ))}
-                  <td className="px-3 py-2">
-                    <select
-                      value={test.unit}
-                      onChange={(e) => {
-                        const newTests = [...formData.dielectricWithstandTests];
-                        if (!newTests[index]) {
-                          newTests[index] = {
-                            busSection: '',
-                            values: { ag: '', bg: '', cg: '' },
-                            testVoltage: newTests[0]?.testVoltage || '',
-                            unit: e.target.value
-                          };
-                        }
-                        newTests[index].unit = e.target.value;
-                        setFormData({ ...formData, dielectricWithstandTests: newTests });
-                      }}
-                      disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    >
-                      <option value="µA">µA</option>
-                      <option value="mA">mA</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      {/* Test Equipment Used */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
-        <div className="grid grid-cols-1 gap-6">
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label>
-              <input
-                type="text"
-                value={formData.testEquipment.megohmmeter.name}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    megohmmeter: { ...prev.testEquipment.megohmmeter, name: e.target.value }
-                  }
-                }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
+          {/* Dielectric Withstand */}
+          <div className="mb-6 section-dielectric">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Dielectric Withstand</h2>
+            <div className="flex justify-end mb-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
+                <select value={formData.dielectricWithstandTests[0]?.testVoltage || ''} onChange={(e) => { const newTests = formData.dielectricWithstandTests.map(test => ({ ...test, testVoltage: e.target.value })); setFormData({ ...formData, dielectricWithstandTests: newTests }); }} disabled={!isEditing} className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                  <option value="">Select...</option>
+                  <option value="250V">250V</option>
+                  <option value="500V">500V</option>
+                  <option value="1000V">1000V</option>
+                  <option value="2500V">2500V</option>
+                  <option value="5000V">5000V</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-              <input
-                type="text"
-                value={formData.testEquipment.megohmmeter.serialNumber}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    megohmmeter: { ...prev.testEquipment.megohmmeter, serialNumber: e.target.value }
-                  }
-                }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
-              <input
-                type="text"
-                value={formData.testEquipment.megohmmeter.ampId}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    megohmmeter: { ...prev.testEquipment.megohmmeter, ampId: e.target.value }
-                  }
-                }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={3}>Dielectric Withstand</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
+                  </tr>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200"></th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-G</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">B-G</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">C-G</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"></th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  {formData.dielectricWithstandTests.map((test, index) => (
+                    <tr key={index}>
+                      <td className="px-3 py-2"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></td>
+                      {['ag', 'bg', 'cg'].map((key) => (
+                        <td key={key} className="px-3 py-2"><input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.dielectricWithstandTests]; if (!newTests[index]) { newTests[index] = { busSection: '', values: { ag: '', bg: '', cg: '' }, testVoltage: newTests[0]?.testVoltage || '', unit: 'µA' }; } newTests[index].values[key] = e.target.value; setFormData({ ...formData, dielectricWithstandTests: newTests }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                      ))}
+                      <td className="px-3 py-2"><select value={test.unit} onChange={(e) => { const newTests = [...formData.dielectricWithstandTests]; if (!newTests[index]) { newTests[index] = { busSection: '', values: { ag: '', bg: '', cg: '' }, testVoltage: newTests[0]?.testVoltage || '', unit: e.target.value }; } newTests[index].unit = e.target.value; setFormData({ ...formData, dielectricWithstandTests: newTests }); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}><option value="µA">µA</option><option value="mA">mA</option></select></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Low Resistance</label>
-              <input
-                type="text"
-                value={formData.testEquipment.lowResistance.name}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    lowResistance: { ...prev.testEquipment.lowResistance, name: e.target.value }
-                  }
-                }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-              <input
-                type="text"
-                value={formData.testEquipment.lowResistance.serialNumber}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    lowResistance: { ...prev.testEquipment.lowResistance, serialNumber: e.target.value }
-                  }
-                }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
-              <input
-                type="text"
-                value={formData.testEquipment.lowResistance.ampId}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    lowResistance: { ...prev.testEquipment.lowResistance, ampId: e.target.value }
-                  }
-                }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
+
+          {/* Test Equipment Used */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+            <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-3 gap-4">
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label><input type="text" value={formData.testEquipment.megohmmeter.name} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, megohmmeter: { ...prev.testEquipment.megohmmeter, name: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label><input type="text" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, megohmmeter: { ...prev.testEquipment.megohmmeter, serialNumber: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label><input type="text" value={formData.testEquipment.megohmmeter.ampId} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, megohmmeter: { ...prev.testEquipment.megohmmeter, ampId: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Low Resistance</label><input type="text" value={formData.testEquipment.lowResistance.name} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, lowResistance: { ...prev.testEquipment.lowResistance, name: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label><input type="text" value={formData.testEquipment.lowResistance.serialNumber} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, lowResistance: { ...prev.testEquipment.lowResistance, serialNumber: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label><input type="text" value={formData.testEquipment.lowResistance.ampId} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, lowResistance: { ...prev.testEquipment.lowResistance, ampId: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hipot</label><input type="text" value={formData.testEquipment.hipot.name} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, hipot: { ...prev.testEquipment.hipot, name: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label><input type="text" value={formData.testEquipment.hipot.serialNumber} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, hipot: { ...prev.testEquipment.hipot, serialNumber: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label><input type="text" value={formData.testEquipment.hipot.ampId} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, hipot: { ...prev.testEquipment.hipot, ampId: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hipot</label>
-              <input
-                type="text"
-                value={formData.testEquipment.hipot.name}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    hipot: { ...prev.testEquipment.hipot, name: e.target.value }
-                  }
-                }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-              <input
-                type="text"
-                value={formData.testEquipment.hipot.serialNumber}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    hipot: { ...prev.testEquipment.hipot, serialNumber: e.target.value }
-                  }
-                }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
-              <input
-                type="text"
-                value={formData.testEquipment.hipot.ampId}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  testEquipment: {
-                    ...prev.testEquipment,
-                    hipot: { ...prev.testEquipment.hipot, ampId: e.target.value }
-                  }
-                }))}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
-            </div>
+
+          {/* Comments */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+            <textarea value={formData.comments} onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))} readOnly={!isEditing} rows={4} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
           </div>
         </div>
-      </div>
-
-      {/* Comments */}
-      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
-        <textarea
-          value={formData.comments}
-          onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))}
-          readOnly={!isEditing}
-          rows={4}
-          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-        />
       </div>
     </ReportWrapper>
   );

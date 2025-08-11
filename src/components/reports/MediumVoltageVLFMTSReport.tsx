@@ -675,6 +675,10 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
           ...prev,
           ...data.data
         }));
+        // Set status from loaded data
+        if (data.data.status) {
+          setFormData(prev => ({ ...prev, status: data.data.status as TestStatus }));
+        }
         setIsEditMode(false);
       } else {
         toast.error('Loaded report seems incomplete.');

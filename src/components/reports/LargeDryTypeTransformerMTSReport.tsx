@@ -780,70 +780,70 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white border-b dark:border-gray-700 pb-2">Insulation Resistance Values</h3>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-dark-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Winding Under Test</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Test Voltage</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">0.5 Min.</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">1 Min.</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">10 Min.</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
-                      </tr>
-                    </thead>
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-dark-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Winding Under Test</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Test Voltage</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">0.5 Min.</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">1 Min.</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">10 Min.</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
+                    </tr>
+                  </thead>
                   <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                     {[
                       { id: 'primaryToGround', label: 'Primary to Ground' },
                       { id: 'secondaryToGround', label: 'Secondary to Ground' },
                       { id: 'primaryToSecondary', label: 'Primary to Secondary' }
-                  ].map((testItem) => (
-                    <tr key={testItem.id}>
-                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{testItem.label}</td>
-                      <td className="px-6 py-4">
+                    ].map((testItem) => (
+                      <tr key={testItem.id}>
+                        <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{testItem.label}</td>
+                        <td className="px-6 py-4">
                           <select
-                          value={formData.insulationResistance[testItem.id]?.testVoltage || ''}
-                          onChange={(e) => handleNestedChange('insulationResistance', testItem.id, { ...formData.insulationResistance[testItem.id], testVoltage: e.target.value })}
+                            value={formData.insulationResistance[testItem.id]?.testVoltage || ''}
+                            onChange={(e) => handleNestedChange('insulationResistance', testItem.id, { ...formData.insulationResistance[testItem.id], testVoltage: e.target.value })}
                             disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                            className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           >
                             {testVoltageOptions.map(voltage => (
                               <option key={voltage} value={voltage} className="dark:bg-dark-100 dark:text-white">{voltage}</option>
                             ))}
                           </select>
                         </td>
-                      <td className="px-6 py-4">
-                          <input 
-                            type="text" 
-                          value={formData.insulationResistance[testItem.id]?.readings?.halfMinute || ''}
-                          onChange={(e) => handleDeepNestedChange('insulationResistance', testItem.id, 'readings', 'halfMinute', e.target.value)}
-                            readOnly={!isEditing} 
-                          className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        <td className="px-6 py-4">
+                          <input
+                            type="text"
+                            value={formData.insulationResistance[testItem.id]?.readings?.halfMinute || ''}
+                            onChange={(e) => handleDeepNestedChange('insulationResistance', testItem.id, 'readings', 'halfMinute', e.target.value)}
+                            readOnly={!isEditing}
+                            className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                      <td className="px-6 py-4">
-                          <input 
-                            type="text" 
-                          value={formData.insulationResistance[testItem.id]?.readings?.oneMinute || ''}
-                          onChange={(e) => handleDeepNestedChange('insulationResistance', testItem.id, 'readings', 'oneMinute', e.target.value)}
-                            readOnly={!isEditing} 
-                          className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        <td className="px-6 py-4">
+                          <input
+                            type="text"
+                            value={formData.insulationResistance[testItem.id]?.readings?.oneMinute || ''}
+                            onChange={(e) => handleDeepNestedChange('insulationResistance', testItem.id, 'readings', 'oneMinute', e.target.value)}
+                            readOnly={!isEditing}
+                            className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                      <td className="px-6 py-4">
-                          <input 
-                            type="text" 
-                          value={formData.insulationResistance[testItem.id]?.readings?.tenMinute || ''}
-                          onChange={(e) => handleDeepNestedChange('insulationResistance', testItem.id, 'readings', 'tenMinute', e.target.value)}
-                            readOnly={!isEditing} 
-                          className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        <td className="px-6 py-4">
+                          <input
+                            type="text"
+                            value={formData.insulationResistance[testItem.id]?.readings?.tenMinute || ''}
+                            onChange={(e) => handleDeepNestedChange('insulationResistance', testItem.id, 'readings', 'tenMinute', e.target.value)}
+                            readOnly={!isEditing}
+                            className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           />
                         </td>
-                      <td className="px-6 py-4">
+                        <td className="px-6 py-4">
                           <select
-                          value={formData.insulationResistance[testItem.id]?.unit || 'MΩ'}
-                          onChange={(e) => handleNestedChange('insulationResistance', testItem.id, { ...formData.insulationResistance[testItem.id], unit: e.target.value })}
+                            value={formData.insulationResistance[testItem.id]?.unit || 'MΩ'}
+                            onChange={(e) => handleNestedChange('insulationResistance', testItem.id, { ...formData.insulationResistance[testItem.id], unit: e.target.value })}
                             disabled={!isEditing}
-                          className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                            className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                           >
                             {insulationResistanceUnits.map(unit => (
                               <option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>
@@ -852,9 +852,9 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
                         </td>
                       </tr>
                     ))}
-                    </tbody>
-                  </table>
-            </div>
+                  </tbody>
+                </table>
+              </div>
           </div>
           
           {/* Temperature Corrected Values */}
@@ -862,13 +862,13 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white border-b dark:border-gray-700 pb-2">Temperature Corrected Values</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-dark-200">
-                  <tr>
+                  <thead className="bg-gray-50 dark:bg-dark-200">
+                    <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Winding Under Test</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">0.5 Min.</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">1 Min.</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">10 Min.</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">0.5 Min.</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">1 Min.</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">10 Min.</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -876,47 +876,47 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
                     { id: 'primaryToGround', label: 'Primary to Ground' },
                     { id: 'secondaryToGround', label: 'Secondary to Ground' },
                     { id: 'primaryToSecondary', label: 'Primary to Secondary' }
-                  ].map((testItem) => (
-                    <tr key={`${testItem.id}-corr`}>
+                    ].map((testItem) => (
+                      <tr key={`${testItem.id}-corr`}>
                       <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{testItem.label}</td>
-                      <td className="px-6 py-4">
-                          <input 
-                            type="text" 
-                          value={formData.insulationResistance[testItem.id]?.corrected?.halfMinute || ''}
-                            readOnly 
-                          className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                        <td className="px-6 py-4">
+                          <input
+                            type="text"
+                            value={formData.insulationResistance[testItem.id]?.corrected?.halfMinute || ''}
+                            readOnly
+                            className="form-input w-full bg-gray-100 dark:bg-dark-200"
                           />
-                      </td>
-                      <td className="px-6 py-4">
-                          <input 
-                            type="text" 
-                          value={formData.insulationResistance[testItem.id]?.corrected?.oneMinute || ''}
-                            readOnly 
-                          className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                        </td>
+                        <td className="px-6 py-4">
+                          <input
+                            type="text"
+                            value={formData.insulationResistance[testItem.id]?.corrected?.oneMinute || ''}
+                            readOnly
+                            className="form-input w-full bg-gray-100 dark:bg-dark-200"
                           />
-                      </td>
-                      <td className="px-6 py-4">
-                          <input 
-                            type="text" 
-                          value={formData.insulationResistance[testItem.id]?.corrected?.tenMinute || ''}
-                            readOnly 
-                          className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                        </td>
+                        <td className="px-6 py-4">
+                          <input
+                            type="text"
+                            value={formData.insulationResistance[testItem.id]?.corrected?.tenMinute || ''}
+                            readOnly
+                            className="form-input w-full bg-gray-100 dark:bg-dark-200"
                           />
-                      </td>
-                      <td className="px-6 py-4">
-                          <input 
-                            type="text" 
-                          value={formData.insulationResistance[testItem.id]?.unit || 'MΩ'}
-                            readOnly 
-                          className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                        </td>
+                        <td className="px-6 py-4">
+                          <input
+                            type="text"
+                            value={formData.insulationResistance[testItem.id]?.unit || 'MΩ'}
+                            readOnly
+                            className="form-input w-full bg-gray-100 dark:bg-dark-200"
                           />
-                      </td>
-                    </tr>
+                        </td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
-          </div>
-        </div>
+              </div>
+            </div>
 
         {/* Calculated Values */}
           <div className="mb-6">
@@ -925,98 +925,98 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-dark-200">
                 <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/3">Calculated Values</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Primary</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Secondary</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pri-Sec</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acceptable</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/3">Calculated Values</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Primary</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Secondary</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pri-Sec</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acceptable</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                 <tr>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                     Dielectric Absorption
-                      <div className="text-xs text-gray-500 dark:text-gray-400">(Ratio of 1 Min. to 0.5 Minute Result)</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">(Ratio of 1 Min. to 0.5 Minute Result)</div>
                   </td>
-                    <td className="px-6 py-4">
-                    <input 
-                      type="text" 
-                      value={formData.insulationResistance.primaryToGround?.dielectricAbsorption || ''} 
-                      readOnly 
-                        className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                  <td className="px-6 py-4">
+                    <input
+                      type="text"
+                      value={formData.insulationResistance.primaryToGround?.dielectricAbsorption || ''}
+                      readOnly
+                      className="form-input w-full bg-gray-100 dark:bg-dark-200"
                     />
                   </td>
-                    <td className="px-6 py-4">
-                    <input 
-                      type="text" 
-                      value={formData.insulationResistance.secondaryToGround?.dielectricAbsorption || ''} 
-                      readOnly 
-                        className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                  <td className="px-6 py-4">
+                    <input
+                      type="text"
+                      value={formData.insulationResistance.secondaryToGround?.dielectricAbsorption || ''}
+                      readOnly
+                      className="form-input w-full bg-gray-100 dark:bg-dark-200"
                     />
                   </td>
-                    <td className="px-6 py-4">
-                    <input 
-                      type="text" 
-                      value={formData.insulationResistance.primaryToSecondary?.dielectricAbsorption || ''} 
-                      readOnly 
-                        className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                  <td className="px-6 py-4">
+                    <input
+                      type="text"
+                      value={formData.insulationResistance.primaryToSecondary?.dielectricAbsorption || ''}
+                      readOnly
+                      className="form-input w-full bg-gray-100 dark:bg-dark-200"
                     />
                   </td>
-                    <td className="px-6 py-4">
+                  <td className="px-6 py-4">
                     <input
                       type="text"
                       value={formData.insulationResistance.dielectricAbsorptionAcceptable}
                       readOnly
-                        className={`form-input w-full bg-gray-100 dark:bg-dark-200 ${
+                      className={`form-input w-full bg-gray-100 dark:bg-dark-200 ${
                         formData.insulationResistance.dielectricAbsorptionAcceptable === 'Yes'
                           ? 'text-green-600 dark:text-green-400 font-medium'
                           : formData.insulationResistance.dielectricAbsorptionAcceptable === 'No'
                           ? 'text-red-600 dark:text-red-400 font-medium'
-                            : ''
+                          : ''
                       }`}
                     />
                   </td>
                 </tr>
                 <tr>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                     Polarization Index
-                      <div className="text-xs text-gray-500 dark:text-gray-400">(Ratio of 10 Min. to 1 Min. Result)</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">(Ratio of 10 Min. to 1 Min. Result)</div>
                   </td>
-                    <td className="px-6 py-4">
-                    <input 
-                      type="text" 
-                      value={formData.insulationResistance.primaryToGround?.polarizationIndex || ''} 
-                      readOnly 
-                        className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                  <td className="px-6 py-4">
+                    <input
+                      type="text"
+                      value={formData.insulationResistance.primaryToGround?.polarizationIndex || ''}
+                      readOnly
+                      className="form-input w-full bg-gray-100 dark:bg-dark-200"
                     />
                   </td>
-                    <td className="px-6 py-4">
-                    <input 
-                      type="text" 
-                      value={formData.insulationResistance.secondaryToGround?.polarizationIndex || ''} 
-                      readOnly 
-                        className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                  <td className="px-6 py-4">
+                    <input
+                      type="text"
+                      value={formData.insulationResistance.secondaryToGround?.polarizationIndex || ''}
+                      readOnly
+                      className="form-input w-full bg-gray-100 dark:bg-dark-200"
                     />
                   </td>
-                    <td className="px-6 py-4">
-                    <input 
-                      type="text" 
-                      value={formData.insulationResistance.primaryToSecondary?.polarizationIndex || ''} 
-                      readOnly 
-                        className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                  <td className="px-6 py-4">
+                    <input
+                      type="text"
+                      value={formData.insulationResistance.primaryToSecondary?.polarizationIndex || ''}
+                      readOnly
+                      className="form-input w-full bg-gray-100 dark:bg-dark-200"
                     />
                   </td>
-                    <td className="px-6 py-4">
+                  <td className="px-6 py-4">
                     <input
                       type="text"
                       value={formData.insulationResistance.polarizationIndexAcceptable}
                       readOnly
-                        className={`form-input w-full bg-gray-100 dark:bg-dark-200 ${
+                      className={`form-input w-full bg-gray-100 dark:bg-dark-200 ${
                         formData.insulationResistance.polarizationIndexAcceptable === 'Yes'
                           ? 'text-green-600 dark:text-green-400 font-medium'
                           : formData.insulationResistance.polarizationIndexAcceptable === 'No'
                           ? 'text-red-600 dark:text-red-400 font-medium'
-                            : ''
+                          : ''
                       }`}
                     />
                   </td>

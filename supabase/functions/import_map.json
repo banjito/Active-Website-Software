@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "jsr:@supabase/functions-js/": "https://jsr.io/@supabase/functions-js/",
+    "https://deno.land/x/puppeteer/": "https://deno.land/x/puppeteer@16.2.0/"
+  }
+} 

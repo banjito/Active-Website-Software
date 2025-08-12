@@ -198,6 +198,21 @@ const PanelboardReport: React.FC = () => {
       }
 
       @media print {
+        /* Visual & Mechanical table widths for readability */
+        table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
+        table.visual-mechanical-table thead { display: table-header-group !important; }
+        table.visual-mechanical-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+        table.visual-mechanical-table th, table.visual-mechanical-table td { font-size: 8px !important; padding: 2px 3px !important; vertical-align: middle !important; }
+        table.visual-mechanical-table colgroup col:nth-child(1) { width: 12% !important; }
+        table.visual-mechanical-table colgroup col:nth-child(2) { width: 58% !important; }
+        table.visual-mechanical-table colgroup col:nth-child(3) { width: 15% !important; }
+        table.visual-mechanical-table colgroup col:nth-child(4) { width: 15% !important; }
+        table.visual-mechanical-table td:nth-child(2) { white-space: normal !important; word-break: break-word !important; }
+
+        /* Insulation tables: allow multi-page flow, repeat headers, avoid row splits */
+        .section-insulation-resistance table { page-break-inside: auto !important; break-inside: auto !important; table-layout: fixed !important; }
+        .section-insulation-resistance thead { display: table-header-group !important; }
+        .section-insulation-resistance tr { page-break-inside: avoid !important; break-inside: avoid !important; }
         * { 
           color: black !important;
           background: white !important;
@@ -1352,21 +1367,27 @@ const PanelboardReport: React.FC = () => {
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+            <colgroup>
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '58%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
+            </colgroup>
             <thead>
               <tr>
-                <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
-                <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Comments</th>
+                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
+                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Comments</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
               {formData.visualInspectionItems.map((item, index) => (
                 <tr key={item.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{item.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
+                  <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{item.description}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <select
                       value={item.result}
                       onChange={(e) => {
@@ -1382,7 +1403,7 @@ const PanelboardReport: React.FC = () => {
                       ))}
                     </select>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 py-2">
                     <input
                       type="text"
                       value={item.comments}

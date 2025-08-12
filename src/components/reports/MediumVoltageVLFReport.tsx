@@ -1588,7 +1588,30 @@ const MediumVoltageVLFReport: React.FC = () => {
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right">
+          <div className="font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+            NETA
+            <div className="hidden print:block mt-2">
+              <div
+                className="pass-fail-status-box"
+                style={{
+                  display: 'inline-block',
+                  padding: '4px 10px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  width: 'fit-content',
+                  borderRadius: '6px',
+                  border: formData.status === TestStatus.PASS ? '2px solid #16a34a' : '2px solid #dc2626',
+                  backgroundColor: formData.status === TestStatus.PASS ? '#22c55e' : '#ef4444',
+                  color: 'white',
+                }}
+              >
+                {formData.status === TestStatus.PASS ? 'PASS' : 'FAIL'}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       {/* End Print Header */}
       
@@ -2673,6 +2696,24 @@ if (typeof document !== 'undefined') {
       .cable-termination-section label { width: 35% !important; display: inline-block !important; font-size: 10px !important; }
       .cable-termination-section input { width: 65% !important; font-size: 10px !important; padding: 0 !important; margin: 0 !important; background: transparent !important; border: none !important; border-bottom: 1px solid black !important; height: 14px !important; box-shadow: none !important; }
       .cable-termination-section .flex.items-center { align-items: baseline !important; }
+
+      /* PASS/FAIL print status box - standardized like other reports */
+      .pass-fail-status-box {
+        background-color: #22c55e !important;
+        border: 2px solid #16a34a !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        display: inline-block !important;
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        width: fit-content !important;
+        border-radius: 6px !important;
+        box-sizing: border-box !important;
+        min-width: 50px !important;
+      }
     }
   `;
   document.head.appendChild(style);

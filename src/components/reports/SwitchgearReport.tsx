@@ -464,11 +464,11 @@ const SwitchgearReport: React.FC = () => {
       .section-insulation-resistance thead th:first-child,
       .section-temp-corrected thead th:first-child,
       .section-contact-resistance thead th:first-child,
-      .section-dielectric thead th:first-child { width: 14%; }
+      .section-dielectric thead th:first-child { width: 8%; }
       .section-contact-resistance thead th:last-child,
       .section-insulation-resistance thead th:last-child,
       .section-temp-corrected thead th:last-child,
-      .section-dielectric thead th:last-child { width: 10%; }
+      .section-dielectric thead th:last-child { width: 8%; }
       .section-insulation-resistance td input,
       .section-temp-corrected td input,
       .section-contact-resistance td input,
@@ -830,62 +830,66 @@ const SwitchgearReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              {/* Left Column */}
-              <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2">
+              <div>
+                <label htmlFor="customer" className="form-label">Customer:</label>
+                <input id="customer" type="text" name="customer" value={formData.customerName} onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))} readOnly className={`form-input text-sm bg-gray-100 dark:bg-dark-200 cursor-not-allowed`} />
+              </div>
+              <div>
+                <label htmlFor="address" className="form-label">Address:</label>
+                <input id="address" type="text" name="address" value={formData.customerLocation} onChange={(e) => setFormData(prev => ({ ...prev, customerLocation: e.target.value }))} readOnly className={`form-input text-sm bg-gray-100 dark:bg-dark-200 cursor-not-allowed`} />
+              </div>
+              <div>
+                <label htmlFor="jobNumber" className="form-label">Job Number:</label>
+                <input id="jobNumber" type="text" name="jobNumber" value={formData.jobNumber} onChange={(e) => setFormData(prev => ({ ...prev, jobNumber: e.target.value }))} readOnly className={`form-input text-sm bg-gray-100 dark:bg-dark-200 cursor-not-allowed`} />
+              </div>
+              <div>
+                <label htmlFor="date" className="form-label">Date:</label>
+                <input id="date" type="date" name="date" value={formData.date} onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              </div>
+              <div>
+                <label htmlFor="technicians" className="form-label">Technicians:</label>
+                <input id="technicians" type="text" name="technicians" value={formData.technicians} onChange={(e) => setFormData(prev => ({ ...prev, technicians: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              </div>
+              <div>
+                <label htmlFor="identifier" className="form-label">Identifier:</label>
+                <input id="identifier" type="text" name="identifier" value={formData.identifier} onChange={(e) => setFormData(prev => ({ ...prev, identifier: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              </div>
+              <div className="grid grid-cols-2 gap-x-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #</label>
-                  <input type="text" name="jobNumber" value={formData.jobNumber} onChange={(e) => setFormData(prev => ({ ...prev, jobNumber: e.target.value }))} readOnly={!isEditing} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
+                  <label htmlFor="tempF" className="form-label">Temp (°F):</label>
+                  <div className="flex items-center">
+                    <input id="tempF" type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(parseFloat(e.target.value))} readOnly={!isEditing} className={`form-input text-sm w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer</label>
-                  <input type="text" value={formData.customerName} onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))} readOnly={!isEditing} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
-                  <textarea value={formData.customerLocation} onChange={(e) => setFormData(prev => ({ ...prev, customerLocation: e.target.value }))} readOnly={!isEditing} rows={3} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
-                </div>
-                <div>
-                  <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier</label>
-                  <input type="text" id="identifier" name="identifier" value={formData.identifier} onChange={(e) => setFormData(prev => ({ ...prev, identifier: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Enter Identifier" />
+                  <label htmlFor="tempC" className="form-label">Temp (°C):</label>
+                  <div className="flex items-center">
+                    <input id="tempC" type="number" value={formData.temperature.celsius} onChange={(e) => handleCelsiusChange(parseFloat(e.target.value))} readOnly={!isEditing} className={`form-input text-sm w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  </div>
                 </div>
               </div>
-              {/* Right Column */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Technicians</label>
-                  <input type="text" value={formData.technicians} onChange={(e) => setFormData(prev => ({ ...prev, technicians: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <div>
+                <label htmlFor="user" className="form-label">User:</label>
+                <input id="user" type="text" name="user" value={formData.userName} onChange={(e) => setFormData(prev => ({ ...prev, userName: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              </div>
+              <div>
+                <label htmlFor="humidity" className="form-label">Humidity (%):</label>
+                <div className="flex items-center">
+                  <input id="humidity" type="number" name="temperature.humidity" value={formData.temperature.humidity} onChange={(e) => setFormData(prev => ({ ...prev, temperature: { ...prev.temperature, humidity: Number(e.target.value) } }))} readOnly={!isEditing} className={`form-input text-sm w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Substation</label>
-                  <input type="text" value={formData.substation} onChange={(e) => setFormData(prev => ({ ...prev, substation: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Equipment Location</label>
-                  <input type="text" value={formData.eqptLocation} onChange={(e) => setFormData(prev => ({ ...prev, eqptLocation: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
-                  <input type="date" value={formData.date} onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User</label>
-                  <input type="text" id="userName" name="userName" value={formData.userName} onChange={(e) => setFormData(prev => ({ ...prev, userName: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Enter User Name" />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. °F</label>
-                    <input type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">°C</label>
-                    <input type="number" value={formData.temperature.celsius} onChange={(e) => handleCelsiusChange(Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                  </div>
-                  <div>
-                    <label className="block text sm font-medium text-gray-700 dark:text-gray-300">TCF</label>
-                    <input type="number" value={formData.temperature.tcf} readOnly className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white" />
-                  </div>
-                </div>
+              </div>
+              <div className="flex items-center mt-auto mb-1">
+                <label className="form-label mr-2">TCF:</label>
+                <span className="font-medium text-gray-900 dark:text-white">{formData.temperature.tcf}</span>
+              </div>
+              <div>
+                <label htmlFor="substation" className="form-label">Substation:</label>
+                <input id="substation" type="text" name="substation" value={formData.substation} onChange={(e) => setFormData(prev => ({ ...prev, substation: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              </div>
+              <div>
+                <label htmlFor="eqptLocation" className="form-label">Eqpt. Location:</label>
+                <input id="eqptLocation" type="text" name="eqptLocation" value={formData.eqptLocation} onChange={(e) => setFormData(prev => ({ ...prev, eqptLocation: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
             </div>
           </div>
@@ -964,13 +968,21 @@ const SwitchgearReport: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
                 <colgroup>
-                  <col style={{ width: '14%' }} />
-                  <col span={9} />
-                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '8%' }} />
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bus Section</th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={9}>Insulation Resistance</th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
                   </tr>
@@ -1016,10 +1028,23 @@ const SwitchgearReport: React.FC = () => {
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Values</h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+                <colgroup>
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '9.3%' }} />
+                  <col style={{ width: '8%' }} />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bus Section</th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={9}>Insulation Resistance</th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
                   </tr>
@@ -1070,10 +1095,22 @@ const SwitchgearReport: React.FC = () => {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+                <colgroup>
+                  {/* Bus Section (left) */}
+                  <col style={{ width: '8%' }} />
+                  {/* Five contact resistance readings spread wide */}
+                  <col style={{ width: '16.8%' }} />
+                  <col style={{ width: '16.8%' }} />
+                  <col style={{ width: '16.8%' }} />
+                  <col style={{ width: '16.8%' }} />
+                  <col style={{ width: '16.8%' }} />
+                  {/* Units (right) */}
+                  <col style={{ width: '8%' }} />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bus Section</th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={5}>Contact Resistance</th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
                   </tr>
@@ -1120,10 +1157,15 @@ const SwitchgearReport: React.FC = () => {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+                <colgroup>
+                  <col style={{ width: '10%' }} />
+                  <col span={3} />
+                  <col style={{ width: '10%' }} />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bus Section</th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={3}>Dielectric Withstand</th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
                   </tr>
@@ -1254,6 +1296,11 @@ if (typeof document !== 'undefined') {
       
       /* Section styling */
       section { break-inside: avoid !important; margin-bottom: 20px !important; }
+      
+      /* Job Information: compact like TwoSmallDryTyperXfmrATSReport */
+      section:has(> h2:contains('Job Information')) .grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 8px !important; }
+      section:has(> h2:contains('Job Information')) input,
+      section:has(> h2:contains('Job Information')) select { font-size: 10px !important; height: 22px !important; padding: 2px 4px !important; }
       
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }

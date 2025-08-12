@@ -380,6 +380,12 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         /* Specific page breaks for sections */
         .mb-6:has(h2:contains("Test Equipment Used")) { page-break-before: always !important; }
         .mb-6:has(h2:contains("Comments")) { page-break-before: always !important; }
+
+        /* CT Identification alignment: labels fixed width, inputs fill, compact height */
+        .ct-ident-grid label { font-size: 9px !important; }
+        .ct-ident-grid input { height: 18px !important; font-size: 10px !important; padding: 2px 4px !important; }
+        .ct-ident-grid .form-label { width: 120px !important; }
+        .ct-ident-grid .form-input { width: calc(100% - 120px) !important; }
       }
     `;
     document.head.appendChild(style);
@@ -719,7 +725,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   };
 
   const renderCtIdentification = () => (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2">
+    <div className="ct-ident-grid grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2">
       {[
         { label: 'Phase 1', topKey: 'phase1', serialKey: 'phase1Serial' },
         { label: 'Phase 2', topKey: 'phase2', serialKey: 'phase2Serial' },
@@ -727,34 +733,34 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         { label: 'Neutral', topKey: 'neutral', serialKey: 'neutralSerial' },
       ].map((item) => (
         <div key={item.label}>
-          <label htmlFor={`ct-${item.topKey}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {item.label}
-          </label>
-          <input
-            type="text"
-            id={`ct-${item.topKey}`}
-            name={item.topKey}
-            value={formData.ctIdentification[item.topKey as keyof typeof formData.ctIdentification]}
-            onChange={(e) => handleChange(`ctIdentification.${item.topKey}`, e.target.value)}
-            readOnly={!isEditing}
-            className={`mt-1 block w-full p-2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-brand-orange focus:ring-brand-orange dark:bg-dark-100 dark:text-white ${
-              !isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''
-            }`}
-          />
-          <label htmlFor={`ct-${item.serialKey}`} className="mt-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Serial #
-          </label>
-          <input
-            type="text"
-            id={`ct-${item.serialKey}`}
-            name={item.serialKey}
-            value={formData.ctIdentification[item.serialKey as keyof typeof formData.ctIdentification]}
-            onChange={(e) => handleChange(`ctIdentification.${item.serialKey}`, e.target.value)}
-            readOnly={!isEditing}
-            className={`mt-1 block w-full p-2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-brand-orange focus:ring-brand-orange dark:bg-dark-100 dark:text-white ${
-              !isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''
-            }`}
-          />
+          <div className="mb-2 flex items-center">
+            <label htmlFor={`ct-${item.topKey}`} className="form-label inline-block w-32">
+              {item.label}:
+            </label>
+            <input
+              type="text"
+              id={`ct-${item.topKey}`}
+              name={item.topKey}
+              value={formData.ctIdentification[item.topKey as keyof typeof formData.ctIdentification]}
+              onChange={(e) => handleChange(`ctIdentification.${item.topKey}`, e.target.value)}
+              readOnly={!isEditing}
+              className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+            />
+          </div>
+          <div className="flex items-center">
+            <label htmlFor={`ct-${item.serialKey}`} className="form-label inline-block w-32">
+              Serial #:
+            </label>
+            <input
+              type="text"
+              id={`ct-${item.serialKey}`}
+              name={item.serialKey}
+              value={formData.ctIdentification[item.serialKey as keyof typeof formData.ctIdentification]}
+              onChange={(e) => handleChange(`ctIdentification.${item.serialKey}`, e.target.value)}
+              readOnly={!isEditing}
+              className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+            />
+          </div>
         </div>
       ))}
     </div>

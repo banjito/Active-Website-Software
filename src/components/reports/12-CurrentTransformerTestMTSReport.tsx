@@ -349,6 +349,15 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
         margin-top: 16px !important;
       }
       @media print {
+        /* Visual & Mechanical table: compact left NETA column, wide description */
+        table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
+        table.visual-mechanical-table thead { display: table-header-group !important; }
+        table.visual-mechanical-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+        table.visual-mechanical-table th, table.visual-mechanical-table td { font-size: 8px !important; padding: 2px 3px !important; vertical-align: middle !important; }
+        table.visual-mechanical-table colgroup col:nth-child(1) { width: 12% !important; }
+        table.visual-mechanical-table colgroup col:nth-child(2) { width: 68% !important; }
+        table.visual-mechanical-table colgroup col:nth-child(3) { width: 20% !important; }
+        table.visual-mechanical-table td:nth-child(2) { white-space: normal !important; word-break: break-word !important; }
         * { color: black !important; background: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif !important; font-size: 9px !important; background: white !important; line-height: 1 !important; }
         @page { size: 8.5in 11in; margin: 0.2in; }
@@ -778,20 +787,25 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+            <colgroup>
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '68%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
             <thead className="bg-gray-50 dark:bg-dark-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Results</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Results</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
               {formData.visualMechanicalInspection.map((item, index) => (
                 <tr key={item.netaSection}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{item.netaSection}</td>
-                  <td className="px-6 py-4 text-sm">{item.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm">{item.netaSection}</td>
+                  <td className="px-3 py-2 text-sm whitespace-normal break-words">{item.description}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <select value={item.result} onChange={(e) => handleVisualInspectionChange(index, 'result', e.target.value)} disabled={!isEditing} className={`form-select ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
                       {visualInspectionResultOptions.map(option => <option key={option} value={option}>{option}</option>)}
                     </select>

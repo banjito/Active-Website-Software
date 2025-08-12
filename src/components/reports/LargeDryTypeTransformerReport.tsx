@@ -1536,7 +1536,13 @@ if (typeof document !== 'undefined') {
       .section-insulation-resistance table {
         border: 1px solid black !important;
         table-layout: fixed !important;
+        page-break-inside: auto !important; /* allow long tables to span pages */
+        break-inside: auto !important;
       }
+      .section-insulation-resistance table thead { display: table-header-group !important; }
+      .section-insulation-resistance table tfoot { display: table-footer-group !important; }
+      .section-insulation-resistance table tbody { display: table-row-group !important; }
+      .section-insulation-resistance table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
       
       .section-insulation-resistance th,
       .section-insulation-resistance td {
@@ -1568,6 +1574,9 @@ if (typeof document !== 'undefined') {
         break-inside: avoid !important;
         margin-bottom: 20px !important; 
       }
+      /* But do NOT force the whole Insulation Resistance section onto one page */
+      div:has(> h2.section-insulation-resistance) { page-break-inside: auto !important; break-inside: auto !important; }
+      div:has(> h2.section-insulation-resistance) table { page-break-inside: auto !important; break-inside: auto !important; }
       
       /* Print utility classes */
       .print\\:break-before-page { page-break-before: always; }

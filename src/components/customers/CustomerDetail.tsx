@@ -352,7 +352,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                             </span>
                           )}
                         </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Left tackle</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{contact.position || ''}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{contact.email}</p>
                       </div>
                     </div>

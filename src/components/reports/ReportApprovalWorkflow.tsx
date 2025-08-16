@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/Dialog';
 import { Badge } from '@/components/ui/Badge';
 import { toast } from '@/components/ui/toast';
 import { 
@@ -27,8 +27,10 @@ import {
   UserCheck
 } from 'lucide-react';
 import Select from '@/components/ui/Select';
+import { Routes, Route } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { supabase } from '@/lib/supabase';
 
 // Report Content Viewer Component
 interface ReportContentViewerProps {
@@ -36,115 +38,49 @@ interface ReportContentViewerProps {
 }
 
 function ReportContentViewer({ report }: ReportContentViewerProps) {
-  const [reportComponent, setReportComponent] = useState<React.ComponentType<any> | null>(null);
-  const [reportProps, setReportProps] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reportPath, setReportPath] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadReportComponent = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+    try {
+      setIsLoading(true);
+      setError(null);
+      setReportPath(null);
 
-        if (!report.report_data?.file_url) {
-          setError('No report URL found');
-          return;
-        }
-
-        // Parse the file_url to determine report type and ID
-        const fileUrl = report.report_data.file_url;
-        if (!fileUrl.startsWith('report:/jobs/')) {
-          setError('Invalid report URL format');
-          return;
-        }
-
-        const urlParts = fileUrl.replace('report:/jobs/', '').split('/');
-        if (urlParts.length < 2) {
-          setError('Invalid report URL structure');
-          return;
-        }
-
-        const jobId = urlParts[0];
-        const reportSlug = urlParts[1];
-        const reportId = urlParts[2];
-
-                 // Map report slugs to their components
-         const reportComponentMap: { [key: string]: () => Promise<{ default: React.ComponentType<any> }> } = {
-           'panelboard-report': () => import('@/components/reports/PanelboardReport'),
-           'low-voltage-switch-multi-device-test': () => import('@/components/reports/LowVoltageSwitchMultiDeviceTest'),
-           'low-voltage-circuit-breaker-electronic-trip-ats-report': () => import('@/components/reports/LowVoltageCircuitBreakerElectronicTripATSReport'),
-           'low-voltage-circuit-breaker-electronic-trip-mts-report': () => import('@/components/reports/LowVoltageCircuitBreakerElectronicTripMTSReport'),
-           'automatic-transfer-switch-ats-report': () => import('@/components/reports/AutomaticTransferSwitchATSReport'),
-           'large-dry-type-transformer-mts-report': () => import('@/components/reports/LargeDryTypeTransformerMTSReport'),
-           'large-dry-type-xfmr-mts-report': () => import('@/components/reports/LargeDryTypeXfmrMTSReport'),
-           'switchgear-panelboard-mts-report': () => import('@/components/reports/SwitchgearPanelboardMTSReport'),
-           'liquid-xfmr-visual-mts-report': () => import('@/components/reports/LiquidXfmrVisualMTSReport'),
-           'switchgear-report': () => import('@/components/reports/SwitchgearReport'),
-           'dry-type-transformer': () => import('@/components/reports/DryTypeTransformerReport'),
-           'large-dry-type-transformer': () => import('@/components/reports/LargeDryTypeTransformerReport'),
-           'large-dry-type-transformer-report': () => import('@/components/reports/LargeDryTypeTransformerReport'),
-           'liquid-filled-transformer': () => import('@/components/reports/LiquidFilledTransformerReport'),
-           'oil-inspection': () => import('@/components/reports/OilInspectionReport'),
-           'low-voltage-cable-test-12sets': () => import('@/components/reports/12setslowvoltagecables'),
-           'low-voltage-cable-test-3sets': () => import('@/components/reports/3-LowVoltageCableMTS'),
-           'medium-voltage-vlf-tan-delta': () => import('@/components/reports/TanDeltaChart'),
-           'medium-voltage-vlf': () => import('@/components/reports/MediumVoltageVLFReport'),
-           'medium-voltage-cable-vlf-test': () => import('@/components/reports/MediumVoltageCableVLFTest'),
-           'metal-enclosed-busway': () => import('@/components/reports/MetalEnclosedBuswayReport'),
-           'low-voltage-switch-report': () => import('@/components/reports/LowVoltageSwitchReport'),
-           'medium-voltage-switch-oil-report': () => import('@/components/reports/MediumVoltageSwitchOilReport'),
-           'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report': () => import('@/components/reports/LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport'),
-           'low-voltage-circuit-breaker-thermal-magnetic-ats-report': () => import('@/components/reports/LowVoltageCircuitBreakerThermalMagneticATSReport'),
-           'low-voltage-circuit-breaker-thermal-magnetic-mts-report': () => import('@/components/reports/LowVoltageCircuitBreakerThermalMagneticMTSReport'),
-           'low-voltage-panelboard-small-breaker-report': () => import('@/components/reports/LowVoltagePanelboardSmallBreakerTestATSReport'),
-           'medium-voltage-circuit-breaker-report': () => import('@/components/reports/MediumVoltageCircuitBreakerReport'),
-           'current-transformer-test-ats-report': () => import('@/components/reports/CurrentTransformerTestATSReport'),
-           '12-current-transformer-test-ats-report': () => import('@/components/reports/12-CurrentTransformerTestATSReport'),
-           'oil-analysis-report': () => import('@/components/reports/OilAnalysisReport'),
-           'cable-hipot-test-report': () => import('@/components/reports/CableHiPotReport'),
-           'relay-test-report': () => import('@/components/reports/RelayTestReport'),
-           'two-small-dry-typer-xfmr-ats-report': () => import('@/components/reports/TwoSmallDryTyperXfmrATSReport'),
-           'medium-voltage-vlf-mts-report': () => import('@/components/reports/MediumVoltageVLFMTSReport'),
-           'electrical-tan-delta-test-mts-form': () => import('@/components/reports/TanDeltaTestMTSForm'),
-           'medium-voltage-cable-vlf-test-mts': () => import('@/components/reports/MediumVoltageCableVLFTest'),
-           'medium-voltage-circuit-breaker-mts-report': () => import('@/components/reports/MediumVoltageCircuitBreakerMTSReport'),
-           '12-current-transformer-test-mts-report': () => import('@/components/reports/12-CurrentTransformerTestMTSReport'),
-           '13-voltage-potential-transformer-test-mts-report': () => import('@/components/reports/13-VoltagePotentialTransformerTestMTSReport'),
-           '23-medium-voltage-motor-starter-mts-report': () => import('@/components/reports/23-MediumVoltageMotorStarterMTSReport')
-         };
-
-        const componentLoader = reportComponentMap[reportSlug];
-        if (!componentLoader) {
-          setError(`Unknown report type: ${reportSlug}`);
-          return;
-        }
-
-        // Load the component
-        const module = await componentLoader();
-        const ReportComponent = module.default;
-
-        // Set up props for the report component
-        const props = {
-          jobId,
-          reportId: reportId || undefined,
-          // Add any other props that might be needed
-          viewMode: true, // Indicate this is view-only mode
-          readOnly: true, // Ensure no editing is allowed
-          isPreview: true, // Additional flag for preview mode
-        };
-
-        setReportComponent(() => ReportComponent);
-        setReportProps(props);
-      } catch (err) {
-        console.error('Error loading report component:', err);
-        setError(`Failed to load report: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      } finally {
-        setIsLoading(false);
+      if (!report.report_data?.file_url) {
+        setError('No report URL found');
+        return;
       }
-    };
 
-    loadReportComponent();
+      const fileUrl = report.report_data.file_url as string;
+      if (!fileUrl.startsWith('report:/jobs/')) {
+        setError('Invalid report URL format');
+        return;
+      }
+
+      const urlParts = fileUrl.replace('report:/jobs/', '').split('/');
+      if (urlParts.length < 2) {
+        setError('Invalid report URL structure');
+        return;
+      }
+
+      const jobId = urlParts[0];
+      const reportSlug = urlParts[1];
+      const reportId = urlParts[2];
+
+      // Build the in-app route path for iframe
+      const basePath = reportId
+        ? `/jobs/${jobId}/${reportSlug}/${reportId}`
+        : `/jobs/${jobId}/${reportSlug}`;
+      const path = `${basePath}?fromApproval=true`;
+
+      setReportPath(path);
+    } catch (e: any) {
+      setError(e?.message || 'Failed to prepare report preview');
+    } finally {
+      setIsLoading(false);
+    }
   }, [report]);
 
   if (isLoading) {
@@ -186,81 +122,38 @@ function ReportContentViewer({ report }: ReportContentViewerProps) {
     );
   }
 
-  if (!reportComponent) {
-    return (
-      <div className="h-full w-full flex items-center justify-center p-8">
-        <div className="max-w-2xl w-full text-center">
-          <p className="text-gray-500 italic text-lg mb-4">No report component available for preview.</p>
-          <details className="group">
-            <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
-              View Raw Report Data
-            </summary>
-            <pre className="mt-3 text-xs whitespace-pre-wrap overflow-auto bg-gray-100 p-3 rounded max-h-64 text-left">
-              {JSON.stringify(report.report_data, null, 2)}
-            </pre>
-          </details>
-        </div>
-      </div>
-    );
-  }
-
-  const ReportComponent = reportComponent;
-
   return (
     <div className="h-full w-full flex flex-col">
-      <div className="flex-shrink-0 text-sm text-gray-600 bg-blue-50 p-3 border-b">
-        <strong>Preview Mode:</strong> This is a read-only preview of the report content.
-      </div>
-      <div className="flex-1 overflow-auto bg-white">
-        <div className="w-full min-h-full">
-          <style dangerouslySetInnerHTML={{
-            __html: `
-              .report-fullscreen-viewer .max-w-7xl,
-              .report-fullscreen-viewer .max-w-6xl,
-              .report-fullscreen-viewer .max-w-5xl,
-              .report-fullscreen-viewer .max-w-4xl,
-              .report-fullscreen-viewer .max-w-3xl,
-              .report-fullscreen-viewer .max-w-2xl,
-              .report-fullscreen-viewer .max-w-xl,
-              .report-fullscreen-viewer .max-w-lg,
-              .report-fullscreen-viewer .max-w-md,
-              .report-fullscreen-viewer .max-w-sm {
-                max-width: none !important;
-                width: 100% !important;
-              }
-              
-              .report-fullscreen-viewer .justify-center {
-                justify-content: flex-start !important;
-              }
-              
-              .report-fullscreen-viewer .mx-auto {
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-              }
-              
-                             .report-fullscreen-viewer > div {
-                 width: 100% !important;
-                 max-width: none !important;
-               }
-               
-               .report-fullscreen-viewer input,
-               .report-fullscreen-viewer select,
-               .report-fullscreen-viewer textarea {
-                 pointer-events: none !important;
-                 cursor: not-allowed !important;
-                 user-select: none !important;
-               }
-               
-               .report-fullscreen-viewer button:not(.status-button) {
-                 pointer-events: none !important;
-                 cursor: not-allowed !important;
-               }
-             `
-           }} />
-          <div className="report-fullscreen-viewer">
-            <ReportComponent {...reportProps} />
-          </div>
+      <div className="flex-shrink-0 text-sm text-gray-600 bg-blue-50 p-3 border-b flex items-center justify-between">
+        <div>
+          <strong>Preview Mode:</strong> This is a read-only preview of the report content.
         </div>
+        {reportPath && (
+          <div className="text-xs text-gray-500 flex items-center gap-2">
+            <span className="truncate max-w-xs" title={reportPath}>Path: {reportPath}</span>
+            <a
+              href={reportPath}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              Open in new tab
+            </a>
+          </div>
+        )}
+      </div>
+      <div className="flex-1 overflow-hidden bg-white">
+        {reportPath ? (
+          <iframe
+            title="Report Preview"
+            src={`${window.location.origin}${reportPath}`}
+            style={{ width: '100%', height: '100%', border: 'none' }}
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center text-gray-500">
+            Unable to resolve report path
+          </div>
+        )}
       </div>
     </div>
   );
@@ -269,9 +162,10 @@ function ReportContentViewer({ report }: ReportContentViewerProps) {
 interface ReportApprovalWorkflowProps {
   division?: string;
   jobId?: string;
+  onUpdate?: () => void;
 }
 
-export function ReportApprovalWorkflow({ division, jobId }: ReportApprovalWorkflowProps) {
+export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportApprovalWorkflowProps) {
   const { user } = useAuth();
   const [reports, setReports] = useState<TechnicalReport[]>([]);
   const [selectedReport, setSelectedReport] = useState<TechnicalReport | null>(null);
@@ -350,44 +244,134 @@ export function ReportApprovalWorkflow({ division, jobId }: ReportApprovalWorkfl
   const fetchReports = async () => {
     setIsLoading(true);
     try {
-      // Map activeTab to status filter
-      let statusFilter: ReportStatus | undefined;
+      // Always show only ready-to-review (submitted) reports in job context
+      let statusFilter: ReportStatus | undefined = jobId ? 'submitted' : undefined;
       switch (activeTab) {
         case 'pending':
           statusFilter = 'submitted';
           break;
-
         case 'approved':
-          statusFilter = 'approved';
+          statusFilter = jobId ? 'submitted' : 'approved';
           break;
         case 'rejected':
-          statusFilter = 'rejected';
+          statusFilter = jobId ? 'submitted' : 'rejected';
           break;
         case 'archived':
-          statusFilter = 'archived';
+          statusFilter = jobId ? 'submitted' : 'archived';
           break;
         default:
-          statusFilter = undefined;
+          statusFilter = jobId ? 'submitted' : undefined;
       }
 
-      // Build filters object
-      const queryFilters: ReportFilters = {
-        ...filters,
-        status: statusFilter,
-        start_date: dateRange.start,
-        end_date: dateRange.end,
-        search: searchTerm,
-        report_type: reportTypeFilter || undefined,
-        job_id: jobId // Ensure job_id is set from props
-      };
+      if (jobId) {
+        console.log('[ReportApproval] jobId:', jobId, 'statusFilter:', statusFilter);
+        // Fetch reports ONLY via links from this job's assets to avoid stale/unlinked items
+        const { data: jobAssetLinks, error: linksError } = await supabase
+          .schema('neta_ops')
+          .from('job_assets')
+          .select('asset_id')
+          .eq('job_id', jobId);
+        if (linksError) throw linksError;
+        const assetIds = (jobAssetLinks || []).map(l => l.asset_id);
+        console.log('[ReportApproval] job asset link count:', assetIds.length);
 
-      const response = await reportService.getAllReports(queryFilters);
-      
-      if (response.error) {
-        setError(`Failed to load reports: ${response.error && typeof response.error === 'object' ? (response.error as any).message || 'Unknown error' : 'Unknown error'}`);
-      } else {
-        setReports(response.data || []);
+        let byLinked: TechnicalReport[] = [];
+        let linkedReportIds: string[] = [];
+        if (assetIds.length > 0) {
+          const { data: reportLinks, error: repLinksErr } = await supabase
+            .schema('neta_ops')
+            .from('asset_reports')
+            .select('report_id')
+            .in('asset_id', assetIds);
+          if (repLinksErr) throw repLinksErr;
+          linkedReportIds = Array.from(new Set((reportLinks || []).map(r => r.report_id)));
+          console.log('[ReportApproval] linked report ids count:', linkedReportIds.length);
+          if (linkedReportIds.length > 0) {
+            let q2 = supabase
+              .schema('neta_ops')
+              .from('technical_reports')
+              .select('*')
+              .in('id', linkedReportIds);
+            if (statusFilter) q2 = q2.eq('status', statusFilter);
+            const { data: byIds, error: byIdsErr } = await q2;
+            if (byIdsErr) throw byIdsErr;
+            byLinked = (byIds || []) as TechnicalReport[];
+          }
+        }
+
+        // Work only with linked reports
+        let merged = byLinked;
+        console.log('[ReportApproval] fetched linked reports:', merged.length);
+
+        // Client-side filters
+        if (dateRange.start) {
+          merged = merged.filter(r => !r.submitted_at || new Date(r.submitted_at) >= new Date(dateRange.start!));
+        }
+        if (dateRange.end) {
+          merged = merged.filter(r => !r.submitted_at || new Date(r.submitted_at) <= new Date(dateRange.end!));
+        }
+        if (reportTypeFilter) {
+          merged = merged.filter(r => (r.report_type || '').toLowerCase() === reportTypeFilter.toLowerCase());
+        }
+        if (searchTerm) {
+          const term = searchTerm.toLowerCase();
+          merged = merged.filter(r =>
+            (r.title || '').toLowerCase().includes(term) ||
+            (r.report_type || '').toLowerCase().includes(term)
+          );
+        }
+
+        // Sort newest submitted first
+        merged.sort((a, b) => new Date(b.submitted_at || '').getTime() - new Date(a.submitted_at || '').getTime());
+        console.log('[ReportApproval] after filters count:', merged.length, 'ids:', merged.map(r => r.id));
+
+        // Build map of reportId -> linked asset (for grouping/diagnostics if needed)
+        let reportAssetsMap: Record<string, { name?: string; file_url?: string }[]> = {};
+        if (merged.length > 0) {
+          const reportIds = merged.map(r => r.id);
+          const { data: repLinks, error: repLinksErr2 } = await supabase
+            .schema('neta_ops')
+            .from('asset_reports')
+            .select('report_id, asset_id')
+            .in('report_id', reportIds);
+          if (!repLinksErr2 && repLinks && repLinks.length > 0) {
+            const assetIds2 = Array.from(new Set(repLinks.map(l => l.asset_id)));
+            const { data: assetsRows, error: assetsErr } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .select('id, name, file_url')
+              .in('id', assetIds2);
+            if (!assetsErr && assetsRows) {
+              const assetById: Record<string, { name?: string; file_url?: string }> = {};
+              assetsRows.forEach(a => { assetById[a.id] = { name: a.name, file_url: a.file_url }; });
+              repLinks.forEach(l => {
+                if (!reportAssetsMap[l.report_id]) reportAssetsMap[l.report_id] = [];
+                const asset = assetById[l.asset_id];
+                if (asset) reportAssetsMap[l.report_id].push(asset);
+              });
+            }
+          }
+        }
+        ;(window as any).__reportApprovalAssetsMap = reportAssetsMap;
+        setReports(merged);
         setError(null);
+      } else {
+        // Global mode
+        const queryFilters: ReportFilters = {
+          ...filters,
+          status: statusFilter,
+          start_date: dateRange.start,
+          end_date: dateRange.end,
+          search: searchTerm,
+          report_type: reportTypeFilter || undefined,
+        };
+        const response = await reportService.getAllReports(queryFilters);
+        if (response.error) {
+          setError(`Failed to load reports: ${response.error && typeof response.error === 'object' ? (response.error as any).message || 'Unknown error' : 'Unknown error'}`);
+        } else {
+          setReports(response.data || []);
+          setError(null);
+        }
       }
     } catch (err) {
       console.error('Error fetching reports:', err);
@@ -473,6 +457,7 @@ export function ReportApprovalWorkflow({ division, jobId }: ReportApprovalWorkfl
         setShowReviewDialog(false);
         fetchReports();
         fetchMetrics();
+        if (onUpdate) { try { onUpdate(); } catch { /* noop */ } }
       }
     } catch (err) {
       console.error('Error submitting review:', err);
@@ -733,54 +718,122 @@ export function ReportApprovalWorkflow({ division, jobId }: ReportApprovalWorkfl
             </div>
           ) : (
             <div className="space-y-3">
-              {reports.map((report) => (
-                <Card key={report.id} className="overflow-hidden">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold truncate">{report.title}</h3>
-                            <p className="text-sm text-gray-500">
-                              Report Type: {report.report_type}
-                            </p>
-                          </div>
-                          
-                          <div className="flex items-center space-x-4">
-                            {getStatusBadge(report.status)}
-                            <span className="text-sm text-gray-500 whitespace-nowrap">
-                              Submitted: {formatDate(report.submitted_at)}
-                            </span>
-                            
-                            {report.reviewed_at && (
-                              <span className="text-sm text-gray-500 whitespace-nowrap">
-                                Reviewed: {formatDate(report.reviewed_at)}
+              {(() => {
+                // In job context, group like Linked Assets: Imported, numeric folders, Other
+                if (jobId) {
+                  const assetsMap: Record<string, { name?: string; file_url?: string }[]> = (window as any).__reportApprovalAssetsMap || {};
+                  const getFolder = (r: TechnicalReport): string => {
+                    const linked = assetsMap[r.id] || [];
+                    if (linked.length > 0) {
+                      const primary = linked[0];
+                      const aname = primary?.name || '';
+                      const mAsset = aname.match(/^(\d+)\s*[-–]?\s*/);
+                      if (mAsset) return mAsset[1];
+                      const imported = /import/i.test(primary?.name || '') || /import/i.test(primary?.file_url || '');
+                      if (imported) return 'Imported';
+                      return 'Other';
+                    }
+                    // Fallback to title
+                    const title = r.title || '';
+                    const mTitle = title.match(/^(\d+)\s*[-–]?\s*/);
+                    if (mTitle) return mTitle[1];
+                    return 'Other';
+                  };
+                  const groups: Record<string, TechnicalReport[]> = {};
+                  reports.forEach(r => {
+                    const key = getFolder(r);
+                    if (!groups[key]) groups[key] = [];
+                    groups[key].push(r);
+                  });
+                  const orderKeys = Object.keys(groups).sort((a, b) => {
+                    if (a === 'Imported') return -1;
+                    if (b === 'Imported') return 1;
+                    if (a === 'Other' && b !== 'Other') return 1;
+                    if (b === 'Other' && a !== 'Other') return -1;
+                    const na = parseInt(a, 10);
+                    const nb = parseInt(b, 10);
+                    const aNum = isNaN(na) ? Number.MAX_SAFE_INTEGER : na;
+                    const bNum = isNaN(nb) ? Number.MAX_SAFE_INTEGER : nb;
+                    return aNum - bNum;
+                  });
+                  return (
+                    <>
+                      {orderKeys.map((folderKey) => (
+                        <details key={folderKey} className="group border rounded-md overflow-hidden">
+                          <summary className="cursor-pointer select-none bg-gray-50 dark:bg-dark-150 px-3 py-2 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-800 dark:text-white">
+                                {folderKey === 'Imported' ? 'Imported' : folderKey === 'Other' ? 'Other' : `${folderKey}`}
                               </span>
-                            )}
+                              <span className="text-xs text-gray-500">({groups[folderKey].length})</span>
+                            </div>
+                            <svg className="w-4 h-4 text-gray-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </summary>
+                          <div className="bg-white dark:bg-dark-100 p-3 space-y-2">
+                            {groups[folderKey]
+                              .slice()
+                              .sort((a, b) => new Date(b.submitted_at || '').getTime() - new Date(a.submitted_at || '').getTime())
+                              .map((report) => (
+                                <div key={report.id} className="flex items-center justify-between border rounded-md px-3 py-2">
+                                  <div className="flex-1 min-w-0 pr-3">
+                                    <div className="flex items-center gap-3">
+                                      <h4 className="text-sm font-semibold truncate">{report.title}</h4>
+                                      {getStatusBadge(report.status)}
+                                    </div>
+                                    <div className="mt-1 text-xs text-gray-500 flex items-center gap-4">
+                                      <span>Submitted: {formatDate(report.submitted_at)}</span>
+                                    </div>
+                                    {report.review_comments && (
+                                      <div className="mt-1 text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded px-2 py-1">
+                                        {report.review_comments}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => handleViewReport(report)}
+                                    >
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      View
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </details>
+                      ))}
+                    </>
+                  );
+                }
+                // Global view fallback
+                return (
+                  <div className="space-y-2">
+                    {reports.map(report => (
+                      <div key={report.id} className="flex items-center justify-between border rounded-md px-3 py-2">
+                        <div className="flex-1 min-w-0 pr-3">
+                          <div className="flex items-center gap-3">
+                            <h4 className="text-sm font-semibold truncate">{report.title}</h4>
+                            {getStatusBadge(report.status)}
+                          </div>
+                          <div className="mt-1 text-xs text-gray-500 flex items-center gap-4">
+                            <span>Submitted: {formatDate(report.submitted_at)}</span>
                           </div>
                         </div>
-                        
-                        {report.review_comments && (
-                          <div className="mt-2 p-2 border border-gray-200 rounded-md bg-gray-50">
-                            <p className="text-sm text-gray-700">{report.review_comments}</p>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleViewReport(report)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </Button>
+                        </div>
                       </div>
-
-                      <div className="flex items-center space-x-2 ml-4">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleViewReport(report)}
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </TabsContent>
@@ -792,6 +845,7 @@ export function ReportApprovalWorkflow({ division, jobId }: ReportApprovalWorkfl
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Review Report: {selectedReport.title}</DialogTitle>
+              <DialogDescription>Review and set the approval status for this report.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
@@ -894,6 +948,7 @@ export function ReportApprovalWorkflow({ division, jobId }: ReportApprovalWorkfl
             <DialogHeader className="flex-shrink-0 p-4 border-b bg-white">
               <div className="flex justify-between items-center">
                 <DialogTitle className="text-lg font-semibold">{selectedReport.title}</DialogTitle>
+                <DialogDescription>Read-only preview of the submitted report.</DialogDescription>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <span>Status:</span>
@@ -972,6 +1027,7 @@ export function ReportApprovalWorkflow({ division, jobId }: ReportApprovalWorkfl
                                 setShowViewDialog(false);
                                 fetchReports();
                                 fetchMetrics();
+                                if (onUpdate) { try { onUpdate(); } catch { /* noop */ } }
                               }
                             } catch (err) {
                               console.error('Error archiving report:', err);
@@ -1021,6 +1077,7 @@ export function ReportApprovalWorkflow({ division, jobId }: ReportApprovalWorkfl
                                 setShowViewDialog(false);
                                 fetchReports();
                                 fetchMetrics();
+                                if (onUpdate) { try { onUpdate(); } catch { /* noop */ } }
                               }
                             } catch (err) {
                               console.error('Error rejecting report:', err);
@@ -1063,6 +1120,7 @@ export function ReportApprovalWorkflow({ division, jobId }: ReportApprovalWorkfl
                                 setShowViewDialog(false);
                                 fetchReports();
                                 fetchMetrics();
+                                if (onUpdate) { try { onUpdate(); } catch { /* noop */ } }
                               }
                             } catch (err) {
                               console.error('Error approving report:', err);

@@ -526,11 +526,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
   // Handle insulation resistance changes
   const handleInsulationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    const key = getDataKey(name);
     setFormData({
       ...formData,
       insulationResistance: {
         ...formData.insulationResistance,
-        [name]: value
+        [key]: value
       }
     });
   };
@@ -629,8 +630,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         .from('metal_enclosed_busway_reports')
         .select('*')
         .eq('id', reportId)
-        .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === 'PGRST116') {
@@ -651,6 +651,29 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         console.log('🔍 insulation_resistance.correctedReadings.aToB:', data.insulation_resistance?.correctedReadings?.aToB);
         
         // Map the data from separate columns to the formData structure
+        // Build helpers to normalize from multiple shapes
+        const normalizeInsulationObj = (src: any): Record<string,string> => {
+          if (!src || typeof src !== 'object') return {};
+          // Accept both display keys and aToB keys
+          const out: Record<string,string> = {};
+          const fromDisplay = (k: string) => ({
+            'A-B':'aToB','B-C':'bToC','C-A':'cToA','A-N':'aToN','B-N':'bToN','C-N':'cToN','A-G':'aToG','B-G':'bToG','C-G':'cToG','N-G':'nToG'
+          } as any)[k] || k;
+          Object.keys(src).forEach(k => {
+            const key = fromDisplay(k);
+            out[key] = src[k];
+          });
+          return out;
+        };
+
+        const vmiFromArray = (arr: any[]): Record<string,string> =>
+          (arr || []).reduce((acc: any, item: any) => {
+            if (item && (item.id || item.section) && (item.result || item.value)) {
+              acc[item.id || item.section] = item.result || item.value;
+            }
+            return acc;
+          }, {});
+
         const newFormData = {
           customer: data.report_info?.customer || '',
           address: data.report_info?.address || '',
@@ -664,7 +687,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           
           temperature: data.report_info?.temperature || '',
           fahrenheit: data.report_info?.fahrenheit ?? true,
-          tcf: data.insulation_resistance?.tcf ? parseFloat(data.insulation_resistance.tcf) : 0.138,
+          tcf: data.insulation_resistance?.tcf ? parseFloat(data.insulation_resistance.tcf) : (typeof data.report_info?.tcf === 'number' ? data.report_info.tcf : 0.138),
           humidity: data.report_info?.humidity || '',
           
           manufacturer: data.report_info?.manufacturer || '',
@@ -676,35 +699,36 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           operatingVoltage: data.report_info?.operatingVoltage || '',
           ampacity: data.report_info?.ampacity || '',
           
-          // Map visual and mechanical inspection from the separate column
-          netaResults: data.visual_mechanical_inspection?.reduce((acc: any, item: any) => {
-            if (item.id && item.result) {
-              acc[item.id] = item.result;
-            }
-            return acc;
-          }, {}) || {},
+          // Visual and mechanical inspection from separate column or report_info
+          netaResults: (data.visual_mechanical_inspection && Array.isArray(data.visual_mechanical_inspection))
+            ? vmiFromArray(data.visual_mechanical_inspection)
+            : (data.report_info?.netaResults || {}),
           
-          // Map bus resistance from the separate column
+          // Bus resistance from separate column or report_info
           busResistance: {
-            p1: data.bus_resistance?.p1 || '',
-            p2: data.bus_resistance?.p2 || '',
-            p3: data.bus_resistance?.p3 || '',
-            neutral: data.bus_resistance?.neutral || ''
+            p1: data.bus_resistance?.p1 || data.report_info?.busResistance?.p1 || '',
+            p2: data.bus_resistance?.p2 || data.report_info?.busResistance?.p2 || '',
+            p3: data.bus_resistance?.p3 || data.report_info?.busResistance?.p3 || '',
+            neutral: data.bus_resistance?.neutral || data.report_info?.busResistance?.neutral || ''
           },
           
           // Map insulation resistance from the separate column
-          testVoltage1: data.insulation_resistance?.testVoltage || '',
+          testVoltage1: data.insulation_resistance?.testVoltage || data.report_info?.testVoltage1 || '',
           insulationResistance: {
-            aToB: data.insulation_resistance?.readings?.aToB || '',
-            bToC: data.insulation_resistance?.readings?.bToC || '',
-            cToA: data.insulation_resistance?.readings?.cToA || '',
-            aToN: data.insulation_resistance?.readings?.aToN || '',
-            bToN: data.insulation_resistance?.readings?.bToN || '',
-            cToN: data.insulation_resistance?.readings?.cToN || '',
-            aToG: data.insulation_resistance?.readings?.aToG || '',
-            bToG: data.insulation_resistance?.readings?.bToG || '',
-            cToG: data.insulation_resistance?.readings?.cToG || '',
-            nToG: data.insulation_resistance?.readings?.nToG || ''
+            ...(data.insulation_resistance?.readings
+              ? {
+                  aToB: data.insulation_resistance.readings.aToB || '',
+                  bToC: data.insulation_resistance.readings.bToC || '',
+                  cToA: data.insulation_resistance.readings.cToA || '',
+                  aToN: data.insulation_resistance.readings.aToN || '',
+                  bToN: data.insulation_resistance.readings.bToN || '',
+                  cToN: data.insulation_resistance.readings.cToN || '',
+                  aToG: data.insulation_resistance.readings.aToG || '',
+                  bToG: data.insulation_resistance.readings.bToG || '',
+                  cToG: data.insulation_resistance.readings.cToG || '',
+                  nToG: data.insulation_resistance.readings.nToG || ''
+                }
+              : normalizeInsulationObj(data.report_info?.insulationResistance)),
           },
           correctedInsulationResistance: {
             aToB: data.insulation_resistance?.correctedReadings?.aToB || '',
@@ -720,22 +744,22 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           },
           
           // Map test equipment from the separate column
-          megohmmeter: data.test_equipment?.megohmmeter?.name || '',
-          megohmSerial: data.test_equipment?.megohmmeter?.serialNumber || '',
-          megAmpId: data.test_equipment?.megohmmeter?.ampId || '',
-          lowResistanceOhmmeter: data.test_equipment?.lowResistanceOhmmeter?.name || '',
-          lowResistanceSerial: data.test_equipment?.lowResistanceOhmmeter?.serialNumber || '',
-          lowResistanceAmpId: data.test_equipment?.lowResistanceOhmmeter?.ampId || '',
+          megohmmeter: data.test_equipment?.megohmmeter?.name || data.report_info?.megohmmeter || '',
+          megohmSerial: data.test_equipment?.megohmmeter?.serialNumber || data.report_info?.megohmSerial || '',
+          megAmpId: data.test_equipment?.megohmmeter?.ampId || data.report_info?.megAmpId || '',
+          lowResistanceOhmmeter: data.test_equipment?.lowResistanceOhmmeter?.name || data.report_info?.lowResistanceOhmmeter || '',
+          lowResistanceSerial: data.test_equipment?.lowResistanceOhmmeter?.serialNumber || data.report_info?.lowResistanceSerial || '',
+          lowResistanceAmpId: data.test_equipment?.lowResistanceOhmmeter?.ampId || data.report_info?.lowResistanceAmpId || '',
           
           comments: data.comments || '',
           status: data.status || 'PASS',
           
-          insulationResistanceUnit: data.insulation_resistance?.units || 'MΩ',
+          insulationResistanceUnit: data.insulation_resistance?.units || data.report_info?.insulationResistanceUnit || 'MΩ',
           contactResistanceUnit: 'μΩ', // Default value
           dielectricWithstandUnit: 'mA', // Default value
           
           cableRating: '', // Not used in this report
-          testVoltage: data.insulation_resistance?.testVoltage || '',
+          testVoltage: data.insulation_resistance?.testVoltage || data.report_info?.testVoltage1 || '',
           
           dielectricPhaseA: '', // Not used in this report
           dielectricPhaseB: '', // Not used in this report

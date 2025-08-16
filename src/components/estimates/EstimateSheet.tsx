@@ -710,11 +710,14 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
         return;
     }
     
+    const randomQuoteNumber = () => Math.floor(100000 + Math.random() * 900000).toString();
+
     const quoteRecord = {
       opportunity_id: opportunityId,
       // Use current state data and travelData for saving
       data: JSON.stringify(data), 
-      travel_data: showTravel ? JSON.stringify(travelData) : null
+      travel_data: showTravel ? JSON.stringify(travelData) : null,
+      quote_number: randomQuoteNumber()
     };
     
     try {
@@ -728,10 +731,13 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       if (isUpdating && quoteIdToUpdate) {
         // Update existing quote
         console.log(`Updating estimate with ID: ${quoteIdToUpdate}`);
+        // Preserve existing quote number when updating
+        const updatePayload = { ...quoteRecord } as any;
+        delete updatePayload.quote_number;
         result = await supabase
           .schema('business') // Specify schema
           .from('estimates')
-          .update(quoteRecord)
+          .update(updatePayload)
           .eq('id', quoteIdToUpdate)
           .select()
           .single(); // Expect a single record back
@@ -1451,6 +1457,29 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
   const [selectedLetterQuoteIndex, setSelectedLetterQuoteIndex] = useState<number | null>(null);
   const [letterHtml, setLetterHtml] = useState<string>("");
   const [contactData, setContactData] = useState<{ first_name: string; last_name: string } | null>(null);
+  const [isViewMode, setIsViewMode] = useState<boolean>(false);
+  const [netaStandard, setNetaStandard] = useState<string>('');
+
+  const NETA_OPTIONS = [
+    { value: '', text: '-- Select --' },
+    { value: 'mts', text: 'All tests will be performed in accordance with ANSI/NETA MTS 2023 - Standard for Maintenance Testing Specifications for Electrical power Equipment and Systems.' },
+    { value: 'ats', text: 'All tests will be performed in accordance with ANSI/NETA ATS 2025 - Standard for Acceptance Testing Specifications for Electrical Power Equipment and Systems' },
+    { value: 'both', text: 'All work will be performmed in accordance with the applicable ANSI/NETA ATS/MTS & IEEE 81 Standards.' }
+  ];
+
+  function applyNetaTextByValue(value: string) {
+    try {
+      const option = NETA_OPTIONS.find(o => o.value === value);
+      const container = document.createElement('div');
+      container.innerHTML = letterHtml;
+      const span = container.querySelector('#neta-standard-text') as HTMLElement | null;
+      if (span) {
+        span.textContent = option?.text || '[Select NETA Standard]';
+        setLetterHtml(container.innerHTML);
+      }
+      setNetaStandard(value);
+    } catch {}
+  }
 
   function handleSelectQuoteForLetter(index: number) {
     setSelectedLetterQuoteIndex(index);
@@ -1512,13 +1541,13 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
     const contactName = contactData ? `${contactData.first_name} ${contactData.last_name}`.trim() : (customer.name || 'Contact Name');
 
     setLetterHtml(`
-      <div style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; min-height: 1100px;">
+      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; min-height: 1100px;">
         <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 8px; margin-bottom: 24px;">
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 40px; margin-right: 12px;" />
           <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
         </div>
         <div>Date: ${dateStr}</div>
-        <div style="margin-bottom: 12px;"><b>Letter #Quote ${index + 1}</b></div>
+        <div style="margin-bottom: 12px;"><b>Letter #Quote ${quote.quote_number || quote.id?.slice(0,6) || (index + 1)}</b></div>
         <div>
           ${contactName}<br/>
           ${customer.company_name || 'Company'}<br/>
@@ -1527,7 +1556,9 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
         <div style="margin: 16px 0;">Dear Mr./Ms. ${contactName},</div>
         <div>AMP LLC is pleased to offer the following proposal for your consideration.</div>
         <div style="margin: 16px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at <span style='border-bottom:1px dotted #aaa;'>_______</span></div>
-        <div style="margin: 16px 0;"><b>NETA Standard:</b> [NETA Standard Dropdown]</div>
+        <div style="margin: 16px 0;"><b>NETA Standard:</b>
+          <span id="neta-standard-text" style="margin-left:6px;">${NETA_OPTIONS.find(o => o.value === netaStandard)?.text || '[Select NETA Standard]'}</span>
+        </div>
         <div><b>Scope</b></div>
         <table style='width:100%;border-collapse:collapse;margin-bottom:16px;'>
           <thead>
@@ -1560,7 +1591,6 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
         <div style="margin-top: 16px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
         <div style="margin-top: 16px;">Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</div>
         <div>Should you have any questions please contact the undersigned.</div>
-        <div style="margin-top: 32px;">Sincerely,<br/><br/><br/>Brian Rodgers<br/>Chief Executive Officer</div>
         <div class="amp-footer" style="position:absolute;left:0;right:0;bottom:0;width:100%;font-size:0.9em;color:#555;border-top:1px solid #ccc;padding:8px 0;text-align:center;background:white;">P.O. Box 526 | Huntsville, Alabama 35804 | (256) 513-8255</div>
         <div style="page-break-after: always; margin-top: 40px;"></div>
         <div style="margin-top: 32px;">
@@ -1584,9 +1614,10 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
             <li>Where required, install grounding equipment/conductor device on the phase conductors or circuit parts, to eliminate induced voltage or stored energy, before touching them. Where it has been determined that contact with other exposed energized conductors or circuit parts is possible, apply ground connecting devices rated for the available fault duty.</li>
             <li>The equipment and/or electrical source is now locked out (tagged out).</li>
           </ul>
+          <div class="print-page-break"></div>
           <div style="margin-top: 12px; font-weight: bold;">Procedure Involving More Than One Person.</div>
-          <div>For a simple lockout/tagout and where more than one person is involved in the job or task, each person shall install his or her own personal lockout (tagout) device.</div>
-          <div style="margin-top: 16px;">Safety is the utmost priority at AMP Quality Energy Services and we reserve the right to stop work on any project that our technicians deem as unsafe. AMP Quality Energy Services technicians follow NFPA 70E, ANSI, NETA, and OSHA safety guidelines. Lock out/Tag out of all energy sources is required prior to working on an electrical system. Any exceptions to the above-mentioned specifications will need to be made in writing prior to shut-down for our safety officer's evaluation. Drop hazard mitigation shall be implemented while working at heights.</div>
+          <div class="procedure-section">For a simple lockout/tagout and where more than one person is involved in the job or task, each person shall install his or her own personal lockout (tagout) device.</div>
+          <div style="margin-top: 16px;" class="procedure-section">Safety is the utmost priority at AMP Quality Energy Services and we reserve the right to stop work on any project that our technicians deem as unsafe. AMP Quality Energy Services technicians follow NFPA 70E, ANSI, NETA, and OSHA safety guidelines. Lock out/Tag out of all energy sources is required prior to working on an electrical system. Any exceptions to the above-mentioned specifications will need to be made in writing prior to shut-down for our safety officer's evaluation. Drop hazard mitigation shall be implemented while working at heights.</div>
           <div style="margin-top: 32px; font-size: 1.1em; font-weight: bold; text-align: center;">END OF SAFETY POLICY</div>
         </div>
       </div>
@@ -1602,6 +1633,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
         @media print {
           @page { size: A4; margin: 20mm; }
           body { font-family: Arial, sans-serif; }
+          #letter-proposal.print-content { padding-bottom: 35mm; }
           .amp-footer {
             position: fixed !important;
             left: 0; right: 0; bottom: 0;
@@ -1613,6 +1645,11 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
             text-align: center;
             background: white;
           }
+          /* Hide the dropdown, keep the sentence */
+          #neta-standard-select { display: none !important; }
+          ul, ol, li, p, div { break-inside: avoid; }
+          .procedure-section { break-inside: avoid; }
+          .print-page-break { page-break-before: always; break-before: page; }
         }
       </style></head><body>${letterHtml}</body></html>`);
       printWindow.document.close();
@@ -1634,6 +1671,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
     if (mode === 'new') {
       setIsOpen(true);
       setIsNewQuote(true);
+      setIsViewMode(false);
       setShowTravel(false);
       // Use whatever opportunityData is available now
       setData({
@@ -1678,6 +1716,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
     } else if (mode === 'view') {
       setIsNewQuote(false);
       setIsOpen(true);
+      setIsViewMode(true);
     } else if (mode === 'letter') {
       setIsOpen(false); // Ensure saved estimates modal is closed
       handleGenerateLetterProposal();
@@ -1744,7 +1783,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
 
           <div className="relative bg-white dark:bg-dark-150 rounded-lg w-[98%] h-[95vh] mx-auto p-6 shadow-xl my-4 estimate-form">
             <div className="absolute top-0 right-0 pt-4 pr-4 flex space-x-2">
-              {isNewQuote && (
+              {isNewQuote ? (
                 <Button
                   onClick={saveQuote}
                   disabled={isSaving}
@@ -1752,6 +1791,23 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                 >
                   {isSaving ? 'Saving...' : 'Save Quote'}
                 </Button>
+              ) : (
+                isViewMode ? (
+                  <Button
+                    onClick={() => setIsViewMode(false)}
+                    className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                  >
+                    Edit
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={saveQuote}
+                    disabled={isSaving}
+                    className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                  >
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                )
               )}
               <button
                 type="button"
@@ -1786,7 +1842,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                           loadQuoteData(quote);
                         }}
                       >
-                        Quote {index + 1}
+                        Quote {quote.quote_number || quote.id?.slice(0,6) || index + 1}
                       </Tab>
                     ))}
                   </Tab.List>
@@ -1816,7 +1872,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                           style={styles.formInput}
                           value={data.client} 
                           onChange={(e) => handleGeneralChange('client', e.target.value)}
-                          readOnly
+                          readOnly={isViewMode}
                         />
                       </div>
                       
@@ -1827,7 +1883,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                           style={styles.formInput}
                           value={data.jobDescription} 
                           onChange={(e) => handleGeneralChange('jobDescription', e.target.value)}
-                          readOnly
+                          readOnly={isViewMode}
                         />
                       </div>
                       
@@ -1838,6 +1894,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                           style={styles.formInput}
                           value={data.dateDue} 
                           onChange={(e) => handleGeneralChange('dateDue', e.target.value)}
+                          readOnly={isViewMode}
                         />
                       </div>
                       
@@ -1848,7 +1905,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                           style={styles.formInput}
                           value={data.location} 
                           onChange={(e) => handleGeneralChange('location', e.target.value)}
-                          readOnly
+                          readOnly={isViewMode}
                         />
                       </div>
                       
@@ -1859,6 +1916,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                           style={styles.formInput}
                           value={data.periodOfPerformance} 
                           onChange={(e) => handleGeneralChange('periodOfPerformance', e.target.value)}
+                          readOnly={isViewMode}
                         />
                       </div>
                       
@@ -1869,6 +1927,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                           style={styles.formInput}
                           value={data.estimatedStartDate} 
                           onChange={(e) => handleGeneralChange('estimatedStartDate', e.target.value)}
+                          readOnly={isViewMode}
                         />
                       </div>
                     </div>
@@ -2002,6 +2061,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.item} 
                                   onChange={(e) => handleItemChange('sov', index, 'item', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={styles.tableCell}>
@@ -2010,6 +2070,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.quantity} 
                                   onChange={(e) => handleItemChange('sov', index, 'quantity', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={styles.tableCell}>
@@ -2019,6 +2080,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.materialPrice} 
                                   onChange={(e) => handleItemChange('sov', index, 'materialPrice', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={styles.tableCell}>
@@ -2028,6 +2090,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.expensePrice} 
                                   onChange={(e) => handleItemChange('sov', index, 'expensePrice', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={{...styles.tableCell, ...styles.calculated}}>
@@ -2042,6 +2105,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.laborMen} 
                                   onChange={(e) => handleItemChange('sov', index, 'laborMen', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={styles.tableCell}>
@@ -2051,6 +2115,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.laborHours} 
                                   onChange={(e) => handleItemChange('sov', index, 'laborHours', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={{...styles.tableCell, ...styles.calculated}}>
@@ -2068,6 +2133,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.notes} 
                                   onChange={(e) => handleItemChange('sov', index, 'notes', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                             </tr>
@@ -2126,6 +2192,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.item} 
                                   onChange={(e) => handleItemChange('nonSov', index, 'item', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={styles.tableCell}>
@@ -2134,6 +2201,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.quantity} 
                                   onChange={(e) => handleItemChange('nonSov', index, 'quantity', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={styles.tableCell}>
@@ -2143,6 +2211,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.materialPrice} 
                                   onChange={(e) => handleItemChange('nonSov', index, 'materialPrice', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={styles.tableCell}>
@@ -2152,6 +2221,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.expensePrice} 
                                   onChange={(e) => handleItemChange('nonSov', index, 'expensePrice', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={{...styles.tableCell, ...styles.calculated}}>
@@ -2166,6 +2236,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.laborMen} 
                                   onChange={(e) => handleItemChange('nonSov', index, 'laborMen', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={styles.tableCell}>
@@ -2175,6 +2246,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.laborHours} 
                                   onChange={(e) => handleItemChange('nonSov', index, 'laborHours', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                               <td style={{...styles.tableCell, ...styles.calculated}}>
@@ -2189,6 +2261,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   style={styles.tableInput}
                                   value={item.notes} 
                                   onChange={(e) => handleItemChange('nonSov', index, 'notes', e.target.value)}
+                                  readOnly={isViewMode}
                                 />
                               </td>
                             </tr>
@@ -3094,7 +3167,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
             <ul>
               {quotes.map((q, idx) => (
                 <li key={q.id} className="mb-2 flex items-center justify-between">
-                  <span>Quote {idx + 1} - {q.created_at?.slice(0,10)}</span>
+                  <span>Quote {q.quote_number || q.id?.slice(0,6) || (idx + 1)} - {q.created_at?.slice(0,10)}</span>
                   <Button onClick={() => handleSelectQuoteForLetter(idx)} className="bg-[#f26722] text-white ml-2">Select</Button>
                 </li>
               ))}
@@ -3115,6 +3188,21 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
               <Button onClick={() => setIsLetterProposalOpen(false)}>Close</Button>
             </div>
           </div>
+          {/* Inline control bar, confined to the same width as the letter content */}
+          <div className="p-3 border-b bg-gray-50">
+            <div className="flex items-center gap-2" style={{ maxWidth: 900, margin: '0 auto' }}>
+              <span className="text-sm font-medium">NETA Standard:</span>
+              <select
+                value={netaStandard}
+                onChange={(e) => applyNetaTextByValue(e.target.value)}
+                className="border rounded px-2 py-1 w-full"
+              >
+                {NETA_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.text}</option>
+                ))}
+              </select>
+            </div>
+          </div>
           <div className="flex-1 overflow-auto p-8" style={{ background: '#f9f9f9' }}>
             <div
               contentEditable
@@ -3122,6 +3210,19 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
               style={{ minHeight: '1000px', outline: 'none', background: 'white', padding: 32, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', maxWidth: 900, margin: '0 auto' }}
               dangerouslySetInnerHTML={{ __html: letterHtml }}
               onInput={e => setLetterHtml((e.target as HTMLElement).innerHTML)}
+              onBlur={() => {
+                try {
+                  const container = document.createElement('div');
+                  container.innerHTML = letterHtml;
+                  const sel = container.querySelector('#neta-standard-select') as HTMLSelectElement | null;
+                  const txt = container.querySelector('#neta-standard-text') as HTMLElement | null;
+                  if (sel && txt) {
+                    const selected = sel.options[sel.selectedIndex]?.text || '';
+                    txt.textContent = selected || txt.textContent;
+                  }
+                  setLetterHtml(container.innerHTML);
+                } catch {}
+              }}
             />
           </div>
         </div>

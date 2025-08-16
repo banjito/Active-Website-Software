@@ -51,6 +51,8 @@ export default function ContactList() {
   const navigate = useNavigate();
   const location = useLocation();
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -62,6 +64,8 @@ export default function ContactList() {
   const [customerSearch, setCustomerSearch] = useState('');
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [showCustomerResults, setShowCustomerResults] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
 
   // Log location pathname whenever it changes
   useEffect(() => {
@@ -73,7 +77,12 @@ export default function ContactList() {
       fetchContacts();
       fetchCustomers();
     }
-  }, [user]);
+  }, [user, page, debouncedSearch]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
 
   useEffect(() => {
     if (customerSearch.trim()) {
@@ -91,18 +100,32 @@ export default function ContactList() {
   async function fetchContacts() {
     setLoading(true);
     try {
-      // 1. Fetch base contacts data
-      const { data: contactData, error: contactError } = await supabase
+      // 1. Fetch base contacts data (paged)
+      const pageSize = 50;
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
         .schema('common')
         .from('contacts')
         .select('*') // Select all contact fields
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (debouncedSearch) {
+        const like = `%${debouncedSearch}%`;
+        query = query.or(`first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`);
+      }
+
+      const { data: contactData, error: contactError } = await query;
 
       if (contactError) throw contactError;
       if (!contactData) {
         setContacts([]);
         return; // No contacts found
       }
+
+      setHasMore((contactData || []).length === pageSize);
 
       // 2. Fetch customer data for each contact
       const contactsWithCustomers = await Promise.all(contactData.map(async (contact) => {
@@ -286,7 +309,14 @@ export default function ContactList() {
             Manage your contact information and view their associated customers.
           </p>
         </div>
-        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+        <div className="mt-4 sm:mt-0 sm:flex-none flex items-center gap-2">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+            placeholder="Search contacts by name, email, phone"
+            className="w-72 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+          />
           <button
             type="button"
             onClick={() => {
@@ -378,6 +408,25 @@ export default function ContactList() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="mt-4 flex items-center justify-between">
+        <button
+          className="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+          disabled={page <= 1 || loading}
+          onClick={() => setPage(p => Math.max(1, p - 1))}
+        >
+          Previous
+        </button>
+        <span className="text-sm text-gray-600 dark:text-gray-300">Page {page}</span>
+        <button
+          className="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+          disabled={!hasMore || loading}
+          onClick={() => setPage(p => p + 1)}
+        >
+          Next
+        </button>
       </div>
 
       <Dialog open={isOpen} onClose={() => {

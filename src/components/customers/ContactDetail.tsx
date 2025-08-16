@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, Building2, Mail, Phone, Briefcase, Calendar } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
@@ -26,6 +26,7 @@ interface Customer {
 export default function ContactDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [contact, setContact] = useState<Contact | null>(null);
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -173,9 +174,22 @@ export default function ContactDetail() {
 
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
           <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Company Information</h2>
-          {customer ? (
-            <Link 
-              to={`/customers/${customer.id}`}
+          {customer ? (() => {
+            // Build a route that matches configured routes
+            const currentPath = location.pathname;
+            let toPath = `/sales-dashboard/customers/${customer.id}`;
+            if (currentPath.startsWith('/sales-dashboard')) {
+              toPath = `/sales-dashboard/customers/${customer.id}`;
+            } else {
+              const parts = currentPath.split('/').filter(Boolean);
+              if (parts.length >= 1) {
+                const division = parts[0];
+                toPath = `/${division}/customers/${customer.id}`;
+              }
+            }
+            return (
+              <Link 
+                to={toPath}
               className="block hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <div className="space-y-4">
@@ -189,8 +203,9 @@ export default function ContactDetail() {
                   </div>
                 </div>
               </div>
-            </Link>
-          ) : (
+              </Link>
+            );
+          })() : (
             <p className="text-sm text-gray-500 dark:text-gray-400">No company information available</p>
           )}
         </div>

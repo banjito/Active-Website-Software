@@ -374,11 +374,40 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           console.log('🔍 MediumVoltageCircuitBreakerMTSReport - Loading report data:');
           console.log('  - Raw row:', data);
           // Support both report_data and data JSONB column names
-          const payload = (data as any).report_data || (data as any).data || {};
+          const payload: any = (data as any).report_data || (data as any).data || {};
           console.log('  - Using payload:', payload);
           console.log('  - visualMechanicalInspection:', payload?.visualMechanicalInspection);
 
-          const newFormData = { ...initialFormData, ...payload, status: (payload.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS' };
+          // Normalize Visual/Mechanical Inspection into object keyed by NETA id
+          const defaultVmi = visualInspectionItemsList.reduce((acc, item) => ({ ...acc, [item.id]: 'Select One' }), {} as Record<string, string>);
+          let loadedVmi: Record<string, string> = {};
+          const rawVmi = payload.visualMechanicalInspection || payload.visual_mechanical_inspection || payload.report_info?.visualMechanicalInspection;
+          if (Array.isArray(rawVmi)) {
+            loadedVmi = rawVmi.reduce((acc: Record<string,string>, it: any) => {
+              const key = it.id || it.netaSection || it.section || '';
+              const val = it.result || it.value || it.status || 'Select One';
+              if (key) acc[key] = val;
+              return acc;
+            }, {});
+          } else if (rawVmi && typeof rawVmi === 'object') {
+            const flatten = (obj: any, prefix = ''): Record<string,string> => {
+              const out: Record<string,string> = {};
+              Object.keys(obj || {}).forEach(k => {
+                const value = obj[k];
+                const nextKey = prefix ? `${prefix}.${k}` : k;
+                if (value && typeof value === 'object') {
+                  Object.assign(out, flatten(value, nextKey));
+                } else if (typeof value === 'string') {
+                  out[nextKey] = value;
+                }
+              });
+              return out;
+            };
+            loadedVmi = flatten(rawVmi);
+          }
+          const mergedVmi = { ...defaultVmi, ...loadedVmi };
+
+          const newFormData = { ...initialFormData, ...payload, status: (payload.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS', visualMechanicalInspection: mergedVmi };
           setFormData(newFormData);
           setIsEditing(false);
         }
@@ -395,8 +424,21 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    const keys = name.split('.');
     
+    // Special-case: visualMechanicalInspection keys contain dots; treat everything after the prefix as a single key
+    if (name.startsWith('visualMechanicalInspection.')) {
+      const key = name.substring('visualMechanicalInspection.'.length);
+      setFormData(prev => ({
+        ...prev,
+        visualMechanicalInspection: {
+          ...prev.visualMechanicalInspection,
+          [key]: value
+        }
+      }));
+      return;
+    }
+    
+    const keys = name.split('.');
     setFormData(prev => {
       let current = { ...prev } as any;
       let pointer = current;
@@ -466,10 +508,11 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
     if (!jobId || !user?.id || !isEditing) return;
     setSaving(true);
 
+    const vmiArray = Object.entries(formData.visualMechanicalInspection || {}).map(([id, result]) => ({ id, result }));
     const reportPayload = {
       job_id: jobId,
       user_id: user.id,
-      report_data: formData,
+      report_data: { ...formData, visual_mechanical_inspection: vmiArray },
     };
 
     try {
@@ -480,15 +523,15 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           .from('medium_voltage_circuit_breaker_mts_reports')
           .update(reportPayload)
           .eq('id', reportId)
-          .select()
-          .single();
+          .select('id')
+          .maybeSingle();
       } else {
         result = await supabase
           .schema('neta_ops')
           .from('medium_voltage_circuit_breaker_mts_reports')
           .insert(reportPayload)
-          .select()
-          .single();
+          .select('id')
+          .maybeSingle();
 
         if (result.data) {
           const assetData = {
@@ -515,7 +558,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           });
         }
       }
-      if (result.error) throw result.error;
+      if (result.error && result.error.code !== 'PGRST116') throw result.error;
       setIsEditing(false);
       alert(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
       navigateAfterSave(navigate, jobId, location);

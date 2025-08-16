@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, ClipboardCheck, Calendar, DollarSign, Building, User, Phone, Mail, MapPin, Clock, AlertTriangle, CheckCircle, Image, Maximize2, Minimize2, Save, Edit3, Download, Eye } from 'lucide-react';
 import { supabase, isConnectionError } from '../../lib/supabase';
@@ -18,6 +18,7 @@ import JobSurveys from './JobSurveys';
 import { pdfExportService } from '../../services/pdfExportService';
 
 import { JobNotifications } from './JobNotifications';
+// TrackingSection is defined locally below
 
 interface Job {
   id: string;
@@ -137,6 +138,108 @@ export default function JobDetail() {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
+  // Basic manual tracker state
+  type TrackingItem = { id: string; name: string; target: number; completed: number };
+  const [trackingItems, setTrackingItems] = useState<TrackingItem[]>([]);
+  const [isSavingTracking, setIsSavingTracking] = useState(false);
+  const [newItemTarget, setNewItemTarget] = useState<number>(1);
+  const [selectedReportForTracker, setSelectedReportForTracker] = useState<string>('');
+  const saveTimerRef = React.useRef<number | null>(null);
+
+  // Initialize manual tracker from loaded job (support both old/new shapes)
+  useEffect(() => {
+    const plan = (jobDetails as any)?.tracking_plan;
+    if (!plan) { setTrackingItems([]); return; }
+    if (Array.isArray(plan)) {
+      const items = plan as any[];
+      setTrackingItems(items.map((it, i) => ({
+        id: it.id || `${i}-${Date.now()}`,
+        name: it.name || it.slug || `Item ${i + 1}`,
+        target: Number(it.target) || 1,
+        completed: Number(it.completed) || 0,
+      })));
+    } else if (plan && Array.isArray(plan.items)) {
+      const items = plan.items as any[];
+      setTrackingItems(items.map((it, i) => ({
+        id: it.id || `${i}-${Date.now()}`,
+        name: it.name || it.slug || `Item ${i + 1}`,
+        target: Number(it.target) || 1,
+        completed: Number(it.completed) || 0,
+      })));
+    } else if (typeof plan === 'object') {
+      const entries = Object.entries(plan as Record<string, number>);
+      setTrackingItems(entries.map(([key, value], i) => ({
+        id: `${i}-${Date.now()}`,
+        name: key,
+        target: Number(value) || 1,
+        completed: 0,
+      })));
+    }
+  }, [jobDetails?.tracking_plan]);
+
+  // Manual tracker helpers
+  const addItem = () => {
+    if (!selectedReportForTracker) return;
+    const target = Math.max(1, Math.floor(newItemTarget || 1));
+    const asset = defaultAssets.find(a => a.id === selectedReportForTracker);
+    const name = asset ? asset.name : selectedReportForTracker;
+    // Avoid duplicate by name
+    setTrackingItems(prev => {
+      if (prev.some(it => it.name === name)) return prev;
+      return [...prev, { id: `${Date.now()}`, name, target, completed: 0 }];
+    });
+    setSelectedReportForTracker('');
+    setNewItemTarget(1);
+    requestSave();
+  };
+
+  const updateItemTarget = (id: string, target: number) => {
+    setTrackingItems(prev => prev.map(it => it.id === id ? { ...it, target: Math.max(0, Math.floor(target || 0)) } : it));
+    requestSave();
+  };
+
+  const updateItemCompleted = (id: string, completed: number) => {
+    setTrackingItems(prev => prev.map(it => it.id === id ? { ...it, completed: Math.max(0, Math.min(Math.floor(completed || 0), it.target)) } : it));
+    requestSave();
+  };
+
+  const incCompleted = (id: string, delta: number) => {
+    setTrackingItems(prev => prev.map(it => it.id === id ? { ...it, completed: Math.max(0, Math.min(it.completed + delta, it.target)) } : it));
+    requestSave();
+  };
+
+  const removeItem = (id: string) => {
+    setTrackingItems(prev => prev.filter(it => it.id !== id));
+    requestSave();
+  };
+
+  const requestSave = () => {
+    if (saveTimerRef.current) {
+      window.clearTimeout(saveTimerRef.current);
+    }
+    saveTimerRef.current = window.setTimeout(() => {
+      handleSaveTrackingPlan();
+    }, 600);
+  };
+
+  const handleSaveTrackingPlan = async () => {
+    if (!id) return;
+    try {
+      setIsSavingTracking(true);
+      const { error: updateError } = await supabase
+        .schema('neta_ops')
+        .from('jobs')
+        .update({ tracking_plan: { items: trackingItems } })
+        .eq('id', id);
+      if (updateError) throw updateError;
+      toast({ title: 'Tracking plan saved', description: 'Your project tracking plan has been updated.' });
+    } catch (err) {
+      console.error('Failed to save tracking plan', err);
+      toast({ title: 'Error', description: 'Failed to save tracking plan', variant: 'destructive' });
+    } finally {
+      setIsSavingTracking(false);
+    }
+  };
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   
   // Contract and Drawing Management State
@@ -433,6 +536,25 @@ export default function JobDetail() {
     }
   ];
 
+  // (Manual tracker) no report slugs needed
+
+  // Build default tracking types (from Add Asset menu templates)
+  const defaultTypes = useMemo(() => {
+    const typeSet = new Map<string, string>();
+    const extractSlug = (fileUrl: string): string | null => {
+      if (!fileUrl?.startsWith('report:/jobs/')) return null;
+      const parts = fileUrl.replace('report:/jobs/', '').split('/');
+      return parts[1] || null;
+    };
+    defaultAssets.forEach(a => {
+      const slug = extractSlug(a.file_url);
+      if (slug) typeSet.set(slug, a.name);
+    });
+    return Array.from(typeSet.entries())
+      .map(([id, label]) => ({ id, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [id]);
+
   const [isPrinting, setIsPrinting] = useState(false);
   const [printProgress, setPrintProgress] = useState(0);
   const [printStatus, setPrintStatus] = useState('');
@@ -460,7 +582,7 @@ export default function JobDetail() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
-    if (tabParam && ['overview', 'assets', 'surveys', 'sla'].includes(tabParam)) {
+    if (tabParam && ['overview', 'assets', 'surveys', 'sla', 'tracking'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [location.search]);
@@ -612,7 +734,8 @@ export default function JobDetail() {
         .schema('neta_ops')
         .from('job_assets')
         .select('asset_id')
-        .eq('job_id', id);
+        .eq('job_id', id)
+        .limit(100000);
 
       if (linksError) {
         console.error('Error fetching job asset links:', linksError);
@@ -1702,7 +1825,8 @@ export default function JobDetail() {
                       activeTab === 'reports'
                         ? 'border-b-2 border-[#f26722] text-[#f26722]'
                         : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                    }`}
+                    } ${user?.user_metadata?.role !== 'Admin' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={user?.user_metadata?.role !== 'Admin'}
                   >
                     <ClipboardCheck className="h-5 w-5 min-w-[20px] flex-shrink-0 inline-block mr-1" />
                     Reports
@@ -1716,6 +1840,16 @@ export default function JobDetail() {
                     }`}
                   >
                     Surveys
+                  </button>
+                  <button
+                    onClick={() => handleTabChange('tracking')}
+                    className={`py-4 px-6 text-sm font-medium ${
+                      activeTab === 'tracking'
+                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Tracking
                   </button>
                 </div>
               </div>
@@ -2297,94 +2431,141 @@ export default function JobDetail() {
                             <p>No matching assets found</p>
                           </div>
                         ) : (
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Asset Name</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Date Added</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {filteredJobAssets
-                                .slice() // Create a shallow copy to avoid mutating the original array
-                                .sort((a, b) => {
-                                  const numA = parseInt(a.name.match(/^(\\d+)/)?.[1] || '0', 10);
-                                  const numB = parseInt(b.name.match(/^(\\d+)/)?.[1] || '0', 10);
-                                  if (numA !== numB) {
-                                    return numA - numB;
-                                  }
-                                  return a.name.localeCompare(b.name);
-                                })
-                                .map((asset) => (
-                                <TableRow key={asset.id}>
-                                  <TableCell className="font-medium">{asset.id === 'low-voltage-cable-test-12sets' ? '3-Low Voltage Cable Test ATS' : asset.name}</TableCell>
-                                  <TableCell>
-                                    {/* Show status - read-only for approved/issue, editable dropdown for others */}
-                                    {asset.status === 'approved' || asset.status === 'issue' ? (
-                                      // Read-only display for approved/issue status (for all users)
-                                      <span className={`px-2 py-1 rounded text-sm font-medium ${
-                                        asset.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                      }`}>
-                                        {asset.status === 'approved' ? 'Approved' : 'Issue'}
-                                      </span>
-                                    ) : (
-                                      // Editable dropdown for all users (only in_progress and ready_for_review)
-                                      <select
-                                        value={asset.status || 'in_progress'}
-                                        onChange={(e) => handleStatusUpdate(asset.id, e.target.value as Asset['status'])}
-                                        className={`px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
-                                          asset.status === 'ready_for_review' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                        }`}
-                                      >
-                                        <option value="in_progress">In Progress</option>
-                                        <option value="ready_for_review">Ready for Review</option>
-                                      </select>
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    {format(new Date(asset.created_at), 'MMM d, yyyy')}
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    <div className="flex items-center justify-end space-x-2">
-                                      {asset.file_url.startsWith('report:') ? (
-                                        <Link 
-                                          to={getReportEditPath(asset)}
-                                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                                        >
-                                          Open Report
-                                        </Link>
-                                      ) : (
-                                        <a 
-                                          href={asset.file_url} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                                        >
-                                          View
-                                        </a>
-                                      )}
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-0 h-auto"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setAssetToDelete(asset);
-                                          setShowDeleteConfirm(true);
-                                        }}
-                                      >
-                                        <Trash2 className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-                                      </Button>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
+                          <div className="space-y-4">
+                            {(() => {
+                              const getFolder = (asset: Asset): string => {
+                                const name = asset.name || '';
+                                const numberMatch = name.match(/^(\d+)\s*[-–]?\s*/);
+                                if (/import/i.test(name) || /import/i.test(asset.file_url || '')) return 'Imported';
+                                if (numberMatch) return numberMatch[1];
+                                return 'Other';
+                              };
+
+                              const groups: Record<string, Asset[]> = {};
+                              filteredJobAssets.forEach((asset) => {
+                                const key = getFolder(asset);
+                                if (!groups[key]) groups[key] = [];
+                                groups[key].push(asset);
+                              });
+
+                              const orderKeys = Object.keys(groups).sort((a, b) => {
+                                if (a === 'Imported') return -1;
+                                if (b === 'Imported') return 1;
+                                if (a === 'Other' && b !== 'Other') return 1;
+                                if (b === 'Other' && a !== 'Other') return -1;
+                                const na = parseInt(a, 10);
+                                const nb = parseInt(b, 10);
+                                const aNum = isNaN(na) ? Number.MAX_SAFE_INTEGER : na;
+                                const bNum = isNaN(nb) ? Number.MAX_SAFE_INTEGER : nb;
+                                return aNum - bNum;
+                              });
+
+                              return (
+                                <>
+                                  {orderKeys.map((folderKey) => (
+                                    <details key={folderKey} className="group border rounded-md overflow-hidden">
+                                      <summary className="cursor-pointer select-none bg-gray-50 dark:bg-dark-150 px-3 py-2 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800 dark:text-white">
+                                            {folderKey === 'Imported' ? 'Imported' : folderKey === 'Other' ? 'Other' : `${folderKey}`}
+                                          </span>
+                                          <span className="text-xs text-gray-500">({groups[folderKey].length})</span>
+                                        </div>
+                                        <svg className="w-4 h-4 text-gray-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                      </summary>
+                                      <div className="bg-white dark:bg-dark-100">
+                                        <Table>
+                                          <TableHeader>
+                                            <TableRow>
+                                              <TableHead>Asset Name</TableHead>
+                                              <TableHead>Status</TableHead>
+                                              <TableHead>Date Added</TableHead>
+                                              <TableHead className="text-right">Actions</TableHead>
+                                            </TableRow>
+                                          </TableHeader>
+                                          <TableBody>
+                                            {groups[folderKey]
+                                              .slice()
+                                              .sort((a, b) => {
+                                                const numA = parseInt(a.name.match(/^(\d+)/)?.[1] || '0', 10);
+                                                const numB = parseInt(b.name.match(/^(\d+)/)?.[1] || '0', 10);
+                                                if (numA !== numB) return numA - numB;
+                                                return a.name.localeCompare(b.name);
+                                              })
+                                              .map((asset) => (
+                                                <TableRow key={asset.id}>
+                                                  <TableCell className="font-medium">{asset.id === 'low-voltage-cable-test-12sets' ? '3-Low Voltage Cable Test ATS' : asset.name}</TableCell>
+                                                  <TableCell>
+                                                    {asset.status === 'approved' || asset.status === 'issue' ? (
+                                                      <span className={`px-2 py-1 rounded text-sm font-medium ${
+                                                        asset.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                      }`}>
+                                                        {asset.status === 'approved' ? 'Approved' : 'Issue'}
+                                                      </span>
+                                                    ) : (
+                                                      <select
+                                                        value={asset.status || 'in_progress'}
+                                                        onChange={(e) => handleStatusUpdate(asset.id, e.target.value as Asset['status'])}
+                                                        className={`px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                                                          asset.status === 'ready_for_review' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                                                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                                        }`}
+                                                      >
+                                                        <option value="in_progress">In Progress</option>
+                                                        <option value="ready_for_review">Ready for Review</option>
+                                                      </select>
+                                                    )}
+                                                  </TableCell>
+                                                  <TableCell>
+                                                    {format(new Date(asset.created_at), 'MMM d, yyyy')}
+                                                  </TableCell>
+                                                  <TableCell className="text-right">
+                                                    <div className="flex items-center justify-end space-x-2">
+                                                      {asset.file_url.startsWith('report:') ? (
+                                                        <Link 
+                                                          to={getReportEditPath(asset)}
+                                                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                        >
+                                                          Open Report
+                                                        </Link>
+                                                      ) : (
+                                                        <a 
+                                                          href={asset.file_url} 
+                                                          target="_blank" 
+                                                          rel="noopener noreferrer"
+                                                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                        >
+                                                          View
+                                                        </a>
+                                                      )}
+                                                      <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-0 h-auto"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          setAssetToDelete(asset);
+                                                          setShowDeleteConfirm(true);
+                                                        }}
+                                                      >
+                                                        <Trash2 className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                                                      </Button>
+                                                    </div>
+                                                  </TableCell>
+                                                </TableRow>
+                                              ))}
+                                          </TableBody>
+                                        </Table>
+                                      </div>
+                                    </details>
+                                  ))}
+                                </>
+                              );
+                            })()}
+                          </div>
                         )}
                       </CardContent>
                     </Card>
@@ -2392,22 +2573,42 @@ export default function JobDetail() {
                 )}
                 
                 {activeTab === 'reports' && job && (
-                  <div className="space-y-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Technical Reports</CardTitle>
-                        <CardDescription>
-                          Review and approve technical reports for this job
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <ReportApprovalWorkflow 
-                          division={job.division || undefined} 
-                          jobId={job.id}
-                        />
-                      </CardContent>
-                    </Card>
-                  </div>
+                  user?.user_metadata?.role === 'Admin' ? (
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Technical Reports</CardTitle>
+                          <CardDescription>
+                            Review and approve technical reports for this job
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <ReportApprovalWorkflow 
+                            division={job.division || undefined} 
+                            jobId={job.id}
+                            onUpdate={() => {
+                              // Refresh assets and approved counts when approvals change
+                              fetchJobAssets();
+                            }}
+                          />
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Technical Reports</CardTitle>
+                          <CardDescription>Report approval requires Admin role.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md text-sm text-yellow-800 dark:text-yellow-200">
+                            You do not have permission to access the report approval view. Please contact an administrator if you believe this is an error.
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )
                 )}
                 
                 {activeTab === 'surveys' && job && (
@@ -2417,8 +2618,92 @@ export default function JobDetail() {
                     contacts={contacts}
                   />
                 )}
-                
 
+                {activeTab === 'tracking' && job && (
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle>Project Tracker</CardTitle>
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={selectedReportForTracker}
+                              onChange={(e) => setSelectedReportForTracker(e.target.value)}
+                              className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-900 dark:text-white w-72"
+                            >
+                              <option value="">Select report to track...</option>
+                              {defaultAssets.map(a => (
+                                <option key={a.id} value={a.id}>{a.name}</option>
+                              ))}
+                            </select>
+                            <Input
+                              type="number"
+                              placeholder="Target"
+                              value={newItemTarget}
+                              onChange={(e) => setNewItemTarget(parseInt(e.target.value || '1', 10))}
+                              className="w-24"
+                            />
+                            <Button onClick={addItem} disabled={!selectedReportForTracker}>Add</Button>
+                            <Button onClick={handleSaveTrackingPlan} disabled={isSavingTracking}>
+                              {isSavingTracking ? 'Saving...' : 'Save'}
+                            </Button>
+                          </div>
+                        </div>
+                        <CardDescription>
+                          Enter a simple list of items with target quantities. Update completed counts manually.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {trackingItems.length === 0 ? (
+                          <div className="text-sm text-gray-600 dark:text-gray-400">No tracking items yet. Add an item above.</div>
+                        ) : (
+                          <div className="space-y-4">
+                            {trackingItems.map(item => {
+                              const percent = item.target > 0 ? Math.min(100, Math.round((item.completed / item.target) * 100)) : 0;
+                              return (
+                                <div key={item.id} className="border border-gray-200 dark:border-gray-700 rounded-md p-4">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="font-medium text-gray-900 dark:text-white break-all">{item.name}</div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm text-gray-600 dark:text-gray-400">Target</span>
+                                      <Input
+                                        type="number"
+                                        value={item.target}
+                                        onChange={(e) => updateItemTarget(item.id, parseInt(e.target.value || '0', 10))}
+                                        className="w-24"
+                                      />
+                                      <Button variant="ghost" className="text-red-600" onClick={() => removeItem(item.id)}>Remove</Button>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">Completed</span>
+                                    <div className="flex items-center gap-2">
+                                      <Button variant="outline" size="sm" onClick={() => incCompleted(item.id, -1)}>-</Button>
+                                      <Input
+                                        type="number"
+                                        value={item.completed}
+                                        onChange={(e) => updateItemCompleted(item.id, parseInt(e.target.value || '0', 10))}
+                                        className="w-24"
+                                      />
+                                      <Button variant="outline" size="sm" onClick={() => incCompleted(item.id, 1)}>+</Button>
+                                      <span className="text-sm text-gray-700 dark:text-gray-300">/ {item.target} ({percent}%)</span>
+                                    </div>
+                                  </div>
+                                  <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div
+                                      className={`${percent >= 100 ? 'bg-green-600' : 'bg-blue-600'} h-full`}
+                                      style={{ width: `${percent}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
               </div>
             </div>
           </div>

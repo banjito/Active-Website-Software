@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "migrate": "node migrations/apply-migrations.js",
     "job-number-migration": "node migrations/run_job_number_migration.js",
+    "import-apptivo": "node scripts/import-apptivo.mjs",
     "list": "node scripts/dev.js list",
     "generate": "node scripts/dev.js generate",
     "parse-prd": "node scripts/dev.js parse-prd"
@@ -66,6 +67,7 @@
     "cli-table3": "^0.6.5",
     "commander": "^11.1.0",
     "cors": "^2.8.5",
+    "csv-parse": "^5.6.0",
     "crypto-js": "^4.2.0",
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",

@@ -451,7 +451,10 @@ export async function syncGoogleDriveDocuments(customerId: string) {
 }
 
 // Customer Functions
-export async function getCustomers(filters?: { category_id?: string | null, status?: string | null }) {
+export async function getCustomers(
+  filters?: { category_id?: string | null; status?: string | null },
+  options?: { page?: number; pageSize?: number; search?: string }
+) {
   try {
     console.log("Getting customers with filters:", filters);
     let query = supabase
@@ -467,7 +470,21 @@ export async function getCustomers(filters?: { category_id?: string | null, stat
       query = query.eq('status', filters.status);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    // Apply search (name/company/email)
+    const search = options?.search?.trim();
+    if (search) {
+      const like = `%${search}%`;
+      query = query.or(`name.ilike.${like},company_name.ilike.${like},email.ilike.${like}`);
+    }
+
+    const pageSize = Math.max(1, Math.min(options?.pageSize || 50, 100));
+    const page = Math.max(0, (options?.page || 1) - 1);
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (error) {
       console.error("Error fetching customers:", error);

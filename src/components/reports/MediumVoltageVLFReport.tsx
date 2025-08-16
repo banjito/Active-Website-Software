@@ -1267,6 +1267,22 @@ const MediumVoltageVLFReport: React.FC = () => {
           .eq('id', reportId)
           .select()
           .single();
+        // Fallback: If update failed due to table/column mismatch or RLS, try legacy table using JSONB 'data'
+        if (result.error) {
+          console.warn('Primary update failed, attempting fallback to medium_voltage_cable_vlf_test:', result.error);
+          const { data: fbData, error: fbError } = await supabase
+            .schema('neta_ops')
+            .from('medium_voltage_cable_vlf_test')
+            .update({ data: formData, updated_at: new Date().toISOString() })
+            .eq('id', reportId)
+            .select('id')
+            .single();
+          if (fbError) {
+            console.error('Fallback update failed as well:', fbError);
+            throw fbError;
+          }
+          result = { data: fbData, error: null } as any;
+        }
       } else {
         // Create new report
         console.log('Creating new report...');
@@ -1278,6 +1294,22 @@ const MediumVoltageVLFReport: React.FC = () => {
           .single();
         
         console.log('Report creation result:', result);
+        // If primary insert failed, fallback to legacy table using JSONB 'data'
+        if (result.error) {
+          console.warn('Primary insert failed, attempting fallback to medium_voltage_cable_vlf_test:', result.error);
+          const { data: fbData, error: fbError } = await supabase
+            .schema('neta_ops')
+            .from('medium_voltage_cable_vlf_test')
+            .insert({ job_id: effectiveJobId, user_id: user.id, data: formData, created_at: new Date().toISOString() })
+            .select('id')
+            .single();
+          if (fbError) {
+            console.error('Fallback insert failed as well:', fbError);
+            throw fbError;
+          }
+          result = { data: fbData, error: null } as any;
+        }
+
         // Create asset entry
         if (result.data) {
           console.log('Creating asset entry for report:', result.data.id);
@@ -1395,27 +1427,12 @@ const MediumVoltageVLFReport: React.FC = () => {
         .eq('id', reportId)
         .single();
 
-      if (error) {
-        console.error(`Error loading from medium_voltage_vlf_reports:`, error);
-        // Handle specific errors if needed, otherwise throw generic
-        if (error.message.includes('permission denied')) {
-          toast.error('Permission denied when loading the report.');
-        } else if (error.code === 'PGRST116') { // Not found
-          toast.error('Report not found.');
-          // Don't set edit mode for missing reports - let user click Edit if needed
-        } else {
-          toast.error(`Failed to load report: ${error.message}`);
-        }
-        throw error; // Re-throw to trigger the catch block below
-      }
-
-      if (data && data.report_info) {
-        console.log('loadReport: Found report, setting form data.');
-        // ... (rest of the logic to set form data based on 'data')
+      if (!error && data) {
+        console.log('loadReport: Found report in new table, applying mappings.');
         setFormData(prev => ({
           ...prev,
-          ...data.report_info, // Spread the report_info from the loaded data
-          // Make sure to map all relevant fields correctly
+          // High-level info
+          ...(data.report_info || {}),
           customerName: data.report_info?.customerName || prev.customerName,
           siteAddress: data.report_info?.siteAddress || prev.siteAddress,
           jobNumber: data.report_info?.jobNumber || prev.jobNumber,
@@ -1423,27 +1440,63 @@ const MediumVoltageVLFReport: React.FC = () => {
           equipmentLocation: data.report_info?.equipmentLocation || prev.equipmentLocation,
           contactPerson: data.report_info?.contactPerson || prev.contactPerson,
           identifier: data.report_info?.identifier || prev.identifier,
-          cableInfo: data.report_info?.cableInfo || prev.cableInfo,
-          terminationData: data.report_info?.terminationData || prev.terminationData,
-          visualInspection: data.report_info?.visualInspection || prev.visualInspection,
-          shieldContinuity: data.report_info?.shieldContinuity || prev.shieldContinuity,
-          insulationTest: data.report_info?.insulationTest || prev.insulationTest,
-          equipment: data.report_info?.equipment || prev.equipment,
-          temperature: data.report_info?.temperature || prev.temperature,
-          withstandTest: data.report_info?.withstandTest || prev.withstandTest,
-          comments: data.report_info?.comments || prev.comments,
-          status: data.report_info?.status || prev.status,
-          // Ensure nested reportInfo object is also updated if it exists in DB
+          // Structured sections from top-level columns
+          cableInfo: data.cable_info || prev.cableInfo,
+          terminationData: data.termination_data || prev.terminationData,
+          visualInspection: data.visual_inspection || prev.visualInspection,
+          shieldContinuity: data.shield_continuity || prev.shieldContinuity,
+          insulationTest: data.insulation_test || prev.insulationTest,
+          equipment: data.equipment || prev.equipment,
+          temperature: data.temperature || prev.temperature,
+          withstandTest: data.withstand_test || prev.withstandTest,
+          comments: data.comments ?? prev.comments,
+          status: data.status || prev.status,
+          // Nested reportInfo
           reportInfo: {
             ...prev.reportInfo,
-            ...(data.report_info.reportInfo || {})
+            ...(data.report_info?.reportInfo || {})
           }
         }));
-        setIsEditMode(false); // Set to view mode since report was loaded
+        setIsEditMode(false);
+        return;
+      }
+
+      // Primary table failed or empty; try legacy table
+      console.warn('Primary load failed or empty, trying legacy table medium_voltage_cable_vlf_test:', error);
+      const { data: legacyData, error: legacyError } = await supabase
+        .schema('neta_ops')
+        .from('medium_voltage_cable_vlf_test')
+        .select('id, data')
+        .eq('id', reportId)
+        .single();
+
+      if (legacyError) {
+        console.error('Legacy table load failed:', legacyError);
+        if (error) {
+          // Report the original error contextually
+          if ((error as any).message?.includes('permission denied')) {
+            toast.error('Permission denied when loading the report.');
+          } else if ((error as any).code === 'PGRST116') {
+            toast.error('Report not found.');
+          } else {
+            toast.error(`Failed to load report: ${(error as any).message}`);
+          }
+        } else {
+          toast.error(`Failed to load report: ${legacyError.message}`);
+        }
+        throw legacyError;
+      }
+
+      if (legacyData && legacyData.data) {
+        console.log('Loaded report from legacy table; applying JSON form data.');
+        setFormData(prev => ({
+          ...prev,
+          ...(legacyData.data || {})
+        }));
+        setIsEditMode(false);
       } else {
-        console.warn('Report data loaded but report_info is missing or empty.');
-        toast.error('Loaded report seems incomplete.'); // Changed from toast.warn
-        // Don't automatically set edit mode - let user click Edit if needed
+        console.warn('Legacy report has no data payload.');
+        toast.error('Loaded report seems incomplete.');
       }
 
     } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X, ArrowLeft } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, ArrowLeft, Award } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { format } from 'date-fns';
 import { supabase } from '../../lib/supabase';
@@ -100,6 +100,8 @@ export default function OpportunityList() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [opportunities, setOpportunities] = useState<any[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [customerSearch, setCustomerSearch] = useState('');
@@ -109,13 +111,20 @@ export default function OpportunityList() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [showDivisionAnalytics, setShowDivisionAnalytics] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
 
   useEffect(() => {
     if (user) {
       fetchOpportunities();
       fetchCustomers();
     }
-  }, [user]);
+  }, [user, page, debouncedSearch]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
 
   useEffect(() => {
     if (formData.customer_id) {
@@ -141,12 +150,23 @@ export default function OpportunityList() {
   async function fetchOpportunities() {
     setLoading(true);
     try {
-      // 1. Fetch base opportunities from the 'business' schema
-      const { data: opportunityData, error: opportunityError } = await supabase
+      // 1. Fetch base opportunities from the 'business' schema (paged)
+      const pageSize = 50;
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+      let query = supabase
         .schema('business')
         .from('opportunities')
         .select('*') // Select all opportunity fields
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (debouncedSearch) {
+        const like = `%${debouncedSearch}%`;
+        query = query.or(`quote_number.ilike.${like},title.ilike.${like},description.ilike.${like},sales_person.ilike.${like}`);
+      }
+
+      const { data: opportunityData, error: opportunityError } = await query;
 
       if (opportunityError) throw opportunityError;
       
@@ -154,6 +174,8 @@ export default function OpportunityList() {
         setOpportunities([]);
         return; // No opportunities found
       }
+
+      setHasMore((opportunityData || []).length === pageSize);
 
       // 2. Fetch customer data for each opportunity from the 'common' schema
       const opportunitiesWithCustomers = await Promise.all(opportunityData.map(async (opportunity) => {
@@ -411,17 +433,26 @@ export default function OpportunityList() {
               A list of all opportunities and their key information.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setIsOpen(true);
-              setFormData(initialFormData);
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add opportunity
-          </button>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+              placeholder="Search by quote #, title, description, sales person"
+              className="w-72 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(true);
+                setFormData(initialFormData);
+              }}
+              className="inline-flex items-center justify-center rounded-md bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add opportunity
+            </button>
+          </div>
         </div>
 
         <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-dark-200 overflow-hidden">
@@ -440,6 +471,9 @@ export default function OpportunityList() {
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
                     Status
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
+                    Job
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
                     Division
@@ -461,7 +495,7 @@ export default function OpportunityList() {
               <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-dark-200">
                 {opportunities.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-4 text-center text-gray-500 dark:text-dark-400">
+                    <td colSpan={10} className="px-6 py-4 text-center text-gray-500 dark:text-dark-400">
                       No opportunities found. Click "Add Opportunity" to create one.
                     </td>
                   </tr>
@@ -493,6 +527,31 @@ export default function OpportunityList() {
                         >
                           {formatStatus(opportunity.status)}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 dark:text-dark-900">
+                          {opportunity.job_id ? (
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                ✓ Job #{opportunity.job_id}
+                              </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/jobs/${opportunity.job_id}`);
+                                }}
+                                className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 text-xs underline"
+                                title="View Job"
+                              >
+                                View
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100">
+                              No Job
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900 dark:text-dark-900">
@@ -532,6 +591,19 @@ export default function OpportunityList() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2" onClick={(e) => e.stopPropagation()}>
+                          {!opportunity.job_id && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/sales-dashboard/opportunities/${opportunity.id}`);
+                                // The opportunity detail page will show the Convert to Job button
+                              }}
+                              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                              title="Convert to Job"
+                            >
+                              <Award className="h-5 w-5" />
+                            </button>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -549,6 +621,25 @@ export default function OpportunityList() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="mt-4 flex items-center justify-between">
+          <button
+            className="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+            disabled={page <= 1 || loading}
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600 dark:text-gray-300">Page {page}</span>
+          <button
+            className="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+            disabled={!hasMore || loading}
+            onClick={() => setPage(p => p + 1)}
+          >
+            Next
+          </button>
         </div>
       </div>
 

@@ -186,9 +186,10 @@ export default function OpportunityDetail() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<OpportunityFormData>(initialFormData);
-  const [confirmAwardOpen, setConfirmAwardOpen] = useState(false);
+  const [confirmConvertToJobOpen, setConfirmConvertToJobOpen] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [isStatusEditing, setIsStatusEditing] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<OpportunityFormData>({
     customer_id: '',
     title: '',
@@ -443,7 +444,7 @@ export default function OpportunityDetail() {
     return status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
   }
 
-  const handleAwardOpportunity = async () => {
+  const handleConvertToJob = async () => {
     if (!id || !user) return;
 
     try {
@@ -452,94 +453,22 @@ export default function OpportunityDetail() {
         throw new Error('Opportunity is missing customer_id which is required for job creation');
       }
 
-      // First update the status to 'awarded'
-      const { error: statusError } = await supabase
-        .schema('business')
-        .from('opportunities')
-        .update({ 
-          status: 'awarded',
-          awarded_date: new Date().toISOString()
-        })
-        .eq('id', id);
-
-      if (statusError) {
-        console.error('Status update error:', statusError);
-        throw statusError;
-      }
-      
-      // Add a longer delay to ensure the trigger has completed
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Fetch the updated opportunity explicitly selecting columns
-      const opportunityColumns = 
-        'id, created_at, updated_at, customer_id, contact_id, title, description, status, expected_value, probability, expected_close_date, quote_number, notes, job_id, awarded_date, sales_person, amp_division';
-
-      const { data: opportunityData, error: opportunityError } = await supabase
-        .schema('business')
-        .from('opportunities')
-        .select(opportunityColumns)
-        .eq('id', id)
-        .single();
-      
-      if (opportunityError) {
-        console.error('Fetch error:', opportunityError);
-        throw opportunityError;
-      }
-      
-      if (!opportunityData) {
-        throw new Error('No data returned after update');
-      }
-
-      // Fetch customer data separately
-      let customerInfo: CustomerInfo | null = null;
-      if (opportunityData.customer_id) {
-        const { data: customerData, error: customerError } = await supabase
-          .schema('common')
-          .from('customers')
-          .select('id, name, company_name')
-          .eq('id', opportunityData.customer_id)
-          .single<CustomerInfo>();
-
-        if (!customerError && customerData) {
-          customerInfo = customerData;
-        }
-      }
-
-      const opportunityWithCustomer = {
-        ...opportunityData,
-        customers: customerInfo
-      };
-      
-      // Update local state
-      setOpportunity(opportunityWithCustomer);
-      
-      // If job_id was created by trigger, we're good
-      if (opportunityData.job_id) {
-        setJobId(opportunityData.job_id);
-        setConfirmAwardOpen(false);
-        return;
-      }
-      
-      console.log('Database trigger did not create job_id, attempting manual job creation...');
-      
-      // Check for user again before calling
-      if (!user) {
-          throw new Error("User not authenticated for manual job creation.");
-      }
-      
-      // Use the common function to create the job, passing user.id
-      const newJobId = await createJobManually(opportunityData, supabase, user.id);
+      // Create the job directly without changing the opportunity status
+      const newJobId = await createJobManually(opportunity, supabase, user.id);
       setJobId(newJobId);
       
-      // Update the opportunity in state
+      // Update the opportunity in state to include the job_id
       setOpportunity(prev => 
         prev ? { ...prev, job_id: newJobId } as OpportunityWithCustomer : null
       );
       
-      setConfirmAwardOpen(false);
+      setConfirmConvertToJobOpen(false);
+      setShowSuccessMessage(`Job successfully created! Job ID: ${newJobId}`);
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => setShowSuccessMessage(null), 5000);
     } catch (error) {
-      console.error('Error awarding opportunity:', error);
-      alert('Failed to award opportunity: ' + (error instanceof Error ? error.message : 'Please try again. If the problem persists, contact support.'));
+      console.error('Error creating job:', error);
+      alert('Failed to create job: ' + (error instanceof Error ? error.message : 'Please try again. If the problem persists, contact support.'));
     }
   };
 
@@ -555,79 +484,10 @@ export default function OpportunityDetail() {
 
       if (error) throw error;
 
-      // Special case for "awarded" status
-      if (newStatus === 'awarded') {
-        // Add a small delay to ensure the trigger has completed
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Fetch the updated opportunity explicitly selecting columns
-        const opportunityColumns = 
-          'id, created_at, updated_at, customer_id, contact_id, title, description, status, expected_value, probability, expected_close_date, quote_number, notes, job_id, awarded_date, sales_person, amp_division';
-
-        const { data: opportunityData, error: opportunityError } = await supabase
-          .schema('business')
-          .from('opportunities')
-          .select(opportunityColumns)
-          .eq('id', id)
-          .single();
-        
-        if (opportunityError) throw opportunityError;
-
-        // Check if opportunityData exists before proceeding
-        if (!opportunityData) {
-          throw new Error('Opportunity data not found after status update.');
-        }
-
-        // Fetch customer data separately
-        let customerInfo: CustomerInfo | null = null;
-        if (opportunityData.customer_id) {
-          const { data: customerData, error: customerError } = await supabase
-            .schema('common')
-            .from('customers')
-            .select('id, name, company_name')
-            .eq('id', opportunityData.customer_id)
-            .single<CustomerInfo>();
-
-          if (!customerError && customerData) {
-            customerInfo = customerData;
-          }
-        }
-
-        const opportunityWithCustomer = {
-          ...opportunityData,
-          customers: customerInfo
-        };
-        
-        setOpportunity(opportunityWithCustomer);
-        
-        // If job_id was created by trigger, we're good
-        if (opportunityData && opportunityData.job_id) {
-          setJobId(opportunityData.job_id);
-          setIsStatusEditing(false);
-          return;
-        }
-        
-        console.log('Database trigger did not create job_id, attempting manual job creation...');
-        
-        // Check for user again before calling
-        if (!user) {
-            throw new Error("User not authenticated for manual job creation.");
-        }
-        
-        // Use the common function to create the job, passing user.id
-        const newJobId = await createJobManually(opportunityData, supabase, user.id);
-        setJobId(newJobId);
-        
-        // Update the opportunity in state
-        setOpportunity(prev => 
-          prev ? { ...prev, job_id: newJobId } as OpportunityWithCustomer : null
-        );
-      } else {
-        // Update the local state for non-awarded statuses
-        setOpportunity(prev => 
-          prev ? { ...prev, status: newStatus as any } : null
-        );
-      }
+      // Update the local state for all status changes
+      setOpportunity(prev => 
+        prev ? { ...prev, status: newStatus as any } : null
+      );
       
       setIsStatusEditing(false);
     } catch (error) {
@@ -882,14 +742,33 @@ export default function OpportunityDetail() {
               </h2>
             </div>
             <div className="flex space-x-2">
-              {opportunity.status !== 'awarded' && opportunity.status !== 'lost' && (
-                <button
-                  onClick={() => setConfirmAwardOpen(true)}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center"
-                >
-                  <Award className="h-4 w-4 mr-1" />
-                  Award
-                </button>
+              {!opportunity.job_id && (
+                <div className="flex flex-col items-start">
+                  <button
+                    onClick={() => setConfirmConvertToJobOpen(true)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center"
+                  >
+                    <Award className="h-4 w-4 mr-1" />
+                    Convert to Job
+                  </button>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    This will create a new job and link it to this opportunity
+                  </p>
+                </div>
+              )}
+              {opportunity.job_id && (
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-2 bg-green-100 text-green-800 rounded-md text-sm font-medium dark:bg-green-900 dark:text-green-200">
+                    ✓ Converted to Job
+                  </span>
+                  <Link
+                    to={`/jobs/${opportunity.job_id}`}
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-1" />
+                    View Job
+                  </Link>
+                </div>
               )}
               {!isEditing && (
                 <button
@@ -920,6 +799,44 @@ export default function OpportunityDetail() {
               )}
             </div>
           </div>
+
+          {/* Success Message */}
+          {showSuccessMessage && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4 mb-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                    {showSuccessMessage}
+                  </p>
+                  {jobId && (
+                    <div className="mt-2">
+                      <Link
+                        to={`/jobs/${jobId}`}
+                        className="text-sm text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 underline"
+                      >
+                        View Job #{jobId} →
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                <div className="ml-auto pl-3">
+                  <button
+                    type="button"
+                    className="inline-flex text-green-400 hover:text-green-600 dark:text-green-300 dark:hover:text-green-100"
+                    onClick={() => setShowSuccessMessage(null)}
+                  >
+                    <span className="sr-only">Dismiss</span>
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {isEditing ? (
             <div className="p-6">
@@ -1153,6 +1070,11 @@ export default function OpportunityDetail() {
                           </span>
                         </button>
                       )}
+                      {opportunity.status !== 'awarded' && opportunity.status !== 'lost' && !opportunity.job_id && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          Change status above or use "Convert to Job" button to create a job
+                        </p>
+                      )}
                     </div>
                     <div className="mb-4">
                       <p className="text-sm text-gray-500 dark:text-dark-400">AMP Division</p>
@@ -1173,6 +1095,22 @@ export default function OpportunityDetail() {
                         ) : 'Not specified'}
                       </p>
                     </div>
+                    {opportunity.job_id && (
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-500 dark:text-dark-400">Job Status</p>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            Converted to Job
+                          </span>
+                          <Link
+                            to={`/jobs/${opportunity.job_id}`}
+                            className="text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90 text-sm"
+                          >
+                            View Job #{opportunity.job_id}
+                          </Link>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1403,10 +1341,10 @@ export default function OpportunityDetail() {
             </div>
           )}
 
-          {/* Confirm Award Dialog */}
+          {/* Convert to Job Confirmation Dialog */}
           <Dialog
-            open={confirmAwardOpen}
-            onClose={() => setConfirmAwardOpen(false)}
+            open={confirmConvertToJobOpen}
+            onClose={() => setConfirmConvertToJobOpen(false)}
             className="fixed inset-0 z-50 overflow-y-auto"
           >
             <div className="flex items-center justify-center min-h-screen">
@@ -1417,7 +1355,7 @@ export default function OpportunityDetail() {
                   <button
                     type="button"
                     className="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200"
-                    onClick={() => setConfirmAwardOpen(false)}
+                    onClick={() => setConfirmConvertToJobOpen(false)}
                   >
                     <span className="sr-only">Close</span>
                     <X className="h-6 w-6" />
@@ -1425,27 +1363,37 @@ export default function OpportunityDetail() {
                 </div>
                 
                 <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Award Opportunity
+                  Convert Opportunity to Job
                 </Dialog.Title>
                 
                 <p className="text-gray-700 dark:text-white mb-4">
-                  Are you sure you want to mark this opportunity as awarded? This will create a new job record.
+                  Are you sure you want to create a job from this opportunity? This action will:
+                </p>
+                
+                <ul className="text-sm text-gray-600 dark:text-gray-300 mb-4 space-y-1">
+                  <li>• Create a new job record in the system</li>
+                  <li>• Link the opportunity to the new job</li>
+                  <li>• Keep the opportunity status unchanged</li>
+                </ul>
+                
+                <p className="text-gray-700 dark:text-white mb-4">
+                  The opportunity will remain in its current status. You can change the status separately if needed.
                 </p>
 
                 <div className="mt-5 flex justify-end space-x-3">
                   <button
                     type="button"
                     className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
-                    onClick={() => setConfirmAwardOpen(false)}
+                    onClick={() => setConfirmConvertToJobOpen(false)}
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] border border-transparent rounded-md shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
-                    onClick={handleAwardOpportunity}
+                    onClick={handleConvertToJob}
                   >
-                    Confirm Award
+                    Convert to Job
                   </button>
                 </div>
               </div>

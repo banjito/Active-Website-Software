@@ -14,14 +14,17 @@ export const navigateAfterSave = (
   location: { search: string }
 ) => {
   if (!jobId) return;
-  
-  // Check if the URL contains the returnToAssets parameter
   const searchParams = new URLSearchParams(location.search);
+  const fromApproval = searchParams.get('fromApproval') === 'true';
   const returnToAssets = searchParams.get('returnToAssets') === 'true';
-  
-  // Always navigate to the assets tab - this ensures users can see their newly saved reports
-  // regardless of how they got to the report page
-  if (returnToAssets || true) { // Always go to assets for now
+
+  // If we came from the approval viewer, stay on the same page (no redirect)
+  if (fromApproval) {
+    return;
+  }
+
+  // Otherwise, keep existing behavior
+  if (returnToAssets || true) {
     navigate(`/jobs/${jobId}?tab=assets`);
   } else {
     navigate(`/jobs/${jobId}`);

@@ -34,6 +34,8 @@ export default function CustomerList() {
   const navigate = useNavigate();
   const location = useLocation();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const [categories, setCategories] = useState<CustomerCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +46,8 @@ export default function CustomerList() {
   const [customerToEdit, setCustomerToEdit] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   const [activeFilters, setActiveFilters] = useState<{
     category_id?: string | null;
     status?: string | null;
@@ -53,16 +57,23 @@ export default function CustomerList() {
     if (user) {
       fetchData();
     }
-  }, [user, activeFilters]);
+  }, [user, activeFilters, page, debouncedSearch]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
 
   async function fetchData() {
     try {
       setLoading(true);
       console.log("CustomerList: Fetching data with activeFilters:", activeFilters);
       
-      // Get customers from common schema
-      const customersData = await getCustomers(activeFilters);
+      // Get customers from common schema (paged)
+      const pageSize = 50;
+      const customersData = await getCustomers(activeFilters, { page, pageSize, search: debouncedSearch });
       console.log(`CustomerList: Retrieved ${customersData.length} customers from common schema`);
+      setHasMore(customersData.length === pageSize);
       
       // Get categories
       const categoriesData = await getCategories();
@@ -184,6 +195,7 @@ export default function CustomerList() {
 
   function clearFilters() {
     setActiveFilters({});
+    setPage(1);
     setFilterOpen(false);
   }
 
@@ -239,6 +251,13 @@ export default function CustomerList() {
           </p>
         </div>
         <div className="flex space-x-2">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+            placeholder="Search customers by name, company, email"
+            className="w-72 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+          />
           <button
             onClick={navigateToCategoriesPage}
             className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -428,6 +447,25 @@ export default function CustomerList() {
             ))
           )}
         </ul>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="mt-4 flex items-center justify-between">
+        <button
+          className="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+          disabled={page <= 1 || loading}
+          onClick={() => setPage(p => Math.max(1, p - 1))}
+        >
+          Previous
+        </button>
+        <span className="text-sm text-gray-600 dark:text-gray-300">Page {page}</span>
+        <button
+          className="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+          disabled={!hasMore || loading}
+          onClick={() => setPage(p => p + 1)}
+        >
+          Next
+        </button>
       </div>
 
       {/* Filter Dialog */}

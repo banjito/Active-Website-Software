@@ -327,7 +327,38 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           console.log('  - report_data:', data.report_data);
           console.log('  - visualMechanicalInspection:', data.report_data?.visualMechanicalInspection);
           
-          const newFormData = { ...initialFormData, ...data.report_data, status: (data.report_data.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS' };
+          const payload: any = (data as any).report_data || (data as any).data || {};
+          // Normalize Visual/Mechanical Inspection into an object keyed by NETA id
+          const defaultVmi = visualInspectionItemsList.reduce((acc, item) => ({ ...acc, [item.id]: 'Select One' }), {} as Record<string, string>);
+          let loadedVmi: Record<string, string> = {};
+          const rawVmi = payload.visualMechanicalInspection || payload.visual_mechanical_inspection || payload.report_info?.visualMechanicalInspection;
+          if (Array.isArray(rawVmi)) {
+            loadedVmi = rawVmi.reduce((acc: Record<string,string>, it: any) => {
+              const key = it.id || it.netaSection || it.section || '';
+              const val = it.result || it.value || it.status || 'Select One';
+              if (key) acc[key] = val;
+              return acc;
+            }, {});
+          } else if (rawVmi && typeof rawVmi === 'object') {
+            // Flatten any nested object created by older buggy saves (e.g., {7:{6:{3:{A:{'8':{'1':'Satisfactory'}}}}}})
+            const flatten = (obj: any, prefix = ''): Record<string,string> => {
+              const out: Record<string,string> = {};
+              Object.keys(obj || {}).forEach(k => {
+                const value = obj[k];
+                const nextKey = prefix ? `${prefix}.${k}` : k;
+                if (value && typeof value === 'object') {
+                  Object.assign(out, flatten(value, nextKey));
+                } else if (typeof value === 'string') {
+                  out[nextKey] = value;
+                }
+              });
+              return out;
+            };
+            loadedVmi = flatten(rawVmi);
+          }
+          const mergedVmi = { ...defaultVmi, ...loadedVmi };
+
+          const newFormData = { ...initialFormData, ...payload, status: (payload.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS', visualMechanicalInspection: mergedVmi };
           console.log('  - New form data after merge:', newFormData);
           console.log('  - visualMechanicalInspection in new form data:', newFormData.visualMechanicalInspection);
           
@@ -347,8 +378,20 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    const keys = name.split('.');
+    // Special handling for visualMechanicalInspection.* keys; the part after the prefix can contain dots
+    if (name.startsWith('visualMechanicalInspection.')) {
+      const key = name.substring('visualMechanicalInspection.'.length);
+      setFormData(prev => ({
+        ...prev,
+        visualMechanicalInspection: {
+          ...prev.visualMechanicalInspection,
+          [key]: value,
+        },
+      }));
+      return;
+    }
     
+    const keys = name.split('.');
     setFormData(prev => {
       let current = { ...prev } as any;
       let pointer = current;
@@ -418,10 +461,12 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
     if (!jobId || !user?.id || !isEditing) return;
     setSaving(true);
 
+    // Also persist an array form for visual/mechanical to maximize compatibility with existing readers
+    const vmiArray = Object.entries(formData.visualMechanicalInspection || {}).map(([id, result]) => ({ id, result }));
     const reportPayload = {
       job_id: jobId,
       user_id: user.id,
-      report_data: formData,
+      report_data: { ...formData, visual_mechanical_inspection: vmiArray },
     };
 
     try {
@@ -432,15 +477,15 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           .from('medium_voltage_circuit_breaker_reports')
           .update(reportPayload)
           .eq('id', reportId)
-          .select()
-          .single();
+          .select('id')
+          .maybeSingle();
       } else {
         result = await supabase
           .schema('neta_ops')
           .from('medium_voltage_circuit_breaker_reports')
           .insert(reportPayload)
-          .select()
-          .single();
+          .select('id')
+          .maybeSingle();
 
         if (result.data) {
           const assetData = {
@@ -467,7 +512,8 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           });
         }
       }
-      if (result.error) throw result.error;
+      // If RLS prevents returning rows, PostgREST may return PGRST116 (no rows). Treat as success.
+      if (result.error && result.error.code !== 'PGRST116') throw result.error;
       setIsEditing(false);
       alert(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
       navigateAfterSave(navigate, jobId, location);

@@ -158,20 +158,8 @@ export function DivisionAnalyticsDialog({ division, isOpen, onClose }: DivisionA
 
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
-      <DialogOverlay className="fixed inset-0 bg-black opacity-30" />
-      <DialogContent className="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center min-h-screen">
-        <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-4xl w-full mx-auto p-6 shadow-xl">
-          <div className="absolute top-0 right-0 pt-4 pr-4">
-            <button
-              type="button"
-              className="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200"
-              onClick={onClose}
-            >
-              <span className="sr-only">Close</span>
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-
+      <DialogContent className="max-w-4xl w-full">
+        <div className="relative">
           <DialogTitle className="text-lg font-medium text-gray-900 dark:text-white mb-4">
             {formatDivisionName(division)} Analytics
           </DialogTitle>

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { supabase } from '../lib/supabase';
 import { SearchFilters } from '../components/search/GlobalSearchBar';
 import { addToRecentSearches } from '../components/search/RecentSearches.tsx';
 
@@ -79,91 +80,26 @@ const defaultFilters: SearchFilters = {
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
-// Mock search API - would be replaced with actual API calls
-const mockSearchAPI = async (query: string, filters: SearchFilters): Promise<SearchResult[]> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  if (!query.trim()) return [];
-  
-  // Generate mock results based on the query
-  const results: SearchResult[] = [];
-  const entityTypes = filters.entityTypes.length > 0 
-    ? filters.entityTypes
-    : ['customers', 'contacts', 'jobs', 'opportunities', 'assets', 'reports'];
-  
-  // Add some mock results for each entity type
-  if (entityTypes.includes('customers')) {
-    results.push(
-      { 
-        id: '1', 
-        type: 'customer', 
-        name: `${query} Corporation`, 
-        company_name: `${query} Corporation`, 
-        division: 'north_alabama',
-        metadata: { created_at: new Date().toISOString() }
-      },
-      { 
-        id: '2', 
-        type: 'customer', 
-        name: `Global ${query}`, 
-        company_name: `Global ${query}`, 
-        division: 'tennessee',
-        metadata: { created_at: new Date().toISOString() }
-      }
-    );
-  }
-  
-  if (entityTypes.includes('jobs')) {
-    results.push(
-      { 
-        id: '101', 
-        type: 'job', 
-        title: `${query} Maintenance Job`, 
-        status: 'active', 
-        division: 'tennessee',
-        customer: { name: 'ABC Corp' },
-        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      { 
-        id: '102', 
-        type: 'job', 
-        title: `${query} Installation Project`, 
-        status: 'pending', 
-        division: 'north_alabama',
-        customer: { name: 'XYZ Industries' },
-        due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    );
-  }
-  
-  if (entityTypes.includes('contacts')) {
-    results.push(
-      { 
-        id: '201', 
-        type: 'contact', 
-        name: `John ${query}`, 
-        email: `john${query.toLowerCase()}@example.com`, 
-        customer: { name: 'ABC Corp' }
-      },
-      { 
-        id: '202', 
-        type: 'contact', 
-        name: `Sarah ${query}`, 
-        email: `sarah${query.toLowerCase()}@example.com`, 
-        customer: { name: 'XYZ Industries' }
-      }
-    );
-  }
-  
-  // Filter by divisions if specified
-  if (filters.divisions.length > 0) {
-    return results.filter(result => 
-      !result.division || filters.divisions.includes(result.division)
-    );
-  }
-  
-  return results;
+// Real customer search
+const searchCustomers = async (query: string, limit = 25): Promise<CustomerSearchResult[]> => {
+  const q = query.trim();
+  if (!q) return [];
+  const like = `%${q}%`;
+  const { data, error } = await supabase
+    .schema('common')
+    .from('customers')
+    .select('id, name, company_name, created_at')
+    .or(`name.ilike.${like},company_name.ilike.${like}`)
+    .order('name')
+    .limit(limit);
+  if (error || !data) return [];
+  return data.map((row) => ({
+    id: row.id,
+    type: 'customer',
+    name: row.name,
+    company_name: row.company_name,
+    metadata: { created_at: row.created_at }
+  }));
 };
 
 interface SearchProviderProps {
@@ -190,9 +126,17 @@ export const SearchProvider = ({ children }: SearchProviderProps) => {
     setHasSearched(true);
 
     try {
-      // In a real implementation, this would be an API call to a backend service
-      const results = await mockSearchAPI(searchQuery, searchFilters);
-      setSearchResults(results);
+      const results: SearchResult[] = [];
+      const types = searchFilters.entityTypes.length > 0 
+        ? searchFilters.entityTypes
+        : ['customers'];
+
+      if (types.includes('customers')) {
+        const customerResults = await searchCustomers(searchQuery, 25);
+        setSearchResults(customerResults);
+        // We currently only wire customers; extend similarly for contacts/jobs as needed
+        return;
+      }
       
       // Add to recent searches
       if (searchQuery.trim()) {

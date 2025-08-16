@@ -22,6 +22,7 @@ export interface JobDetails {
   budget?: number;
   priority?: string;
   division?: string;
+  tracking_plan?: Record<string, number>;
   customer?: {
     id: string;
     name: string;
@@ -100,7 +101,8 @@ export function useJobDetails(jobId: string | undefined) {
               budget,
               priority,
               customer_id,
-              division
+              division,
+              tracking_plan
             `)
             .eq('id', jobId)
             .single();
@@ -174,6 +176,7 @@ export function useJobDetails(jobId: string | undefined) {
           budget: jobData.budget,
           priority: jobData.priority || 'medium',
           division: jobData.division,
+          tracking_plan: (jobData as any).tracking_plan || undefined,
           customer: customerData ? {
             id: customerData.id,
             name: customerData.name,

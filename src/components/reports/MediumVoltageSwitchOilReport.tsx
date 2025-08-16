@@ -424,18 +424,187 @@ export default function MediumVoltageSwitchOilReport() {
 
         if (error) throw error;
 
-        if (data && data.report_info) {
-          // Initialize form data with loaded report data
-          setFormData({
+        if (data) {
+          console.log('🔍 MediumVoltageSwitchOilReport - Loading report data:');
+          console.log('  - Raw data:', data);
+          console.log('  - report_info:', data.report_info);
+          console.log('  - insulation_resistance_measured:', data.insulation_resistance_measured);
+          console.log('  - contact_resistance:', data.contact_resistance);
+          console.log('  - dielectric_s1s2:', data.dielectric_s1s2);
+          console.log('  - dielectric_s1t1:', data.dielectric_s1t1);
+          console.log('  - dielectric_s1t2:', data.dielectric_s1t2);
+          console.log('  - dielectric_s1t3:', data.dielectric_s1t3);
+          console.log('  - vfi_test_rows:', data.vfi_test_rows);
+          console.log('  - test_equipment:', data.test_equipment);
+          
+          // Merge all columns into the expected formData structure
+          const newFormData = {
             ...formData,  // Keep default values as fallback
-            ...data.report_info,  // Spread the loaded data
+            
+            // Basic info from report_info
+            ...data.report_info,
+            
+            // Map insulation resistance data to per-way structure
+            s1_insulationResistance: {
+              testVoltage: data.insulation_resistance_measured?.testVoltage || '5000V',
+              ag: data.insulation_resistance_measured?.rows?.find(r => r.way === 'S1')?.ag || '',
+              bg: data.insulation_resistance_measured?.rows?.find(r => r.way === 'S1')?.bg || '',
+              cg: data.insulation_resistance_measured?.rows?.find(r => r.way === 'S1')?.cg || '',
+              ab: '', bc: '', ca: '', lineA: '', lineB: '', lineC: '', units: 'MΩ'
+            },
+            s2_insulationResistance: {
+              testVoltage: data.insulation_resistance_measured?.testVoltage || '5000V',
+              ag: data.insulation_resistance_measured?.rows?.find(r => r.way === 'S2')?.ag || '',
+              bg: data.insulation_resistance_measured?.rows?.find(r => r.way === 'S2')?.bg || '',
+              cg: data.insulation_resistance_measured?.rows?.find(r => r.way === 'S2')?.cg || '',
+              ab: '', bc: '', ca: '', lineA: '', lineB: '', lineC: '', units: 'MΩ'
+            },
+            t1_insulationResistance: {
+              testVoltage: data.insulation_resistance_measured?.testVoltage || '5000V',
+              ag: data.insulation_resistance_measured?.rows?.find(r => r.way === 'T1')?.ag || '',
+              bg: data.insulation_resistance_measured?.rows?.find(r => r.way === 'T1')?.bg || '',
+              cg: data.insulation_resistance_measured?.rows?.find(r => r.way === 'T1')?.cg || '',
+              ab: '', bc: '', ca: '', lineA: '', lineB: '', lineC: '', units: 'MΩ'
+            },
+            t2_insulationResistance: {
+              testVoltage: data.insulation_resistance_measured?.testVoltage || '5000V',
+              ag: data.insulation_resistance_measured?.rows?.find(r => r.way === 'T2')?.ag || '',
+              bg: data.insulation_resistance_measured?.rows?.find(r => r.way === 'T2')?.bg || '',
+              cg: data.insulation_resistance_measured?.rows?.find(r => r.way === 'T2')?.cg || '',
+              ab: '', bc: '', ca: '', lineA: '', lineB: '', lineC: '', units: 'MΩ'
+            },
+            t3_insulationResistance: {
+              testVoltage: data.insulation_resistance_measured?.testVoltage || '5000V',
+              ag: data.insulation_resistance_measured?.rows?.find(r => r.way === 'T3')?.ag || '',
+              bg: data.insulation_resistance_measured?.rows?.find(r => r.way === 'T3')?.bg || '',
+              cg: data.insulation_resistance_measured?.rows?.find(r => r.way === 'T3')?.cg || '',
+              ab: '', bc: '', ca: '', lineA: '', lineB: '', lineC: '', units: 'MΩ'
+            },
+            
+            // Map contact resistance data to per-way structure
+            s1_contactResistance: {
+              aPhase: data.contact_resistance?.rows?.find(r => r.way === 'S1')?.aPhase || '',
+              aGround: data.contact_resistance?.rows?.find(r => r.way === 'S1')?.aGround || '',
+              bPhase: data.contact_resistance?.rows?.find(r => r.way === 'S1')?.bPhase || '',
+              bGround: data.contact_resistance?.rows?.find(r => r.way === 'S1')?.bGround || '',
+              cPhase: data.contact_resistance?.rows?.find(r => r.way === 'S1')?.cPhase || '',
+              cGround: data.contact_resistance?.rows?.find(r => r.way === 'S1')?.cGround || '',
+              units: 'µΩ'
+            },
+            s2_contactResistance: {
+              aPhase: data.contact_resistance?.rows?.find(r => r.way === 'S2')?.aPhase || '',
+              aGround: data.contact_resistance?.rows?.find(r => r.way === 'S2')?.aGround || '',
+              bPhase: data.contact_resistance?.rows?.find(r => r.way === 'S2')?.bPhase || '',
+              bGround: data.contact_resistance?.rows?.find(r => r.way === 'S2')?.bGround || '',
+              cPhase: data.contact_resistance?.rows?.find(r => r.way === 'S2')?.cPhase || '',
+              cGround: data.contact_resistance?.rows?.find(r => r.way === 'S2')?.cGround || '',
+              units: 'µΩ'
+            },
+            t1_contactResistance: {
+              aPhase: data.contact_resistance?.rows?.find(r => r.way === 'T1')?.aPhase || '',
+              aGround: data.contact_resistance?.rows?.find(r => r.way === 'T1')?.aGround || '',
+              bPhase: data.contact_resistance?.rows?.find(r => r.way === 'T1')?.bPhase || '',
+              bGround: data.contact_resistance?.rows?.find(r => r.way === 'T1')?.bGround || '',
+              cPhase: data.contact_resistance?.rows?.find(r => r.way === 'T1')?.cPhase || '',
+              cGround: data.contact_resistance?.rows?.find(r => r.way === 'T1')?.cGround || '',
+              units: 'µΩ'
+            },
+            t2_contactResistance: {
+              aPhase: data.contact_resistance?.rows?.find(r => r.way === 'T2')?.aPhase || '',
+              aGround: data.contact_resistance?.rows?.find(r => r.way === 'T2')?.aGround || '',
+              bPhase: data.contact_resistance?.rows?.find(r => r.way === 'T2')?.bPhase || '',
+              bGround: data.contact_resistance?.rows?.find(r => r.way === 'T2')?.bGround || '',
+              cPhase: data.contact_resistance?.rows?.find(r => r.way === 'T2')?.cPhase || '',
+              cGround: data.contact_resistance?.rows?.find(r => r.way === 'T2')?.cGround || '',
+              units: 'µΩ'
+            },
+            t3_contactResistance: {
+              aPhase: data.contact_resistance?.rows?.find(r => r.way === 'T3')?.aPhase || '',
+              aGround: data.contact_resistance?.rows?.find(r => r.way === 'T3')?.aGround || '',
+              bPhase: data.contact_resistance?.rows?.find(r => r.way === 'T3')?.bPhase || '',
+              bGround: data.contact_resistance?.rows?.find(r => r.way === 'T3')?.bGround || '',
+              cPhase: data.contact_resistance?.rows?.find(r => r.way === 'T3')?.cPhase || '',
+              cGround: data.contact_resistance?.rows?.find(r => r.way === 'T3')?.cGround || '',
+              units: 'µΩ'
+            },
+            
+            // Map dielectric tests to array structure
+            dielectricWaySectionTests: [
+              {
+                waySection: 'S1-S2',
+                testVoltageApplied: data.dielectric_s1s2?.testVoltage || '',
+                ag: data.dielectric_s1s2?.ag || '',
+                bg: data.dielectric_s1s2?.bg || '',
+                cg: data.dielectric_s1s2?.cg || '',
+                units: data.dielectric_s1s2?.units || 'mA',
+                duration: 60,
+                result: 'PASS'
+              },
+              {
+                waySection: 'S1-T1',
+                testVoltageApplied: data.dielectric_s1t1?.testVoltage || '',
+                ag: data.dielectric_s1t1?.ag || '',
+                bg: data.dielectric_s1t1?.bg || '',
+                cg: data.dielectric_s1t1?.cg || '',
+                units: data.dielectric_s1t1?.units || 'mA',
+                duration: 60,
+                result: 'PASS'
+              },
+              {
+                waySection: 'S1-T2',
+                testVoltageApplied: data.dielectric_s1t2?.testVoltage || '',
+                ag: data.dielectric_s1t2?.ag || '',
+                bg: data.dielectric_s1t2?.bg || '',
+                cg: data.dielectric_s1t2?.cg || '',
+                units: data.dielectric_s1t2?.units || 'mA',
+                duration: 60,
+                result: 'PASS'
+              },
+              {
+                waySection: 'S1-T3',
+                testVoltageApplied: data.dielectric_s1t3?.testVoltage || '',
+                ag: data.dielectric_s1t3?.ag || '',
+                bg: data.dielectric_s1t3?.bg || '',
+                cg: data.dielectric_s1t3?.cg || '',
+                units: data.dielectric_s1t3?.units || 'mA',
+                duration: 60,
+                result: 'PASS'
+              }
+            ],
+            
+            // Map VFI tests
+            dielectricVFITests: data.vfi_test_rows?.map(row => ({
+              vfiIdentifier: row.vfi || '',
+              serialNumber: row.serialNumber || '',
+              counterAsFound: row.asFound || '',
+              counterAsLeft: row.asLeft || '',
+              vacuumIntegrityA: row.a || '',
+              vacuumIntegrityB: row.b || '',
+              resultC: row.c || '',
+              unitsC: 'mA' as const
+            })) || [],
+            
+            // Map test equipment to flat structure
+            testEquipment_megohmmeter_megger: data.test_equipment?.megohmmeter?.name || '',
+            testEquipment_megohmmeter_serialNo: data.test_equipment?.megohmmeter?.serialNumber || '',
+            testEquipment_megohmmeter_ampId: data.test_equipment?.megohmmeter?.ampId || '',
+            testEquipment_lowResistance_model: data.test_equipment?.lowResistanceOhmmeter?.name || '',
+            testEquipment_lowResistance_serialNo: data.test_equipment?.lowResistanceOhmmeter?.serialNumber || '',
+            testEquipment_lowResistance_ampId: data.test_equipment?.lowResistanceOhmmeter?.ampId || '',
+            testEquipment_hipot_model: data.test_equipment?.primaryInjectionTestSet?.name || '',
+            testEquipment_hipot_serialNo: data.test_equipment?.primaryInjectionTestSet?.serialNumber || '',
+            testEquipment_hipot_ampId: data.test_equipment?.primaryInjectionTestSet?.ampId || '',
+            
             // Ensure visual inspection results exist
-            visualInspectionResults: data.report_info.visualInspectionResults || VISUAL_INSPECTION_DEFINITIONS.map(def => ({
+            visualInspectionResults: data.report_info?.visualInspectionResults || VISUAL_INSPECTION_DEFINITIONS.map(def => ({
               netaSection: def.netaSection,
               description: def.description,
               result: 'Select One'
             }))
-          });
+          };
+          
+          console.log('  - New form data after merge:', newFormData);
+          setFormData(newFormData);
         }
       } catch (error) {
         console.error('Error loading report:', error);

@@ -1,0 +1,463 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K2R5EN2WB4ADSF5K48Y4157W",
+  "reportType": "DryTypeTransformerReport.tsx",
+  "createdAt": "2025-08-16T00:37:37.691Z",
+  "updatedAt": "2025-08-16T00:46:08.033Z",
+  "version": 130,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "asdg"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "sadg"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "23123-12-31"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "asdfsdg"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "76"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "sda"
+        },
+        {
+          "label": "Address",
+          "type": "textarea",
+          "value": "asdf"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Nameplate",
+          "type": "table",
+          "value": {
+            "manufacturer": "asdf",
+            "catalogNumber": "asdfasdf",
+            "serialNumber": "asdf",
+            "kva": "123",
+            "kvaSecondary": "1234",
+            "tempRise": "1223",
+            "impedance": "124",
+            "primary": {
+              "volts": "480",
+              "voltsSecondary": "123",
+              "connection": "Delta",
+              "material": "Aluminum"
+            },
+            "secondary": {
+              "volts": "214",
+              "voltsSecondary": "123",
+              "connection": "Wye",
+              "material": "Aluminum"
+            },
+            "tapVoltages": [
+              "123",
+              "123",
+              "123",
+              "3",
+              "4",
+              "124",
+              "124"
+            ],
+            "tapPositionCurrent": "3",
+            "tapPositionSecondary": "23",
+            "tapSpecificVolts": "424",
+            "tapSpecificPercent": "3123"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.2.2.A.1",
+                "description": "Compare equipment nameplate data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.2.A.2",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.2.2.A.3",
+                "description": "Inspect impact recorder prior to unloading.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.2.2.A.4*",
+                "description": "Test dew point of tank gases. *Optional",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.2.2.A.5",
+                "description": "Inspect anchorage, alignment, and grounding.",
+                "result": "Not Applicable"
+              },
+              {
+                "id": "7.2.2.A.6",
+                "description": "Verify the presence of PCB content labeling."
+              },
+              {
+                "id": "7.2.2.A.7",
+                "description": "Verify removal of any shipping bracing after placement."
+              },
+              {
+                "id": "7.2.2.A.8",
+                "description": "Verify the bushings are clean."
+              },
+              {
+                "id": "7.2.2.A.9",
+                "description": "Verify that alarm, control, and trip settings on temperature and level indicators are as specified."
+              },
+              {
+                "id": "7.2.2.A.10",
+                "description": "Verify operation of alarm, control, and trip circuits from temperature and level indicators, pressure relief device, gas accumulator, and fault pressure relay."
+              },
+              {
+                "id": "7.2.2.A.11",
+                "description": "Verify that cooling fans and pumps operate correctly and have appropriate overcurrent protection."
+              },
+              {
+                "id": "7.2.2.A.12",
+                "description": "Inspect bolted electrical connections for high resistance using low-resistance ohmmeter, calibrated torquewrench, or thermographic survey."
+              },
+              {
+                "id": "7.2.2.A.13",
+                "description": "Verify correct liquid level in tanks and bushings."
+              },
+              {
+                "id": "7.2.2.A.14",
+                "description": "Verify valves are in the correct operating position."
+              },
+              {
+                "id": "7.2.2.A.15",
+                "description": "Verify that positive pressure is maintained on gas-blanketed transformers."
+              },
+              {
+                "id": "7.2.2.A.16",
+                "description": "Perform inspections and mechanical tests as recommended by the manufacturer."
+              },
+              {
+                "id": "7.2.2.A.17",
+                "description": "Test load tap-changer in accordance with Section 7.12.3."
+              },
+              {
+                "id": "7.2.2.A.18",
+                "description": "Verify presence of transformer surge arresters."
+              },
+              {
+                "id": "7.2.2.A.19",
+                "description": "Verify de-energized tap-changer position is left as specified."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance + Temp Corrected + DA/PI",
+          "type": "table",
+          "value": {
+            "testVoltage": "1000V",
+            "unit": "MΩ",
+            "rows": [
+              {
+                "id": "dielectricAbsorption",
+                "primary": "1.00",
+                "secondary": "",
+                "primaryToSecondary": "",
+                "acceptable": "No"
+              },
+              {
+                "id": "polarizationIndex",
+                "primary": "3.35",
+                "secondary": "",
+                "primaryToSecondary": "",
+                "acceptable": "No"
+              }
+            ],
+            "primaryToGround": {
+              "testVoltage": "5000",
+              "units": "MΩ",
+              "r05": "123",
+              "r1": "123",
+              "r10": "412"
+            },
+            "secondaryToGround": {
+              "testVoltage": "1000",
+              "units": "MΩ",
+              "r05": "24",
+              "r1": "215",
+              "r10": "125"
+            },
+            "primaryToSecondary": {
+              "testVoltage": "5000",
+              "units": "MΩ",
+              "r05": "123",
+              "r1": "123",
+              "r10": "1234"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "asdfg"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "sadf"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asdf"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "sdf"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "asdfsdg",
+    "reportType": "DryTypeTransformerReport",
+    "fields": {
+      "customer": "asdf",
+      "jobNumber": "asdg",
+      "technicians": "sadg",
+      "date": "23123-12-31",
+      "identifier": "asdfsdg",
+      "temperatureF": "76",
+      "substation": "asdf",
+      "eqptLocation": "asdf",
+      "user": "sda",
+      "address": "asdf",
+      "dry-nameplate": {
+        "manufacturer": "asdf",
+        "catalogNumber": "asdfasdf",
+        "serialNumber": "asdf",
+        "kva": "123",
+        "kvaSecondary": "1234",
+        "tempRise": "1223",
+        "impedance": "124",
+        "primary": {
+          "volts": "480",
+          "voltsSecondary": "123",
+          "connection": "Delta",
+          "material": "Aluminum"
+        },
+        "secondary": {
+          "volts": "214",
+          "voltsSecondary": "123",
+          "connection": "Wye",
+          "material": "Aluminum"
+        },
+        "tapVoltages": [
+          "123",
+          "123",
+          "123",
+          "3",
+          "4",
+          "124",
+          "124"
+        ],
+        "tapPositionCurrent": "3",
+        "tapPositionSecondary": "23",
+        "tapSpecificVolts": "424",
+        "tapSpecificPercent": "3123"
+      },
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.2.2.A.1",
+            "description": "Compare equipment nameplate data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.2.A.2",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.2.2.A.3",
+            "description": "Inspect impact recorder prior to unloading.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.2.2.A.4*",
+            "description": "Test dew point of tank gases. *Optional",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.2.2.A.5",
+            "description": "Inspect anchorage, alignment, and grounding.",
+            "result": "Not Applicable"
+          },
+          {
+            "id": "7.2.2.A.6",
+            "description": "Verify the presence of PCB content labeling."
+          },
+          {
+            "id": "7.2.2.A.7",
+            "description": "Verify removal of any shipping bracing after placement."
+          },
+          {
+            "id": "7.2.2.A.8",
+            "description": "Verify the bushings are clean."
+          },
+          {
+            "id": "7.2.2.A.9",
+            "description": "Verify that alarm, control, and trip settings on temperature and level indicators are as specified."
+          },
+          {
+            "id": "7.2.2.A.10",
+            "description": "Verify operation of alarm, control, and trip circuits from temperature and level indicators, pressure relief device, gas accumulator, and fault pressure relay."
+          },
+          {
+            "id": "7.2.2.A.11",
+            "description": "Verify that cooling fans and pumps operate correctly and have appropriate overcurrent protection."
+          },
+          {
+            "id": "7.2.2.A.12",
+            "description": "Inspect bolted electrical connections for high resistance using low-resistance ohmmeter, calibrated torquewrench, or thermographic survey."
+          },
+          {
+            "id": "7.2.2.A.13",
+            "description": "Verify correct liquid level in tanks and bushings."
+          },
+          {
+            "id": "7.2.2.A.14",
+            "description": "Verify valves are in the correct operating position."
+          },
+          {
+            "id": "7.2.2.A.15",
+            "description": "Verify that positive pressure is maintained on gas-blanketed transformers."
+          },
+          {
+            "id": "7.2.2.A.16",
+            "description": "Perform inspections and mechanical tests as recommended by the manufacturer."
+          },
+          {
+            "id": "7.2.2.A.17",
+            "description": "Test load tap-changer in accordance with Section 7.12.3."
+          },
+          {
+            "id": "7.2.2.A.18",
+            "description": "Verify presence of transformer surge arresters."
+          },
+          {
+            "id": "7.2.2.A.19",
+            "description": "Verify de-energized tap-changer position is left as specified."
+          }
+        ]
+      },
+      "dryTypeIr": {
+        "testVoltage": "1000V",
+        "unit": "MΩ",
+        "rows": [
+          {
+            "id": "dielectricAbsorption",
+            "primary": "1.00",
+            "secondary": "",
+            "primaryToSecondary": "",
+            "acceptable": "No"
+          },
+          {
+            "id": "polarizationIndex",
+            "primary": "3.35",
+            "secondary": "",
+            "primaryToSecondary": "",
+            "acceptable": "No"
+          }
+        ],
+        "primaryToGround": {
+          "testVoltage": "5000",
+          "units": "MΩ",
+          "r05": "123",
+          "r1": "123",
+          "r10": "412"
+        },
+        "secondaryToGround": {
+          "testVoltage": "1000",
+          "units": "MΩ",
+          "r05": "24",
+          "r1": "215",
+          "r10": "125"
+        },
+        "primaryToSecondary": {
+          "testVoltage": "5000",
+          "units": "MΩ",
+          "r05": "123",
+          "r1": "123",
+          "r10": "1234"
+        }
+      },
+      "megohmmeter": "asdfg",
+      "serialNumber": "sadf",
+      "ampId": "asdf",
+      "comments": "sdf"
+    }
+  }
+}

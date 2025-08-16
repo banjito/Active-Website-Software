@@ -77,6 +77,38 @@ const applyTemperatureCorrection = (measurement: Measurement, tcf: number): Meas
   };
 };
 
+// Normalize incoming DB values into Measurement objects expected by the UI
+const normalizeMeasurement = (value: any): Measurement => {
+  if (value && typeof value === 'object' && 'isEmpty' in value && 'value' in value) {
+    return value as Measurement;
+  }
+  return createMeasurement(value ?? '');
+};
+
+const normalizeInsulationResistance = (raw: any): InsulationResistanceData => {
+  const testVoltage = raw?.testVoltage ?? '1000V';
+  const units = raw?.units ?? 'MΩ';
+  return {
+    testVoltage,
+    units,
+    poleToPole: {
+      'P1-P2': normalizeMeasurement(raw?.poleToPole?.['P1-P2'] ?? raw?.['P1-P2'] ?? ''),
+      'P2-P3': normalizeMeasurement(raw?.poleToPole?.['P2-P3'] ?? raw?.['P2-P3'] ?? ''),
+      'P3-P1': normalizeMeasurement(raw?.poleToPole?.['P3-P1'] ?? raw?.['P3-P1'] ?? '')
+    },
+    poleToFrame: {
+      'P1': normalizeMeasurement(raw?.poleToFrame?.['P1'] ?? raw?.['P1'] ?? ''),
+      'P2': normalizeMeasurement(raw?.poleToFrame?.['P2'] ?? raw?.['P2'] ?? ''),
+      'P3': normalizeMeasurement(raw?.poleToFrame?.['P3'] ?? raw?.['P3'] ?? '')
+    },
+    lineToLoad: {
+      'P1': normalizeMeasurement(raw?.lineToLoad?.['P1'] ?? raw?.['P1_line_to_load'] ?? ''),
+      'P2': normalizeMeasurement(raw?.lineToLoad?.['P2'] ?? raw?.['P2_line_to_load'] ?? ''),
+      'P3': normalizeMeasurement(raw?.lineToLoad?.['P3'] ?? raw?.['P3_line_to_load'] ?? '')
+    }
+  };
+};
+
 interface FormData {
   // Job Information
   customer: string;
@@ -530,9 +562,9 @@ const getMeasurementValue = (measurement: Measurement): string => {
 };
 
 // Add this helper function at the top with other utility functions
-const getMeasurementDisplayValue = (measurement: Measurement): string => {
-  if (measurement.isEmpty || measurement.value === null) return '';
-  return measurement.value.toString();
+const getMeasurementDisplayValue = (measurement: Measurement | undefined | null): string => {
+  if (!measurement || measurement.isEmpty || measurement.value === null || typeof measurement.value === 'undefined') return '';
+  return String(measurement.value);
 };
 
 const getTemperatureCorrectedValue = (measurement: Measurement, tcf: number): string => {
@@ -752,19 +784,19 @@ export default function LowVoltageSwitchReport() {
         if (error) throw error;
 
         if (data) {
-          setFormData({
-            ...formData,
+          setFormData(current => ({
+            ...current,
             ...data.report_info,
-            switchData: data.switch_data || formData.switchData,
-            fuseData: data.fuse_data || formData.fuseData,
-            visualMechanicalInspection: data.visual_inspection || formData.visualMechanicalInspection,
-            insulationResistance: data.insulation_resistance || formData.insulationResistance,
-            contactResistance: data.contact_resistance || formData.contactResistance,
-            testEquipment: data.test_equipment || formData.testEquipment,
+            switchData: data.switch_data || current.switchData,
+            fuseData: data.fuse_data || current.fuseData,
+            visualMechanicalInspection: data.visual_inspection || current.visualMechanicalInspection,
+            insulationResistance: data.insulation_resistance ? normalizeInsulationResistance(data.insulation_resistance) : current.insulationResistance,
+            contactResistance: data.contact_resistance || current.contactResistance,
+            testEquipment: data.test_equipment || current.testEquipment,
             comments: {
               enclosure: data.comments || ''
             }
-          });
+          }));
           setStatus((data.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS');
           setIsEditing(false);
         }

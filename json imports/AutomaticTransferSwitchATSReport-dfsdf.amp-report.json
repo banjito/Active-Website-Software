@@ -1,0 +1,438 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K2FWP73J8G95K0PRXN4834JF",
+  "reportType": "AutomaticTransferSwitchATSReport.tsx",
+  "createdAt": "2025-08-12T19:32:06.399Z",
+  "updatedAt": "2025-08-12T19:39:03.563Z",
+  "version": 117,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "af"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "saf"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "3123-02-12"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "dfsdf"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "12"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": "2"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "zdv"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "sdf"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "sdfds"
+        },
+        {
+          "label": "Model / Type",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Catalog No.",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "dsf"
+        },
+        {
+          "label": "System Voltage (V)",
+          "type": "text",
+          "value": "fd"
+        },
+        {
+          "label": "Rated Voltage (V)",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Rated Current (A)",
+          "type": "text",
+          "value": "dsf"
+        },
+        {
+          "label": "SCCR (kA)",
+          "type": "text",
+          "value": "sdf"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.22.3.A.1",
+                "description": "Compare equipment nameplate data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.22.3.A.2",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.22.3.A.3",
+                "description": "Inspect anchorage, alignment, grounding, and required clearances.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.22.3.A.4",
+                "description": "Verify the unit is clean.",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.22.3.A.5",
+                "description": "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.22.3.A.6",
+                "description": "Verify that manual transfer warnings are attached and visible.",
+                "result": "Not Applicable"
+              },
+              {
+                "id": "7.22.3.A.7",
+                "description": "Verify tightness of all control connections.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.22.3.A.8.1",
+                "description": "Use of low-resistance ohmmeter in accordance with Section 7.22.3.B.1."
+              },
+              {
+                "id": "7.22.3.A.9",
+                "description": "Perform manual transfer operation."
+              },
+              {
+                "id": "7.22.3.A.10",
+                "description": "Verify positive mechanical interlocking between normal and alternate sources."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance Grid",
+          "type": "table",
+          "value": {
+            "testVoltage": "1000V",
+            "rows": [
+              {
+                "id": "Pole to Pole (Normal Closed)",
+                "units": "MΩ",
+                "p1": "123",
+                "p1c": "28.86",
+                "p2": "123",
+                "p2c": "28.86",
+                "p3": "123",
+                "p3c": "28.86",
+                "neutral": "123",
+                "neutralc": "28.86"
+              },
+              {
+                "id": "Pole to Pole (Emergency Closed)",
+                "units": "MΩ"
+              },
+              {
+                "id": "Pole to Neutral (Normal Closed)",
+                "units": "MΩ"
+              },
+              {
+                "id": "Pole to Neutral (Emergency Closed)",
+                "units": "MΩ"
+              },
+              {
+                "id": "Pole to Ground (Normal Closed)",
+                "units": "MΩ"
+              },
+              {
+                "id": "Pole to Ground (Emergency Closed)",
+                "units": "MΩ"
+              },
+              {
+                "id": "Line to Load (Normal Open)",
+                "units": "MΩ"
+              },
+              {
+                "id": "Line to Load (Emergency Open)",
+                "units": "MΩ"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Contact/Pole Resistance",
+      "fields": [
+        {
+          "label": "Contact/Pole Resistance",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "state": "Normal",
+                "units": "µΩ",
+                "p1": "123",
+                "p2": "123",
+                "p3": "123",
+                "neutral": "123"
+              },
+              {
+                "state": "Emergency",
+                "units": "µΩ"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "123"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "123"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "Low Resistance Ohmmeter",
+          "type": "text",
+          "value": "dfs"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "sdf"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "sdfsdfgsfdsg"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "dfsdf",
+    "reportType": "AutomaticTransferSwitchATSReport",
+    "fields": {
+      "customer": "af",
+      "jobNumber": "saf",
+      "technicians": "asf",
+      "date": "3123-02-12",
+      "identifier": "dfsdf",
+      "temperatureF": "12",
+      "humidity": "2",
+      "substation": "zdv",
+      "eqptLocation": "sdf",
+      "user": "sdf",
+      "manufacturer": "sdfds",
+      "modelType": "sdf",
+      "catalogNo": "sdf",
+      "serialNumber": "dsf",
+      "systemVoltage": "fd",
+      "ratedVoltage": "sdf",
+      "ratedCurrent": "dsf",
+      "sccr": "sdf",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.22.3.A.1",
+            "description": "Compare equipment nameplate data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.22.3.A.2",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.22.3.A.3",
+            "description": "Inspect anchorage, alignment, grounding, and required clearances.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.22.3.A.4",
+            "description": "Verify the unit is clean.",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.22.3.A.5",
+            "description": "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.22.3.A.6",
+            "description": "Verify that manual transfer warnings are attached and visible.",
+            "result": "Not Applicable"
+          },
+          {
+            "id": "7.22.3.A.7",
+            "description": "Verify tightness of all control connections.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.22.3.A.8.1",
+            "description": "Use of low-resistance ohmmeter in accordance with Section 7.22.3.B.1."
+          },
+          {
+            "id": "7.22.3.A.9",
+            "description": "Perform manual transfer operation."
+          },
+          {
+            "id": "7.22.3.A.10",
+            "description": "Verify positive mechanical interlocking between normal and alternate sources."
+          }
+        ]
+      },
+      "atsInsulation": {
+        "testVoltage": "1000V",
+        "rows": [
+          {
+            "id": "Pole to Pole (Normal Closed)",
+            "units": "MΩ",
+            "p1": "123",
+            "p1c": "28.86",
+            "p2": "123",
+            "p2c": "28.86",
+            "p3": "123",
+            "p3c": "28.86",
+            "neutral": "123",
+            "neutralc": "28.86"
+          },
+          {
+            "id": "Pole to Pole (Emergency Closed)",
+            "units": "MΩ"
+          },
+          {
+            "id": "Pole to Neutral (Normal Closed)",
+            "units": "MΩ"
+          },
+          {
+            "id": "Pole to Neutral (Emergency Closed)",
+            "units": "MΩ"
+          },
+          {
+            "id": "Pole to Ground (Normal Closed)",
+            "units": "MΩ"
+          },
+          {
+            "id": "Pole to Ground (Emergency Closed)",
+            "units": "MΩ"
+          },
+          {
+            "id": "Line to Load (Normal Open)",
+            "units": "MΩ"
+          },
+          {
+            "id": "Line to Load (Emergency Open)",
+            "units": "MΩ"
+          }
+        ]
+      },
+      "atsContactResistance": {
+        "rows": [
+          {
+            "state": "Normal",
+            "units": "µΩ",
+            "p1": "123",
+            "p2": "123",
+            "p3": "123",
+            "neutral": "123"
+          },
+          {
+            "state": "Emergency",
+            "units": "µΩ"
+          }
+        ]
+      },
+      "megohmmeter": "123",
+      "megohmmeterSerial": "123",
+      "megohmmeterAmpId": "asdf",
+      "lro": "dfs",
+      "lroSerial": "sdf",
+      "lroAmpId": "sdf",
+      "comments": "sdfsdfgsfdsg"
+    }
+  }
+}

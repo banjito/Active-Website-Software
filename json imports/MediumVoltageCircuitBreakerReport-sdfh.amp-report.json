@@ -1,0 +1,511 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K2HW5DK89A3PHNJ563KSVFGQ",
+  "reportType": "MediumVoltageCircuitBreakerReport.tsx",
+  "createdAt": "2025-08-13T14:04:57.190Z",
+  "updatedAt": "2025-08-13T14:08:20.013Z",
+  "version": 190,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "0231-12-31"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "sdg"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "dsfg"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "sdfh"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "2343"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": "324"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "dfg"
+        },
+        {
+          "label": "I.C. Rating (kA)",
+          "type": "text",
+          "value": "fdg"
+        },
+        {
+          "label": "Catalog Number",
+          "type": "text",
+          "value": "dfg"
+        },
+        {
+          "label": "Rated Voltage (kV)",
+          "type": "text",
+          "value": "dfg"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "dfg"
+        },
+        {
+          "label": "Operating Voltage (kV)",
+          "type": "text",
+          "value": "dfh"
+        },
+        {
+          "label": "Type",
+          "type": "text",
+          "value": "dfh"
+        },
+        {
+          "label": "Ampacity (A)",
+          "type": "text",
+          "value": "dfh"
+        },
+        {
+          "label": "Manufacturing Date",
+          "type": "text",
+          "value": "dfh"
+        },
+        {
+          "label": "MVA Rating",
+          "type": "text",
+          "value": "dfhdf"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.6.3.A.1",
+                "description": "Compare equipment nameplate data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.6.3.A.2",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.6.3.A.3",
+                "description": "Inspect anchorage, alignment, and grounding.",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.6.3.A.4",
+                "description": "Verify that all maintenance devices such as special tools and gauges specified by the manufacturer are available for servicing and operating the breaker.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.6.3.A.5",
+                "description": "Verify the unit is clean.",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.6.3.A.6",
+                "description": "Perform all mechanical operation tests on the operating mechanism in accordance with manufacturer's published data.",
+                "result": "Not Applicable"
+              },
+              {
+                "id": "7.6.3.A.7",
+                "description": "Measure critical distances such as contact gap as recommended by manufacturer."
+              },
+              {
+                "id": "7.6.3.A.8.1",
+                "description": "Use of low-resistance ohmmeter in accordance with Section 7.6.3.B.1."
+              },
+              {
+                "id": "7.6.3.A.9",
+                "description": "Verify cell fit and element alignment."
+              },
+              {
+                "id": "7.6.3.A.10",
+                "description": "Verify racking mechanism operation."
+              },
+              {
+                "id": "7.6.3.A.11",
+                "description": "Verify appropriate lubrication on moving, current-carrying parts and on moving and sliding surfaces."
+              }
+            ]
+          }
+        },
+        {
+          "label": "Counter Reading As Found",
+          "type": "text",
+          "value": "dfg"
+        },
+        {
+          "label": "Counter Reading As Left",
+          "type": "text",
+          "value": "dfg"
+        },
+        {
+          "label": "E-Gap",
+          "type": "table",
+          "value": {
+            "unitMeasurement": "dfg",
+            "tolerance": "dfg",
+            "aPhase": "dfg",
+            "bPhase": "dfg",
+            "cPhase": "dfg"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Contact/Pole Resistance",
+      "fields": [
+        {
+          "label": "Contact Resistance (As Found)",
+          "type": "table",
+          "value": {
+            "p1": "dfg",
+            "p2": "dfh",
+            "p3": "fdghj"
+          }
+        },
+        {
+          "label": "Contact Resistance (As Left)",
+          "type": "table",
+          "value": {
+            "p1": "dfgh",
+            "p2": "dfgh",
+            "p3": "dfgh"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance / Temperature Corrected",
+          "type": "table",
+          "value": {
+            "testVoltage": "1000V",
+            "rows": [
+              {
+                "id": "Pole to Pole",
+                "state": "Closed",
+                "p1": "345",
+                "p1c": "13800.00",
+                "p2": "345",
+                "p2c": "13800.00",
+                "p3": "346",
+                "p3c": "13840.00"
+              },
+              {
+                "id": "Pole to Frame",
+                "state": "Closed",
+                "p3": "346",
+                "p3c": "13840.00",
+                "p2": "346",
+                "p2c": "13840.00",
+                "p1": "346",
+                "p1c": "13840.00"
+              },
+              {
+                "id": "Line to Load",
+                "state": "Open",
+                "p2": "346",
+                "p2c": "13840.00"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Dielectric Withstand",
+      "fields": [
+        {
+          "label": "Dielectric Withstand (Closed)",
+          "type": "table",
+          "value": {
+            "p1Ground": "fdg",
+            "p2Ground": "dfg",
+            "p3Ground": "dfg",
+            "units": "µA"
+          }
+        },
+        {
+          "label": "Vacuum Bottle Integrity (Open)",
+          "type": "table",
+          "value": {
+            "p1": "dfg",
+            "p2": "dfg",
+            "p3": "dfg",
+            "units": "µA"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Low Resistance Ohmmeter",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "Hipot",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asf"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "asdfg"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "sdfh",
+    "reportType": "MediumVoltageCircuitBreakerReport",
+    "fields": {
+      "customer": "sdf",
+      "address": "sdf",
+      "user": "sdf",
+      "date": "0231-12-31",
+      "jobNumber": "sdf",
+      "technicians": "sdf",
+      "substation": "sdg",
+      "eqptLocation": "dsfg",
+      "identifier": "sdfh",
+      "temperatureF": "2343",
+      "humidity": "324",
+      "manufacturer": "dfg",
+      "icRating": "fdg",
+      "catalogNumber": "dfg",
+      "ratedVoltage": "dfg",
+      "serialNumber": "dfg",
+      "operatingVoltage": "dfh",
+      "type": "dfh",
+      "ampacity": "dfh",
+      "manufacturingDate": "dfh",
+      "mvaRating": "dfhdf",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.6.3.A.1",
+            "description": "Compare equipment nameplate data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.6.3.A.2",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.6.3.A.3",
+            "description": "Inspect anchorage, alignment, and grounding.",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.6.3.A.4",
+            "description": "Verify that all maintenance devices such as special tools and gauges specified by the manufacturer are available for servicing and operating the breaker.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.6.3.A.5",
+            "description": "Verify the unit is clean.",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.6.3.A.6",
+            "description": "Perform all mechanical operation tests on the operating mechanism in accordance with manufacturer's published data.",
+            "result": "Not Applicable"
+          },
+          {
+            "id": "7.6.3.A.7",
+            "description": "Measure critical distances such as contact gap as recommended by manufacturer."
+          },
+          {
+            "id": "7.6.3.A.8.1",
+            "description": "Use of low-resistance ohmmeter in accordance with Section 7.6.3.B.1."
+          },
+          {
+            "id": "7.6.3.A.9",
+            "description": "Verify cell fit and element alignment."
+          },
+          {
+            "id": "7.6.3.A.10",
+            "description": "Verify racking mechanism operation."
+          },
+          {
+            "id": "7.6.3.A.11",
+            "description": "Verify appropriate lubrication on moving, current-carrying parts and on moving and sliding surfaces."
+          }
+        ]
+      },
+      "counterReadingAsFound": "dfg",
+      "counterReadingAsLeft": "dfg",
+      "eGap": {
+        "unitMeasurement": "dfg",
+        "tolerance": "dfg",
+        "aPhase": "dfg",
+        "bPhase": "dfg",
+        "cPhase": "dfg"
+      },
+      "breakerCrFound": {
+        "p1": "dfg",
+        "p2": "dfh",
+        "p3": "fdghj"
+      },
+      "breakerCrLeft": {
+        "p1": "dfgh",
+        "p2": "dfgh",
+        "p3": "dfgh"
+      },
+      "contactorInsulation": {
+        "testVoltage": "1000V",
+        "rows": [
+          {
+            "id": "Pole to Pole",
+            "state": "Closed",
+            "p1": "345",
+            "p1c": "13800.00",
+            "p2": "345",
+            "p2c": "13800.00",
+            "p3": "346",
+            "p3c": "13840.00"
+          },
+          {
+            "id": "Pole to Frame",
+            "state": "Closed",
+            "p3": "346",
+            "p3c": "13840.00",
+            "p2": "346",
+            "p2c": "13840.00",
+            "p1": "346",
+            "p1c": "13840.00"
+          },
+          {
+            "id": "Line to Load",
+            "state": "Open",
+            "p2": "346",
+            "p2c": "13840.00"
+          }
+        ]
+      },
+      "dielectricClosed": {
+        "p1Ground": "fdg",
+        "p2Ground": "dfg",
+        "p3Ground": "dfg",
+        "units": "µA"
+      },
+      "dielectricOpen": {
+        "p1": "dfg",
+        "p2": "dfg",
+        "p3": "dfg",
+        "units": "µA"
+      },
+      "megohmmeter": "asd",
+      "megohmmeterSerial": "asd",
+      "megohmmeterAmpId": "asd",
+      "lro": "asd",
+      "lroSerial": "asf",
+      "lroAmpId": "asf",
+      "hipot": "asf",
+      "hipotSerial": "asf",
+      "hipotAmpId": "asf",
+      "comments": "asdfg"
+    }
+  }
+}

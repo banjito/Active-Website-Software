@@ -202,7 +202,7 @@ export default function JobDetail() {
     },
     {
       id: 'electrical-tan-delta-test-mts-form',
-      name: '4-Medium Voltage Cable VLF Tan Delta Test MTS',
+      name: '4-Medium Voltage Cable VLF Tan Delta MTS',
       file_url: `report:/jobs/${id}/electrical-tan-delta-test-mts-form?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'MTS'
@@ -243,13 +243,6 @@ export default function JobDetail() {
       template_type: 'ATS'
     },
     {
-      id: 'oil-inspection-report',
-      name: '2-Oil Xfmr. Inspection and Test ATS 21',
-      file_url: `report:/jobs/${id}/oil-inspection?returnToAssets=true`,
-      created_at: new Date().toISOString(),
-      template_type: 'ATS'
-    },
-    {
       id: 'two-small-dry-typer-xfmr-ats-report',
       name: '2-Small Dry Typer Xfmr. Inspection and Test ATS',
       file_url: `report:/jobs/${id}/two-small-dry-typer-xfmr-ats-report?returnToAssets=true`,
@@ -269,6 +262,13 @@ export default function JobDetail() {
       file_url: `report:/jobs/${id}/medium-voltage-vlf-tan-delta?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
+    },
+    {
+      id: 'medium-voltage-vlf-tan-delta-mts',
+      name: '4-Medium Voltage Cable VLF Tan Delta Test MTS',
+      file_url: `report:/jobs/${id}/medium-voltage-vlf-tan-delta-mts?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
     },
     {
       id: 'medium-voltage-vlf',
@@ -841,6 +841,89 @@ export default function JobDetail() {
     }
   };
 
+  // Handle report import function
+  const handleImportReport = () => {
+    // Create a hidden file input element
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json,.amp-report';
+    fileInput.style.display = 'none';
+    
+    fileInput.onchange = async (e) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        const file = target.files[0];
+        
+        try {
+          // Read the JSON file
+          const text = await file.text();
+          const reportData = JSON.parse(text);
+          
+          if (!id || !user?.id) {
+            toast({ title: 'Error', description: 'Job ID or user ID is missing', variant: 'destructive' });
+            return;
+          }
+          
+          // Import the report using the report import service
+          const result = await reportImportService.importReport(reportData, id, user.id);
+          
+          if (result.success && result.reportId) {
+            // Create an asset entry for the imported report
+            const assetData = {
+              name: `Imported ${result.reportType || 'Report'} - ${file.name.replace('.json', '').replace('.amp-report', '')}`,
+              file_url: `report:/jobs/${id}/${result.reportType || 'report'}/${result.reportId}`,
+              user_id: user.id,
+              created_at: new Date().toISOString()
+            };
+
+            const { data: assetResult, error: assetError } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select('id')
+              .single();
+
+            if (assetError) throw assetError;
+
+            // Link asset to job
+            await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({
+                job_id: id,
+                asset_id: assetResult.id,
+                user_id: user.id
+              });
+
+            // Refresh the UI
+            fetchJobAssets();
+            
+            toast({ 
+              title: 'Success', 
+              description: `Report imported successfully as ${result.reportType || 'report'}`, 
+              variant: 'success' 
+            });
+          } else {
+            throw new Error(result.error || 'Failed to import report');
+          }
+        } catch (error) {
+          console.error('Error importing report:', error);
+          toast({ 
+            title: 'Error', 
+            description: `Failed to import report: ${error instanceof Error ? error.message : 'Unknown error'}`, 
+            variant: 'destructive' 
+          });
+        }
+      }
+    };
+    
+    // Trigger file selection
+    fileInput.click();
+    
+    // Clean up
+    fileInput.remove();
+  };
+
   // Handle delete asset function
   const handleDeleteAsset = async () => {
     if (!assetToDelete || !id) {
@@ -1057,6 +1140,7 @@ export default function JobDetail() {
       'low-voltage-cable-test-20sets': 'low-voltage-cable-test-20sets',
       'low-voltage-cable-test-3sets': 'low-voltage-cable-test-3sets',
       'medium-voltage-vlf-tan-delta': 'medium-voltage-vlf-tan-delta',
+      'medium-voltage-vlf-tan-delta-mts': 'medium-voltage-vlf-tan-delta-mts',
       'medium-voltage-vlf': 'medium-voltage-vlf',
       'medium-voltage-cable-vlf-test': 'medium-voltage-cable-vlf-test',
       'metal-enclosed-busway': 'metal-enclosed-busway',
@@ -1992,6 +2076,19 @@ export default function JobDetail() {
                                 <div className="flex items-center">
                                   <Upload className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
                                   Upload File
+                                </div>
+                              </button>
+                              
+                              <button
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                onClick={() => {
+                                  handleImportReport();
+                                  setIsDropdownOpen(false);
+                                }}
+                              >
+                                <div className="flex items-center">
+                                  <Download className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                  Upload Report
                                 </div>
                               </button>
                               

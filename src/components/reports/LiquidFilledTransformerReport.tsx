@@ -14,7 +14,7 @@ type SupabaseError = {
 };
 
 // Define table name constant
-const LIQUID_TRANSFORMER_TABLE = 'liquid_filled_transformer_reports' as const;
+const LIQUID_TRANSFORMER_TABLE = 'low_voltage_cable_test_3sets' as const;
 
 // Temperature conversion and TCF tables (same as DryTypeTransformer)
 const tempConvTable = [
@@ -339,38 +339,12 @@ const LiquidFilledTransformerReport: React.FC = () => {
       kva: '',
       tempRise: '',
       impedance: '',
-      primary: {
-        volts: '', // Default Primary Volts? e.g., '4160'
-        voltsSecondary: '', // Default Secondary Volts? e.g., '480'
-        connection: 'Delta', // Default connection?
-        material: 'Aluminum' // Default material?
-      },
-      secondary: {
-        volts: '', // Default Secondary Volts? e.g., '480'
-        voltsSecondary: '', // Default Secondary Volts? e.g., '480'
-        connection: 'Wye', // Default connection?
-        material: 'Aluminum' // Default material?
-      },
-      tapConfiguration: {
-        positions: [1, 2, 3, 4, 5, 6, 7], // Standard 7 positions
-        voltages: ['', '', '', '', '', '', ''], // Empty strings initially
-        currentPosition: 3, // Default tap position?
-        currentPositionSecondary: '', // Usually blank or '/'
-        tapVoltsSpecific: '',
-        tapPercentSpecific: ''
-      },
-      
-      // Initialize indicator gauge values
-      indicatorGauges: {
-        oilLevel: '',
-        tankPressure: '',
-        oilTemperature: '',
-        windingTemperature: '',
-        oilTempRange: '',
-        windingTempRange: ''
-      }
+      primary: { volts: '', voltsSecondary: '', connection: '', material: '' },
+      secondary: { volts: '', voltsSecondary: '', connection: '', material: '' },
+      tapConfiguration: { positions: [], voltages: [], currentPosition: 1, currentPositionSecondary: '', tapVoltsSpecific: '', tapPercentSpecific: '' },
+      indicatorGauges: { oilLevel: '', tankPressure: '', oilTemperature: '', windingTemperature: '', oilTempRange: '', windingTempRange: '' }
     },
-    visualInspection: { // Initialize all keys from the interface
+    visualInspection: {
       "7.2.2.A.1": "Select One",
       "7.2.2.A.2": "Select One",
       "7.2.2.A.3": "Select One",
@@ -776,29 +750,35 @@ const LiquidFilledTransformerReport: React.FC = () => {
           if (data) {
               console.log("Loaded report data:", data);
               setFormData(prev => ({
-                  ...prev,
-                  customer: data.report_info?.customer ?? prev.customer,
-                  address: data.report_info?.address ?? prev.address,
-                  date: data.report_info?.date ?? prev.date,
-                  technicians: data.report_info?.technicians ?? '',
-                  jobNumber: data.report_info?.jobNumber ?? prev.jobNumber,
-                  substation: data.report_info?.substation ?? '',
-                  eqptLocation: data.report_info?.eqptLocation ?? '',
-                  identifier: data.report_info?.identifier ?? '',
-                  userName: data.report_info?.userName ?? '',
-                  temperature: data.report_info?.temperature ?? prev.temperature,
-                  status: data.report_info?.status ?? 'PASS',
-                  comments: data.comments ?? data.report_info?.comments ?? '',
-                  nameplateData: data.report_info?.nameplateData ?? prev.nameplateData,
-                  visualInspection: {
-                      ...prev.visualInspection,
-                      ...(data.visual_inspection?.items ?? {})
-                  },
-                  insulationResistance: {
-                      ...prev.insulationResistance,
-                      ...(data.insulation_resistance?.tests ?? {})
-                  },
-                  testEquipment: data.test_equipment ?? prev.testEquipment,
+                ...prev,
+                customer: data.data?.reportInfo?.customer ?? prev.customer,
+                address: data.data?.reportInfo?.address ?? prev.address,
+                date: data.data?.reportInfo?.date ?? prev.date,
+                technicians: data.data?.reportInfo?.technicians ?? '',
+                jobNumber: data.data?.reportInfo?.jobNumber ?? prev.jobNumber,
+                substation: data.data?.reportInfo?.substation ?? '',
+                eqptLocation: data.data?.reportInfo?.eqptLocation ?? '',
+                identifier: data.data?.reportInfo?.identifier ?? '',
+                userName: data.data?.reportInfo?.userName ?? '',
+                temperature: data.data?.reportInfo?.temperature ?? prev.temperature,
+                nameplateData: {
+                  ...prev.nameplateData,
+                  ...data.data?.reportInfo?.nameplateData,
+                  // Map the flat indicator gauge properties to the nested structure
+                  indicatorGauges: {
+                    oilLevel: data.data?.reportInfo?.oilLevel ?? '',
+                    tankPressure: data.data?.reportInfo?.tankPressure ?? '',
+                    oilTemperature: data.data?.reportInfo?.oilTemperature ?? '',
+                    windingTemperature: data.data?.reportInfo?.windingTemperature ?? '',
+                    oilTempRange: data.data?.reportInfo?.oilTempRange ?? '',
+                    windingTempRange: data.data?.reportInfo?.windingTempRange ?? ''
+                  }
+                },
+                visualInspection: data.data?.visualInspection ?? prev.visualInspection,
+                insulationResistance: data.data?.insulationResistance ?? prev.insulationResistance,
+                testEquipment: data.data?.testEquipment ?? prev.testEquipment,
+                comments: data.data?.comments ?? '',
+                status: data.data?.status ?? 'PASS'
               }));
               setIsEditing(false);
           }
@@ -821,45 +801,31 @@ const LiquidFilledTransformerReport: React.FC = () => {
       }
 
        // --- IMPORTANT: Structure the data for the Supabase table ---
-       // --- This needs to match the schema of 'large_transformer_reports' ---
-       const tableName = 'liquid_filled_transformer_reports'; // <<< CHANGE AS NEEDED
+       // --- This needs to match the schema of 'low_voltage_cable_test_3sets' ---
+       const tableName = 'low_voltage_cable_test_3sets'; // <<< CHANGE AS NEEDED
        const reportData = {
            job_id: jobId,
            user_id: user.id,
-           // --- Option 1: Using a 'report_info' JSONB column (like DryType) ---
-           report_info: {
-               customer: formData.customer,
-               address: formData.address,
-               date: formData.date,
-               technicians: formData.technicians,
-               jobNumber: formData.jobNumber,
-               substation: formData.substation,
-               eqptLocation: formData.eqptLocation,
-               identifier: formData.identifier,
-               userName: formData.userName,
-               temperature: formData.temperature,
-               nameplateData: formData.nameplateData,
-               status: formData.status,
-               // comments: formData.comments // Include comments here if in report_info
-           },
-            // Separate JSONB columns for complex sections (recommended)
-            visual_inspection: { items: formData.visualInspection },
-            insulation_resistance: { tests: formData.insulationResistance },
-            test_equipment: formData.testEquipment, // Assuming this is simple enough for one JSONB
-            comments: formData.comments, // Or have comments as a top-level text column
-
-            // --- Option 2: Using individual columns (if preferred) ---
-            // customer: formData.customer,
-            // address: formData.address,
-            // date: formData.date,
-            // ... etc ...
-            // nameplate_manufacturer: formData.nameplateData.manufacturer,
-            // ... etc ...
-            // visual_inspection_data: formData.visualInspection, // JSONB column
-            // insulation_resistance_data: formData.insulationResistance, // JSONB column
-            // test_equipment_data: formData.testEquipment, // JSONB column
-            // comments: formData.comments,
-            // status: formData.status,
+           data: {
+               reportInfo: {
+                   customer: formData.customer,
+                   address: formData.address,
+                   date: formData.date,
+                   technicians: formData.technicians,
+                   jobNumber: formData.jobNumber,
+                   substation: formData.substation,
+                   eqptLocation: formData.eqptLocation,
+                   identifier: formData.identifier,
+                   userName: formData.userName,
+                   temperature: formData.temperature,
+                   nameplateData: formData.nameplateData
+               },
+               visualInspection: formData.visualInspection,
+               insulationResistance: formData.insulationResistance,
+               testEquipment: formData.testEquipment,
+               comments: formData.comments,
+               status: formData.status
+           }
        };
 
        console.log(`Saving data to ${tableName}:`, reportData);

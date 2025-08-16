@@ -106,6 +106,9 @@ interface FormData {
   insulationResistance: {
     [key: string]: string;
   };
+  correctedInsulationResistance: {
+    [key: string]: string;
+  };
   
   // Test Equipment
   megohmmeter: string;
@@ -413,6 +416,18 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       'C-G': '',
       'N-G': ''
     },
+    correctedInsulationResistance: {
+      'A-B': '',
+      'B-C': '',
+      'C-A': '',
+      'A-N': '',
+      'B-N': '',
+      'C-N': '',
+      'A-G': '',
+      'B-G': '',
+      'C-G': '',
+      'N-G': ''
+    },
     
     // Test Equipment
     megohmmeter: '',
@@ -583,6 +598,23 @@ const MetalEnclosedBuswayReport: React.FC = () => {
     }
   };
 
+  // Add key mapping function to convert between display keys and data keys
+  const getDataKey = (displayKey: string): string => {
+    const keyMap: { [key: string]: string } = {
+      'A-B': 'aToB',
+      'B-C': 'bToC',
+      'C-A': 'cToA',
+      'A-N': 'aToN',
+      'B-N': 'bToN',
+      'C-N': 'cToN',
+      'A-G': 'aToG',
+      'B-G': 'bToG',
+      'C-G': 'cToG',
+      'N-G': 'nToG'
+    };
+    return keyMap[displayKey] || displayKey;
+  };
+
   // Load report data
   const loadReport = async () => {
     if (!reportId || !user?.id) {
@@ -611,7 +643,15 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       }
 
       if (data) {
-        setFormData({
+        console.log('🔍 MetalEnclosedBuswayReport - Loaded data:', data);
+        console.log('🔍 insulation_resistance column:', data.insulation_resistance);
+        console.log('🔍 insulation_resistance.readings:', data.insulation_resistance?.readings);
+        console.log('🔍 insulation_resistance.correctedReadings:', data.insulation_resistance?.correctedReadings);
+        console.log('🔍 insulation_resistance.readings.aToB:', data.insulation_resistance?.readings?.aToB);
+        console.log('🔍 insulation_resistance.correctedReadings.aToB:', data.insulation_resistance?.correctedReadings?.aToB);
+        
+        // Map the data from separate columns to the formData structure
+        const newFormData = {
           customer: data.report_info?.customer || '',
           address: data.report_info?.address || '',
           user: data.report_info?.user || '',
@@ -624,7 +664,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           
           temperature: data.report_info?.temperature || '',
           fahrenheit: data.report_info?.fahrenheit ?? true,
-          tcf: data.report_info?.tcf || 0.138,
+          tcf: data.insulation_resistance?.tcf ? parseFloat(data.insulation_resistance.tcf) : 0.138,
           humidity: data.report_info?.humidity || '',
           
           manufacturer: data.report_info?.manufacturer || '',
@@ -636,38 +676,74 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           operatingVoltage: data.report_info?.operatingVoltage || '',
           ampacity: data.report_info?.ampacity || '',
           
-          netaResults: data.report_info?.netaResults || {},
-          busResistance: data.report_info?.busResistance || {
-            p1: '',
-            p2: '',
-            p3: '',
-            neutral: ''
+          // Map visual and mechanical inspection from the separate column
+          netaResults: data.visual_mechanical_inspection?.reduce((acc: any, item: any) => {
+            if (item.id && item.result) {
+              acc[item.id] = item.result;
+            }
+            return acc;
+          }, {}) || {},
+          
+          // Map bus resistance from the separate column
+          busResistance: {
+            p1: data.bus_resistance?.p1 || '',
+            p2: data.bus_resistance?.p2 || '',
+            p3: data.bus_resistance?.p3 || '',
+            neutral: data.bus_resistance?.neutral || ''
           },
           
-          testVoltage1: data.report_info?.testVoltage1 || '',
-          insulationResistance: data.report_info?.insulationResistance || {},
+          // Map insulation resistance from the separate column
+          testVoltage1: data.insulation_resistance?.testVoltage || '',
+          insulationResistance: {
+            aToB: data.insulation_resistance?.readings?.aToB || '',
+            bToC: data.insulation_resistance?.readings?.bToC || '',
+            cToA: data.insulation_resistance?.readings?.cToA || '',
+            aToN: data.insulation_resistance?.readings?.aToN || '',
+            bToN: data.insulation_resistance?.readings?.bToN || '',
+            cToN: data.insulation_resistance?.readings?.cToN || '',
+            aToG: data.insulation_resistance?.readings?.aToG || '',
+            bToG: data.insulation_resistance?.readings?.bToG || '',
+            cToG: data.insulation_resistance?.readings?.cToG || '',
+            nToG: data.insulation_resistance?.readings?.nToG || ''
+          },
+          correctedInsulationResistance: {
+            aToB: data.insulation_resistance?.correctedReadings?.aToB || '',
+            bToC: data.insulation_resistance?.correctedReadings?.bToC || '',
+            cToA: data.insulation_resistance?.correctedReadings?.cToA || '',
+            aToN: data.insulation_resistance?.correctedReadings?.aToN || '',
+            bToN: data.insulation_resistance?.correctedReadings?.bToN || '',
+            cToN: data.insulation_resistance?.correctedReadings?.cToN || '',
+            aToG: data.insulation_resistance?.correctedReadings?.aToG || '',
+            bToG: data.insulation_resistance?.correctedReadings?.bToG || '',
+            cToG: data.insulation_resistance?.correctedReadings?.cToG || '',
+            nToG: data.insulation_resistance?.correctedReadings?.nToG || ''
+          },
           
-          megohmmeter: data.report_info?.megohmmeter || '',
-          megohmSerial: data.report_info?.megohmSerial || '',
-          megAmpId: data.report_info?.megAmpId || '',
-          lowResistanceOhmmeter: data.report_info?.lowResistanceOhmmeter || '',
-          lowResistanceSerial: data.report_info?.lowResistanceSerial || '',
-          lowResistanceAmpId: data.report_info?.lowResistanceAmpId || '',
+          // Map test equipment from the separate column
+          megohmmeter: data.test_equipment?.megohmmeter?.name || '',
+          megohmSerial: data.test_equipment?.megohmmeter?.serialNumber || '',
+          megAmpId: data.test_equipment?.megohmmeter?.ampId || '',
+          lowResistanceOhmmeter: data.test_equipment?.lowResistanceOhmmeter?.name || '',
+          lowResistanceSerial: data.test_equipment?.lowResistanceOhmmeter?.serialNumber || '',
+          lowResistanceAmpId: data.test_equipment?.lowResistanceOhmmeter?.ampId || '',
           
           comments: data.comments || '',
           status: data.status || 'PASS',
           
-          insulationResistanceUnit: data.report_info?.insulationResistanceUnit || 'MΩ',
-          contactResistanceUnit: data.report_info?.contactResistanceUnit || 'μΩ',
-          dielectricWithstandUnit: data.report_info?.dielectricWithstandUnit || 'mA',
+          insulationResistanceUnit: data.insulation_resistance?.units || 'MΩ',
+          contactResistanceUnit: 'μΩ', // Default value
+          dielectricWithstandUnit: 'mA', // Default value
           
-          cableRating: data.report_info?.cableRating || '',
-          testVoltage: data.report_info?.testVoltage || '',
+          cableRating: '', // Not used in this report
+          testVoltage: data.insulation_resistance?.testVoltage || '',
           
-          dielectricPhaseA: data.report_info?.dielectricPhaseA || '',
-          dielectricPhaseB: data.report_info?.dielectricPhaseB || '',
-          dielectricPhaseC: data.report_info?.dielectricPhaseC || '',
-        });
+          dielectricPhaseA: '', // Not used in this report
+          dielectricPhaseB: '', // Not used in this report
+          dielectricPhaseC: '', // Not used in this report
+        };
+        
+        console.log('🔍 MetalEnclosedBuswayReport - Mapped formData:', newFormData);
+        setFormData(newFormData);
         setIsEditing(false);
       }
     } catch (error) {
@@ -1333,6 +1409,9 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </select>
           </div>
         </div>
+        
+
+        
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
@@ -1361,7 +1440,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     <input
                       type="text"
                       name={key}
-                      value={formData.insulationResistance[key]}
+                      value={formData.insulationResistance[getDataKey(key)]}
                       onChange={handleInsulationChange}
                       readOnly={!isEditing}
                       className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
@@ -1392,6 +1471,38 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             />
           </div>
         </div>
+        
+        {/* Temperature and TCF Information - CORRECTED VALUES SECTION */}
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temperature (°F):</label>
+            <input
+              type="text"
+              value={formData.temperature || ''}
+              readOnly
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temperature (°C):</label>
+            <input
+              type="text"
+              value={formData.temperature ? ((parseFloat(formData.temperature) - 32) * 5/9).toFixed(1) : ''}
+              readOnly
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">TCF:</label>
+            <input
+              type="text"
+              value={formData.tcf ? formData.tcf.toFixed(3) : ''}
+              readOnly
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+            />
+          </div>
+        </div>
+        
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
@@ -1419,7 +1530,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                   <td key={key} className="px-3 py-2">
                     <input
                       type="text"
-                      value={formData.insulationResistance[key] ? calculateTempCorrectedValue(formData.insulationResistance[key], formData.tcf) : ''}
+                      value={formData.correctedInsulationResistance[getDataKey(key)] || ''}
                       readOnly
                       className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
                     />

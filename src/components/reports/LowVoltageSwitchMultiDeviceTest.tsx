@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { ReportWrapper } from './ReportWrapper';
-import { getReportName } from './reportMappings';
+import { getReportName, getAssetName } from './reportMappings';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
 
 // Temperature Correction Factor (TCF) table and helper (copied from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -87,13 +89,15 @@ interface FormData {
 const makeArray = <T,>(n: number, fn: () => T) => Array.from({ length: n }, fn);
 
 const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
-  const { reportId } = useParams<{ reportId: string }>();
+  const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const isPrintMode = searchParams.get('print') === 'true';
   const reportName = getReportName('low-voltage-switch-multi-device-test');
+  const { user } = useAuth();
 
   const [isEditing, setIsEditing] = useState<boolean>(!reportId);
+  const [saving, setSaving] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
     customer: '', jobNumber: '', technicians: '', date: new Date().toISOString().split('T')[0], identifier: '',
     substation: '', eqptLocation: '', user: '', temperature: { fahrenheit: 68, celsius: 20, tcf: 1, humidity: 0 }, status: TestStatus.PASS,
@@ -127,7 +131,6 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
       const num = parseFloat(String(val).replace(/[^0-9.\-]/g, ''));
       if (Number.isNaN(num)) return val || '';
       const result = num * tcf;
-      // Keep reasonable precision without trailing noise
       const fixed = Math.round((result + Number.EPSILON) * 100) / 100;
       return String(fixed);
     };
@@ -145,7 +148,6 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
       p3_line: multiply(row.p3_line),
     }));
 
-    // Only update if different to avoid unnecessary renders
     if (JSON.stringify(nextCorrected) !== JSON.stringify(formData.irCorrected)) {
       setFormData(prev => ({ ...prev, irCorrected: nextCorrected }));
     }
@@ -163,6 +165,220 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
       cur[keys[keys.length - 1]] = value;
       return clone;
     });
+  };
+
+  // Load existing report from normalized store
+  useEffect(() => {
+    const loadReport = async () => {
+      if (!reportId) return;
+      try {
+        const { data, error } = await supabase
+          .schema('neta_ops')
+          .from('low_voltage_cable_test_3sets')
+          .select('*')
+          .eq('id', reportId)
+          .single();
+        if (error) throw error;
+        if (data && (data as any).data) {
+          const d: any = (data as any).data;
+          setFormData(prev => ({
+            ...prev,
+            customer: d.reportInfo?.customer ?? prev.customer,
+            jobNumber: d.reportInfo?.jobNumber ?? prev.jobNumber,
+            technicians: d.reportInfo?.technicians ?? prev.technicians,
+            date: d.reportInfo?.date ?? prev.date,
+            identifier: d.reportInfo?.identifier ?? prev.identifier,
+            substation: d.reportInfo?.substation ?? prev.substation,
+            eqptLocation: d.reportInfo?.eqptLocation ?? prev.eqptLocation,
+            user: d.reportInfo?.userName ?? prev.user,
+            temperature: {
+              fahrenheit: d.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
+              celsius: d.reportInfo?.temperature?.celsius ?? prev.temperature.celsius,
+              tcf: d.reportInfo?.temperature?.correctionFactor ?? prev.temperature.tcf,
+              humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
+            },
+            status: (d.status as Status) ?? prev.status,
+            enclosure: {
+              manufacturer: d.enclosure?.manufacturer ?? prev.enclosure.manufacturer,
+              systemVoltage: d.enclosure?.systemVoltage ?? prev.enclosure.systemVoltage,
+              catalogNo: d.enclosure?.catalogNo ?? prev.enclosure.catalogNo,
+              ratedVoltage: d.enclosure?.ratedVoltage ?? prev.enclosure.ratedVoltage,
+              serialNumber: d.enclosure?.serialNumber ?? prev.enclosure.serialNumber,
+              ratedCurrent: d.enclosure?.ratedCurrent ?? prev.enclosure.ratedCurrent,
+              series: d.enclosure?.series ?? prev.enclosure.series,
+              aicRating: d.enclosure?.aicRating ?? prev.enclosure.aicRating,
+              type: d.enclosure?.type ?? prev.enclosure.type,
+              phaseConfiguration: d.enclosure?.phaseConfiguration ?? prev.enclosure.phaseConfiguration,
+            },
+            switches: Array.isArray(d.switches) && d.switches.length > 0 ? d.switches : prev.switches,
+            fuses: Array.isArray(d.fuses) && d.fuses.length > 0 ? d.fuses : prev.fuses,
+            irMeasured: Array.isArray(d.irTests?.rows) && d.irTests.rows.length > 0
+              ? d.irTests.rows.map((r: any) => ({
+                  position: r.position || '',
+                  p1p2: r.p1p2 || '',
+                  p2p3: r.p2p3 || '',
+                  p3p1: r.p3p1 || '',
+                  p1_frame: r.p1_frame || '',
+                  p2_frame: r.p2_frame || '',
+                  p3_frame: r.p3_frame || '',
+                  p1_line: r.p1_line || '',
+                  p2_line: r.p2_line || '',
+                  p3_line: r.p3_line || '',
+                }))
+              : prev.irMeasured,
+            irUnits: d.irTests?.units ?? prev.irUnits,
+            irTestVoltage: d.irTests?.testVoltage ?? prev.irTestVoltage,
+            contact: Array.isArray(d.contactResistance?.rows) && d.contactResistance.rows.length > 0
+              ? d.contactResistance.rows.map((r: any) => ({
+                  position: r.position || '',
+                  switchOnly: r.switchOnly || '',
+                  fuseOnly: r.fuseOnly || '',
+                  switchPlusFuse: r.switchPlusFuse || '',
+                  units: r.units || 'µΩ',
+                }))
+              : prev.contact,
+            equipment: {
+              megger: d.equipment?.megger ?? prev.equipment.megger,
+              meggerSerial: d.equipment?.meggerSerial ?? prev.equipment.meggerSerial,
+              meggerAmpId: d.equipment?.meggerAmpId ?? prev.equipment.meggerAmpId,
+              lowRes: d.equipment?.lowRes ?? prev.equipment.lowRes,
+              lowResSerial: d.equipment?.lowResSerial ?? prev.equipment.lowResSerial,
+              lowResAmpId: d.equipment?.lowResAmpId ?? prev.equipment.lowResAmpId,
+            },
+            comments: d.reportInfo?.comments ?? prev.comments,
+            // Visual and Mechanical mapping from normalized importer with fallbacks
+            visualInspection: (() => {
+              let items: any[] = [];
+              if (Array.isArray(d.visualInspection?.items) && d.visualInspection.items.length > 0) {
+                items = d.visualInspection.items.map((it: any) => ({
+                  identifier: it?.identifier || '',
+                  values: typeof it?.values === 'object' && it?.values !== null ? it.values : {}
+                }));
+              } else if (Array.isArray(d['vm-matrix']?.rows)) {
+                items = d['vm-matrix'].rows.map((r: any) => ({
+                  identifier: r?.identifier || '',
+                  values: typeof r?.values === 'object' && r?.values !== null ? r.values : {}
+                }));
+              }
+              // Ensure exactly 5 rows for the UI grid
+              if (items.length < 5) {
+                items = items.concat(Array.from({ length: 5 - items.length }, () => ({ identifier: '', values: {} })));
+              } else if (items.length > 5) {
+                items = items.slice(0, 5);
+              }
+              return { items: items.length ? items : prev.visualInspection.items };
+            })(),
+          }));
+          setIsEditing(false);
+        }
+      } catch (err) {
+        console.error('Error loading switch multi-device report:', err);
+      }
+    };
+    if (reportId) loadReport();
+  }, [reportId]);
+
+  const handleSave = async () => {
+    if (!jobId || !user?.id || !isEditing) return;
+    setSaving(true);
+
+    const normalized: any = {
+      reportInfo: {
+        customer: formData.customer,
+        address: '',
+        userName: formData.user,
+        date: formData.date,
+        identifier: formData.identifier,
+        jobNumber: formData.jobNumber,
+        technicians: formData.technicians,
+        substation: formData.substation,
+        eqptLocation: formData.eqptLocation,
+        temperature: {
+          fahrenheit: formData.temperature.fahrenheit,
+          celsius: formData.temperature.celsius,
+          correctionFactor: formData.temperature.tcf,
+        },
+        humidity: formData.temperature.humidity,
+        comments: formData.comments,
+      },
+      visualInspection: { items: formData.visualInspection.items },
+      enclosure: { ...formData.enclosure },
+      switches: formData.switches,
+      fuses: formData.fuses,
+      irTests: {
+        testVoltage: formData.irTestVoltage,
+        units: formData.irUnits,
+        rows: formData.irMeasured.map(r => ({
+          position: r.position,
+          p1p2: r.p1p2,
+          p2p3: r.p2p3,
+          p3p1: r.p3p1,
+          p1_frame: r.p1_frame,
+          p2_frame: r.p2_frame,
+          p3_frame: r.p3_frame,
+          p1_line: r.p1_line,
+          p2_line: r.p2_line,
+          p3_line: r.p3_line,
+        })),
+      },
+      contactResistance: { rows: formData.contact },
+      equipment: { ...formData.equipment },
+      status: formData.status,
+      reportType: 'low-voltage-switch-multi-device-test',
+    };
+
+    const payload = {
+      job_id: jobId,
+      user_id: user.id,
+      data: normalized,
+    };
+
+    try {
+      if (reportId) {
+        const { error } = await supabase
+          .schema('neta_ops')
+          .from('low_voltage_cable_test_3sets')
+          .update(payload)
+          .eq('id', reportId)
+          .single();
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .schema('neta_ops')
+          .from('low_voltage_cable_test_3sets')
+          .insert(payload)
+          .select('id')
+          .single();
+        if (error) throw error;
+        const newId = (data as any)?.id as string;
+        if (newId) {
+          const asset = {
+            name: getAssetName('low-voltage-switch-multi-device-test', formData.identifier || formData.eqptLocation || ''),
+            file_url: `report:/jobs/${jobId}/low-voltage-switch-multi-device-test/${newId}`,
+            user_id: user.id,
+          } as any;
+          const { data: assetRow, error: assetErr } = await supabase
+            .schema('neta_ops')
+            .from('assets')
+            .insert(asset)
+            .select('id')
+            .single();
+          if (assetErr) throw assetErr;
+          if (assetRow?.id) {
+            await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({ job_id: jobId, asset_id: assetRow.id, user_id: user.id });
+          }
+        }
+      }
+      setIsEditing(false);
+    } catch (err: any) {
+      console.error('Failed to save report:', err);
+      alert(`Failed to save report: ${err?.message || 'Unknown error'}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleVisualInspectionChange = (rowIndex: number, fieldKey: string, value: string) => {
@@ -223,7 +439,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                     <button onClick={() => window.print()} className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md">Print Report</button>
                   </>
                 ) : (
-                  <button onClick={() => setIsEditing(false)} disabled={!isEditing} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md ${!isEditing ? 'hidden' : 'hover:bg-orange-700'}`}>Save Report</button>
+                  <button onClick={handleSave} disabled={!isEditing || saving} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md ${!isEditing ? 'hidden' : 'hover:bg-orange-700'}`}>{saving ? 'Saving...' : 'Save Report'}</button>
                 )}
               </div>
             </div>

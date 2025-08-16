@@ -1,0 +1,539 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K2RP86EVEWV08CS22E0P22DV",
+  "reportType": "MediumVoltageCableVLFMTSTestReport.tsx",
+  "createdAt": "2025-08-16T05:38:44.004Z",
+  "updatedAt": "2025-08-16T05:39:42.114Z",
+  "version": 93,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "df"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "sadf"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "sdag"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "STANDING OUT IS GOOD"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "asdg"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "asdghag"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "0414-12-31"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "dfg"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "77"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": 50
+        }
+      ]
+    },
+    {
+      "title": "Cable & Termination Data",
+      "fields": [
+        {
+          "label": "Tested From",
+          "type": "text",
+          "value": "dfgh"
+        },
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "dfbggfdb"
+        },
+        {
+          "label": "Cable Rated Voltage (kV)",
+          "type": "text",
+          "value": "gbdfghrt"
+        },
+        {
+          "label": "Cable Type",
+          "type": "text",
+          "value": "rtwy"
+        },
+        {
+          "label": "Length (ft)",
+          "type": "text",
+          "value": "htbf"
+        },
+        {
+          "label": "Conductor Size",
+          "type": "text",
+          "value": "dfgnh"
+        },
+        {
+          "label": "Insulation Type",
+          "type": "text",
+          "value": "dfgn"
+        },
+        {
+          "label": "Conductor Material",
+          "type": "text",
+          "value": "bdf"
+        },
+        {
+          "label": "Insulation Thickness",
+          "type": "text",
+          "value": "tbt"
+        },
+        {
+          "label": "From",
+          "type": "text",
+          "value": "fbtfdd"
+        },
+        {
+          "label": "To",
+          "type": "text",
+          "value": "bbdftb"
+        },
+        {
+          "label": "Termination Data",
+          "type": "text",
+          "value": "dfbt"
+        },
+        {
+          "label": "Rated Voltage (kV)",
+          "type": "text",
+          "value": "fgdb"
+        },
+        {
+          "label": "Termination Data",
+          "type": "text",
+          "value": "fgb"
+        },
+        {
+          "label": "Rated Voltage (kV)",
+          "type": "text",
+          "value": "dfgbj"
+        }
+      ]
+    },
+    {
+      "title": "7.3.3.A Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.3.3.A.1",
+                "description": "Compare cable data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.3.3.A.2",
+                "description": "Inspect exposed sections of cables for physical damage.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.3.3.A.3.1",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.3.3.A.4",
+                "description": "Inspect shield grounding, cable supports, and terminations.",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.3.3.A.5",
+                "description": "Verify that visible cable bends meet or exceed ICEA and manufacturer's minimum published bending radius.",
+                "result": "Not Applicable"
+              },
+              {
+                "id": "7.3.3.A.7",
+                "description": "If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed and that shields are correctly terminated for operation of protective devices."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Shield Continuity",
+      "fields": [
+        {
+          "label": "Shield Continuity",
+          "type": "table",
+          "value": {
+            "unit": "Ω",
+            "a": "345",
+            "b": "34566",
+            "c": "6346346"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance (Pre/Post)",
+      "fields": [
+        {
+          "label": "Insulation Resistance (Measured and Corrected)",
+          "type": "table",
+          "value": {
+            "testVoltage": "1000",
+            "unit": "GΩ",
+            "pre": {
+              "ag": "346",
+              "bg": "3",
+              "cg": "34"
+            },
+            "post": {
+              "ag": "346",
+              "bg": "545",
+              "cg": "6436"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Withstand Test",
+      "fields": [
+        {
+          "label": "Withstand Test",
+          "type": "table",
+          "value": {
+            "readings": [
+              {
+                "timeMinutes": "10",
+                "kVAC": "13",
+                "phaseA": {
+                  "currentUnit": "mA",
+                  "mA": "346"
+                },
+                "phaseB": {
+                  "currentUnit": "mA"
+                },
+                "phaseC": {
+                  "currentUnit": "mA"
+                }
+              },
+              {
+                "timeMinutes": "20",
+                "kVAC": "13",
+                "phaseA": {
+                  "currentUnit": "mA",
+                  "mA": "46346"
+                },
+                "phaseB": {
+                  "currentUnit": "mA"
+                },
+                "phaseC": {
+                  "currentUnit": "mA",
+                  "mA": "346"
+                }
+              },
+              {
+                "timeMinutes": "30",
+                "kVAC": "13",
+                "phaseA": {
+                  "currentUnit": "mA",
+                  "nF": "346"
+                },
+                "phaseB": {
+                  "currentUnit": "mA"
+                },
+                "phaseC": {
+                  "currentUnit": "mA"
+                }
+              },
+              {
+                "timeMinutes": "40",
+                "kVAC": "13",
+                "phaseA": {
+                  "currentUnit": "mA"
+                },
+                "phaseB": {
+                  "currentUnit": "mA",
+                  "mA": "346",
+                  "nF": "46"
+                },
+                "phaseC": {
+                  "currentUnit": "mA"
+                }
+              },
+              {
+                "timeMinutes": "50",
+                "kVAC": "13",
+                "phaseA": {
+                  "currentUnit": "mA"
+                },
+                "phaseB": {
+                  "currentUnit": "mA"
+                },
+                "phaseC": {
+                  "currentUnit": "mA",
+                  "mA": "346"
+                }
+              },
+              {
+                "timeMinutes": "60",
+                "kVAC": "13",
+                "phaseA": {
+                  "currentUnit": "mA"
+                },
+                "phaseB": {
+                  "currentUnit": "mA",
+                  "mA": "46"
+                },
+                "phaseC": {
+                  "currentUnit": "mA"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Test Equipment Used",
+          "type": "table",
+          "value": {
+            "megohmmeter": {
+              "name": "d",
+              "serialNumber": "h"
+            },
+            "lowResistanceOhmmeter": {
+              "serialNumber": "h"
+            },
+            "primaryInjectionTestSet": {}
+          }
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "dfghfgh"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "STANDING OUT IS GOOD",
+    "reportType": "MediumVoltageCableVLFMTSTestReport",
+    "fields": {
+      "customer": "df",
+      "jobNumber": "sadf",
+      "address": "sdag",
+      "identifier": "STANDING OUT IS GOOD",
+      "technicians": "asdg",
+      "substation": "asdghag",
+      "date": "0414-12-31",
+      "eqptLocation": "dfg",
+      "temperatureF": "77",
+      "humidity": 50,
+      "testedFrom": "dfgh",
+      "manufacturer": "dfbggfdb",
+      "cableRatedVoltage": "gbdfghrt",
+      "cableType": "rtwy",
+      "lengthFt": "htbf",
+      "conductorSize": "dfgnh",
+      "insulationType": "dfgn",
+      "conductorMaterial": "bdf",
+      "insulationThickness": "tbt",
+      "from": "fbtfdd",
+      "to": "bbdftb",
+      "terminationData1": "dfbt",
+      "terminationRatedVoltage1": "fgdb",
+      "terminationData2": "fgb",
+      "terminationRatedVoltage2": "dfgbj",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.3.3.A.1",
+            "description": "Compare cable data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.3.3.A.2",
+            "description": "Inspect exposed sections of cables for physical damage.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.3.3.A.3.1",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.3.3.A.4",
+            "description": "Inspect shield grounding, cable supports, and terminations.",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.3.3.A.5",
+            "description": "Verify that visible cable bends meet or exceed ICEA and manufacturer's minimum published bending radius.",
+            "result": "Not Applicable"
+          },
+          {
+            "id": "7.3.3.A.7",
+            "description": "If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed and that shields are correctly terminated for operation of protective devices."
+          }
+        ]
+      },
+      "mvShieldContinuity": {
+        "unit": "Ω",
+        "a": "345",
+        "b": "34566",
+        "c": "6346346"
+      },
+      "mvIrPrePost": {
+        "testVoltage": "1000",
+        "unit": "GΩ",
+        "pre": {
+          "ag": "346",
+          "bg": "3",
+          "cg": "34"
+        },
+        "post": {
+          "ag": "346",
+          "bg": "545",
+          "cg": "6436"
+        }
+      },
+      "vlfWithstand": {
+        "readings": [
+          {
+            "timeMinutes": "10",
+            "kVAC": "13",
+            "phaseA": {
+              "currentUnit": "mA",
+              "mA": "346"
+            },
+            "phaseB": {
+              "currentUnit": "mA"
+            },
+            "phaseC": {
+              "currentUnit": "mA"
+            }
+          },
+          {
+            "timeMinutes": "20",
+            "kVAC": "13",
+            "phaseA": {
+              "currentUnit": "mA",
+              "mA": "46346"
+            },
+            "phaseB": {
+              "currentUnit": "mA"
+            },
+            "phaseC": {
+              "currentUnit": "mA",
+              "mA": "346"
+            }
+          },
+          {
+            "timeMinutes": "30",
+            "kVAC": "13",
+            "phaseA": {
+              "currentUnit": "mA",
+              "nF": "346"
+            },
+            "phaseB": {
+              "currentUnit": "mA"
+            },
+            "phaseC": {
+              "currentUnit": "mA"
+            }
+          },
+          {
+            "timeMinutes": "40",
+            "kVAC": "13",
+            "phaseA": {
+              "currentUnit": "mA"
+            },
+            "phaseB": {
+              "currentUnit": "mA",
+              "mA": "346",
+              "nF": "46"
+            },
+            "phaseC": {
+              "currentUnit": "mA"
+            }
+          },
+          {
+            "timeMinutes": "50",
+            "kVAC": "13",
+            "phaseA": {
+              "currentUnit": "mA"
+            },
+            "phaseB": {
+              "currentUnit": "mA"
+            },
+            "phaseC": {
+              "currentUnit": "mA",
+              "mA": "346"
+            }
+          },
+          {
+            "timeMinutes": "60",
+            "kVAC": "13",
+            "phaseA": {
+              "currentUnit": "mA"
+            },
+            "phaseB": {
+              "currentUnit": "mA",
+              "mA": "46"
+            },
+            "phaseC": {
+              "currentUnit": "mA"
+            }
+          }
+        ]
+      },
+      "testEquipment3": {
+        "megohmmeter": {
+          "name": "d",
+          "serialNumber": "h"
+        },
+        "lowResistanceOhmmeter": {
+          "serialNumber": "h"
+        },
+        "primaryInjectionTestSet": {}
+      },
+      "comments": "dfghfgh"
+    }
+  }
+}

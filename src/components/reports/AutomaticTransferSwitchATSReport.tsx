@@ -258,16 +258,27 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         }
       }
       if (data) {
-        setFormData(prev => ({
-          ...prev,
-          ...(data.report_info || {}),
-          visualInspectionItems: data.visual_inspection_items || JSON.parse(JSON.stringify(initialVisualInspectionItems)),
-          insulationResistance: data.insulation_resistance || prev.insulationResistance,
-          contactResistance: data.contact_resistance || prev.contactResistance,
-          testEquipmentUsed: data.test_equipment_used || prev.testEquipmentUsed,
-          comments: data.comments || '',
-          status: data.report_info?.status || 'PASS',
-        }));
+        // Check if data is in the 'data' column (new structure) or individual columns (old structure)
+        if (data.data) {
+          // New structure: all data is in the 'data' column
+          setFormData(prev => ({
+            ...prev,
+            ...data.data,
+            status: data.data.status || 'PASS'
+          }));
+        } else {
+          // Old structure: data is in individual columns
+          setFormData(prev => ({
+            ...prev,
+            ...(data.report_info || {}),
+            visualInspectionItems: data.visual_inspection_items || JSON.parse(JSON.stringify(initialVisualInspectionItems)),
+            insulationResistance: data.insulation_resistance || prev.insulationResistance,
+            contactResistance: data.contact_resistance || prev.contactResistance,
+            // test_equipment_used column not present on this table; preserve current state
+            comments: data.comments || '',
+            status: data.report_info?.status || 'PASS',
+          }));
+        }
         setIsEditing(false);
       }
     } catch (error) {
@@ -368,27 +379,31 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
-
+ 
     const reportPayload = {
       job_id: jobId,
       user_id: user.id,
-      report_info: { 
-        customerName: formData.customerName, customerLocation: formData.customerLocation, userName: formData.userName,
-        date: formData.date, identifier: formData.identifier, jobNumber: formData.jobNumber, technicians: formData.technicians,
-        temperature: formData.temperature, substation: formData.substation, eqptLocation: formData.eqptLocation,
-        nameplateManufacturer: formData.nameplateManufacturer, nameplateModelType: formData.nameplateModelType,
-        nameplateCatalogNo: formData.nameplateCatalogNo, nameplateSerialNumber: formData.nameplateSerialNumber,
-        nameplateSystemVoltage: formData.nameplateSystemVoltage, nameplateRatedVoltage: formData.nameplateRatedVoltage,
-        nameplateRatedCurrent: formData.nameplateRatedCurrent, nameplateSCCR: formData.nameplateSCCR,
-        status: formData.status, insulationTestVoltage: formData.insulationTestVoltage,
+      report_info: {
+        customerName: formData.customerName,
+        customerLocation: formData.customerLocation,
+        userName: formData.userName,
+        date: formData.date,
+        identifier: formData.identifier,
+        jobNumber: formData.jobNumber,
+        technicians: formData.technicians,
+        temperature: formData.temperature,
+        substation: formData.substation,
+        eqptLocation: formData.eqptLocation,
+        status: formData.status,
       },
+      // Some ATS tables don’t include a dedicated nameplate JSONB; keep legacy-compatible payload
       visual_inspection_items: formData.visualInspectionItems,
       insulation_resistance: formData.insulationResistance,
       contact_resistance: formData.contactResistance,
-      test_equipment_used: formData.testEquipmentUsed,
+      // No dedicated test_equipment_used column on this table
       comments: formData.comments,
     };
-
+ 
     try {
       let result;
       if (reportId) {
@@ -406,7 +421,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
           .insert(reportPayload)
           .select()
           .single();
-
+ 
         if (result.data) {
           const assetData = {
             name: '35-Automatic Transfer Switch ATS - ' + (formData.identifier || formData.eqptLocation || 'Unnamed'),
@@ -800,17 +815,17 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
   if (loading) return <div className="p-4 text-center text-lg text-gray-700 dark:text-gray-300">Loading report data...</div>;
 
   const renderInsulationRow = (stateKey: keyof FormData['insulationResistance'], title: string, hasNeutral: boolean = false) => {
-    const rowData = formData.insulationResistance[stateKey];
+    const rowData = formData.insulationResistance[stateKey] || { ...initialInsulationRow } as any;
     return (
       <tr>
         <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{title}</td>
         {(['p1', 'p2', 'p3'] as const).map(pole => (
           <React.Fragment key={pole}>
             <td className="px-3 py-4">
-              <input type="text" value={rowData[pole + 'Reading']} onChange={(e) => handleInsulationResistanceChange(stateKey, pole + 'Reading', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input type="text" value={rowData[pole + 'Reading'] || ''} onChange={(e) => handleInsulationResistanceChange(stateKey, pole + 'Reading', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </td>
             <td className="px-3 py-4">
-              <input type="text" value={rowData[pole + 'Corrected']} readOnly className="form-input w-full text-center bg-gray-100 dark:bg-dark-200" />
+              <input type="text" value={rowData[pole + 'Corrected'] || ''} readOnly className="form-input w-full text-center bg-gray-100 dark:bg-dark-200" />
             </td>
           </React.Fragment>
         ))}
@@ -827,7 +842,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
           <><td className="px-3 py-4 bg-gray-50 dark:bg-dark-200"></td><td className="px-3 py-4 bg-gray-50 dark:bg-dark-200"></td></>
         )}
         <td className="px-6 py-4">
-          <select value={rowData.units} onChange={(e) => handleInsulationResistanceChange(stateKey, 'units', e.target.value)} disabled={!isEditing} className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+          <select value={rowData.units || 'MΩ'} onChange={(e) => handleInsulationResistanceChange(stateKey, 'units', e.target.value)} disabled={!isEditing} className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
             {insulationResistanceUnitsOptions.map(u => <option key={u} value={u}>{u}</option>)}
           </select>
         </td>
@@ -1033,10 +1048,10 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-              {renderInsulationRow('poleToPoleNormalClosed', 'Pole to Pole (Normal Closed)')}
-              {renderInsulationRow('poleToPoleEmergencyClosed', 'Pole to Pole (Emergency Closed)')}
-              {renderInsulationRow('poleToNeutralNormalClosed', 'Pole to Neutral (Normal Closed)')}
-              {renderInsulationRow('poleToNeutralEmergencyClosed', 'Pole to Neutral (Emergency Closed)')}
+              {renderInsulationRow('poleToPoleNormalClosed', 'Pole to Pole (Normal Closed)', true)}
+              {renderInsulationRow('poleToPoleEmergencyClosed', 'Pole to Pole (Emergency Closed)', true)}
+              {renderInsulationRow('poleToNeutralNormalClosed', 'Pole to Neutral (Normal Closed)', true)}
+              {renderInsulationRow('poleToNeutralEmergencyClosed', 'Pole to Neutral (Emergency Closed)', true)}
               {renderInsulationRow('poleToGroundNormalClosed', 'Pole to Ground (Normal Closed)', true)}
               {renderInsulationRow('poleToGroundEmergencyClosed', 'Pole to Ground (Emergency Closed)', true)}
               {renderInsulationRow('lineToLoadNormalOpen', 'Line to Load (Normal Open)', true)}
@@ -1063,21 +1078,24 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-              {(['normal', 'emergency'] as const).map(state => (
-                <tr key={state}>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{state.charAt(0).toUpperCase() + state.slice(1)}</td>
-                  {(['p1', 'p2', 'p3', 'neutral'] as const).map(pole => (
-                    <td key={pole} className="px-6 py-4">
-                      <input type="text" value={formData.contactResistance[state][pole]} onChange={(e) => handleContactResistanceChange(state, pole, e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              {(['normal', 'emergency'] as const).map(state => {
+                const stateObj = formData.contactResistance[state] || { p1: '', p2: '', p3: '', neutral: '', units: 'µΩ' };
+                return (
+                  <tr key={state}>
+                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{state.charAt(0).toUpperCase() + state.slice(1)}</td>
+                    {(['p1', 'p2', 'p3', 'neutral'] as const).map(pole => (
+                      <td key={pole} className="px-6 py-4">
+                        <input type="text" value={stateObj[pole] || ''} onChange={(e) => handleContactResistanceChange(state, pole, e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      </td>
+                    ))}
+                    <td className="px-6 py-4">
+                      <select value={stateObj.units || 'µΩ'} onChange={(e) => handleContactResistanceChange(state, 'units', e.target.value)} disabled={!isEditing} className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                        {contactResistanceUnitsOptions.map(u => <option key={u} value={u}>{u}</option>)}
+                      </select>
                     </td>
-                  ))}
-                  <td className="px-6 py-4">
-                    <select value={formData.contactResistance[state].units} onChange={(e) => handleContactResistanceChange(state, 'units', e.target.value)} disabled={!isEditing} className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
-                      {contactResistanceUnitsOptions.map(u => <option key={u} value={u}>{u}</option>)}
-                    </select>
-                  </td>
-                </tr>
-              ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

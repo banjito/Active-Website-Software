@@ -1,0 +1,506 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K2HYSC08P1G3M1H801ZAMR8A",
+  "reportType": "MediumVoltageSwitchOilReport.tsx",
+  "createdAt": "2025-08-13T14:51:28.913Z",
+  "updatedAt": "2025-08-13T14:54:12.223Z",
+  "version": 150,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": ""
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "234"
+        },
+        {
+          "label": "Temperature (°F)",
+          "type": "number",
+          "value": "75"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": 50
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "234234"
+        },
+        {
+          "label": "System Voltage (kV)",
+          "type": "text",
+          "value": "sdfgsdfg"
+        },
+        {
+          "label": "Catalog No.",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "Rated Voltage (kV)",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "Rated Current (A)",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "Date of Mfg.",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "AIC Rating (kA)",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "Type",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "Impulse Level (BIL)",
+          "type": "text",
+          "value": "sdfg"
+        }
+      ]
+    },
+    {
+      "title": "VFI Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "dsfg"
+        },
+        {
+          "label": "Rated Voltage (kV)",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "Catalog No.",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "Rated Current (A)",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "Type",
+          "type": "text",
+          "value": "sdfg"
+        },
+        {
+          "label": "AIC Rating (kA)",
+          "type": "text",
+          "value": "sdfg"
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Measured & Temperature Corrected",
+          "type": "table",
+          "value": {
+            "testVoltage": "5000V",
+            "rows": [
+              {
+                "way": "S1",
+                "units": "MΩ",
+                "ag": "234"
+              },
+              {
+                "way": "S2",
+                "units": "MΩ",
+                "ag": "234",
+                "bg": "324344"
+              },
+              {
+                "way": "T1",
+                "units": "MΩ"
+              },
+              {
+                "way": "T2",
+                "units": "MΩ",
+                "cg": "234"
+              },
+              {
+                "way": "T3",
+                "units": "MΩ"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Contact Resistance μΩ",
+      "fields": [
+        {
+          "label": "Contact Resistance",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "way": "S1",
+                "units": "µΩ",
+                "aPhase": "234"
+              },
+              {
+                "way": "S2",
+                "units": "µΩ",
+                "bPhase": "234",
+                "bGround": "234",
+                "cPhase": "234"
+              },
+              {
+                "way": "T1",
+                "units": "µΩ",
+                "aPhase": "234",
+                "aGround": "234",
+                "bGround": "234"
+              },
+              {
+                "way": "T2",
+                "units": "µΩ"
+              },
+              {
+                "way": "T3",
+                "units": "µΩ"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Dielectric Withstand",
+      "fields": [
+        {
+          "label": "Dielectric Withstand",
+          "type": "table",
+          "value": {
+            "testVoltage": "30 KVAC",
+            "rows": [
+              {
+                "way": "S1-S2",
+                "units": "mA",
+                "ag": "234",
+                "bg": "4"
+              },
+              {
+                "way": "S1-T1",
+                "units": "mA",
+                "ag": "234",
+                "cg": "422"
+              },
+              {
+                "way": "S1-T2",
+                "units": "mA",
+                "ag": "234",
+                "bg": "234",
+                "cg": "4"
+              },
+              {
+                "way": "S1-T3",
+                "units": "mA",
+                "ag": "234",
+                "bg": "234"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Dielectric Withstand - VFI specific tests",
+      "fields": [
+        {
+          "label": "VFI Specific Tests",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "vfi": "",
+                "serialNumber": "234",
+                "asFound": "234",
+                "asLeft": "234",
+                "a": "234",
+                "b": "234234",
+                "c": "423",
+                "units": "mA"
+              },
+              {
+                "vfi": "234",
+                "serialNumber": "234",
+                "asFound": "234",
+                "asLeft": "234",
+                "a": "234",
+                "b": "234",
+                "c": "423",
+                "units": "mA"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Test Equipment Used",
+          "type": "table",
+          "value": {
+            "megohmmeter": {
+              "name": "s",
+              "serialNumber": "aff",
+              "ampId": "f"
+            },
+            "lowResistanceOhmmeter": {
+              "ampId": "f",
+              "serialNumber": "f",
+              "name": "f"
+            },
+            "primaryInjectionTestSet": {
+              "name": "ff",
+              "serialNumber": "fff",
+              "ampId": "f"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "sdfasg"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "sdf",
+    "reportType": "MediumVoltageSwitchOilReport",
+    "fields": {
+      "customer": "sdf",
+      "jobNumber": "sdf",
+      "address": "sdf",
+      "identifier": "sdf",
+      "technicians": "sdf",
+      "substation": "sdf",
+      "date": "",
+      "eqptLocation": "234",
+      "temperatureF": "75",
+      "humidity": 50,
+      "manufacturer": "234234",
+      "systemVoltage": "sdfgsdfg",
+      "catalogNumber": "sdfg",
+      "ratedVoltage": "sdfg",
+      "serialNumber": "sdfg",
+      "ratedCurrent": "sdfg",
+      "dateOfMfg": "sdfg",
+      "aicRating": "sdfg",
+      "type": "sdfg",
+      "impulseLevelBIL": "sdfg",
+      "vfiManufacturer": "dsfg",
+      "vfiRatedVoltage": "sdfg",
+      "vfiCatalogNo": "sdfg",
+      "vfiRatedCurrent": "sdfg",
+      "vfiType": "sdfg",
+      "vfiAicRating": "sdfg",
+      "mvSwitchIr": {
+        "testVoltage": "5000V",
+        "rows": [
+          {
+            "way": "S1",
+            "units": "MΩ",
+            "ag": "234"
+          },
+          {
+            "way": "S2",
+            "units": "MΩ",
+            "ag": "234",
+            "bg": "324344"
+          },
+          {
+            "way": "T1",
+            "units": "MΩ"
+          },
+          {
+            "way": "T2",
+            "units": "MΩ",
+            "cg": "234"
+          },
+          {
+            "way": "T3",
+            "units": "MΩ"
+          }
+        ]
+      },
+      "mvSwitchCr": {
+        "rows": [
+          {
+            "way": "S1",
+            "units": "µΩ",
+            "aPhase": "234"
+          },
+          {
+            "way": "S2",
+            "units": "µΩ",
+            "bPhase": "234",
+            "bGround": "234",
+            "cPhase": "234"
+          },
+          {
+            "way": "T1",
+            "units": "µΩ",
+            "aPhase": "234",
+            "aGround": "234",
+            "bGround": "234"
+          },
+          {
+            "way": "T2",
+            "units": "µΩ"
+          },
+          {
+            "way": "T3",
+            "units": "µΩ"
+          }
+        ]
+      },
+      "mvWithstand": {
+        "testVoltage": "30 KVAC",
+        "rows": [
+          {
+            "way": "S1-S2",
+            "units": "mA",
+            "ag": "234",
+            "bg": "4"
+          },
+          {
+            "way": "S1-T1",
+            "units": "mA",
+            "ag": "234",
+            "cg": "422"
+          },
+          {
+            "way": "S1-T2",
+            "units": "mA",
+            "ag": "234",
+            "bg": "234",
+            "cg": "4"
+          },
+          {
+            "way": "S1-T3",
+            "units": "mA",
+            "ag": "234",
+            "bg": "234"
+          }
+        ]
+      },
+      "dielectricOpen": {
+        "rows": [
+          {
+            "vfi": "",
+            "serialNumber": "234",
+            "asFound": "234",
+            "asLeft": "234",
+            "a": "234",
+            "b": "234234",
+            "c": "423",
+            "units": "mA"
+          },
+          {
+            "vfi": "234",
+            "serialNumber": "234",
+            "asFound": "234",
+            "asLeft": "234",
+            "a": "234",
+            "b": "234",
+            "c": "423",
+            "units": "mA"
+          }
+        ]
+      },
+      "testEquipment3": {
+        "megohmmeter": {
+          "name": "s",
+          "serialNumber": "aff",
+          "ampId": "f"
+        },
+        "lowResistanceOhmmeter": {
+          "ampId": "f",
+          "serialNumber": "f",
+          "name": "f"
+        },
+        "primaryInjectionTestSet": {
+          "name": "ff",
+          "serialNumber": "fff",
+          "ampId": "f"
+        }
+      },
+      "comments": "sdfasg"
+    }
+  }
+}

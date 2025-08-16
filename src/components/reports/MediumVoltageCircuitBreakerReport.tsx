@@ -322,7 +322,16 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           }
         }
         if (data) {
-          setFormData(prev => ({ ...prev, ...data.report_data, status: (data.report_data.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS' }));
+          console.log('🔍 MediumVoltageCircuitBreakerReport - Loading report data:');
+          console.log('  - Raw data:', data);
+          console.log('  - report_data:', data.report_data);
+          console.log('  - visualMechanicalInspection:', data.report_data?.visualMechanicalInspection);
+          
+          const newFormData = { ...initialFormData, ...data.report_data, status: (data.report_data.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS' };
+          console.log('  - New form data after merge:', newFormData);
+          console.log('  - visualMechanicalInspection in new form data:', newFormData.visualMechanicalInspection);
+          
+          setFormData(newFormData);
           setIsEditing(false);
         }
       } catch (error) {
@@ -541,8 +550,29 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
   }
 
   const renderSelect = (name: string, options: readonly string[], readOnlyOverride?: boolean, widthClass: string = "w-full") => {
-    const value = name.split('.').reduce((o, i) => o?.[i], formData);
+    let value;
+    
+    // Special handling for visualMechanicalInspection fields since they contain dots in the keys
+    if (name.startsWith('visualMechanicalInspection.')) {
+      const key = name.replace('visualMechanicalInspection.', '');
+      value = formData.visualMechanicalInspection[key];
+    } else {
+      // Regular nested object access for other fields
+      value = name.split('.').reduce((o, i) => o?.[i], formData);
+    }
+    
     const displayValue = (typeof value === 'string' || typeof value === 'number') ? value : '';
+    
+    // Debug logging for visual mechanical inspection
+    if (name.startsWith('visualMechanicalInspection.')) {
+      console.log(`🔍 renderSelect for ${name}:`);
+      console.log(`  - name: ${name}`);
+      console.log(`  - key: ${name.replace('visualMechanicalInspection.', '')}`);
+      console.log(`  - formData.visualMechanicalInspection:`, formData.visualMechanicalInspection);
+      console.log(`  - value: ${value}`);
+      console.log(`  - displayValue: ${displayValue}`);
+    }
+    
     return (
       <select
         name={name}

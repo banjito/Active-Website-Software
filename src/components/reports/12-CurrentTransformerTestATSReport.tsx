@@ -537,6 +537,15 @@ const CurrentTransformerTestATSReport: React.FC = () => {
       }
       if (data) {
         // Reconstruct formData from the new database structure
+        if (data.report_info) {
+          console.log('Raw data loaded from database:', data);
+          console.log('Report info:', data.report_info);
+          console.log('Nameplate data:', data.nameplate_data);
+          console.log('Visual inspection:', data.visual_mechanical_inspection);
+          console.log('Electrical tests:', data.electrical_tests);
+          console.log('Test equipment:', data.test_equipment);
+          console.log('Comments:', data.comments);
+        }
         const loadedFormData = {
           // Job information from report_info
           customerName: data.report_info?.customerName || '',

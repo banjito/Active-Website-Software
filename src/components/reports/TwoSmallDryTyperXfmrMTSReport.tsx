@@ -396,7 +396,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
     const tcf = formData.temperature.correctionFactor;
 
     // Calculate corrected values for each test
-    const tests = formData.insulationResistance.tests.map(test => {
+    const nextTests = formData.insulationResistance.tests.map(test => {
       const corrected0_5Min = test.measured0_5Min && tcf ? (parseFloat(test.measured0_5Min) * tcf).toFixed(2) : '';
       const corrected1Min = test.measured1Min && tcf ? (parseFloat(test.measured1Min) * tcf).toFixed(2) : '';
 
@@ -417,15 +417,20 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
       };
     });
 
+    // Prevent update loops: only set if values actually changed
+    const prevTests = formData.insulationResistance.tests;
+    const changed = JSON.stringify(nextTests) !== JSON.stringify(prevTests);
+    if (!changed) return;
+
     // Determine if all DA values are acceptable (> 1)
-    const daValues = tests.map(test => parseFloat(test.dielectricAbsorption));
+    const daValues = nextTests.map(test => parseFloat(test.dielectricAbsorption));
     const daAcceptable = daValues.every(v => !isNaN(v) && v > 1) ? 'Yes' : 'No';
 
     setFormData(prev => ({
       ...prev,
       insulationResistance: {
         ...prev.insulationResistance,
-        tests: tests,
+        tests: nextTests,
         dielectricAbsorptionAcceptable: daAcceptable
       }
     }));

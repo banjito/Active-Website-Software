@@ -122,7 +122,7 @@ const TanDeltaChartMTS: React.FC = () => {
       setLoading(true);
       const { data: reportData, error } = await supabase
         .schema('neta_ops')
-        .from('tandelta_reports') // Assuming the same table for now, or this might need to be tandelta_mts_reports
+        .from('tandelta_mts_reports')
         .select('*')
         .eq('id', reportId)
         .single();
@@ -186,7 +186,7 @@ const TanDeltaChartMTS: React.FC = () => {
         // Update existing report
         result = await supabase
           .schema('neta_ops')
-          .from('tandelta_reports') // Assuming the same table for now
+          .from('tandelta_mts_reports')
           .update(reportData)
           .eq('id', reportId)
           .select()
@@ -195,7 +195,7 @@ const TanDeltaChartMTS: React.FC = () => {
         // Create new report
         result = await supabase
           .schema('neta_ops')
-          .from('tandelta_reports') // Assuming the same table for now
+          .from('tandelta_mts_reports')
           .insert(reportData)
           .select()
           .single();
@@ -251,16 +251,17 @@ const TanDeltaChartMTS: React.FC = () => {
   const handleDataChange = (
     index: number,
     field: keyof TanDeltaDataPoint,
-    value: string
+    value: string | number
   ) => {
     const newData = [...data];
     if (field === 'voltageLabel') {
-      newData[index][field] = value;
+      newData[index][field] = String(value);
     } else if (field === 'phaseAStdDev' || field === 'phaseBStdDev' || field === 'phaseCStdDev') {
       // For standard deviation fields, use null for empty values
-      newData[index][field] = value === '' ? null : parseFloat(value) || 0;
+      const s = String(value);
+      newData[index][field] = s === '' ? null : parseFloat(s) || 0;
     } else {
-      newData[index][field] = parseFloat(value) || 0;
+      newData[index][field] = typeof value === 'number' ? value : (parseFloat(String(value)) || 0);
     }
     setData(newData);
   };
@@ -369,286 +370,207 @@ const TanDeltaChartMTS: React.FC = () => {
             {renderHeader()}
           </div>
           
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '20px' }} className="print:hidden">
-            <button 
-              style={{ 
-                backgroundColor: '#4a90e2', 
-                color: 'white', 
-                border: 'none', 
-                padding: '10px 15px', 
-                borderRadius: '4px', 
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-              onClick={toggleEditMode}
-            >
-              {editingData ? 'Lock Data' : 'Edit Data'}
-            </button>
-          </div>
-
-          {/* Add System Voltage Input */}
-          <div className="mb-6 p-4 bg-white dark:bg-dark-150 rounded-lg shadow">
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                System Voltage Line to Ground (kV RMS):
-              </label>
-              <input
-                type="number"
-                step="0.001"
-                value={systemVoltage}
-                onChange={(e) => setSystemVoltage(e.target.value)}
-                disabled={!isEditing}
-                className="mt-1 block w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
-              />
+          {/* Job Information */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">System Voltage Line to Ground (kV RMS):</label>
+                <input
+                  type="number"
+                  step="0.001"
+                  value={systemVoltage}
+                  onChange={(e) => setSystemVoltage(e.target.value)}
+                  disabled={!isEditing}
+                  className="mt-1 block w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cable Type:</label>
+                <input
+                  type="text"
+                  value={cableType}
+                  onChange={(e) => setCableType(e.target.value)}
+                  disabled={!isEditing}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Test Date:</label>
+                <input
+                  type="date"
+                  value={testDate}
+                  onChange={(e) => setTestDate(e.target.value)}
+                  disabled={!isEditing}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Data Table - Always visible */}
-          <div style={{ marginBottom: '30px', overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2' }}>Voltage Steps</th>
-                  <th style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2' }}>kV</th>
-                  <th colSpan={2} style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2', textAlign: 'center' }}>A Phase</th>
-                  <th colSpan={2} style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2', textAlign: 'center' }}>B Phase</th>
-                  <th colSpan={2} style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2', textAlign: 'center' }}>C Phase</th>
-                </tr>
-                <tr>
-                  <th style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2' }}></th>
-                  <th style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2' }}></th>
-                  <th style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2' }}>TD [E-3]</th>
-                  <th style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2' }}>Std. Dev</th>
-                  <th style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2' }}>TD [E-3]</th>
-                  <th style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2' }}>Std. Dev</th>
-                  <th style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2' }}>TD [E-3]</th>
-                  <th style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f2f2f2' }}>Std. Dev</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((row, index) => (
-                  <tr key={index}>
-                    <td style={{ border: '1px solid #ddd', padding: '10px' }}>
-                      {editingData ? (
-                        <input
-                          type="text"
-                          value={row.voltageLabel}
-                          onChange={(e) => handleDataChange(index, 'voltageLabel', e.target.value)}
-                          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                        />
-                      ) : (
-                        row.voltageLabel
-                      )}
-                    </td>
-                    <td style={{ border: '1px solid #ddd', padding: '10px' }}>
-                      {editingData ? (
-                        <input
-                          type="number"
-                          value={row.kV}
-                          onChange={(e) => handleDataChange(index, 'kV', e.target.value)}
-                          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                        />
-                      ) : (
-                        row.kV
-                      )}
-                    </td>
-                    <td style={{ border: '1px solid #ddd', padding: '10px' }}>
-                      {editingData ? (
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={row.phaseA}
-                          onChange={(e) => handleDataChange(index, 'phaseA', e.target.value)}
-                          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                        />
-                      ) : (
-                        row.phaseA
-                      )}
-                    </td>
-                    <td style={{ border: '1px solid #ddd', padding: '10px' }}>
-                      {editingData ? (
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={row.phaseAStdDev === null ? '' : row.phaseAStdDev}
-                          onChange={(e) => handleDataChange(index, 'phaseAStdDev', e.target.value)}
-                          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                        />
-                      ) : (
-                        row.phaseAStdDev === null ? '' : row.phaseAStdDev
-                      )}
-                    </td>
-                    <td style={{ border: '1px solid #ddd', padding: '10px' }}>
-                      {editingData ? (
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={row.phaseB}
-                          onChange={(e) => handleDataChange(index, 'phaseB', e.target.value)}
-                          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                        />
-                      ) : (
-                        row.phaseB
-                      )}
-                    </td>
-                    <td style={{ border: '1px solid #ddd', padding: '10px' }}>
-                      {editingData ? (
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={row.phaseBStdDev === null ? '' : row.phaseBStdDev}
-                          onChange={(e) => handleDataChange(index, 'phaseBStdDev', e.target.value)}
-                          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                        />
-                      ) : (
-                        row.phaseBStdDev === null ? '' : row.phaseBStdDev
-                      )}
-                    </td>
-                    <td style={{ border: '1px solid #ddd', padding: '10px' }}>
-                      {editingData ? (
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={row.phaseC}
-                          onChange={(e) => handleDataChange(index, 'phaseC', e.target.value)}
-                          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                        />
-                      ) : (
-                        row.phaseC
-                      )}
-                    </td>
-                    <td style={{ border: '1px solid #ddd', padding: '10px' }}>
-                      {editingData ? (
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={row.phaseCStdDev === null ? '' : row.phaseCStdDev}
-                          onChange={(e) => handleDataChange(index, 'phaseCStdDev', e.target.value)}
-                          style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                        />
-                      ) : (
-                        row.phaseCStdDev === null ? '' : row.phaseCStdDev
-                      )}
-                    </td>
+          {/* Test Equipment */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter Serial:</label>
+                <input
+                  type="text"
+                  value={equipment.megohmeterSerial}
+                  onChange={(e) => setEquipment(prev => ({ ...prev, megohmeterSerial: e.target.value }))}
+                  disabled={!isEditing}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter AMP ID:</label>
+                <input
+                  type="text"
+                  value={equipment.megohmmeterAmpId}
+                  onChange={(e) => setEquipment(prev => ({ ...prev, megohmmeterAmpId: e.target.value }))}
+                  disabled={!isEditing}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">VLF Hipot Serial:</label>
+                <input
+                  type="text"
+                  value={equipment.vlfHipotSerial}
+                  onChange={(e) => setEquipment(prev => ({ ...prev, vlfHipotSerial: e.target.value }))}
+                  disabled={!isEditing}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">VLF Hipot AMP ID:</label>
+                <input
+                  type="text"
+                  value={equipment.vlfHipotAmpId}
+                  onChange={(e) => setEquipment(prev => ({ ...prev, vlfHipotAmpId: e.target.value }))}
+                  disabled={!isEditing}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Tan Delta Test Data */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Tan Delta Test Data</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <thead>
+                  <tr>
+                    <th className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-200 text-left">Voltage Steps</th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-200 text-left">kV</th>
+                    <th colSpan={2} className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-200 text-center">A Phase</th>
+                    <th colSpan={2} className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-200 text-center">B Phase</th>
+                    <th colSpan={2} className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-200 text-center">C Phase</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                  <tr>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-200"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-200"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-200 text-center">Tan Delta</th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-200 text-center">Std Dev</th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-200 text-center">Tan Delta</th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-200 text-center">Std Dev</th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-200 text-center">Tan Delta</th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-200 text-center">Std Dev</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((point, index) => (
+                    <tr key={index}>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">{point.voltageLabel}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">{point.kV}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                        <input
+                          type="number"
+                          step="0.001"
+                          value={point.phaseA}
+                          onChange={(e) => handleDataChange(index, 'phaseA', parseFloat(e.target.value) || 0)}
+                          disabled={!isEditing}
+                          className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                        />
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                        <input
+                          type="number"
+                          step="0.001"
+                          value={point.phaseAStdDev === null ? '' : String(point.phaseAStdDev)}
+                          onChange={(e) => handleDataChange(index, 'phaseAStdDev', e.target.value)}
+                          disabled={!isEditing}
+                          className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                        />
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                        <input
+                          type="number"
+                          step="0.001"
+                          value={point.phaseB}
+                          onChange={(e) => handleDataChange(index, 'phaseB', parseFloat(e.target.value) || 0)}
+                          disabled={!isEditing}
+                          className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                        />
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                        <input
+                          type="number"
+                          step="0.001"
+                          value={point.phaseBStdDev === null ? '' : String(point.phaseBStdDev)}
+                          onChange={(e) => handleDataChange(index, 'phaseBStdDev', e.target.value)}
+                          disabled={!isEditing}
+                          className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                        />
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                        <input
+                          type="number"
+                          step="0.001"
+                          value={point.phaseC}
+                          onChange={(e) => handleDataChange(index, 'phaseC', parseFloat(e.target.value) || 0)}
+                          disabled={!isEditing}
+                          className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                        />
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                        <input
+                          type="number"
+                          step="0.001"
+                          value={point.phaseCStdDev === null ? '' : String(point.phaseCStdDev)}
+                          onChange={(e) => handleDataChange(index, 'phaseCStdDev', e.target.value)}
+                          disabled={!isEditing}
+                          className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          {/* Chart - Always visible below the table */}
-          <div style={{ height: '400px', border: '1px solid #ddd', padding: '15px', marginBottom: '30px', background: '#f9f9f9' }}>
-            <ResponsiveContainer>
-              <LineChart
-                data={data}
-                margin={{ top: 30, right: 40, left: 30, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="kV" 
-                  label={{ value: 'Test Voltage (kV)', position: 'bottom', offset: 10 }} 
-                  padding={{ left: 20, right: 20 }}
-                />
-                <YAxis
-                  label={{ value: 'Tan Delta (E-3)', angle: -90, position: 'insideLeft', offset: -10 }}
-                  domain={[0, 'auto']}
-                  padding={{ top: 20 }}
-                />
-                <Tooltip formatter={(value) => [`${value}`, 'Tan Delta (E-3)']} />
-                <Legend 
-                  layout="horizontal" 
-                  verticalAlign="top" 
-                  align="center"
-                  wrapperStyle={{ paddingBottom: '20px' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="phaseA"
-                  name="A Phase"
-                  stroke="#8884d8"
-                  activeDot={{ r: 8 }}
-                  strokeWidth={2}
-                  dot={{ strokeWidth: 2, r: 5 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="phaseB"
-                  name="B Phase"
-                  stroke="#82ca9d"
-                  activeDot={{ r: 8 }}
-                  strokeWidth={2}
-                  dot={{ strokeWidth: 2, r: 5 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="phaseC"
-                  name="C Phase"
-                  stroke="#ff7300"
-                  activeDot={{ r: 8 }}
-                  strokeWidth={2}
-                  dot={{ strokeWidth: 2, r: 5 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
-            <div className="grid grid-cols-1 gap-6">
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label>
-                  <input
-                    type="text"
-                    value={equipment.megohmeterSerial}
-                    onChange={(e) => handleEquipmentChange('megohmeterSerial', e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
-                  <input
-                    type="text"
-                    value={equipment.megohmmeterAmpId}
-                    onChange={(e) => handleEquipmentChange('megohmmeterAmpId', e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">VLF Hipot</label>
-                  <input
-                    type="text"
-                    value={equipment.vlfHipotSerial}
-                    onChange={(e) => handleEquipmentChange('vlfHipotSerial', e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
-                  <input
-                    type="text"
-                    value={equipment.vlfHipotAmpId}
-                    onChange={(e) => handleEquipmentChange('vlfHipotAmpId', e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
-                  />
-                </div>
-              </div>
+          {/* Tan Delta Chart */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Tan Delta Chart</h2>
+            <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="voltageLabel" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="phaseA" stroke="#8884d8" name="Phase A" />
+                  <Line type="monotone" dataKey="phaseB" stroke="#82ca9d" name="Phase B" />
+                  <Line type="monotone" dataKey="phaseC" stroke="#ffc658" name="Phase C" />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>

@@ -43,6 +43,14 @@ const getTCF = (celsius: number): number => {
   return tcfTable[key] !== undefined ? tcfTable[key] : 1;
 };
 
+function calculateTempCorrection(reading: string, tcf: number): string {
+  if (reading === undefined || reading === null || reading === '') return '';
+  const numeric = parseFloat(String(reading).replace(/[^0-9.\-]/g, ''));
+  if (Number.isNaN(numeric)) return '';
+  const corrected = numeric * (tcf || 1);
+  return String(Math.round((corrected + Number.EPSILON) * 100) / 100);
+}
+
 const visualInspectionOptions = [
   "Select One",
   "Satisfactory",
@@ -184,6 +192,46 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  const handleFahrenheitChange = (fahrenheit: number) => {
+    const celsius = Math.round((fahrenheit - 32) * 5 / 9);
+    const tcf = getTCF(celsius);
+    setFormData(prev => ({
+      ...prev,
+      temperature: { ...prev.temperature, fahrenheit, celsius, tcf },
+      electricalTests: {
+        ...prev.electricalTests,
+        primaryWinding: {
+          ...prev.electricalTests.primaryWinding,
+          tempCorrection20C: calculateTempCorrection(prev.electricalTests.primaryWinding.reading, tcf)
+        },
+        secondaryWinding: {
+          ...prev.electricalTests.secondaryWinding,
+          tempCorrection20C: calculateTempCorrection(prev.electricalTests.secondaryWinding.reading, tcf)
+        }
+      }
+    }));
+  };
+
+  const handleCelsiusChange = (celsius: number) => {
+    const fahrenheit = Math.round((celsius * 9 / 5) + 32);
+    const tcf = getTCF(celsius);
+    setFormData(prev => ({
+      ...prev,
+      temperature: { ...prev.temperature, fahrenheit, celsius, tcf },
+      electricalTests: {
+        ...prev.electricalTests,
+        primaryWinding: {
+          ...prev.electricalTests.primaryWinding,
+          tempCorrection20C: calculateTempCorrection(prev.electricalTests.primaryWinding.reading, tcf)
+        },
+        secondaryWinding: {
+          ...prev.electricalTests.secondaryWinding,
+          tempCorrection20C: calculateTempCorrection(prev.electricalTests.secondaryWinding.reading, tcf)
+        }
+      }
+    }));
+  };
 
   const loadJobInfo = async () => {
     if (!jobId) return;
@@ -371,52 +419,26 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   }, [jobId, reportId]);
 
   useEffect(() => {
-    setIsEditing(!reportId);
-  }, [reportId]);
-
-  const handleFahrenheitChange = (fahrenheit: number) => {
-    const celsius = ((fahrenheit - 32) * 5) / 9;
-    const roundedCelsius = Math.round(celsius);
-    const tcf = getTCF(roundedCelsius);
-    setFormData(prev => ({
-      ...prev,
-      temperature: { ...prev.temperature, fahrenheit, celsius: roundedCelsius, tcf }
-    }));
-  };
-
-  const handleCelsiusChange = (celsius: number) => {
-    const roundedCelsius = Math.round(celsius);
-    const fahrenheit = (roundedCelsius * 9) / 5 + 32;
-    const roundedFahrenheit = Math.round(fahrenheit);
-    const tcf = getTCF(roundedCelsius);
-    setFormData(prev => ({
-      ...prev,
-      temperature: { ...prev.temperature, celsius: roundedCelsius, fahrenheit: roundedFahrenheit, tcf }
-    }));
-  };
-
-  const calculateTempCorrection = (reading: string, tcf: number) => {
-    if (!reading || isNaN(parseFloat(reading))) return '';
-    return (parseFloat(reading) * tcf).toFixed(2);
-  };
-
-  useEffect(() => {
     if (!isEditing) return;
     setFormData(prev => ({
       ...prev,
       electricalTests: {
         ...prev.electricalTests,
         primaryWinding: {
-          ...prev.electricalTests.primaryWinding,
-          tempCorrection20C: calculateTempCorrection(prev.electricalTests.primaryWinding.reading, prev.temperature.tcf)
+          ...(prev.electricalTests?.primaryWinding || { testVoltage: '1000V', results: '', units: 'MΩ', reading: '', tempCorrection20C: '' }),
+          tempCorrection20C: calculateTempCorrection((prev.electricalTests?.primaryWinding?.reading || ''), prev.temperature.tcf)
         },
         secondaryWinding: {
-          ...prev.electricalTests.secondaryWinding,
-          tempCorrection20C: calculateTempCorrection(prev.electricalTests.secondaryWinding.reading, prev.temperature.tcf)
+          ...(prev.electricalTests?.secondaryWinding || { testVoltage: '1000V', results: '', units: 'MΩ', reading: '', tempCorrection20C: '' }),
+          tempCorrection20C: calculateTempCorrection((prev.electricalTests?.secondaryWinding?.reading || ''), prev.temperature.tcf)
         }
       }
     }));
-  }, [formData.electricalTests.primaryWinding.reading, formData.electricalTests.secondaryWinding.reading, formData.temperature.tcf, isEditing]);
+  }, [formData.electricalTests?.primaryWinding?.reading, formData.electricalTests?.secondaryWinding?.reading, formData.temperature.tcf, isEditing]);
+
+  // Safe getters for rendering values
+  const pw = formData.electricalTests?.primaryWinding || { testVoltage: '1000V', results: '', units: 'MΩ', reading: '', tempCorrection20C: '' };
+  const sw = formData.electricalTests?.secondaryWinding || { testVoltage: '1000V', results: '', units: 'MΩ', reading: '', tempCorrection20C: '' };
 
   const handleChange = (section: keyof FormData | null, field: string, value: any, index?: number, subField?: string) => {
     if (!isEditing) return;
@@ -619,7 +641,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     <div className="text-left mb-1">Test Voltage:</div>
                     <select 
-                      value={formData.electricalTests.primaryWinding.testVoltage} 
+                      value={pw.testVoltage} 
                       onChange={(e) => handleChange('electricalTests', 'primaryWinding', e.target.value, undefined, 'testVoltage')} 
                       disabled={!isEditing}
                       className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
@@ -637,7 +659,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   <td className="px-6 py-4">
                     <input 
                       type="text" 
-                      value={formData.electricalTests.primaryWinding.reading} 
+                      value={pw.reading} 
                       onChange={(e) => handleChange('electricalTests', 'primaryWinding', e.target.value, undefined, 'reading')} 
                       readOnly={!isEditing}
                       className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
@@ -645,7 +667,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <select 
-                      value={formData.electricalTests.primaryWinding.units} 
+                      value={pw.units} 
                       onChange={(e) => handleChange('electricalTests', 'primaryWinding', e.target.value, undefined, 'units')} 
                       disabled={!isEditing}
                       className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
@@ -659,13 +681,13 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   <td className="px-6 py-4">
                     <input 
                       type="text" 
-                      value={formData.electricalTests.primaryWinding.tempCorrection20C} 
+                      value={pw.tempCorrection20C} 
                       readOnly 
                       className="form-input w-full bg-gray-100 dark:bg-dark-200"
                     />
                   </td>
                   <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
-                    {formData.electricalTests.primaryWinding.units}
+                    {pw.units}
                   </td>
                 </tr>
               </tbody>
@@ -683,7 +705,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     <div className="text-left mb-1">Test Voltage:</div>
                     <select 
-                      value={formData.electricalTests.secondaryWinding.testVoltage} 
+                      value={sw.testVoltage} 
                       onChange={(e) => handleChange('electricalTests', 'secondaryWinding', e.target.value, undefined, 'testVoltage')} 
                       disabled={!isEditing}
                       className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
@@ -701,7 +723,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   <td className="px-6 py-4">
                     <input 
                       type="text" 
-                      value={formData.electricalTests.secondaryWinding.reading} 
+                      value={sw.reading} 
                       onChange={(e) => handleChange('electricalTests', 'secondaryWinding', e.target.value, undefined, 'reading')} 
                       readOnly={!isEditing}
                       className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
@@ -709,7 +731,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <select 
-                      value={formData.electricalTests.secondaryWinding.units} 
+                      value={sw.units} 
                       onChange={(e) => handleChange('electricalTests', 'secondaryWinding', e.target.value, undefined, 'units')} 
                       disabled={!isEditing}
                       className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
@@ -723,13 +745,13 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   <td className="px-6 py-4">
                     <input 
                       type="text" 
-                      value={formData.electricalTests.secondaryWinding.tempCorrection20C} 
+                      value={sw.tempCorrection20C} 
                       readOnly 
                       className="form-input w-full bg-gray-100 dark:bg-dark-200"
                     />
                   </td>
                   <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
-                    {formData.electricalTests.secondaryWinding.units}
+                    {sw.units}
                   </td>
                 </tr>
               </tbody>

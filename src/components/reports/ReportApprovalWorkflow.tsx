@@ -107,7 +107,7 @@ function ReportContentViewer({ report }: ReportContentViewerProps) {
            'two-small-dry-typer-xfmr-ats-report': () => import('@/components/reports/TwoSmallDryTyperXfmrATSReport'),
            'medium-voltage-vlf-mts-report': () => import('@/components/reports/MediumVoltageVLFMTSReport'),
            'electrical-tan-delta-test-mts-form': () => import('@/components/reports/TanDeltaTestMTSForm'),
-           'medium-voltage-cable-vlf-test-mts': () => import('@/components/reports/TanDeltaChartMTS'),
+           'medium-voltage-cable-vlf-test-mts': () => import('@/components/reports/MediumVoltageCableVLFTest'),
            'medium-voltage-circuit-breaker-mts-report': () => import('@/components/reports/MediumVoltageCircuitBreakerMTSReport'),
            '12-current-transformer-test-mts-report': () => import('@/components/reports/12-CurrentTransformerTestMTSReport'),
            '13-voltage-potential-transformer-test-mts-report': () => import('@/components/reports/13-VoltagePotentialTransformerTestMTSReport'),

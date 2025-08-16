@@ -1,0 +1,363 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K2G0P9NZ0J750B8C2ZAXR6EF",
+  "reportType": "LargeDryTypeXfmrMTSReport.tsx",
+  "createdAt": "2025-08-12T20:48:10.543Z",
+  "updatedAt": "2025-08-12T20:48:57.427Z",
+  "version": 154,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "sdv"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "sdv"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "sfzfasd"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "23123-12-31"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "123"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "dfs"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "sf"
+        },
+        {
+          "label": "Address",
+          "type": "textarea",
+          "value": "123"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Nameplate",
+          "type": "table",
+          "value": {
+            "manufacturer": "123",
+            "catalogNumber": "123",
+            "serialNumber": "123",
+            "kva": "123",
+            "kvaSecondary": "123",
+            "tempRise": "123",
+            "impedance": "123",
+            "primary": {
+              "volts": "480",
+              "voltsSecondary": "123",
+              "connection": "Delta",
+              "material": "Aluminum"
+            },
+            "secondary": {
+              "volts": "132",
+              "voltsSecondary": "123",
+              "connection": "Wye",
+              "material": "Aluminum"
+            },
+            "tapVoltages": [
+              "123",
+              "123",
+              "123123",
+              "2",
+              "123",
+              "213123-",
+              "312-"
+            ],
+            "tapPositionCurrent": "3",
+            "tapPositionSecondary": "123",
+            "tapSpecificVolts": "123",
+            "tapSpecificPercent": "123"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.2.1.2.A.1",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.2",
+                "description": "Inspect anchorage, alignment, and grounding.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.3*",
+                "description": "Prior to cleaning the unit, perform as-found tests.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.2.1.2.A.4",
+                "description": "Clean the unit.",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.2.1.2.A.5*",
+                "description": "Verify that control and alarm settings on temperature indicators are as specified.",
+                "result": "Not Applicable"
+              },
+              {
+                "id": "7.2.1.2.A.6",
+                "description": "Verify that cooling fans operate correctly."
+              },
+              {
+                "id": "7.2.1.2.A.7",
+                "description": "Inspect bolted electrical connections for high resistance using a low-resistance ohmmeter."
+              },
+              {
+                "id": "7.2.1.2.A.8",
+                "description": "Perform specific inspections and mechanical tests as recommended by the manufacturer."
+              },
+              {
+                "id": "7.2.1.2.A.9",
+                "description": "Perform as-left tests."
+              },
+              {
+                "id": "7.2.1.2.A.10",
+                "description": "Verify that as-left tap connections are as specified."
+              },
+              {
+                "id": "7.2.1.2.A.11",
+                "description": "Verify the presence of surge arresters."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance + Temp Corrected + DA/PI",
+          "type": "table",
+          "value": {
+            "primaryToGround": {
+              "testVoltage": "5000V",
+              "unit": "MΩ",
+              "r05": "123",
+              "r1": "1234",
+              "r10": "12345"
+            },
+            "secondaryToGround": {
+              "testVoltage": "1000V",
+              "unit": "MΩ",
+              "r05": "123",
+              "r1": "1234",
+              "r10": "12345"
+            },
+            "primaryToSecondary": {
+              "testVoltage": "5000V",
+              "unit": "MΩ",
+              "r05": "123",
+              "r1": "1234",
+              "r10": "12345"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "sda"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asd"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "asd"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "asd",
+    "reportType": "LargeDryTypeXfmrMTSReport",
+    "fields": {
+      "customer": "sdv",
+      "jobNumber": "sdv",
+      "technicians": "sfzfasd",
+      "date": "23123-12-31",
+      "identifier": "asd",
+      "temperatureF": "123",
+      "substation": "sdf",
+      "eqptLocation": "dfs",
+      "user": "sf",
+      "address": "123",
+      "dry-nameplate": {
+        "manufacturer": "123",
+        "catalogNumber": "123",
+        "serialNumber": "123",
+        "kva": "123",
+        "kvaSecondary": "123",
+        "tempRise": "123",
+        "impedance": "123",
+        "primary": {
+          "volts": "480",
+          "voltsSecondary": "123",
+          "connection": "Delta",
+          "material": "Aluminum"
+        },
+        "secondary": {
+          "volts": "132",
+          "voltsSecondary": "123",
+          "connection": "Wye",
+          "material": "Aluminum"
+        },
+        "tapVoltages": [
+          "123",
+          "123",
+          "123123",
+          "2",
+          "123",
+          "213123-",
+          "312-"
+        ],
+        "tapPositionCurrent": "3",
+        "tapPositionSecondary": "123",
+        "tapSpecificVolts": "123",
+        "tapSpecificPercent": "123"
+      },
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.2.1.2.A.1",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.2",
+            "description": "Inspect anchorage, alignment, and grounding.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.3*",
+            "description": "Prior to cleaning the unit, perform as-found tests.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.2.1.2.A.4",
+            "description": "Clean the unit.",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.2.1.2.A.5*",
+            "description": "Verify that control and alarm settings on temperature indicators are as specified.",
+            "result": "Not Applicable"
+          },
+          {
+            "id": "7.2.1.2.A.6",
+            "description": "Verify that cooling fans operate correctly."
+          },
+          {
+            "id": "7.2.1.2.A.7",
+            "description": "Inspect bolted electrical connections for high resistance using a low-resistance ohmmeter."
+          },
+          {
+            "id": "7.2.1.2.A.8",
+            "description": "Perform specific inspections and mechanical tests as recommended by the manufacturer."
+          },
+          {
+            "id": "7.2.1.2.A.9",
+            "description": "Perform as-left tests."
+          },
+          {
+            "id": "7.2.1.2.A.10",
+            "description": "Verify that as-left tap connections are as specified."
+          },
+          {
+            "id": "7.2.1.2.A.11",
+            "description": "Verify the presence of surge arresters."
+          }
+        ]
+      },
+      "dryTypeIr": {
+        "primaryToGround": {
+          "testVoltage": "5000V",
+          "unit": "MΩ",
+          "r05": "123",
+          "r1": "1234",
+          "r10": "12345"
+        },
+        "secondaryToGround": {
+          "testVoltage": "1000V",
+          "unit": "MΩ",
+          "r05": "123",
+          "r1": "1234",
+          "r10": "12345"
+        },
+        "primaryToSecondary": {
+          "testVoltage": "5000V",
+          "unit": "MΩ",
+          "r05": "123",
+          "r1": "1234",
+          "r10": "12345"
+        }
+      },
+      "megohmmeter": "sda",
+      "serialNumber": "asd",
+      "ampId": "asd",
+      "comments": "asd"
+    }
+  }
+}

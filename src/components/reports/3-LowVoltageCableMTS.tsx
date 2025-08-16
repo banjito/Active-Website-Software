@@ -1111,6 +1111,10 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
 
       const reportData = data[0];
       
+      console.log('Raw report data loaded:', reportData);
+      console.log('Report data.data:', reportData.data);
+      console.log('Report data.report_data:', reportData.report_data);
+      
       if (reportData && reportData.data) {
         console.log('Report data loaded successfully:', reportData.data);
         // Merge loaded data with existing data (like job info)
@@ -1130,8 +1134,24 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           setStatus(reportData.data.status);
         }
         setIsEditMode(false); // Existing report loaded, start in view mode
+      } else if (reportData && reportData.report_data) {
+        console.log('Report data found in report_data column:', reportData.report_data);
+        setFormData(prevData => ({
+          ...prevData,
+          ...reportData.report_data,
+          temperature: reportData.report_data.temperature ?? prevData.temperature,
+          humidity: reportData.report_data.humidity ?? prevData.humidity,
+          testSets: reportData.report_data.testSets ?? prevData.testSets,
+          testEquipment: reportData.report_data.testEquipment ?? prevData.testEquipment,
+        }));
+        
+        if (reportData.report_data.status) {
+          setStatus(reportData.report_data.status);
+        }
+        setIsEditMode(false);
       } else {
         console.warn('No data found for report ID:', reportId);
+        console.warn('Available columns:', Object.keys(reportData));
       }
     } catch (error) {
       console.error('Error in loadReport:', error);

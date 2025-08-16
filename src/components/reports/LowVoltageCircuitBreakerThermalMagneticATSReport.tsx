@@ -354,10 +354,145 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
     }
 
     try {
+      // First try loading from normalized JSONB store used by importers
+      const { data: generic, error: gErr } = await supabase
+        .schema('neta_ops')
+        .from('low_voltage_cable_test_3sets')
+        .select('*')
+        .eq('id', reportId)
+        .single();
+
+      if (generic && generic.data) {
+        const d: any = generic.data;
+        setFormData(prev => ({
+          ...prev,
+          // Job info
+          customer: d.reportInfo?.customer ?? prev.customer,
+          address: d.reportInfo?.address ?? prev.address,
+          user: d.reportInfo?.userName ?? prev.user,
+          date: d.reportInfo?.date ?? prev.date,
+          identifier: d.reportInfo?.identifier ?? prev.identifier,
+          jobNumber: d.reportInfo?.jobNumber ?? prev.jobNumber,
+          technicians: d.reportInfo?.technicians ?? prev.technicians,
+          temperature: {
+            ...prev.temperature,
+            fahrenheit: d.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
+            celsius: d.reportInfo?.temperature?.celsius ?? prev.temperature.celsius,
+            tcf: d.reportInfo?.temperature?.correctionFactor ?? prev.temperature.tcf,
+            humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
+          },
+          substation: d.reportInfo?.substation ?? prev.substation,
+          eqptLocation: d.reportInfo?.eqptLocation ?? prev.eqptLocation,
+
+          // Nameplate
+          manufacturer: d.nameplateData?.manufacturer ?? prev.manufacturer,
+          catalogNumber: d.nameplateData?.catalogNumber ?? prev.catalogNumber,
+          serialNumber: d.nameplateData?.serialNumber ?? prev.serialNumber,
+          type: d.nameplateData?.type ?? prev.type,
+          icRating: d.nameplateData?.icRating ?? prev.icRating,
+          frameSize: d.nameplateData?.frameSize ?? prev.frameSize,
+          ratingPlug: d.nameplateData?.ratingPlug ?? prev.ratingPlug,
+          curveNo: d.nameplateData?.curveNo ?? prev.curveNo,
+          operation: d.nameplateData?.operation ?? prev.operation,
+          mounting: d.nameplateData?.mounting ?? prev.mounting,
+          thermalMemory: d.nameplateData?.thermalMemory ?? prev.thermalMemory,
+
+          // Visual / Mechanical
+          visualInspectionItems: prev.visualInspectionItems.map(item => ({
+            ...item,
+            result: (d.visualInspection && d.visualInspection[item.id]) ? d.visualInspection[item.id] : item.result,
+          })),
+
+          // Device Settings (thermal/magnetic)
+          deviceSettings: d.deviceSettings ?? prev.deviceSettings,
+
+          // Contact Resistance
+          contactResistance: d.breakerContactResistance ? { ...prev.contactResistance, ...d.breakerContactResistance } : prev.contactResistance,
+
+          // Insulation Resistance (map contactorInsulation rows)
+          insulationResistance: (() => {
+            const ir = { ...prev.insulationResistance };
+            const src = d.contactorInsulation;
+            if (src) {
+              ir.testVoltage = src.testVoltage ?? ir.testVoltage;
+              const rows = Array.isArray(src.rows) ? src.rows : [];
+              const findRow = (name: string) => rows.find((r: any) => typeof r.id === 'string' && r.id.toLowerCase().includes(name));
+              const rowPTP = findRow('pole to pole');
+              const rowPTF = findRow('pole to frame');
+              const rowLTL = findRow('line to load');
+              if (rowPTP) {
+                ir.measured.poleToPole = {
+                  p1p2: rowPTP.p1 ?? ir.measured.poleToPole.p1p2,
+                  p2p3: rowPTP.p2 ?? ir.measured.poleToPole.p2p3,
+                  p3p1: rowPTP.p3 ?? ir.measured.poleToPole.p3p1,
+                };
+                ir.corrected.poleToPole = {
+                  p1p2: rowPTP.p1c ?? ir.corrected.poleToPole.p1p2,
+                  p2p3: rowPTP.p2c ?? ir.corrected.poleToPole.p2p3,
+                  p3p1: rowPTP.p3c ?? ir.corrected.poleToPole.p3p1,
+                };
+              }
+              if (rowPTF) {
+                ir.measured.poleToFrame = {
+                  p1: rowPTF.p1 ?? ir.measured.poleToFrame.p1,
+                  p2: rowPTF.p2 ?? ir.measured.poleToFrame.p2,
+                  p3: rowPTF.p3 ?? ir.measured.poleToFrame.p3,
+                };
+                ir.corrected.poleToFrame = {
+                  p1: rowPTF.p1c ?? ir.corrected.poleToFrame.p1,
+                  p2: rowPTF.p2c ?? ir.corrected.poleToFrame.p2,
+                  p3: rowPTF.p3c ?? ir.corrected.poleToFrame.p3,
+                };
+              }
+              if (rowLTL) {
+                ir.measured.lineToLoad = {
+                  p1: rowLTL.p1 ?? ir.measured.lineToLoad.p1,
+                  p2: rowLTL.p2 ?? ir.measured.lineToLoad.p2,
+                  p3: rowLTL.p3 ?? ir.measured.lineToLoad.p3,
+                };
+                ir.corrected.lineToLoad = {
+                  p1: rowLTL.p1c ?? ir.corrected.lineToLoad.p1,
+                  p2: rowLTL.p2c ?? ir.corrected.lineToLoad.p2,
+                  p3: rowLTL.p3c ?? ir.corrected.lineToLoad.p3,
+                };
+              }
+            }
+            return ir;
+          })(),
+
+          // Primary Injection (thermal/magnetic)
+          primaryInjection: d.primaryInjection ? {
+            ...prev.primaryInjection,
+            testedSettings: {
+              thermal: d.primaryInjection.testedSettings?.thermal ?? prev.primaryInjection.testedSettings.thermal,
+              magnetic: d.primaryInjection.testedSettings?.magnetic ?? prev.primaryInjection.testedSettings.magnetic,
+            },
+            results: {
+              thermal: { ...prev.primaryInjection.results.thermal, ...(d.primaryInjection.results?.thermal || {}) },
+              magnetic: { ...prev.primaryInjection.results.magnetic, ...(d.primaryInjection.results?.magnetic || {}) },
+            }
+          } : prev.primaryInjection,
+
+          // Test Equipment
+          testEquipment: {
+            megohmmeter: { ...prev.testEquipment.megohmmeter, ...(d.testEquipment?.megohmmeter || {}) },
+            lowResistanceOhmmeter: { ...prev.testEquipment.lowResistanceOhmmeter, ...(d.testEquipment?.lowResistanceOhmmeter || {}) },
+            primaryInjectionTestSet: { ...prev.testEquipment.primaryInjectionTestSet, ...(d.testEquipment?.primaryInjectionTestSet || {}) },
+          },
+
+          // Comments & Status
+          comments: d.reportInfo?.comments ?? prev.comments,
+          status: d.status ?? prev.status,
+        }));
+        setIsEditing(false);
+        setLoading(false);
+        return;
+      }
+
+      // Fallback: dedicated table (if exists)
       const { data, error } = await supabase
         .schema('neta_ops')
-        // *** IMPORTANT: Use the correct table name for Thermal-Magnetic reports ***
-        .from('low_voltage_circuit_breaker_thermal_magnetic_ats') // Placeholder name
+        .from('low_voltage_circuit_breaker_thermal_magnetic_ats')
         .select('*')
         .eq('id', reportId)
         .single();
@@ -372,10 +507,8 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
       }
 
       if (data) {
-        // Map loaded data to formData state
         setFormData(prev => ({
-          ...prev, // Start with defaults
-          // Job Info
+          ...prev,
           customer: data.report_info?.customer || prev.customer,
           address: data.report_info?.address || prev.address,
           user: data.report_info?.user || prev.user,
@@ -386,8 +519,6 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           temperature: data.report_info?.temperature || prev.temperature,
           substation: data.report_info?.substation || prev.substation,
           eqptLocation: data.report_info?.eqptLocation || prev.eqptLocation,
-
-          // Nameplate Data (Map Thermal-Magnetic specific fields)
           manufacturer: data.nameplate_data?.manufacturer || '',
           catalogNumber: data.nameplate_data?.catalogNumber || '',
           serialNumber: data.nameplate_data?.serialNumber || '',
@@ -399,29 +530,13 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           operation: data.nameplate_data?.operation || '',
           mounting: data.nameplate_data?.mounting || '',
           thermalMemory: data.nameplate_data?.thermalMemory || '',
-
-          // Visual and Mechanical Inspection
           visualInspectionItems: data.visual_mechanical?.items || prev.visualInspectionItems,
-
-          // Device Settings (Map Thermal-Magnetic specific fields)
           deviceSettings: data.device_settings || prev.deviceSettings,
-
-          // Contact Resistance
           contactResistance: data.contact_resistance || prev.contactResistance,
-
-          // Insulation Resistance
           insulationResistance: data.insulation_resistance || prev.insulationResistance,
-
-          // Primary Injection (Map Thermal-Magnetic specific fields)
           primaryInjection: data.primary_injection || prev.primaryInjection,
-
-          // Test Equipment Used
           testEquipment: data.test_equipment || prev.testEquipment,
-
-          // Comments
           comments: data.comments || '',
-
-          // Status
           status: data.report_info?.status || 'PASS',
         }));
         setIsEditing(false);

@@ -44,13 +44,13 @@ const getTCF = (celsius: number): number => {
 };
 
 const visualInspectionOptions = [
-  "Select",
-  "S", // Satisfactory
-  "U", // Unsatisfactory
-  "NA", // Not Applicable
-  "R", // Repaired
-  "C", // Cleaned
-  "SC" // See Comments
+  "Select One",
+  "Satisfactory",
+  "Unsatisfactory",
+  "Not Applicable",
+  "Repaired",
+  "Cleaned",
+  "See Comments"
 ];
 
 const insulationResistanceUnits = ["kΩ", "MΩ", "GΩ"];
@@ -266,45 +266,47 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
       const da = calculateRatio(correctedOneMin, correctedHalfMin);
       const pi = calculateRatio(correctedTenMin, correctedOneMin);
       
-      setFormData(prev => ({
-        ...prev,
-        electricalTestsInsulationResistance: {
-          ...prev.electricalTestsInsulationResistance,
-          [testKey]: {
-            ...prev.electricalTestsInsulationResistance[testKey],
-            correctedValues: { halfMin: correctedHalfMin, oneMin: correctedOneMin, tenMin: correctedTenMin },
-          },
-          dielectricAbsorption: {
-            ...prev.electricalTestsInsulationResistance.dielectricAbsorption,
-            [testKey.replace('ToGround', '').replace('ToSecondary','')]: da,
-          },
-          polarizationIndex: {
-            ...prev.electricalTestsInsulationResistance.polarizationIndex,
-            [testKey.replace('ToGround', '').replace('ToSecondary','')]: pi,
+      setFormData(prev => {
+        const labelKey = testKey === 'primaryToGround'
+          ? 'primary'
+          : testKey === 'secondaryToGround'
+          ? 'secondary'
+          : 'primaryToSecondary';
+
+        return ({
+          ...prev,
+          electricalTestsInsulationResistance: {
+            ...prev.electricalTestsInsulationResistance,
+            [testKey]: {
+              ...prev.electricalTestsInsulationResistance[testKey],
+              correctedValues: { halfMin: correctedHalfMin, oneMin: correctedOneMin, tenMin: correctedTenMin },
+            },
+            dielectricAbsorption: {
+              ...prev.electricalTestsInsulationResistance.dielectricAbsorption,
+              [labelKey]: da,
+            },
+            polarizationIndex: {
+              ...prev.electricalTestsInsulationResistance.polarizationIndex,
+              [labelKey]: pi,
+            }
           }
-        }
-      }));
+        });
+      });
     }
   }, [formData.electricalTestsInsulationResistance, formData.temperature.tcf, calculateCorrectedValue, calculateRatio]);
 
 
   useEffect(() => {
-    if (isEditing) {
-      updateCalculations('primaryToGround');
-    }
-  }, [formData.electricalTestsInsulationResistance.primaryToGround.values, formData.temperature.tcf, isEditing, updateCalculations]);
+    updateCalculations('primaryToGround');
+  }, [formData.electricalTestsInsulationResistance.primaryToGround.values, formData.temperature.tcf, updateCalculations]);
 
   useEffect(() => {
-    if (isEditing) {
-      updateCalculations('secondaryToGround');
-    }
-  }, [formData.electricalTestsInsulationResistance.secondaryToGround.values, formData.temperature.tcf, isEditing, updateCalculations]);
+    updateCalculations('secondaryToGround');
+  }, [formData.electricalTestsInsulationResistance.secondaryToGround.values, formData.temperature.tcf, updateCalculations]);
 
   useEffect(() => {
-    if (isEditing) {
-      updateCalculations('primaryToSecondary');
-    }
-  }, [formData.electricalTestsInsulationResistance.primaryToSecondary.values, formData.temperature.tcf, isEditing, updateCalculations]);
+    updateCalculations('primaryToSecondary');
+  }, [formData.electricalTestsInsulationResistance.primaryToSecondary.values, formData.temperature.tcf, updateCalculations]);
 
 
   const loadJobInfo = useCallback(async () => {
@@ -354,9 +356,11 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
     }
     setLoading(true);
     try {
+      console.log(`Loading report from low_voltage_cable_test_3sets with ID: ${reportId}`);
+      
       const { data, error } = await supabase
         .schema('neta_ops')
-        .from('liquid_xfmr_visual_mts_reports')
+        .from('low_voltage_cable_test_3sets')
         .select('*')
         .eq('id', reportId)
         .single();
@@ -368,8 +372,196 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
           throw error;
         }
       }
+      
       if (data) {
-        setFormData(prev => ({ ...prev, ...data.report_data }));
+        console.log('Loaded report data:', data);
+        
+        // Handle the data structure from the importer
+        if (data.data) {
+          const importedData = data.data;
+          console.log('🚀 Processing imported data:', importedData);
+          console.log('📋 reportInfo:', importedData.reportInfo);
+          console.log('🔍 visualInspection:', importedData.visualInspection);
+          console.log('⚡ testEquipment:', importedData.testEquipment);
+          console.log('💬 comments:', importedData.reportInfo?.comments);
+          
+          // Debug specific sections
+          console.log('🏭 nameplateData:', importedData.reportInfo?.nameplateData);
+          console.log('🌡️ temperature:', importedData.reportInfo?.temperature);
+          console.log('🔌 insulationResistance:', importedData.reportInfo?.insulationResistance);
+          
+          setFormData(prev => {
+            const updatedData = {
+              ...prev, // Preserve all existing properties
+              // Job Information
+              customer: importedData.reportInfo?.customer ?? prev.customer,
+              address: importedData.reportInfo?.address ?? prev.address,
+              user: importedData.reportInfo?.userName ?? prev.user,
+              date: importedData.reportInfo?.date ?? prev.date,
+              jobNumber: importedData.reportInfo?.jobNumber ?? prev.jobNumber,
+              technicians: importedData.reportInfo?.technicians ?? prev.technicians,
+              
+              // Temperature and Location
+              temperature: {
+                ...prev.temperature,
+                fahrenheit: importedData.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
+                celsius: importedData.reportInfo?.temperature?.celsius ?? prev.temperature.celsius,
+                tcf: (() => {
+                  const c = importedData.reportInfo?.temperature?.celsius;
+                  return typeof c === 'number' ? getTCF(c) : (importedData.reportInfo?.temperature?.correctionFactor ?? prev.temperature.tcf);
+                })()
+              },
+              substation: importedData.reportInfo?.substation ?? prev.substation,
+              eqptLocation: importedData.reportInfo?.eqptLocation ?? prev.eqptLocation,
+              identifier: importedData.reportInfo?.identifier ?? prev.identifier,
+              
+              // Nameplate Data
+              nameplate: {
+                ...prev.nameplate,
+                manufacturer: importedData.reportInfo?.nameplateData?.manufacturer ?? prev.nameplate.manufacturer,
+                catalogNumber: importedData.reportInfo?.nameplateData?.catalogNumber ?? prev.nameplate.catalogNumber,
+                serialNumber: importedData.reportInfo?.nameplateData?.serialNumber ?? prev.nameplate.serialNumber,
+                kVA: importedData.reportInfo?.nameplateData?.kva ?? prev.nameplate.kVA,
+                tempRise: importedData.reportInfo?.nameplateData?.tempRise ?? prev.nameplate.tempRise,
+                impedance: importedData.reportInfo?.nameplateData?.impedance ?? prev.nameplate.impedance,
+                fluidType: importedData.reportInfo?.nameplateData?.fluidType ?? prev.nameplate.fluidType,
+                fluidVolume: importedData.reportInfo?.nameplateData?.fluidVolume ?? prev.nameplate.fluidVolume,
+                // Voltages
+                primaryVolts1: importedData.reportInfo?.nameplateData?.primary?.volts ?? prev.nameplate.primaryVolts1,
+                primaryVolts2: importedData.reportInfo?.nameplateData?.primary?.voltsSecondary ?? prev.nameplate.primaryVolts2,
+                secondaryVolts1: importedData.reportInfo?.nameplateData?.secondary?.volts ?? prev.nameplate.secondaryVolts1,
+                secondaryVolts2: importedData.reportInfo?.nameplateData?.secondary?.voltsSecondary ?? prev.nameplate.secondaryVolts2,
+                // Connections (as radio booleans)
+                primaryConnectionDelta: importedData.reportInfo?.nameplateData?.primary?.connection === 'Delta',
+                primaryConnectionWye: importedData.reportInfo?.nameplateData?.primary?.connection === 'Wye',
+                primaryConnectionSinglePhase: importedData.reportInfo?.nameplateData?.primary?.connection === 'Single Phase' || importedData.reportInfo?.nameplateData?.primary?.connection === 'SinglePhase',
+                secondaryConnectionDelta: importedData.reportInfo?.nameplateData?.secondary?.connection === 'Delta',
+                secondaryConnectionWye: importedData.reportInfo?.nameplateData?.secondary?.connection === 'Wye',
+                secondaryConnectionSinglePhase: importedData.reportInfo?.nameplateData?.secondary?.connection === 'Single Phase' || importedData.reportInfo?.nameplateData?.secondary?.connection === 'SinglePhase',
+                // Winding materials (as radio booleans)
+                primaryWindingMaterialAluminum: importedData.reportInfo?.nameplateData?.primary?.material === 'Aluminum',
+                primaryWindingMaterialCopper: importedData.reportInfo?.nameplateData?.primary?.material === 'Copper',
+                secondaryWindingMaterialAluminum: importedData.reportInfo?.nameplateData?.secondary?.material === 'Aluminum',
+                secondaryWindingMaterialCopper: importedData.reportInfo?.nameplateData?.secondary?.material === 'Copper',
+                // Tap configuration
+                tapVoltages: Array.isArray(importedData.reportInfo?.nameplateData?.tapConfiguration?.voltages)
+                  ? importedData.reportInfo.nameplateData.tapConfiguration.voltages
+                  : prev.nameplate.tapVoltages,
+                tapPositions: Array.isArray(importedData.reportInfo?.nameplateData?.tapConfiguration?.positions)
+                  ? importedData.reportInfo.nameplateData.tapConfiguration.positions.map((p: any) => String(p))
+                  : prev.nameplate.tapPositions,
+                tapPositionLeft1: importedData.reportInfo?.nameplateData?.tapConfiguration?.currentPosition ?? prev.nameplate.tapPositionLeft1,
+                tapPositionLeft2: importedData.reportInfo?.nameplateData?.tapConfiguration?.currentPositionSecondary ?? prev.nameplate.tapPositionLeft2,
+                tapVoltsSpecific: importedData.reportInfo?.nameplateData?.tapConfiguration?.tapVoltsSpecific ?? prev.nameplate.tapVoltsSpecific,
+                tapPercentSpecific: importedData.reportInfo?.nameplateData?.tapConfiguration?.tapPercentSpecific ?? prev.nameplate.tapPercentSpecific
+              },
+              
+              // Indicator Gauge Values
+              indicatorGaugeValues: {
+                ...prev.indicatorGaugeValues,
+                oilLevel: importedData.reportInfo?.oilLevel ?? prev.indicatorGaugeValues.oilLevel,
+                tankPressure: importedData.reportInfo?.tankPressure ?? prev.indicatorGaugeValues.tankPressure,
+                oilTemperature: importedData.reportInfo?.oilTemperature ?? prev.indicatorGaugeValues.oilTemperature,
+                windingTemperature: importedData.reportInfo?.windingTemperature ?? prev.indicatorGaugeValues.windingTemperature,
+                oilTempRange: importedData.reportInfo?.oilTempRange ?? prev.indicatorGaugeValues.oilTempRange,
+                windingTempRange: importedData.reportInfo?.windingTempRange ?? prev.indicatorGaugeValues.windingTempRange
+              },
+              
+              // Visual Inspection - map the visualInspection data to the visualMechanicalInspection array
+              visualMechanicalInspection: prev.visualMechanicalInspection.map(item => {
+                const raw = importedData.visualInspection?.[item.netaSection];
+                const normalized = typeof raw === 'string' ? raw.trim() : '';
+                const lower = normalized.toLowerCase();
+                const mapped = (
+                  lower === 's' || lower === 'satisfactory' ? 'Satisfactory'
+                  : lower === 'u' || lower === 'unsatisfactory' ? 'Unsatisfactory'
+                  : lower === 'na' || lower === 'not applicable' ? 'Not Applicable'
+                  : lower === 'r' || lower === 'repaired' ? 'Repaired'
+                  : lower === 'c' || lower === 'cleaned' ? 'Cleaned'
+                  : lower === 'sc' || lower === 'see comments' ? 'See Comments'
+                  : item.result
+                );
+                console.log(`🔍 Mapping ${item.netaSection}: ${normalized} -> ${mapped}`);
+                return {
+                  ...item,
+                  result: mapped
+                };
+              }),
+              
+              // Test Equipment
+              testEquipmentUsed: {
+                ...prev.testEquipmentUsed,
+                megohmmeter: importedData.testEquipment?.megohmmeter?.name ?? prev.testEquipmentUsed.megohmmeter,
+                serialNumber: importedData.testEquipment?.megohmmeter?.serialNumber ?? prev.testEquipmentUsed.serialNumber,
+                ampId: importedData.testEquipment?.megohmmeter?.ampId ?? prev.testEquipmentUsed.ampId
+              },
+              
+              // Comments
+              visualMechanicalInspectionComments: importedData.reportInfo?.comments ?? prev.visualMechanicalInspectionComments,
+              electricalTestComments: importedData.reportInfo?.comments ?? prev.electricalTestComments,
+              
+              // Electrical Tests - map the insulationResistance data to the correct form structure
+              electricalTestsInsulationResistance: {
+                ...prev.electricalTestsInsulationResistance,
+                primaryToGround: {
+                  ...prev.electricalTestsInsulationResistance.primaryToGround,
+                  testVoltage: importedData.reportInfo?.insulationResistance?.primaryToGround?.testVoltage ?? prev.electricalTestsInsulationResistance.primaryToGround.testVoltage,
+                  units: importedData.reportInfo?.insulationResistance?.primaryToGround?.unit ?? prev.electricalTestsInsulationResistance.primaryToGround.units,
+                  values: {
+                    halfMin: importedData.reportInfo?.insulationResistance?.primaryToGround?.readings?.halfMinute ?? prev.electricalTestsInsulationResistance.primaryToGround.values.halfMin,
+                    oneMin: importedData.reportInfo?.insulationResistance?.primaryToGround?.readings?.oneMinute ?? prev.electricalTestsInsulationResistance.primaryToGround.values.oneMin,
+                    tenMin: importedData.reportInfo?.insulationResistance?.primaryToGround?.readings?.tenMinute ?? prev.electricalTestsInsulationResistance.primaryToGround.values.tenMin
+                  }
+                },
+                secondaryToGround: {
+                  ...prev.electricalTestsInsulationResistance.secondaryToGround,
+                  testVoltage: importedData.reportInfo?.insulationResistance?.secondaryToGround?.testVoltage ?? prev.electricalTestsInsulationResistance.secondaryToGround.testVoltage,
+                  units: importedData.reportInfo?.insulationResistance?.secondaryToGround?.unit ?? prev.electricalTestsInsulationResistance.secondaryToGround.units,
+                  values: {
+                    halfMin: importedData.reportInfo?.insulationResistance?.secondaryToGround?.readings?.halfMinute ?? prev.electricalTestsInsulationResistance.secondaryToGround.values.halfMin,
+                    oneMin: importedData.reportInfo?.insulationResistance?.secondaryToGround?.readings?.oneMinute ?? prev.electricalTestsInsulationResistance.secondaryToGround.values.oneMin,
+                    tenMin: importedData.reportInfo?.insulationResistance?.secondaryToGround?.readings?.tenMinute ?? prev.electricalTestsInsulationResistance.secondaryToGround.values.tenMin
+                  }
+                },
+                primaryToSecondary: (() => {
+                  const pts = importedData.reportInfo?.insulationResistance?.primaryToSecondary;
+                  return {
+                    ...prev.electricalTestsInsulationResistance.primaryToSecondary,
+                    testVoltage: pts?.testVoltage ?? prev.electricalTestsInsulationResistance.primaryToSecondary.testVoltage,
+                    units: pts?.unit ?? prev.electricalTestsInsulationResistance.primaryToSecondary.units,
+                    values: {
+                      halfMin: pts?.readings?.halfMinute ?? pts?.r05 ?? prev.electricalTestsInsulationResistance.primaryToSecondary.values.halfMin,
+                      oneMin: pts?.readings?.oneMinute ?? pts?.r1 ?? prev.electricalTestsInsulationResistance.primaryToSecondary.values.oneMin,
+                      tenMin: pts?.readings?.tenMinute ?? pts?.r10 ?? prev.electricalTestsInsulationResistance.primaryToSecondary.values.tenMin
+                    }
+                  };
+                })(),
+                dielectricAbsorption: {
+                  primary: importedData.reportInfo?.insulationResistance?.dielectricAbsorption?.primary ?? prev.electricalTestsInsulationResistance.dielectricAbsorption.primary,
+                  secondary: importedData.reportInfo?.insulationResistance?.dielectricAbsorption?.secondary ?? prev.electricalTestsInsulationResistance.dielectricAbsorption.secondary,
+                  primaryToSecondary: importedData.reportInfo?.insulationResistance?.dielectricAbsorption?.primaryToSecondary ?? importedData.reportInfo?.insulationResistance?.dielectricAbsorption?.priToSec ?? prev.electricalTestsInsulationResistance.dielectricAbsorption.primaryToSecondary
+                },
+                polarizationIndex: {
+                  primary: importedData.reportInfo?.insulationResistance?.polarizationIndex?.primary ?? prev.electricalTestsInsulationResistance.polarizationIndex.primary,
+                  secondary: importedData.reportInfo?.insulationResistance?.polarizationIndex?.secondary ?? prev.electricalTestsInsulationResistance.polarizationIndex.secondary,
+                  primaryToSecondary: importedData.reportInfo?.insulationResistance?.polarizationIndex?.primaryToSecondary ?? importedData.reportInfo?.insulationResistance?.polarizationIndex?.priToSec ?? prev.electricalTestsInsulationResistance.polarizationIndex.primaryToSecondary
+                },
+                acceptableDAPI: importedData.reportInfo?.insulationResistance?.acceptable ?? prev.electricalTestsInsulationResistance.acceptableDAPI
+              }
+            };
+            
+            console.log('✅ Final updated form data:', updatedData);
+            console.log('🏭 Nameplate data mapped:', updatedData.nameplate);
+            console.log('🌡️ Indicator gauge values mapped:', updatedData.indicatorGaugeValues);
+            console.log('🔍 Test equipment mapped:', updatedData.testEquipmentUsed);
+            console.log('💬 Comments mapped:', updatedData.visualMechanicalInspectionComments);
+            console.log('⚡ Electrical tests mapped:', updatedData.electricalTestsInsulationResistance);
+            console.log('🔍 Visual inspection mapped:', updatedData.visualMechanicalInspection);
+            
+            return updatedData;
+          });
+        }
+        
         setIsEditing(false);
       }
     } catch (error) {
@@ -410,13 +602,83 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
     initializeReport();
   }, [jobId, reportId, loadJobInfo, loadReport]);
 
+  // Debug effect to monitor formData changes
+  useEffect(() => {
+    console.log('🔄 FormData changed - Visual inspection:', formData.visualMechanicalInspection);
+    console.log('🔄 FormData changed - Customer:', formData.customer);
+    console.log('🔄 FormData changed - Job number:', formData.jobNumber);
+  }, [formData]);
+
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
     
+    // Prepare the data in the format expected by the importer
     const reportPayload = {
       job_id: jobId,
       user_id: user.id,
-      report_data: formData,
+      data: {
+        reportInfo: {
+          customer: formData.customer,
+          address: formData.address,
+          userName: formData.user,
+          date: formData.date,
+          identifier: formData.identifier,
+          jobNumber: formData.jobNumber,
+          technicians: formData.technicians,
+          temperature: {
+            ambient: formData.temperature.fahrenheit,
+            fahrenheit: formData.temperature.fahrenheit,
+            celsius: formData.temperature.celsius,
+            correctionFactor: formData.temperature.tcf
+          },
+          substation: formData.substation,
+          eqptLocation: formData.eqptLocation,
+          nameplateData: {
+            manufacturer: formData.nameplate.manufacturer,
+            kva: formData.nameplate.kVA,
+            kvaSecondary: (formData as any).nameplate.kVASecondary || '',
+            catalogNumber: formData.nameplate.catalogNumber,
+            serialNumber: formData.nameplate.serialNumber,
+            tempRise: formData.nameplate.tempRise,
+            impedance: formData.nameplate.impedance,
+            fluidType: formData.nameplate.fluidType,
+            fluidVolume: formData.nameplate.fluidVolume,
+            primary: {
+              volts: formData.nameplate.primaryVolts1,
+              voltsSecondary: formData.nameplate.primaryVolts2,
+              connection: formData.nameplate.primaryConnectionDelta ? 'Delta' : (formData.nameplate.primaryConnectionWye ? 'Wye' : ''),
+              material: formData.nameplate.primaryWindingMaterialAluminum ? 'Aluminum' : (formData.nameplate.primaryWindingMaterialCopper ? 'Copper' : '')
+            },
+            secondary: {
+              volts: formData.nameplate.secondaryVolts1,
+              voltsSecondary: formData.nameplate.secondaryVolts2,
+              connection: formData.nameplate.secondaryConnectionDelta ? 'Delta' : (formData.nameplate.secondaryConnectionWye ? 'Wye' : ''),
+              material: formData.nameplate.secondaryWindingMaterialAluminum ? 'Aluminum' : (formData.nameplate.secondaryWindingMaterialCopper ? 'Copper' : '')
+            }
+          },
+          oilLevel: formData.indicatorGaugeValues.oilLevel,
+          tankPressure: formData.indicatorGaugeValues.tankPressure,
+          oilTemperature: formData.indicatorGaugeValues.oilTemperature,
+          windingTemperature: formData.indicatorGaugeValues.windingTemperature,
+          oilTempRange: formData.indicatorGaugeValues.oilTempRange,
+          windingTempRange: formData.indicatorGaugeValues.windingTempRange,
+          comments: formData.visualMechanicalInspectionComments
+        },
+        visualInspection: formData.visualMechanicalInspection.reduce((acc, item) => {
+          acc[item.netaSection] = item.result;
+          return acc;
+        }, {} as Record<string, string>),
+        testEquipment: {
+          megohmmeter: {
+            name: formData.testEquipmentUsed.megohmmeter,
+            serialNumber: formData.testEquipmentUsed.serialNumber,
+            ampId: formData.testEquipmentUsed.ampId
+          }
+        },
+        status: formData.status,
+        isLiquidType: true,
+        reportType: 'liquid-xfmr-visual-mts-report'
+      }
     };
 
     try {
@@ -424,7 +686,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
       if (reportId) {
         result = await supabase
           .schema('neta_ops')
-          .from('liquid_xfmr_visual_mts_reports')
+          .from('low_voltage_cable_test_3sets')
           .update(reportPayload)
           .eq('id', reportId)
           .select()
@@ -432,7 +694,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
       } else {
         result = await supabase
           .schema('neta_ops')
-          .from('liquid_xfmr_visual_mts_reports')
+          .from('low_voltage_cable_test_3sets')
           .insert(reportPayload)
           .select()
           .single();
@@ -649,11 +911,11 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2">
-                <div><label className="form-label">Customer:</label><input type="text" value={formData.customer} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
-                <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
-                <div><label className="form-label">Technicians:</label><input type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-                <div><label className="form-label">Date:</label><input type="date" value={formData.date} onChange={(e) => handleChange('date', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-                <div><label className="form-label">Identifier:</label><input type="text" value={formData.identifier} onChange={(e) => handleChange('identifier', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+                <div><label className="form-label">Customer:</label><input type="text" value={formData.customer} readOnly className="form-input bg-gray-200 dark:bg-dark-200 w-full text-gray-900 dark:text-white" /></div>
+                <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-200 dark:bg-dark-200 w-full text-gray-900 dark:text-white" /></div>
+                <div><label className="form-label">Technicians:</label><input type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-200 dark:bg-dark-200 text-gray-900 dark:text-white' : ''}`} /></div>
+                <div><label className="form-label">Date:</label><input type="date" value={formData.date} onChange={(e) => handleChange('date', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-200 dark:bg-dark-200 text-gray-900 dark:text-white' : ''}`} /></div>
+                <div><label className="form-label">Identifier:</label><input type="text" value={formData.identifier} onChange={(e) => handleChange('identifier', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-200 dark:bg-dark-200 text-gray-900 dark:text-white' : ''}`} /></div>
                 <div className="flex items-center space-x-1">
                   <div>
                     <label className="form-label">Temp:</label>
@@ -881,7 +1143,11 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                             value={item.result} 
                             onChange={e => handleVisualInspectionChange(index, e.target.value)} 
                             disabled={!isEditing} 
-                            className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}
+                            className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${
+                              !isEditing 
+                                ? 'bg-gray-200 dark:bg-dark-200 text-gray-900 dark:text-white cursor-not-allowed' 
+                                : 'bg-white dark:bg-dark-100'
+                            }`}
                           >
                             {visualInspectionOptions.map(opt => <option key={opt} value={opt} className="dark:bg-dark-100 dark:text-white">{opt}</option>)}
                           </select>
@@ -939,9 +1205,9 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                                                       {testVoltageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                                                   </select>
                                               </td>
-                                              <td className="td-cell-small"><input type="text" value={testData.values.halfMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.halfMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
-                                              <td className="td-cell-small"><input type="text" value={testData.values.oneMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.oneMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
-                                              <td className="td-cell-small"><input type="text" value={testData.values.tenMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.tenMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
+                                              <td className="td-cell-small"><input type="text" value={testData.values.halfMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.halfMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-200 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
+                                              <td className="td-cell-small"><input type="text" value={testData.values.oneMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.oneMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-200 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
+                                              <td className="td-cell-small"><input type="text" value={testData.values.tenMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.tenMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-200 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
                                               <td className="td-cell-small border-r-0">
                                                   <select value={testData.units} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.units`, e.target.value)} disabled={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}>
                                                       {insulationResistanceUnits.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -1234,4 +1500,4 @@ if (typeof document !== 'undefined') {
   const tableStyle = document.createElement('style');
   tableStyle.textContent = tableStyles;
   document.head.appendChild(tableStyle);
-} 
+}

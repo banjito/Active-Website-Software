@@ -421,21 +421,88 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
   }, [formData.temperature.celsius, isEditing, reportId]);
 
   useEffect(() => {
-    const tcf = formData.temperature.tcf;
-    if (typeof tcf !== 'number' || isNaN(tcf)) return;
+    const cf = (formData.temperature as any).correctionFactor ?? formData.temperature.tcf;
+    const correction = typeof cf === 'number' && isFinite(cf) ? cf : undefined;
+    if (correction === undefined) return;
+
+    const nextTests = formData.insulationResistance.tests.map(test => ({
+      ...test,
+      corrected0_5Min: test.measured0_5Min && correction ? (parseFloat(test.measured0_5Min) * correction).toFixed(2) : '',
+      corrected1Min: test.measured1Min && correction ? (parseFloat(test.measured1Min) * correction).toFixed(2) : '',
+    }));
+
+    const changed = JSON.stringify(nextTests) !== JSON.stringify(formData.insulationResistance.tests);
+    if (!changed) return;
 
     setFormData(prev => ({
       ...prev,
       insulationResistance: {
         ...prev.insulationResistance,
-        tests: prev.insulationResistance.tests.map(test => ({
-          ...test,
-          corrected0_5Min: test.measured0_5Min && tcf ? (parseFloat(test.measured0_5Min) * tcf).toFixed(2) : '',
-          corrected1Min: test.measured1Min && tcf ? (parseFloat(test.measured1Min) * tcf).toFixed(2) : '',
-        }))
+        tests: nextTests
       }
     }));
-  }, [formData.temperature.tcf, formData.insulationResistance.tests]);
+  }, [formData.temperature.tcf, (formData.temperature as any).correctionFactor, formData.insulationResistance.tests]);
+
+  // Sync tcf from correctionFactor if importer only provided correctionFactor
+  useEffect(() => {
+    const cf = (formData.temperature as any).correctionFactor;
+    if (typeof cf === 'number' && isFinite(cf) && cf !== formData.temperature.tcf) {
+      setFormData(prev => ({
+        ...prev,
+        temperature: { ...prev.temperature, tcf: cf }
+      }));
+    }
+  }, [(formData.temperature as any).correctionFactor, formData.temperature.tcf]);
+
+  // Compute Dielectric Absorption Ratio (1 min / 0.5 min) like MTS and update Calculated As section
+  useEffect(() => {
+    const tests = formData.insulationResistance.tests || [];
+    const getRatio = (idx: number): string => {
+      const row = tests[idx];
+      if (!row) return '';
+      const a = parseFloat(row.measured1Min);
+      const b = parseFloat(row.measured0_5Min);
+      if (!isFinite(a) || !isFinite(b) || b === 0) return '';
+      const ratio = a / b;
+      return isFinite(ratio) ? ratio.toFixed(2) : '';
+    };
+
+    const priToGnd = getRatio(0);
+    const secToGnd = getRatio(1);
+    const priToSec = getRatio(2);
+
+    const minDAR = parseFloat(formData.insulationResistance.dielectricAbsorptionRatio.minimumDAR) || 1.0;
+    const pass = [priToGnd, secToGnd, priToSec]
+      .map(v => parseFloat(v))
+      .every(v => isFinite(v) && v >= minDAR) ? 'PASS' : 'FAIL';
+
+    const current = formData.insulationResistance.dielectricAbsorptionRatio;
+    if (
+      current.priToGnd === priToGnd &&
+      current.secToGnd === secToGnd &&
+      current.priToSec === priToSec &&
+      current.passFail === pass
+    ) {
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      insulationResistance: {
+        ...prev.insulationResistance,
+        dielectricAbsorptionRatio: {
+          ...prev.insulationResistance.dielectricAbsorptionRatio,
+          priToGnd,
+          secToGnd,
+          priToSec,
+          passFail: pass
+        }
+      }
+    }));
+  }, [
+    formData.insulationResistance.tests,
+    formData.insulationResistance.dielectricAbsorptionRatio.minimumDAR
+  ]);
 
   const handleFahrenheitChange = (fahrenheit: number) => {
     if (!isEditing) return;

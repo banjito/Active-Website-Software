@@ -247,7 +247,7 @@ const tableStyles = {
 
 // Rename component
 const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
-  const { jobId, reportId } = useParams<{ jobId: string; reportId: string }>();
+  const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -472,6 +472,149 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
     }
 
     try {
+      // First try loading from normalized JSONB store
+      const { data: generic, error: gErr } = await supabase
+        .schema('neta_ops')
+        .from('low_voltage_cable_test_3sets')
+        .select('*')
+        .eq('id', reportId)
+        .single();
+
+      if (generic && generic.data) {
+        const d: any = generic.data;
+        setFormData(prev => ({
+          ...prev,
+          // Job info
+          customer: d.reportInfo?.customer ?? prev.customer,
+          address: d.reportInfo?.address ?? prev.address,
+          user: d.reportInfo?.userName ?? prev.user,
+          date: d.reportInfo?.date ?? prev.date,
+          identifier: d.reportInfo?.identifier ?? prev.identifier,
+          jobNumber: d.reportInfo?.jobNumber ?? prev.jobNumber,
+          technicians: d.reportInfo?.technicians ?? prev.technicians,
+          temperature: {
+            ...prev.temperature,
+            fahrenheit: d.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
+            celsius: d.reportInfo?.temperature?.celsius ?? prev.temperature.celsius,
+            tcf: d.reportInfo?.temperature?.correctionFactor ?? prev.temperature.tcf,
+            humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
+          },
+          substation: d.reportInfo?.substation ?? prev.substation,
+          eqptLocation: d.reportInfo?.eqptLocation ?? prev.eqptLocation,
+
+          // Nameplate
+          manufacturer: d.nameplateData?.manufacturer ?? prev.manufacturer,
+          catalogNumber: d.nameplateData?.catalogNumber ?? prev.catalogNumber,
+          serialNumber: d.nameplateData?.serialNumber ?? prev.serialNumber,
+          type: d.nameplateData?.type ?? prev.type,
+          frameSize: d.nameplateData?.frameSize ?? prev.frameSize,
+          icRating: d.nameplateData?.icRating ?? prev.icRating,
+          tripUnitType: d.nameplateData?.tripUnitType ?? prev.tripUnitType,
+          ratingPlug: d.nameplateData?.ratingPlug ?? prev.ratingPlug,
+          curveNo: d.nameplateData?.curveNo ?? prev.curveNo,
+          chargeMotorVoltage: d.nameplateData?.chargeMotorVoltage ?? prev.chargeMotorVoltage,
+          operation: d.nameplateData?.operation ?? prev.operation,
+          mounting: d.nameplateData?.mounting ?? prev.mounting,
+          zoneInterlock: d.nameplateData?.zoneInterlock ?? prev.zoneInterlock,
+          thermalMemory: d.nameplateData?.thermalMemory ?? prev.thermalMemory,
+
+          // Visual / Mechanical
+          visualInspectionItems: prev.visualInspectionItems.map(item => ({
+            ...item,
+            result: (d.visualInspection && d.visualInspection[item.id]) ? d.visualInspection[item.id] : item.result,
+          })),
+
+          // Device settings
+          deviceSettings: d.deviceSettings ?? prev.deviceSettings,
+
+          // Contact resistance
+          contactResistance: d.breakerContactResistance ? { ...prev.contactResistance, ...d.breakerContactResistance } : prev.contactResistance,
+
+          // Insulation resistance (map contactorInsulation)
+          insulationResistance: (() => {
+            const ir = { ...prev.insulationResistance };
+            const src = d.contactorInsulation;
+            if (src) {
+              ir.testVoltage = src.testVoltage ?? ir.testVoltage;
+              const rows = Array.isArray(src.rows) ? src.rows : [];
+              const findRow = (name: string) => rows.find((r: any) => typeof r.id === 'string' && r.id.toLowerCase().includes(name));
+              const rowPTP = findRow('pole to pole');
+              const rowPTF = findRow('pole to frame');
+              const rowLTL = findRow('line to load');
+              if (rowPTP) {
+                ir.measured.poleToPole = {
+                  p1p2: rowPTP.p1 ?? ir.measured.poleToPole.p1p2,
+                  p2p3: rowPTP.p2 ?? ir.measured.poleToPole.p2p3,
+                  p3p1: rowPTP.p3 ?? ir.measured.poleToPole.p3p1,
+                };
+                ir.corrected.poleToPole = {
+                  p1p2: rowPTP.p1c ?? ir.corrected.poleToPole.p1p2,
+                  p2p3: rowPTP.p2c ?? ir.corrected.poleToPole.p2p3,
+                  p3p1: rowPTP.p3c ?? ir.corrected.poleToPole.p3p1,
+                };
+              }
+              if (rowPTF) {
+                ir.measured.poleToFrame = {
+                  p1: rowPTF.p1 ?? ir.measured.poleToFrame.p1,
+                  p2: rowPTF.p2 ?? ir.measured.poleToFrame.p2,
+                  p3: rowPTF.p3 ?? ir.measured.poleToFrame.p3,
+                };
+                ir.corrected.poleToFrame = {
+                  p1: rowPTF.p1c ?? ir.corrected.poleToFrame.p1,
+                  p2: rowPTF.p2c ?? ir.corrected.poleToFrame.p2,
+                  p3: rowPTF.p3c ?? ir.corrected.poleToFrame.p3,
+                };
+              }
+              if (rowLTL) {
+                ir.measured.lineToLoad = {
+                  p1: rowLTL.p1 ?? ir.measured.lineToLoad.p1,
+                  p2: rowLTL.p2 ?? ir.measured.lineToLoad.p2,
+                  p3: rowLTL.p3 ?? ir.measured.lineToLoad.p3,
+                };
+                ir.corrected.lineToLoad = {
+                  p1: rowLTL.p1c ?? ir.corrected.lineToLoad.p1,
+                  p2: rowLTL.p2c ?? ir.corrected.lineToLoad.p2,
+                  p3: rowLTL.p3c ?? ir.corrected.lineToLoad.p3,
+                };
+              }
+            }
+            return ir;
+          })(),
+
+          // Primary injection
+          primaryInjection: d.primaryInjection ? {
+            ...prev.primaryInjection,
+            testedSettings: {
+              longTime: { ...prev.primaryInjection.testedSettings.longTime, ...(d.primaryInjection.testedSettings?.longTime || {}) },
+              shortTime: { ...prev.primaryInjection.testedSettings.shortTime, ...(d.primaryInjection.testedSettings?.shortTime || {}) },
+              instantaneous: { ...prev.primaryInjection.testedSettings.instantaneous, ...(d.primaryInjection.testedSettings?.instantaneous || {}) },
+              groundFault: { ...prev.primaryInjection.testedSettings.groundFault, ...(d.primaryInjection.testedSettings?.groundFault || {}) },
+            },
+            results: {
+              longTime: { ...prev.primaryInjection.results.longTime, ...(d.primaryInjection.results?.longTime || {}) },
+              shortTime: { ...prev.primaryInjection.results.shortTime, ...(d.primaryInjection.results?.shortTime || {}) },
+              instantaneous: { ...prev.primaryInjection.results.instantaneous, ...(d.primaryInjection.results?.instantaneous || {}) },
+              groundFault: { ...prev.primaryInjection.results.groundFault, ...(d.primaryInjection.results?.groundFault || {}) },
+            }
+          } : prev.primaryInjection,
+
+          // Test equipment
+          testEquipment: {
+            megohmmeter: { ...prev.testEquipment.megohmmeter, ...(d.testEquipment?.megohmmeter || {}) },
+            lowResistanceOhmmeter: { ...prev.testEquipment.lowResistanceOhmmeter, ...(d.testEquipment?.lowResistanceOhmmeter || {}) },
+            primaryInjectionTestSet: { ...prev.testEquipment.primaryInjectionTestSet, ...(d.testEquipment?.primaryInjectionTestSet || {}) },
+          },
+
+          // Comments & status
+          comments: d.reportInfo?.comments ?? prev.comments,
+          status: d.status ?? prev.status,
+        }));
+        setIsEditing(false);
+        setLoading(false);
+        return;
+      }
+
+      // Fallback to dedicated table
       const { data, error } = await supabase
         .schema('neta_ops')
         .from('low_voltage_circuit_breaker_electronic_trip_mts') // Use new table name
@@ -560,23 +703,21 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
     if (!jobId || !user?.id || !isEditing) return;
 
     // Structure data for Supabase JSONB columns
-    const reportPayload = {
-      job_id: jobId,
-      user_id: user.id,
-      report_info: {
+    const normalized = {
+      reportInfo: {
         customer: formData.customer,
         address: formData.address,
-        user: formData.user,
+        userName: formData.user,
         date: formData.date,
         identifier: formData.identifier,
         jobNumber: formData.jobNumber,
         technicians: formData.technicians,
-        temperature: formData.temperature,
         substation: formData.substation,
         eqptLocation: formData.eqptLocation,
+        temperature: formData.temperature,
         status: formData.status,
       },
-      nameplate_data: {
+      nameplateData: {
         manufacturer: formData.manufacturer,
         catalogNumber: formData.catalogNumber,
         serialNumber: formData.serialNumber,
@@ -592,33 +733,34 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
         zoneInterlock: formData.zoneInterlock,
         thermalMemory: formData.thermalMemory,
       },
-      visual_mechanical: {
-        items: formData.visualInspectionItems
-      },
-      device_settings: formData.deviceSettings,
-      contact_resistance: formData.contactResistance,
-      insulation_resistance: formData.insulationResistance,
-      primary_injection: formData.primaryInjection, // Changed from trip_testing
-      test_equipment: formData.testEquipment,
-      comments: formData.comments
+      visualMechanical: { items: formData.visualInspectionItems },
+      deviceSettings: formData.deviceSettings,
+      contactResistance: formData.contactResistance,
+      insulationResistance: formData.insulationResistance,
+      primaryInjection: formData.primaryInjection,
+      testEquipment: formData.testEquipment,
+      comments: formData.comments,
+      reportType: reportSlug,
     };
+    const reportPayload = { job_id: jobId, user_id: user.id, data: normalized };
+    console.log('Saving MTS report to low_voltage_cable_test_3sets:', reportPayload);
 
     try {
       let result;
       if (reportId) {
-        // Update existing report
+        // Update existing report in normalized store
         result = await supabase
           .schema('neta_ops')
-          .from('low_voltage_circuit_breaker_electronic_trip_mts') // Use new table name
+          .from('low_voltage_cable_test_3sets')
           .update(reportPayload)
           .eq('id', reportId)
           .select()
           .single();
       } else {
-        // Create new report
+        // Create new report in normalized store
         result = await supabase
           .schema('neta_ops')
-          .from('low_voltage_circuit_breaker_electronic_trip_mts') // Use new table name
+          .from('low_voltage_cable_test_3sets')
           .insert(reportPayload)
           .select()
           .single();
@@ -627,8 +769,8 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
         if (result.data) {
           const newReportId = result.data.id;
           const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''), // Updated name
-            file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-mts-report/${newReportId}`, // Updated path
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
+            file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
             user_id: user.id
           };
 

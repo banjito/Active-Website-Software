@@ -344,7 +344,8 @@ const MediumVoltageCableVLFTest = () => {
   
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
-  const reportSlug = 'medium-voltage-cable-vlf-test'; // This component handles the medium-voltage-cable-vlf-test route
+  const isMTSRoute = currentPath.includes('/medium-voltage-cable-vlf-test-mts');
+  const reportSlug = isMTSRoute ? 'medium-voltage-cable-vlf-test-mts' : 'medium-voltage-cable-vlf-test';
   const reportName = getReportName(reportSlug);
 
   // State for IDs, loading, saving, edit mode, and errors

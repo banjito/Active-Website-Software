@@ -299,7 +299,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
       setLoading(true);
       if (jobId) {
         try {
-          const { data: jobData, error: jobError } = await supabase
+          const { data, error: jobError } = await supabase
             .schema('neta_ops')
             .from('jobs')
             .select('job_number, customer_id, title, customers!inner(name, company_name, address)')
@@ -308,9 +308,9 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
           if (jobError) throw jobError;
 
-          if (jobData) {
-            const typedJobData = jobData as unknown as JobQueryResult;
-            const customerData = typedJobData.customers[0]; // Get first customer from array
+          if (data) {
+            const typedJobData = data as unknown as JobQueryResult;
+            const customerData = typedJobData.customers[0];
             setFormData(prev => ({
               ...prev,
               jobNumber: typedJobData.job_number || '',
@@ -325,9 +325,98 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
       if (reportId) {
         try {
+          // Try normalized store first
+          const { data: generic, error: gErr } = await supabase
+            .schema('neta_ops')
+            .from('low_voltage_cable_test_3sets')
+            .select('*')
+            .eq('id', reportId)
+            .single();
+
+          if (generic && (generic as any).data) {
+            const d: any = (generic as any).data;
+            // Map normalized data to form state
+            setFormData(prev => ({
+              ...prev,
+              customer: d.reportInfo?.customer ?? prev.customer,
+              address: d.reportInfo?.address ?? prev.address,
+              user: d.reportInfo?.userName ?? prev.user,
+              date: d.reportInfo?.date ?? prev.date,
+              jobNumber: d.reportInfo?.jobNumber ?? prev.jobNumber,
+              technicians: d.reportInfo?.technicians ?? prev.technicians,
+              identifier: d.reportInfo?.identifier ?? prev.identifier,
+              substation: d.reportInfo?.substation ?? prev.substation,
+              eqptLocation: d.reportInfo?.eqptLocation ?? prev.eqptLocation,
+              temperature: {
+                ...prev.temperature,
+                fahrenheit: d.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
+                celsius: d.reportInfo?.temperature?.celsius ?? prev.temperature.celsius,
+                tcf: d.reportInfo?.temperature?.correctionFactor ?? prev.temperature.tcf,
+              },
+              humidity: Number(d.reportInfo?.humidity ?? prev.humidity ?? 0),
+
+              panelboardManufacturer: d.nameplateData?.panelboardManufacturer ?? prev.panelboardManufacturer,
+              panelboardTypeCat: d.nameplateData?.panelboardTypeCatalog ?? prev.panelboardTypeCat,
+              panelboardSizeA: d.nameplateData?.panelboardSizeA ?? prev.panelboardSizeA,
+              panelboardVoltageV: d.nameplateData?.panelboardVoltageV ?? prev.panelboardVoltageV,
+              panelboardSCCRkA: d.nameplateData?.panelboardSCCRkA ?? prev.panelboardSCCRkA,
+              mainBreakerManufacturer: d.nameplateData?.mainBreakerManufacturer ?? prev.mainBreakerManufacturer,
+              mainBreakerType: d.nameplateData?.mainBreakerType ?? prev.mainBreakerType,
+              mainBreakerFrameSizeA: d.nameplateData?.mainBreakerFrameSizeA ?? prev.mainBreakerFrameSizeA,
+              mainBreakerRatingPlugA: d.nameplateData?.mainBreakerRatingPlugA ?? prev.mainBreakerRatingPlugA,
+              mainBreakerICRatingkA: d.nameplateData?.mainBreakerICRatingkA ?? prev.mainBreakerICRatingkA,
+
+              visualInspectionItems: prev.visualInspectionItems.map(item => ({
+                ...item,
+                results: d.visualInspection?.[item.netaSection] ?? item.results,
+              })),
+
+              numberOfCircuitSpaces: (d.electricalTests?.numberOfCircuitSpaces ?? prev.numberOfCircuitSpaces ?? '120').toString(),
+              electricalTestOrdering: d.electricalTests?.ordering ?? prev.electricalTestOrdering,
+              tripCurveNumbers: d.electricalTests?.tripCurveNumbers ?? prev.tripCurveNumbers,
+              breakers: Array.isArray(d.electricalTests?.breakers) && d.electricalTests.breakers.length > 0
+                ? d.electricalTests.breakers.map((b: any, i: number) => ({
+                    ...initialBreakerData(i + 1),
+                    circuitNumber: b.circuitNumber ?? (i + 1).toString(),
+                    result: b.result ?? '',
+                    poles: b.poles ?? '',
+                    manuf: b.manuf ?? '',
+                    type: b.type ?? '',
+                    frameA: b.frameA ?? '',
+                    tripA: b.tripA ?? '',
+                    ratedCurrentA: b.ratedCurrentA ?? '',
+                    testCurrentA: b.testCurrentA ?? '',
+                    tripToleranceMin: b.tripToleranceMin ?? '',
+                    tripToleranceMax: b.tripToleranceMax ?? '',
+                    tripTime: b.tripTime ?? '',
+                    insulationLL: b.insulationLL ?? '',
+                    insulationLP: b.insulationLP ?? '',
+                    insulationPP: b.insulationPP ?? '',
+                  }))
+                : prev.breakers,
+
+              megohmmeterName: d.testEquipment?.megohmmeter?.name ?? prev.megohmmeterName,
+              megohmmeterSerial: d.testEquipment?.megohmmeter?.serialNumber ?? prev.megohmmeterSerial,
+              megohmmeterAmpId: d.testEquipment?.megohmmeter?.ampId ?? prev.megohmmeterAmpId,
+              lowResistanceOhmmeterName: d.testEquipment?.lowResistanceOhmmeter?.name ?? prev.lowResistanceOhmmeterName,
+              lowResistanceOhmmeterSerial: d.testEquipment?.lowResistanceOhmmeter?.serialNumber ?? prev.lowResistanceOhmmeterSerial,
+              lowResistanceOhmmeterAmpId: d.testEquipment?.lowResistanceOhmmeter?.ampId ?? prev.lowResistanceOhmmeterAmpId,
+              primaryInjectionTestSetName: d.testEquipment?.primaryInjectionTestSet?.name ?? prev.primaryInjectionTestSetName,
+              primaryInjectionTestSetSerial: d.testEquipment?.primaryInjectionTestSet?.serialNumber ?? prev.primaryInjectionTestSetSerial,
+              primaryInjectionTestSetAmpId: d.testEquipment?.primaryInjectionTestSet?.ampId ?? prev.primaryInjectionTestSetAmpId,
+
+              comments: d.reportInfo?.comments ?? prev.comments,
+            }));
+            if (d.status) setStatus(d.status);
+            setIsEditing(false);
+            setLoading(false);
+            return;
+          }
+
+          // Fallback to older dedicated table (legacy)
           const { data: reportData, error: reportError } = await supabase
             .schema('neta_ops')
-            .from('low_voltage_panelboard_small_breaker_reports') // Ensure this table name is correct
+            .from('low_voltage_panelboard_small_breaker_reports')
             .select('*')
             .eq('id', reportId)
             .single();
@@ -335,33 +424,32 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           if (reportError) throw reportError;
 
           if (reportData) {
-            const loadedReportInfo = reportData.report_info || {};
-            const loadedElectricalTests = reportData.electrical_tests || {};
+            const loadedReportInfo = (reportData as any).report_info || {};
+            const loadedElectricalTests = (reportData as any).electrical_tests || {};
             setFormData(prev => ({
               ...prev,
               ...loadedReportInfo,
-              temperature: loadedReportInfo.temperature || prev.temperature, // Ensure temperature object is fully populated
-              visualInspectionItems: reportData.visual_mechanical_inspection || prev.visualInspectionItems,
+              temperature: loadedReportInfo.temperature || prev.temperature,
+              visualInspectionItems: (reportData as any).visual_mechanical_inspection || prev.visualInspectionItems,
               breakers: loadedElectricalTests.breakers || Array(parseInt(loadedElectricalTests.numberOfCircuitSpaces || prev.numberOfCircuitSpaces, 10) || 120).fill(null).map((_,i) => initialBreakerData(i+1)),
               numberOfCircuitSpaces: loadedElectricalTests.numberOfCircuitSpaces || prev.numberOfCircuitSpaces,
               electricalTestOrdering: loadedElectricalTests.electricalTestOrdering || prev.electricalTestOrdering,
               tripCurveNumbers: loadedElectricalTests.tripCurveNumbers || prev.tripCurveNumbers,
-              comments: reportData.comments_text || prev.comments,
+              comments: (reportData as any).comments_text || prev.comments,
             }));
             setIsEditing(false);
           }
         } catch (error) {
           console.error("Error loading report data:", error);
-          // Don't automatically set edit mode on load errors - let user click Edit if needed
         }
       } else {
-        setIsEditing(true); // New report, start in edit mode (this is correct for new reports)
+        setIsEditing(true);
       }
       setLoading(false);
     };
     loadInitialData();
   }, [jobId, reportId, user]);
-  
+
   useEffect(() => {
     const numSpaces = parseInt(formData.numberOfCircuitSpaces, 10);
     if (!isNaN(numSpaces) && numSpaces >= 0 && numSpaces <= 120) { // Allow 0 for empty
@@ -455,21 +543,61 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
 
-    const { breakers, visualInspectionItems, comments, ...reportInfoSubset } = formData;
-
-    const reportPayload = {
-      job_id: jobId,
-      user_id: user.id,
-      report_info: reportInfoSubset,
-      visual_mechanical_inspection: formData.visualInspectionItems,
-      electrical_tests: {
+    // Build normalized payload for JSONB store
+    const normalized: any = {
+      reportInfo: {
+        customer: formData.customer,
+        address: formData.address,
+        userName: formData.user,
+        date: formData.date,
+        jobNumber: formData.jobNumber,
+        technicians: formData.technicians,
+        identifier: formData.identifier,
+        substation: formData.substation,
+        eqptLocation: formData.eqptLocation,
+        temperature: {
+          fahrenheit: formData.temperature.fahrenheit,
+          celsius: formData.temperature.celsius,
+          correctionFactor: formData.temperature.tcf,
+        },
+        humidity: formData.humidity,
+        comments: formData.comments,
+      },
+      nameplateData: {
+        panelboardManufacturer: formData.panelboardManufacturer,
+        panelboardTypeCatalog: formData.panelboardTypeCat,
+        panelboardSizeA: formData.panelboardSizeA,
+        panelboardVoltageV: formData.panelboardVoltageV,
+        panelboardSCCRkA: formData.panelboardSCCRkA,
+        mainBreakerManufacturer: formData.mainBreakerManufacturer,
+        mainBreakerType: formData.mainBreakerType,
+        mainBreakerFrameSizeA: formData.mainBreakerFrameSizeA,
+        mainBreakerRatingPlugA: formData.mainBreakerRatingPlugA,
+        mainBreakerICRatingkA: formData.mainBreakerICRatingkA,
+      },
+      visualInspection: formData.visualInspectionItems.reduce((acc, row) => {
+        acc[row.netaSection] = row.results || '';
+        return acc;
+      }, {} as Record<string, string>),
+      electricalTests: {
         numberOfCircuitSpaces: formData.numberOfCircuitSpaces,
-        electricalTestOrdering: formData.electricalTestOrdering,
+        ordering: formData.electricalTestOrdering,
         tripCurveNumbers: formData.tripCurveNumbers,
         breakers: formData.breakers,
       },
-      comments_text: formData.comments,
-      status: status
+      testEquipment: {
+        megohmmeter: { name: formData.megohmmeterName, serialNumber: formData.megohmmeterSerial, ampId: formData.megohmmeterAmpId },
+        lowResistanceOhmmeter: { name: formData.lowResistanceOhmmeterName, serialNumber: formData.lowResistanceOhmmeterSerial, ampId: formData.lowResistanceOhmmeterAmpId },
+        primaryInjectionTestSet: { name: formData.primaryInjectionTestSetName, serialNumber: formData.primaryInjectionTestSetSerial, ampId: formData.primaryInjectionTestSetAmpId },
+      },
+      status,
+      reportType: reportSlug,
+    };
+
+    const payload = {
+      job_id: jobId,
+      user_id: user.id,
+      data: normalized,
     };
 
     try {
@@ -477,27 +605,27 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
       if (reportId) {
         result = await supabase
           .schema('neta_ops')
-          .from('low_voltage_panelboard_small_breaker_reports')
-          .update(reportPayload)
+          .from('low_voltage_cable_test_3sets')
+          .update(payload)
           .eq('id', reportId)
-          .select()
+          .select('id')
           .single();
       } else {
         result = await supabase
           .schema('neta_ops')
-          .from('low_voltage_panelboard_small_breaker_reports')
-          .insert(reportPayload)
-          .select()
+          .from('low_voltage_cable_test_3sets')
+          .insert(payload)
+          .select('id')
           .single();
 
-        if (result.data && result.data.id) {
-          const newReportId = result.data.id;
+        if (result.data && (result.data as any).id) {
+          const newReportId = (result.data as any).id as string;
           const assetData = {
             name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
-            file_url: `report:/jobs/${jobId}/low-voltage-panelboard-small-breaker-report/${newReportId}`,
+            file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
             user_id: user.id,
             template_type: 'ATS'
-          };
+          } as any;
 
           const { data: assetResult, error: assetError } = await supabase
             .schema('neta_ops')
@@ -508,27 +636,24 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
           if (assetError) throw assetError;
 
-          if (assetResult && assetResult.id) {
+          if (assetResult && (assetResult as any).id) {
             await supabase
               .schema('neta_ops')
               .from('job_assets')
               .insert({
                 job_id: jobId,
-                asset_id: assetResult.id,
+                asset_id: (assetResult as any).id,
                 user_id: user.id
               });
           }
         }
       }
 
-      if (result.error) throw result.error;
-      
+      if ((result as any).error) throw (result as any).error;
+
       toast.success('Report saved successfully!');
       setIsEditing(false);
-      
-      // Use the navigateAfterSave utility function
       navigateAfterSave(navigate, jobId, location);
-      
     } catch (error) {
       console.error('Error saving report:', error);
       toast.error(`Failed to save report: ${(error as Error).message}`);

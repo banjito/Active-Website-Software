@@ -355,9 +355,152 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
     }
 
     try {
+      // First try generic normalized JSONB table
+      const { data: generic, error: gErr } = await supabase
+        .schema('neta_ops')
+        .from('low_voltage_cable_test_3sets')
+        .select('*')
+        .eq('id', reportId)
+        .single();
+
+      if (generic && generic.data) {
+        const d: any = generic.data;
+        setFormData(prev => ({
+          ...prev,
+          // Job info
+          customer: d.reportInfo?.customer ?? prev.customer,
+          address: d.reportInfo?.address ?? prev.address,
+          user: d.reportInfo?.userName ?? prev.user,
+          date: d.reportInfo?.date ?? prev.date,
+          identifier: d.reportInfo?.identifier ?? prev.identifier,
+          jobNumber: d.reportInfo?.jobNumber ?? prev.jobNumber,
+          technicians: d.reportInfo?.technicians ?? prev.technicians,
+          temperature: {
+            ...prev.temperature,
+            fahrenheit: d.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
+            celsius: d.reportInfo?.temperature?.celsius ?? prev.temperature.celsius,
+            tcf: d.reportInfo?.temperature?.correctionFactor ?? prev.temperature.tcf,
+            humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
+          },
+          substation: d.reportInfo?.substation ?? prev.substation,
+          eqptLocation: d.reportInfo?.eqptLocation ?? prev.eqptLocation,
+
+          // Nameplate
+          manufacturer: d.nameplateData?.manufacturer ?? prev.manufacturer,
+          catalogNumber: d.nameplateData?.catalogNumber ?? prev.catalogNumber,
+          serialNumber: d.nameplateData?.serialNumber ?? prev.serialNumber,
+          type: d.nameplateData?.type ?? prev.type,
+          frameSize: d.nameplateData?.frameSize ?? prev.frameSize,
+          icRating: d.nameplateData?.icRating ?? prev.icRating,
+          tripUnitType: d.nameplateData?.tripUnitType ?? prev.tripUnitType,
+          ratingPlug: d.nameplateData?.ratingPlug ?? prev.ratingPlug,
+          curveNo: d.nameplateData?.curveNo ?? prev.curveNo,
+          chargeMotorVoltage: d.nameplateData?.chargeMotorVoltage ?? prev.chargeMotorVoltage,
+          operation: d.nameplateData?.operation ?? prev.operation,
+          mounting: d.nameplateData?.mounting ?? prev.mounting,
+          zoneInterlock: d.nameplateData?.zoneInterlock ?? prev.zoneInterlock,
+          thermalMemory: d.nameplateData?.thermalMemory ?? prev.thermalMemory,
+
+          // Visual / Mechanical
+          visualInspectionItems: prev.visualInspectionItems.map(item => ({
+            ...item,
+            result: (d.visualInspection && d.visualInspection[item.id]) ? d.visualInspection[item.id] : item.result,
+          })),
+
+          // Device settings
+          deviceSettings: d.deviceSettings ?? prev.deviceSettings,
+
+          // Contact resistance
+          contactResistance: d.breakerContactResistance ? { ...prev.contactResistance, ...d.breakerContactResistance } : prev.contactResistance,
+
+          // Insulation resistance (map contactorInsulation)
+          insulationResistance: (() => {
+            const ir = { ...prev.insulationResistance };
+            const src = d.contactorInsulation;
+            if (src) {
+              ir.testVoltage = src.testVoltage ?? ir.testVoltage;
+              const rows = Array.isArray(src.rows) ? src.rows : [];
+              const findRow = (name: string) => rows.find((r: any) => typeof r.id === 'string' && r.id.toLowerCase().includes(name));
+              const rowPTP = findRow('pole to pole');
+              const rowPTF = findRow('pole to frame');
+              const rowLTL = findRow('line to load');
+              if (rowPTP) {
+                ir.measured.poleToPole = {
+                  p1p2: rowPTP.p1 ?? ir.measured.poleToPole.p1p2,
+                  p2p3: rowPTP.p2 ?? ir.measured.poleToPole.p2p3,
+                  p3p1: rowPTP.p3 ?? ir.measured.poleToPole.p3p1,
+                };
+                ir.corrected.poleToPole = {
+                  p1p2: rowPTP.p1c ?? ir.corrected.poleToPole.p1p2,
+                  p2p3: rowPTP.p2c ?? ir.corrected.poleToPole.p2p3,
+                  p3p1: rowPTP.p3c ?? ir.corrected.poleToPole.p3p1,
+                };
+              }
+              if (rowPTF) {
+                ir.measured.poleToFrame = {
+                  p1: rowPTF.p1 ?? ir.measured.poleToFrame.p1,
+                  p2: rowPTF.p2 ?? ir.measured.poleToFrame.p2,
+                  p3: rowPTF.p3 ?? ir.measured.poleToFrame.p3,
+                };
+                ir.corrected.poleToFrame = {
+                  p1: rowPTF.p1c ?? ir.corrected.poleToFrame.p1,
+                  p2: rowPTF.p2c ?? ir.corrected.poleToFrame.p2,
+                  p3: rowPTF.p3c ?? ir.corrected.poleToFrame.p3,
+                };
+              }
+              if (rowLTL) {
+                ir.measured.lineToLoad = {
+                  p1: rowLTL.p1 ?? ir.measured.lineToLoad.p1,
+                  p2: rowLTL.p2 ?? ir.measured.lineToLoad.p2,
+                  p3: rowLTL.p3 ?? ir.measured.lineToLoad.p3,
+                };
+                ir.corrected.lineToLoad = {
+                  p1: rowLTL.p1c ?? ir.corrected.lineToLoad.p1,
+                  p2: rowLTL.p2c ?? ir.corrected.lineToLoad.p2,
+                  p3: rowLTL.p3c ?? ir.corrected.lineToLoad.p3,
+                };
+              }
+            }
+            return ir;
+          })(),
+
+          // Trip Testing (secondaryInjection)
+          tripTesting: d.secondaryInjection ? {
+            ...prev.tripTesting,
+            testedSettings: {
+              longTime: { ...prev.tripTesting.testedSettings.longTime, ...(d.secondaryInjection.testedSettings?.longTime || {}) },
+              shortTime: { ...prev.tripTesting.testedSettings.shortTime, ...(d.secondaryInjection.testedSettings?.shortTime || {}) },
+              instantaneous: { ...prev.tripTesting.testedSettings.instantaneous, ...(d.secondaryInjection.testedSettings?.instantaneous || {}) },
+              groundFault: { ...prev.tripTesting.testedSettings.groundFault, ...(d.secondaryInjection.testedSettings?.groundFault || {}) },
+            },
+            secondaryInjection: {
+              longTime: { ...prev.tripTesting.secondaryInjection.longTime, ...(d.secondaryInjection.secondaryInjection?.longTime || {}) },
+              shortTime: { ...prev.tripTesting.secondaryInjection.shortTime, ...(d.secondaryInjection.secondaryInjection?.shortTime || {}) },
+              instantaneous: { ...prev.tripTesting.secondaryInjection.instantaneous, ...(d.secondaryInjection.secondaryInjection?.instantaneous || {}) },
+              groundFault: { ...prev.tripTesting.secondaryInjection.groundFault, ...(d.secondaryInjection.secondaryInjection?.groundFault || {}) },
+            }
+          } : prev.tripTesting,
+
+          // Test Equipment
+          testEquipment: {
+            megohmmeter: { ...prev.testEquipment.megohmmeter, ...(d.testEquipment?.megohmmeter || {}) },
+            lowResistanceOhmmeter: { ...prev.testEquipment.lowResistanceOhmmeter, ...(d.testEquipment?.lowResistanceOhmmeter || {}) },
+            secondaryInjectionTestSet: { ...prev.testEquipment.secondaryInjectionTestSet, ...(d.testEquipment?.secondaryInjectionTestSet || {}) },
+          },
+
+          // Comments & status
+          comments: d.reportInfo?.comments ?? prev.comments,
+          status: d.status ?? prev.status,
+        }));
+        setIsEditing(false);
+        setLoading(false);
+        return;
+      }
+
+      // Fallback to dedicated table
       const { data, error } = await supabase
         .schema('neta_ops')
-        .from('low_voltage_circuit_breaker_electronic_trip_ats') // Use new shorter table name
+        .from('low_voltage_circuit_breaker_electronic_trip_ats')
         .select('*')
         .eq('id', reportId)
         .single();
@@ -372,10 +515,8 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
       }
 
       if (data) {
-        // Map loaded data to formData state, ensuring all fields exist
         setFormData(prev => ({
-          ...prev, // Start with defaults to ensure all keys exist
-          // Job Info (potentially from report_info)
+          ...prev,
           customer: data.report_info?.customer || prev.customer,
           address: data.report_info?.address || prev.address,
           user: data.report_info?.user || prev.user,
@@ -386,8 +527,6 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           temperature: data.report_info?.temperature || prev.temperature,
           substation: data.report_info?.substation || prev.substation,
           eqptLocation: data.report_info?.eqptLocation || prev.eqptLocation,
-
-          // Nameplate Data
           manufacturer: data.nameplate_data?.manufacturer || '',
           catalogNumber: data.nameplate_data?.catalogNumber || '',
           serialNumber: data.nameplate_data?.serialNumber || '',
@@ -402,29 +541,13 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           mounting: data.nameplate_data?.mounting || '',
           zoneInterlock: data.nameplate_data?.zoneInterlock || '',
           thermalMemory: data.nameplate_data?.thermalMemory || '',
-
-          // Visual and Mechanical Inspection
           visualInspectionItems: data.visual_mechanical?.items || prev.visualInspectionItems,
-
-          // Device Settings
           deviceSettings: data.device_settings || prev.deviceSettings,
-
-          // Electrical Tests - Contact/Pole Resistance
           contactResistance: data.contact_resistance || prev.contactResistance,
-
-          // Electrical Tests - Insulation Resistance
           insulationResistance: data.insulation_resistance || prev.insulationResistance,
-
-          // Electrical Tests - Trip Testing
           tripTesting: data.trip_testing || prev.tripTesting,
-
-          // Test Equipment Used
           testEquipment: data.test_equipment || prev.testEquipment,
-
-          // Comments
           comments: data.comments || '',
-
-          // Status - Use equipmentEvaluationResultOptions
           status: data.report_info?.status || 'PASS',
         }));
         setIsEditing(false);
@@ -432,7 +555,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
     } catch (error) {
       console.error('Error loading report:', error);
       alert(`Failed to load report: ${(error as Error).message}`);
-      setIsEditing(true); // Allow editing if loading fails
+      setIsEditing(true);
     } finally {
       setLoading(false);
     }

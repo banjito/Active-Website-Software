@@ -14,7 +14,7 @@ type SupabaseError = {
 };
 
 // Define table name constant
-const LARGE_DRY_TYPE_XFMR_MTS_TABLE = 'large_dry_type_xfmr_mts_reports' as const;
+const LARGE_DRY_TYPE_XFMR_MTS_TABLE = 'large_dry_type_transformer_mts_reports' as const;
 
 // Temperature conversion and TCF tables (same as DryTypeTransformer)
 const tempConvTable = [
@@ -406,9 +406,9 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
         .single();
 
       if (fetchError) throw fetchError;
-      if (data && data.report_data) {
-        // Deep merge existing visualInspection data with config to ensure all items are present
-        const loadedVisualInspection = data.report_data.visualInspection || {};
+      if (data) {
+        // Load data from individual columns instead of report_data
+        const loadedVisualInspection = data.visual_inspection || {};
         const initialVisualInspectionState: { [key: string]: string } = {};
         visualInspectionItemsConfig.forEach(item => {
           initialVisualInspectionState[`${item.id}_result`] = loadedVisualInspection[`${item.id}_result`] || 'Select One';
@@ -417,35 +417,44 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
         
         setFormData(prev => ({
           ...prev,
-          ...data.report_data,
+          // Load from individual columns
+          customer: data.report_info?.customer || '',
+          address: data.report_info?.address || '',
+          date: data.report_info?.date || '',
+          technicians: data.report_info?.technicians || '',
+          jobNumber: data.report_info?.jobNumber || '',
+          substation: data.report_info?.substation || '',
+          eqptLocation: data.report_info?.eqptLocation || '',
+          identifier: data.report_info?.identifier || '',
+          userName: data.report_info?.userName || '',
           visualInspection: initialVisualInspectionState,
-          userName: data.user_name || '',
-          status: data.report_data.status || 'PASS',
+          status: data.report_info?.status || 'PASS',
           // Ensure temperature object and its fields are correctly populated
           temperature: {
             ...prev.temperature,
-            ...(data.report_data.temperature || {}),
+            ...(data.report_info?.temperature || {}),
             // Recalculate celsius and correctionFactor if fahrenheit is present
-            ...(data.report_data.temperature?.fahrenheit !== undefined && {
-              celsius: parseFloat(((data.report_data.temperature.fahrenheit - 32) * 5 / 9).toFixed(1)),
-              correctionFactor: calculateTCF(Math.round(parseFloat(((data.report_data.temperature.fahrenheit - 32) * 5 / 9).toFixed(1))))
+            ...(data.report_info?.temperature?.fahrenheit !== undefined && {
+              celsius: parseFloat(((data.report_info.temperature.fahrenheit - 32) * 5 / 9).toFixed(1)),
+              correctionFactor: calculateTCF(Math.round(parseFloat(((data.report_info.temperature.fahrenheit - 32) * 5 / 9).toFixed(1))))
             })
           },
           // Ensure all nested objects are properly populated
           nameplateData: {
             ...prev.nameplateData,
-            ...(data.report_data.nameplateData || {})
+            ...(data.report_info?.nameplateData || {})
           },
           insulationResistance: {
             ...prev.insulationResistance,
-            ...(data.report_data.insulationResistance || {})
+            ...(data.insulation_resistance || {})
           },
           testEquipment: {
             ...prev.testEquipment,
-            ...(data.report_data.testEquipment || {})
-          }
+            ...(data.test_equipment || {})
+          },
+          comments: data.comments || ''
         }));
-        setStatus(data.report_data.status || 'PASS');
+        setStatus(data.report_info?.status || 'PASS');
         setIsEditing(false);
       }
     } catch (err) {
@@ -467,7 +476,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
        const reportData = {
            job_id: jobId,
            user_id: user.id,
-           report_data: {
+           report_info: {
                customer: formData.customer,
                address: formData.address,
                date: formData.date,
@@ -480,14 +489,15 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                temperature: formData.temperature,
                nameplateData: formData.nameplateData,
                status: formData.status,
-               visualInspection: formData.visualInspection,
-               insulationResistance: formData.insulationResistance,
-               testEquipment: formData.testEquipment,
-               comments: formData.comments,
                isLargeType: true,
                isMTS: true,
                reportType: 'large_dry_type_xfmr_mts'
-           }
+           },
+           visual_inspection: formData.visualInspection,
+           insulation_resistance: formData.insulationResistance,
+           turns_ratio: {},
+           test_equipment: formData.testEquipment,
+           comments: formData.comments
        };
 
        console.log('Saving report data:', reportData);
@@ -501,7 +511,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                // Update existing report
                result = await supabase
                    .schema('neta_ops')
-                   .from('large_dry_type_xfmr_mts_reports')
+                   .from('large_dry_type_transformer_mts_reports')
                    .update(reportData)
                    .eq('id', currentReportId)
                    .select()
@@ -510,7 +520,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                // Create new report
                result = await supabase
                    .schema('neta_ops')
-                   .from('large_dry_type_xfmr_mts_reports')
+                   .from('large_dry_type_transformer_mts_reports')
                    .insert(reportData)
                    .select()
                    .single();

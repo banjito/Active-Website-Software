@@ -358,7 +358,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
         <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
-          NETA
+          NETA - MTS 7.3.3
           <div className="mt-2">
             <div
               className="pass-fail-status-box"

@@ -923,7 +923,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">3-Set Low Voltage Cable Test Report (ATS)</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c', width: '120px' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c', width: '120px' }}>NETA - ATS 7.2.1.1</div>
       </div>
 
       <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">

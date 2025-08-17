@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation, useSearchParams } from 'react-rout
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
+import { ReportWrapper } from './ReportWrapper';
 import { getReportName, getAssetName } from './reportMappings';
 
 // Temperature conversion and correction factor lookup tables
@@ -396,6 +397,32 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         
         /* Ensure all text is black for maximum readability */
         * { color: black !important; }
+
+        /* Visual & Mechanical table standardization (NETA left, Description wide, Result right) */
+        #report-container .vm-standard { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
+        #report-container .vm-standard thead { display: table-header-group !important; }
+        #report-container .vm-standard tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+        #report-container .vm-standard th:first-child, #report-container .vm-standard td:first-child { width: 18% !important; text-align: left !important; }
+        #report-container .vm-standard th:nth-child(2), #report-container .vm-standard td:nth-child(2) { width: 62% !important; text-align: left !important; }
+        #report-container .vm-standard th:nth-child(3), #report-container .vm-standard td:nth-child(3) { width: 20% !important; text-align: center !important; }
+
+        /* Bus-section based tables: give left Bus column and right Units narrow widths to free space for readings */
+        .section-insulation-resistance table,
+        .section-temp-corrected table,
+        .section-contact-resistance table,
+        .section-dielectric table { table-layout: fixed !important; width: 100% !important; }
+        .section-insulation-resistance thead th:first-child,
+        .section-temp-corrected thead th:first-child,
+        .section-contact-resistance thead th:first-child,
+        .section-dielectric thead th:first-child { width: 10% !important; text-align: left !important; }
+        .section-insulation-resistance thead th:last-child,
+        .section-temp-corrected thead th:last-child,
+        .section-contact-resistance thead th:last-child,
+        .section-dielectric thead th:last-child { width: 8% !important; }
+        .section-insulation-resistance td input,
+        .section-temp-corrected td input,
+        .section-contact-resistance td input,
+        .section-dielectric td input { width: 100% !important; }
       }
       
       .form-label {
@@ -582,7 +609,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
   if (loading && reportId) return <div className="p-4">Loading report data...</div>;
 
   return (
-    <div className="p-6 flex justify-center">
+    <ReportWrapper isPrintMode={isPrintMode}>
+      <div className="p-6 flex justify-center">
       <div className="max-w-7xl w-full space-y-6">
         {/* Print Header - Only visible when printing */}
         <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
@@ -591,7 +619,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
             <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
           </div>
           <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
-            NETA
+            NETA - MTS 7.1
             <div className="hidden print:block mt-2">
               <div 
                 className="pass-fail-status-box"
@@ -771,8 +799,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
             </select>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="overflow-x-auto section-insulation-resistance">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
@@ -842,8 +870,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         <div className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Values</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="overflow-x-auto section-temp-corrected">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
@@ -920,8 +948,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
             </select>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="overflow-x-auto section-contact-resistance">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
@@ -1002,8 +1030,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
             </select>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="overflow-x-auto section-dielectric">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
@@ -1185,7 +1213,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         />
       </div>
       </div>
-    </div>
+      </div>
+    </ReportWrapper>
   );
 };
 

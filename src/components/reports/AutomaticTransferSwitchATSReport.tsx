@@ -498,7 +498,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
       <div className="flex-1 text-center">
         <h1 className="text-2xl font-bold text-black mb-1">Automatic Transfer Switch ATS Report</h1>
       </div>
-      <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+      <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA - ATS 7.22.3</div>
     </div>
   );
 
@@ -902,7 +902,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
         <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
-          NETA
+          NETA - ATS 7.22.3
           <div className="hidden print:block mt-2">
             <div 
               className="pass-fail-status-box"

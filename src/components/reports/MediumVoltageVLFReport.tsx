@@ -1643,7 +1643,7 @@ const MediumVoltageVLFReport: React.FC = () => {
         </div>
         <div className="text-right">
           <div className="font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
-            NETA
+            NETA - ATS 7.3.3
             <div className="hidden print:block mt-2">
               <div
                 className="pass-fail-status-box"
@@ -2232,29 +2232,39 @@ const MediumVoltageVLFReport: React.FC = () => {
           <span className="ml-2 text-gray-900 dark:text-white">V</span>
             </div>
         
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+        <div className="overflow-x-auto section-insulation-resistance">
+          <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 table-fixed">
+            <colgroup>
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '8%' }} />
+            </colgroup>
             <thead>
               <tr>
-                <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase w-20"> </th>
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" colSpan={3}>Insulation Resistance</th>
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" colSpan={3}>Temperature Corrected</th>
-                <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Units</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-16">Units</th>
               </tr>
               <tr>
-                <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">A-G</th>
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">B-G</th>
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">C-G</th>
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">A-G</th>
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">B-G</th>
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">C-G</th>
-                <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"></th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"></th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">Pre-Test</td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">Pre-Test</td>
                 <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
                   <input
                     type="text"
@@ -2309,7 +2319,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                 <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{formData.insulationTest.unit}</td>
               </tr>
               <tr>
-                <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">Post-Test</td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">Post-Test</td>
                 <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
                   <input
                     type="text"

@@ -12,7 +12,7 @@ function CableHiPotReport() {
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">Cable Hi-Pot Test Report</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA - ATS 7.3.3</div>
       </div>
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Cable Hi-Pot Test Report</h1>
       <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">

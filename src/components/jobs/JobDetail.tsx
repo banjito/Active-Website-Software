@@ -124,6 +124,9 @@ export default function JobDetail() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isBatchUploading, setIsBatchUploading] = useState(false);
+  const [batchUploadProgress, setBatchUploadProgress] = useState(0);
+  const [batchUploadStatus, setBatchUploadStatus] = useState<string>('');
   const [opportunity, setOpportunity] = useState<RelatedOpportunity | null>(null);
   const [isStatusEditing, setIsStatusEditing] = useState(false);
   const [isPriorityEditing, setIsPriorityEditing] = useState(false);
@@ -145,6 +148,7 @@ export default function JobDetail() {
   const [newItemTarget, setNewItemTarget] = useState<number>(1);
   const [selectedReportForTracker, setSelectedReportForTracker] = useState<string>('');
   const saveTimerRef = React.useRef<number | null>(null);
+  const [selectedBatchFiles, setSelectedBatchFiles] = useState<File[]>([]);
 
   // Initialize manual tracker from loaded job (support both old/new shapes)
   useEffect(() => {
@@ -1047,6 +1051,207 @@ export default function JobDetail() {
     fileInput.remove();
   };
 
+  // Handle batch report import function
+  const handleBatchImportReport = () => {
+    // Show confirmation dialog first
+    const confirmed = window.confirm(
+      'This will import multiple report files at once. Make sure all files are valid report JSON files. Continue?'
+    );
+    
+    if (!confirmed) return;
+    
+    // Create a hidden file input element for multiple files
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json,.amp-report';
+    fileInput.multiple = true; // Allow multiple file selection
+    fileInput.style.display = 'none';
+    
+    fileInput.onchange = async (e) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        const files = Array.from(target.files);
+        
+        // Update selected files state
+        setSelectedBatchFiles(files);
+        
+        if (files.length === 0) {
+          toast({ title: 'Error', description: 'No files selected', variant: 'destructive' });
+          return;
+        }
+
+        if (!id || !user?.id) {
+          toast({ title: 'Error', description: 'Job ID or user ID is missing', variant: 'destructive' });
+          return;
+        }
+
+        try {
+          // Set batch upload state
+          setIsBatchUploading(true);
+          setBatchUploadProgress(0);
+          setBatchUploadStatus('Starting batch import...');
+
+          // Show loading toast
+          toast({ 
+            title: 'Processing...', 
+            description: `Starting batch import of ${files.length} reports...`, 
+            variant: 'default' 
+          });
+
+          // Read and parse all files
+          setBatchUploadStatus('Reading and parsing files...');
+          setBatchUploadProgress(10);
+          
+          const reportDataArray: any[] = [];
+          const parseErrors: string[] = [];
+          
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            try {
+              setBatchUploadStatus(`Parsing file ${i + 1}/${files.length}: ${file.name}`);
+              setBatchUploadProgress(10 + (i / files.length) * 20);
+              
+              const text = await file.text();
+              const reportData = JSON.parse(text);
+              
+              // Basic validation that this looks like a report
+              if (!reportData || typeof reportData !== 'object') {
+                throw new Error('Invalid JSON structure');
+              }
+              
+              reportDataArray.push(reportData);
+            } catch (parseError) {
+              const errorMsg = `Failed to parse ${file.name}: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`;
+              console.error(errorMsg);
+              parseErrors.push(errorMsg);
+              
+              toast({ 
+                title: 'Warning', 
+                description: `Failed to parse ${file.name}, skipping...`, 
+                variant: 'destructive' 
+              });
+            }
+          }
+
+          if (reportDataArray.length === 0) {
+            setBatchUploadStatus('No valid report files found');
+            setBatchUploadProgress(0);
+            setIsBatchUploading(false);
+            
+            if (parseErrors.length > 0) {
+              toast({ 
+                title: 'Error', 
+                description: `No valid report files found. ${parseErrors.length} files failed to parse.`, 
+                variant: 'destructive' 
+              });
+            } else {
+              toast({ title: 'Error', description: 'No valid report files found', variant: 'destructive' });
+            }
+            return;
+          }
+
+          // Perform batch import
+          setBatchUploadStatus('Importing reports...');
+          setBatchUploadProgress(30);
+          
+          const batchResult = await reportImportService.batchImportReports(reportDataArray, id, user.id);
+          
+          // Create asset entries for successful imports
+          setBatchUploadStatus('Creating asset entries...');
+          setBatchUploadProgress(60);
+          
+          for (let i = 0; i < batchResult.successful.length; i++) {
+            const successItem = batchResult.successful[i];
+            const fileName = files.find((_, index) => reportDataArray[index] === successItem.data)?.name || 'Unknown';
+            
+            setBatchUploadStatus(`Creating asset ${i + 1}/${batchResult.successful.length}...`);
+            setBatchUploadProgress(60 + (i / batchResult.successful.length) * 30);
+            
+            const assetData = {
+              name: `Imported ${successItem.result.reportType || 'Report'} - ${fileName.replace('.json', '').replace('.amp-report', '')}`,
+              file_url: `report:/jobs/${id}/${successItem.result.reportType || 'report'}/${successItem.result.reportId}`,
+              user_id: user.id,
+              created_at: new Date().toISOString()
+            };
+
+            try {
+              const { data: assetResult, error: assetError } = await supabase
+                .schema('neta_ops')
+                .from('assets')
+                .insert(assetData)
+                .select('id')
+                .single();
+
+              if (assetError) throw assetError;
+
+              // Link asset to job
+              await supabase
+                .schema('neta_ops')
+                .from('job_assets')
+                .insert({
+                  job_id: id,
+                  asset_id: assetResult.id,
+                  user_id: user.id
+                });
+            } catch (assetError) {
+              console.error('Error creating asset for imported report:', assetError);
+            }
+          }
+
+          // Complete progress
+          setBatchUploadStatus('Finalizing...');
+          setBatchUploadProgress(100);
+
+          // Refresh the UI
+          fetchJobAssets();
+          
+          // Show results
+          if (batchResult.failedCount === 0) {
+            toast({ 
+              title: 'Success', 
+              description: `All ${batchResult.successfulCount} reports imported successfully!`, 
+              variant: 'success' 
+            });
+          } else {
+            toast({ 
+              title: 'Partial Success', 
+              description: `${batchResult.successfulCount} reports imported, ${batchResult.failedCount} failed. Check console for details.`, 
+              variant: 'default' 
+            });
+          }
+
+          // Log detailed results
+          console.log('Batch Import Results:', batchResult);
+          
+          // Log any parse errors
+          if (parseErrors.length > 0) {
+            console.log('Parse Errors:', parseErrors);
+          }
+          
+        } catch (error) {
+          console.error('Error during batch import:', error);
+          toast({ 
+            title: 'Error', 
+            description: `Batch import failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 
+            variant: 'destructive' 
+          });
+        } finally {
+          // Reset batch upload state
+          setIsBatchUploading(false);
+          setBatchUploadProgress(0);
+          setBatchUploadStatus('');
+          setSelectedBatchFiles([]);
+        }
+      }
+    };
+    
+    // Trigger file selection
+    fileInput.click();
+    
+    // Clean up
+    fileInput.remove();
+  };
+
   // Handle delete asset function
   const handleDeleteAsset = async () => {
     if (!assetToDelete || !id) {
@@ -1792,7 +1997,43 @@ export default function JobDetail() {
                   </p>
                 </div>
                 {/* Additional job header details would go here */}
+              </div>
+              
+              {/* Global Batch Upload Progress Indicator */}
+              {isBatchUploading && (
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-shrink-0">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
                     </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                          Batch Import in Progress
+                        </span>
+                        <span className="text-sm text-blue-700 dark:text-blue-300">
+                          {batchUploadProgress}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                          style={{ width: `${batchUploadProgress}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                        {batchUploadStatus}
+                      </p>
+                      {selectedBatchFiles.length > 0 && (
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          Processing {selectedBatchFiles.length} file{selectedBatchFiles.length !== 1 ? 's' : ''}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {/* Additional job overview content would go here */}
             </div>
             
@@ -2223,6 +2464,19 @@ export default function JobDetail() {
                                 <div className="flex items-center">
                                   <Download className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
                                   Upload Report
+                                </div>
+                              </button>
+                              
+                              <button
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                onClick={() => {
+                                  handleBatchImportReport();
+                                  setIsDropdownOpen(false);
+                                }}
+                              >
+                                <div className="flex items-center">
+                                  <Upload className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                  Batch Upload Reports
                                 </div>
                               </button>
                               
@@ -2754,6 +3008,19 @@ export default function JobDetail() {
                   ></div>
                 </div>
                 <p className="text-sm text-center">{uploadProgress}% Uploaded</p>
+              </div>
+            )}
+            
+            {isBatchUploading && (
+              <div className="space-y-2">
+                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-green-600 rounded-full" 
+                    style={{ width: `${batchUploadProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm text-center">{batchUploadProgress}% Complete</p>
+                <p className="text-xs text-gray-500 text-center">{batchUploadStatus}</p>
               </div>
             )}
           </div>

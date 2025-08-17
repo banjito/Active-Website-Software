@@ -56,6 +56,24 @@ const STANDARD_VISUAL_INSPECTION_ITEMS: VisualInspectionItem[] = [
   // Add more items as needed for specific equipment
 ];
 
+// Map generic report types to their NETA standard (right-side header)
+const REPORT_STANDARDS_BY_TYPE: Record<ReportType, string> = {
+  // ATS defaults for generic templates
+  switchgear: 'ATS 7.1',
+  panelboard: 'ATS 7.1',
+  dry_type_transformer: 'ATS 7.2.1.1',
+  large_dry_type_transformer: 'ATS 7.2.1.1',
+  liquid_filled_transformer: 'ATS 7.2.1.1',
+  oil_transformer: 'ATS 7.2.1.1',
+  medium_voltage_cable: 'ATS 7.3.3',
+  low_voltage_cable: 'ATS 7.2.1.1',
+  circuit_breaker: 'ATS 7.6.1.2', // default to LV CB; adjust per specific report if needed
+  current_transformer: 'ATS 7.10.1',
+  voltage_transformer: 'ATS 7.10.2',
+  motor_starter: 'MTS 7.16.1.2',
+  automatic_transfer_switch: 'ATS 7.22.3',
+};
+
 const StandardReportTemplate: React.FC = () => {
   const { jobId, reportId } = useParams<{ jobId: string; reportId?: string }>();
   const navigate = useNavigate();
@@ -338,6 +356,18 @@ const StandardReportTemplate: React.FC = () => {
   return (
     <div className="p-6 flex justify-center">
       <div className="max-w-7xl w-full space-y-6">
+        {/* Print Header - Only visible when printing */}
+        <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
+          <div className="flex-1 text-center">
+            <h1 className="text-2xl font-bold text-black mb-1">Standard Report Template</h1>
+          </div>
+          <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+            {`NETA - ${REPORT_STANDARDS_BY_TYPE[REPORT_TYPE] || 'ATS 7.1'}`}
+          </div>
+        </div>
+
+        {/* On-screen heading */}
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Standard Report Template
         </h1>

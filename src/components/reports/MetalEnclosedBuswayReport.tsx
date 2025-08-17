@@ -343,6 +343,10 @@ const MetalEnclosedBuswayReport: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
   const [isSaving, setIsSaving] = useState(false);
+  // Optional: hold raw row for debugging when ?debug=true
+  const [rawRow, setRawRow] = useState<any>(null);
+  const [notFound, setNotFound] = useState<boolean>(false);
+  const [suggestedReports, setSuggestedReports] = useState<any[]>([]);
   
   // Print Mode Detection
   const isPrintMode = searchParams.get('print') === 'true';
@@ -489,6 +493,41 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       setFormData(prev => ({...prev, tcf}));
     }
   }, [formData.temperature]);
+
+  // Recalculate temperature-corrected insulation resistance values
+  useEffect(() => {
+    const keys = ['aToB','bToC','cToA','aToN','bToN','cToN','aToG','bToG','cToG','nToG'] as const;
+
+    const parseReading = (value: string | number | undefined): number | null => {
+      if (value === undefined || value === null) return null;
+      const s = String(value).replace(/,/g, '').replace(/[^0-9eE+\-.]/g, '');
+      const n = parseFloat(s);
+      return isNaN(n) ? null : n;
+    };
+
+    const tcf = Number(formData.tcf);
+    if (!tcf || Number.isNaN(tcf)) {
+      // Clear corrected values when TCF is invalid
+      const cleared: Record<string, string> = {} as any;
+      keys.forEach(k => { cleared[k] = ''; });
+      const changed = keys.some(k => (formData.correctedInsulationResistance[k] || '') !== (cleared[k] || ''));
+      if (changed) {
+        setFormData(prev => ({ ...prev, correctedInsulationResistance: cleared }));
+      }
+      return;
+    }
+
+    const computed: Record<string, string> = {} as any;
+    keys.forEach(k => {
+      const base = parseReading((formData.insulationResistance as any)[k]);
+      computed[k] = base === null ? '' : (base * tcf).toFixed(2);
+    });
+
+    const changed = keys.some(k => (formData.correctedInsulationResistance[k] || '') !== (computed[k] || ''));
+    if (changed) {
+      setFormData(prev => ({ ...prev, correctedInsulationResistance: computed }));
+    }
+  }, [formData.insulationResistance, formData.tcf]);
   
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -618,31 +657,65 @@ const MetalEnclosedBuswayReport: React.FC = () => {
 
   // Load report data
   const loadReport = async () => {
-    if (!reportId || !user?.id) {
+    // Load report without requiring user context; viewing does not need user id
+    if (!reportId) {
       setLoading(false);
       setIsEditing(true);
       return;
     }
 
     try {
-      const { data, error } = await supabase
+      // Primary fetch: by id only
+      let { data, error } = await supabase
         .schema('neta_ops')
         .from('metal_enclosed_busway_reports')
-        .select('*')
+        .select('*, report_info, visual_mechanical, visual_mechanical_inspection, contact_resistance, bus_resistance, insulation_resistance, test_equipment, comments, status')
         .eq('id', reportId)
         .maybeSingle();
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          console.warn(`Report with ID ${reportId} not found or access denied.`);
-          alert('Report not found or you do not have permission to view it.');
-          navigate(`/jobs/${jobId}?tab=assets`);
-          return;
+      if (error || !data) {
+        // Fallback: some RLS policies require matching user_id and/or job_id
+        console.warn('Primary fetch returned no row. Trying fallback filters (user_id/job_id)...');
+        const fb = supabase
+          .schema('neta_ops')
+          .from('metal_enclosed_busway_reports')
+          .select('*, report_info, visual_mechanical, visual_mechanical_inspection, contact_resistance, bus_resistance, insulation_resistance, test_equipment, comments, status')
+          .eq('id', reportId)
+          .eq('job_id', jobId || '')
+          .maybeSingle();
+        let fbResult = await fb;
+        if ((!fbResult.data || fbResult.error) && user?.id) {
+          fbResult = await supabase
+            .schema('neta_ops')
+            .from('metal_enclosed_busway_reports')
+            .select('*, report_info, visual_mechanical, visual_mechanical_inspection, contact_resistance, bus_resistance, insulation_resistance, test_equipment, comments, status')
+            .eq('id', reportId)
+            .eq('user_id', user.id)
+            .maybeSingle();
         }
-        throw error;
+        data = fbResult.data as any;
+        error = fbResult.error as any;
+      }
+
+      if (error && !data) {
+        console.warn(`Report with ID ${reportId} not found or access denied.`, error);
+        setNotFound(true);
+        // Try to suggest existing reports for this job so user can pick one
+        if (jobId) {
+          const { data: list } = await supabase
+            .schema('neta_ops')
+            .from('metal_enclosed_busway_reports')
+            .select('id, created_at')
+            .eq('job_id', jobId)
+            .order('created_at', { ascending: false })
+            .limit(10);
+          setSuggestedReports(list || []);
+        }
+        return;
       }
 
       if (data) {
+        setRawRow(data);
         console.log('🔍 MetalEnclosedBuswayReport - Loaded data:', data);
         console.log('🔍 insulation_resistance column:', data.insulation_resistance);
         console.log('🔍 insulation_resistance.readings:', data.insulation_resistance?.readings);
@@ -666,13 +739,36 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           return out;
         };
 
-        const vmiFromArray = (arr: any[]): Record<string,string> =>
-          (arr || []).reduce((acc: any, item: any) => {
-            if (item && (item.id || item.section) && (item.result || item.value)) {
-              acc[item.id || item.section] = item.result || item.value;
+        const expectedIds = [
+          '7.4.A.1','7.4.A.2','7.4.A.3','7.4.A.4','7.4.A.5.1','7.4.A.6','7.4.A.7','7.4.A.8','7.4.A.9'
+        ];
+        const guessIdFromDescription = (desc: string): string | null => {
+          const d = (desc || '').toLowerCase();
+          if (!d) return null;
+          if (d.includes('nameplate') && d.includes('drawings')) return '7.4.A.1';
+          if (d.includes('inspect') && d.includes('mechanical')) return '7.4.A.2';
+          if (d.includes('anchorage') || (d.includes('alignment') && d.includes('ground'))) return '7.4.A.3';
+          if (d.includes('single-line') || (d.includes('single line') && d.includes('diagram'))) return '7.4.A.4';
+          if (d.includes('low-resistance') || d.includes('ohmmeter')) return '7.4.A.5.1';
+          if (d.includes('orientation') || d.includes('adequate cooling')) return '7.4.A.6';
+          if (d.includes('weep-hole') || d.includes('weep hole')) return '7.4.A.7';
+          if (d.includes('joint') && d.includes('shield')) return '7.4.A.8';
+          if (d.includes('ventilating') || d.includes('openings')) return '7.4.A.9';
+          return null;
+        };
+        const vmiFromArray = (arr: any[]): Record<string,string> => {
+          const base: Record<string,string> = Object.fromEntries(expectedIds.map(id => [id, '']));
+          (arr || []).forEach((item: any) => {
+            if (!item) return;
+            const value = item.result ?? item.value ?? '';
+            let key = item.id ?? item.section ?? null;
+            if (!key && item.description) key = guessIdFromDescription(item.description);
+            if (key && expectedIds.includes(key) && value !== undefined) {
+              base[key] = value;
             }
-            return acc;
-          }, {});
+          });
+          return base;
+        };
 
         // Payload fallback (for tables where everything is under a JSONB column like report_data or data)
         const payload: any = (data as any).report_data || (data as any).data || {};
@@ -680,8 +776,22 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         const R = (key: string, def: any = '') => (data.report_info?.[key] ?? payload.report_info?.[key] ?? payload[key] ?? def);
         const J = (key: string) => (data as any)[key] ?? payload[key];
 
+        // Prefer new column names but fall back to legacy ones; prefer NON-EMPTY values
+        const isNonEmptyArray = (a: any) => Array.isArray(a) && a.length > 0;
+        const isNonEmptyObj = (o: any) => o && typeof o === 'object' && Object.keys(o).length > 0;
+
+        const vmInspect = J('visual_mechanical_inspection');
+        const vmLegacy = J('visual_mechanical');
+        const visualArray = isNonEmptyArray(vmInspect)
+          ? vmInspect
+          : (isNonEmptyArray(vmLegacy) ? vmLegacy : []);
+
+        const busNew = J('bus_resistance');
+        const busLegacy = J('contact_resistance');
+        const busResObj = isNonEmptyObj(busNew) ? busNew : (isNonEmptyObj(busLegacy) ? busLegacy : (R('busResistance', {}) || {}));
+
         const newFormData = {
-          customer: data.report_info?.customer || '',
+          customer: R('customer'),
           address: R('address'),
           user: R('user'),
           date: R('date'),
@@ -689,7 +799,8 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           jobNumber: R('jobNumber'),
           technicians: R('technicians'),
           substation: R('substation'),
-          equipment: R('equipment'),
+          // Importer stores equipment location as 'eqptLocation'; support both
+          equipment: (R('equipment') || (data.report_info?.eqptLocation ?? (payload.report_info?.eqptLocation ?? payload.eqptLocation) ?? '')),
           
           temperature: R('temperature'),
           fahrenheit: (data.report_info?.fahrenheit ?? payload.report_info?.fahrenheit ?? true),
@@ -706,17 +817,27 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           operatingVoltage: R('operatingVoltage'),
           ampacity: R('ampacity'),
           
-          // Visual and mechanical inspection from separate column or report_info
-          netaResults: (Array.isArray(J('visual_mechanical_inspection'))
-            ? vmiFromArray(J('visual_mechanical_inspection'))
-            : (R('netaResults', {}) || {})),
+          // Visual and mechanical inspection from separate column(s) or report_info
+          netaResults: (Array.isArray(visualArray)
+            ? vmiFromArray(visualArray)
+            : ({
+                '7.4.A.1': R('netaResults', {})['7.4.A.1'] || '',
+                '7.4.A.2': R('netaResults', {})['7.4.A.2'] || '',
+                '7.4.A.3': R('netaResults', {})['7.4.A.3'] || '',
+                '7.4.A.4': R('netaResults', {})['7.4.A.4'] || '',
+                '7.4.A.5.1': R('netaResults', {})['7.4.A.5.1'] || '',
+                '7.4.A.6': R('netaResults', {})['7.4.A.6'] || '',
+                '7.4.A.7': R('netaResults', {})['7.4.A.7'] || '',
+                '7.4.A.8': R('netaResults', {})['7.4.A.8'] || '',
+                '7.4.A.9': R('netaResults', {})['7.4.A.9'] || ''
+              })),
           
           // Bus resistance from separate column or report_info
           busResistance: {
-            p1: J('bus_resistance')?.p1 || R('busResistance', {})?.p1 || '',
-            p2: J('bus_resistance')?.p2 || R('busResistance', {})?.p2 || '',
-            p3: J('bus_resistance')?.p3 || R('busResistance', {})?.p3 || '',
-            neutral: J('bus_resistance')?.neutral || R('busResistance', {})?.neutral || ''
+            p1: busResObj?.p1 ?? busResObj?.P1 ?? busResObj?.phase1 ?? '',
+            p2: busResObj?.p2 ?? busResObj?.P2 ?? busResObj?.phase2 ?? '',
+            p3: busResObj?.p3 ?? busResObj?.P3 ?? busResObj?.phase3 ?? '',
+            neutral: busResObj?.neutral ?? busResObj?.N ?? busResObj?.neut ?? ''
           },
           
           // Map insulation resistance from the separate column
@@ -776,6 +897,8 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         console.log('🔍 MetalEnclosedBuswayReport - Mapped formData:', newFormData);
         setFormData(newFormData);
         setIsEditing(false);
+      } else {
+        console.warn('MetalEnclosedBuswayReport - No data returned for id:', reportId);
       }
     } catch (error) {
       console.error('Error loading report:', error);
@@ -847,15 +970,75 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         updated_at: new Date().toISOString()
       };
 
+      // Also populate dedicated JSONB columns for robust loads
+      const visualArray = Object.entries(formData.netaResults || {}).map(([id, result]) => ({ id, result }));
+      const busRes = {
+        p1: formData.busResistance?.p1 || '',
+        p2: formData.busResistance?.p2 || '',
+        p3: formData.busResistance?.p3 || '',
+        neutral: formData.busResistance?.neutral || ''
+      };
+      const insRes = {
+        testVoltage: formData.testVoltage1 || '',
+        units: formData.insulationResistanceUnit || 'MΩ',
+        temperature: formData.temperature || '',
+        tcf: formData.tcf,
+        readings: {
+          aToB: formData.insulationResistance.aToB || '',
+          bToC: formData.insulationResistance.bToC || '',
+          cToA: formData.insulationResistance.cToA || '',
+          aToN: formData.insulationResistance.aToN || '',
+          bToN: formData.insulationResistance.bToN || '',
+          cToN: formData.insulationResistance.cToN || '',
+          aToG: formData.insulationResistance.aToG || '',
+          bToG: formData.insulationResistance.bToG || '',
+          cToG: formData.insulationResistance.cToG || '',
+          nToG: formData.insulationResistance.nToG || ''
+        },
+        correctedReadings: {
+          aToB: formData.correctedInsulationResistance.aToB || '',
+          bToC: formData.correctedInsulationResistance.bToC || '',
+          cToA: formData.correctedInsulationResistance.cToA || '',
+          aToN: formData.correctedInsulationResistance.aToN || '',
+          bToN: formData.correctedInsulationResistance.bToN || '',
+          cToN: formData.correctedInsulationResistance.cToN || '',
+          aToG: formData.correctedInsulationResistance.aToG || '',
+          bToG: formData.correctedInsulationResistance.bToG || '',
+          cToG: formData.correctedInsulationResistance.cToG || '',
+          nToG: formData.correctedInsulationResistance.nToG || ''
+        }
+      };
+      const testEquipment = {
+        megohmmeter: {
+          name: formData.megohmmeter || '',
+          serialNumber: formData.megohmSerial || '',
+          ampId: formData.megAmpId || ''
+        },
+        lowResistanceOhmmeter: {
+          name: formData.lowResistanceOhmmeter || '',
+          serialNumber: formData.lowResistanceSerial || '',
+          ampId: formData.lowResistanceAmpId || ''
+        }
+      };
+
+      const upsertPayload: any = {
+        report_info: reportData.report_info,
+        comments: reportData.comments,
+        status: reportData.report_info.status,
+        visual_mechanical_inspection: visualArray,
+        bus_resistance: busRes,
+        insulation_resistance: insRes,
+        test_equipment: testEquipment
+      };
+
       let result;
       if (reportId) {
         // Update existing report
         result = await supabase
           .schema('neta_ops')
           .from('metal_enclosed_busway_reports')
-          .update(reportData)
+          .update(upsertPayload)
           .eq('id', reportId)
-          .eq('user_id', user.id)
           .select()
           .single();
       } else {
@@ -864,7 +1047,13 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         result = await supabase
           .schema('neta_ops')
           .from('metal_enclosed_busway_reports')
-          .insert(reportData)
+          .insert({
+            job_id: jobId,
+            user_id: user.id,
+            ...upsertPayload,
+            created_at: reportData.created_at,
+            updated_at: reportData.updated_at
+          })
           .select()
           .single();
       }
@@ -929,6 +1118,30 @@ const MetalEnclosedBuswayReport: React.FC = () => {
     return <div>Loading...</div>;
   }
 
+  if (notFound) {
+    return (
+      <div className="p-6">
+        <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Report not found or access denied</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">We couldn’t load this Metal Enclosed Busway report. It may not exist, or you may not have permission.</p>
+        {jobId && suggestedReports.length > 0 && (
+          <div>
+            <h3 className="text-sm font-medium mb-2 text-gray-900 dark:text-white">Recent reports for this job:</h3>
+            <ul className="list-disc pl-5 text-sm text-blue-600 dark:text-blue-300">
+              {suggestedReports.map(r => (
+                <li key={r.id}>
+                  <a href={`/jobs/${jobId}/metal-enclosed-busway/${r.id}`} className="underline">
+                    {r.id}
+                  </a>
+                  <span className="ml-2 text-gray-500 dark:text-gray-400">{new Date(r.created_at).toLocaleString()}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // Render header function
   const renderHeader = () => (
     <div className="flex justify-between items-center">
@@ -991,7 +1204,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
         <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
-          NETA
+          NETA - ATS 7.4
           <div className="hidden print:block mt-2">
             <div
               className="pass-fail-status-box"
@@ -1021,6 +1234,15 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       
       <div className="p-6 flex justify-center">
         <div className="max-w-7xl w-full space-y-6">
+          {/* Optional debug dump: open with ?debug=true */}
+          {searchParams.get('debug') === 'true' && (
+            <section className="mb-4">
+              <h2 className="text-sm font-semibold mb-2 text-gray-900 dark:text-white">Debug: Raw Loaded Row</h2>
+              <pre className="p-3 bg-gray-100 dark:bg-dark-100 rounded text-xs overflow-auto max-h-64 text-gray-900 dark:text-white">
+                {rawRow ? JSON.stringify(rawRow, null, 2) : 'No row loaded'}
+              </pre>
+            </section>
+          )}
           {/* Header with title and buttons */}
           <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
             {renderHeader()}

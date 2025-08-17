@@ -787,7 +787,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
         <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c', width: '120px' }}>
-          NETA
+          NETA - ATS 7.10.1
           <div className="hidden print:block mt-2">
             <div 
               className="pass-fail-status-box"

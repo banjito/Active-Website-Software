@@ -594,30 +594,36 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+            <colgroup>
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '68%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
             <thead className="bg-gray-50 dark:bg-dark-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/6">NETA Section</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-2/3">Description</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/6">Results</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Results</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
               {formData.visualInspectionItems.map((item, index) => (
                 <tr key={index}>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{item.netaSection}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{item.description}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm">{item.netaSection}</td>
+                  <td className="px-3 py-2 text-sm whitespace-normal break-words">{item.description}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <select
                       value={item.result}
                       onChange={(e) => handleChange('visualInspectionItems', 'result', e.target.value, index)}
                       disabled={!isEditing}
-                      className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`form-select ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     >
                       {visualInspectionOptions.map(option => (
                         <option key={option} value={option}>{option}</option>
                       ))}
                     </select>
+                    <span className="print:inline-block" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>{item.result === 'Select One' ? '' : item.result}</span>
                   </td>
                 </tr>
               ))}

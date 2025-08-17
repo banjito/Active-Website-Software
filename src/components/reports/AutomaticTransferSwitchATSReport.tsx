@@ -258,9 +258,8 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         }
       }
       if (data) {
-        // Check if data is in the 'data' column (new structure) or individual columns (old structure)
+        // Prefer full JSON payload if present (ensures nameplate & test equipment reload)
         if (data.data) {
-          // New structure: all data is in the 'data' column
           setFormData(prev => ({
             ...prev,
             ...data.data,
@@ -274,9 +273,18 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
             visualInspectionItems: data.visual_inspection_items || JSON.parse(JSON.stringify(initialVisualInspectionItems)),
             insulationResistance: data.insulation_resistance || prev.insulationResistance,
             contactResistance: data.contact_resistance || prev.contactResistance,
-            // test_equipment_used column not present on this table; preserve current state
             comments: data.comments || '',
             status: data.report_info?.status || 'PASS',
+            // Hydrate nameplate & equipment from report_info if present (legacy persistence)
+            nameplateManufacturer: data.report_info?.nameplateManufacturer ?? prev.nameplateManufacturer,
+            nameplateModelType: data.report_info?.nameplateModelType ?? prev.nameplateModelType,
+            nameplateCatalogNo: data.report_info?.nameplateCatalogNo ?? prev.nameplateCatalogNo,
+            nameplateSerialNumber: data.report_info?.nameplateSerialNumber ?? prev.nameplateSerialNumber,
+            nameplateSystemVoltage: data.report_info?.nameplateSystemVoltage ?? prev.nameplateSystemVoltage,
+            nameplateRatedVoltage: data.report_info?.nameplateRatedVoltage ?? prev.nameplateRatedVoltage,
+            nameplateRatedCurrent: data.report_info?.nameplateRatedCurrent ?? prev.nameplateRatedCurrent,
+            nameplateSCCR: data.report_info?.nameplateSCCR ?? prev.nameplateSCCR,
+            testEquipmentUsed: data.report_info?.testEquipmentUsed ?? prev.testEquipmentUsed,
           }));
         }
         setIsEditing(false);
@@ -380,7 +388,8 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
  
-    const reportPayload = {
+    // Build base payload that works on legacy table (no 'data' column)
+    const basePayload = {
       job_id: jobId,
       user_id: user.id,
       report_info: {
@@ -394,6 +403,16 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         temperature: formData.temperature,
         substation: formData.substation,
         eqptLocation: formData.eqptLocation,
+        // Persist nameplate and test equipment inside report_info for legacy tables
+        nameplateManufacturer: formData.nameplateManufacturer,
+        nameplateModelType: formData.nameplateModelType,
+        nameplateCatalogNo: formData.nameplateCatalogNo,
+        nameplateSerialNumber: formData.nameplateSerialNumber,
+        nameplateSystemVoltage: formData.nameplateSystemVoltage,
+        nameplateRatedVoltage: formData.nameplateRatedVoltage,
+        nameplateRatedCurrent: formData.nameplateRatedCurrent,
+        nameplateSCCR: formData.nameplateSCCR,
+        testEquipmentUsed: formData.testEquipmentUsed,
         status: formData.status,
       },
       // Some ATS tables don’t include a dedicated nameplate JSONB; keep legacy-compatible payload
@@ -402,25 +421,46 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
       contact_resistance: formData.contactResistance,
       // No dedicated test_equipment_used column on this table
       comments: formData.comments,
-    };
+    } as const;
+
+    // If the table supports a JSONB 'data' column, we’ll include it; otherwise we’ll fall back gracefully
+    const fullPayload = { ...basePayload, data: { ...formData } } as any;
  
     try {
-      let result;
+      let result: any;
       if (reportId) {
+        // Try with full payload first; retry with legacy if 'data' column is missing
         result = await supabase
           .schema('neta_ops')
           .from('automatic_transfer_switch_ats_reports')
-          .update(reportPayload)
+          .update(fullPayload)
           .eq('id', reportId)
           .select()
           .single();
+        if (result?.error && String(result.error.message || '').toLowerCase().includes("data")) {
+          result = await supabase
+            .schema('neta_ops')
+            .from('automatic_transfer_switch_ats_reports')
+            .update(basePayload)
+            .eq('id', reportId)
+            .select()
+            .single();
+        }
       } else {
         result = await supabase
           .schema('neta_ops')
           .from('automatic_transfer_switch_ats_reports')
-          .insert(reportPayload)
+          .insert(fullPayload)
           .select()
           .single();
+        if (result?.error && String(result.error.message || '').toLowerCase().includes("data")) {
+          result = await supabase
+            .schema('neta_ops')
+            .from('automatic_transfer_switch_ats_reports')
+            .insert(basePayload)
+            .select()
+            .single();
+        }
  
         if (result.data) {
           const assetData = {

@@ -155,9 +155,26 @@ export class PDFExportService {
     assets: Asset[], 
     onProgress?: ProgressCallback
   ): Promise<void> {
-    const approvedReports = assets.filter(
-      asset => asset.status === 'approved' && asset.file_url?.startsWith('report:')
+    // Filter approved-only (case-insensitive) and report-type assets
+    const approvedOnly = assets.filter((asset) =>
+      asset.file_url?.startsWith('report:') && String(asset.status || '').toLowerCase() === 'approved'
     );
+
+    // De-duplicate by report id embedded in file_url: report:/jobs/{jobId}/{slug}/{reportId}
+    const seen = new Set<string>();
+    const approvedReports = approvedOnly.filter((asset) => {
+      try {
+        const path = asset.file_url.replace('report:', '');
+        const parts = path.split('/').filter(Boolean);
+        const reportId = parts[parts.length - 1];
+        const key = reportId || path;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      } catch {
+        return false;
+      }
+    });
 
     if (approvedReports.length === 0) {
       throw new Error('No approved reports found to print');
@@ -166,7 +183,7 @@ export class PDFExportService {
     onProgress?.(0, 'Preparing reports for PDF generation...');
 
     try {
-      // Process each report
+      // Process each unique approved report
       for (let i = 0; i < approvedReports.length; i++) {
         const asset = approvedReports[i];
         const progress = ((i + 1) / approvedReports.length) * 100;
@@ -207,16 +224,17 @@ export class PDFExportService {
     iframe.style.border = 'none';
     document.body.appendChild(iframe);
 
-    // Load the report in the iframe
-    iframe.src = reportUrl;
+    // Load the report in the iframe with print mode enabled so it matches in-report export
+    const urlWithPrint = reportUrl.includes('?') ? `${reportUrl}&print=true` : `${reportUrl}?print=true`;
+    iframe.src = urlWithPrint;
 
     // Wait for iframe to load
     await new Promise<void>((resolve) => {
       iframe.onload = () => resolve();
     });
 
-    // Wait for dynamic content to load
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Wait for dynamic content to load, including charts
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     // Get the iframe document
     const iframeDocument = iframe.contentDocument;
@@ -305,6 +323,7 @@ export class PDFExportService {
           margin-bottom: 20px !important; 
           page-break-inside: avoid !important;
         }
+        /* Let the report's own print styles handle page breaks */
         
         /* Preserve spacing and layout */
         .space-x-2 > * + * { margin-left: 0.5rem !important; }
@@ -375,6 +394,18 @@ export class PDFExportService {
       }
     `;
     iframeDocument.head.appendChild(printStyle);
+
+    // Force charts to render properly by triggering resize events
+    try {
+      // Trigger resize events to ensure charts render
+      iframe.contentWindow?.dispatchEvent(new Event('resize'));
+      
+      // Also trigger window resize for any chart libraries that listen to it
+      iframe.contentWindow?.dispatchEvent(new Event('resize'));
+      
+      // Wait a bit more for charts to fully render
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    } catch {}
 
     // Force the iframe to apply print styles
     iframeDocument.documentElement.classList.add('print-mode');

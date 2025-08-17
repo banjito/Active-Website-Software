@@ -674,92 +674,99 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             return acc;
           }, {});
 
+        // Payload fallback (for tables where everything is under a JSONB column like report_data or data)
+        const payload: any = (data as any).report_data || (data as any).data || {};
+
+        const R = (key: string, def: any = '') => (data.report_info?.[key] ?? payload.report_info?.[key] ?? payload[key] ?? def);
+        const J = (key: string) => (data as any)[key] ?? payload[key];
+
         const newFormData = {
           customer: data.report_info?.customer || '',
-          address: data.report_info?.address || '',
-          user: data.report_info?.user || '',
-          date: data.report_info?.date || '',
-          identifier: data.report_info?.identifier || '',
-          jobNumber: data.report_info?.jobNumber || '',
-          technicians: data.report_info?.technicians || '',
-          substation: data.report_info?.substation || '',
-          equipment: data.report_info?.equipment || '',
+          address: R('address'),
+          user: R('user'),
+          date: R('date'),
+          identifier: R('identifier'),
+          jobNumber: R('jobNumber'),
+          technicians: R('technicians'),
+          substation: R('substation'),
+          equipment: R('equipment'),
           
-          temperature: data.report_info?.temperature || '',
-          fahrenheit: data.report_info?.fahrenheit ?? true,
-          tcf: data.insulation_resistance?.tcf ? parseFloat(data.insulation_resistance.tcf) : (typeof data.report_info?.tcf === 'number' ? data.report_info.tcf : 0.138),
-          humidity: data.report_info?.humidity || '',
+          temperature: R('temperature'),
+          fahrenheit: (data.report_info?.fahrenheit ?? payload.report_info?.fahrenheit ?? true),
+          tcf: (data.insulation_resistance?.tcf ? parseFloat(data.insulation_resistance.tcf)
+                : (typeof R('tcf') === 'number' ? R('tcf') : 0.138)),
+          humidity: R('humidity'),
           
-          manufacturer: data.report_info?.manufacturer || '',
-          catalogNumber: data.report_info?.catalogNumber || '',
-          serialNumber: data.report_info?.serialNumber || '',
-          fedFrom: data.report_info?.fedFrom || '',
-          conductorMaterial: data.report_info?.conductorMaterial || '',
-          ratedVoltage: data.report_info?.ratedVoltage || '',
-          operatingVoltage: data.report_info?.operatingVoltage || '',
-          ampacity: data.report_info?.ampacity || '',
+          manufacturer: R('manufacturer'),
+          catalogNumber: R('catalogNumber'),
+          serialNumber: R('serialNumber'),
+          fedFrom: R('fedFrom'),
+          conductorMaterial: R('conductorMaterial'),
+          ratedVoltage: R('ratedVoltage'),
+          operatingVoltage: R('operatingVoltage'),
+          ampacity: R('ampacity'),
           
           // Visual and mechanical inspection from separate column or report_info
-          netaResults: (data.visual_mechanical_inspection && Array.isArray(data.visual_mechanical_inspection))
-            ? vmiFromArray(data.visual_mechanical_inspection)
-            : (data.report_info?.netaResults || {}),
+          netaResults: (Array.isArray(J('visual_mechanical_inspection'))
+            ? vmiFromArray(J('visual_mechanical_inspection'))
+            : (R('netaResults', {}) || {})),
           
           // Bus resistance from separate column or report_info
           busResistance: {
-            p1: data.bus_resistance?.p1 || data.report_info?.busResistance?.p1 || '',
-            p2: data.bus_resistance?.p2 || data.report_info?.busResistance?.p2 || '',
-            p3: data.bus_resistance?.p3 || data.report_info?.busResistance?.p3 || '',
-            neutral: data.bus_resistance?.neutral || data.report_info?.busResistance?.neutral || ''
+            p1: J('bus_resistance')?.p1 || R('busResistance', {})?.p1 || '',
+            p2: J('bus_resistance')?.p2 || R('busResistance', {})?.p2 || '',
+            p3: J('bus_resistance')?.p3 || R('busResistance', {})?.p3 || '',
+            neutral: J('bus_resistance')?.neutral || R('busResistance', {})?.neutral || ''
           },
           
           // Map insulation resistance from the separate column
-          testVoltage1: data.insulation_resistance?.testVoltage || data.report_info?.testVoltage1 || '',
+          testVoltage1: J('insulation_resistance')?.testVoltage || R('testVoltage1') || '',
           insulationResistance: {
-            ...(data.insulation_resistance?.readings
+            ...(J('insulation_resistance')?.readings
               ? {
-                  aToB: data.insulation_resistance.readings.aToB || '',
-                  bToC: data.insulation_resistance.readings.bToC || '',
-                  cToA: data.insulation_resistance.readings.cToA || '',
-                  aToN: data.insulation_resistance.readings.aToN || '',
-                  bToN: data.insulation_resistance.readings.bToN || '',
-                  cToN: data.insulation_resistance.readings.cToN || '',
-                  aToG: data.insulation_resistance.readings.aToG || '',
-                  bToG: data.insulation_resistance.readings.bToG || '',
-                  cToG: data.insulation_resistance.readings.cToG || '',
-                  nToG: data.insulation_resistance.readings.nToG || ''
+                  aToB: J('insulation_resistance').readings.aToB || '',
+                  bToC: J('insulation_resistance').readings.bToC || '',
+                  cToA: J('insulation_resistance').readings.cToA || '',
+                  aToN: J('insulation_resistance').readings.aToN || '',
+                  bToN: J('insulation_resistance').readings.bToN || '',
+                  cToN: J('insulation_resistance').readings.cToN || '',
+                  aToG: J('insulation_resistance').readings.aToG || '',
+                  bToG: J('insulation_resistance').readings.bToG || '',
+                  cToG: J('insulation_resistance').readings.cToG || '',
+                  nToG: J('insulation_resistance').readings.nToG || ''
                 }
-              : normalizeInsulationObj(data.report_info?.insulationResistance)),
+              : normalizeInsulationObj(R('insulationResistance', {}))),
           },
           correctedInsulationResistance: {
-            aToB: data.insulation_resistance?.correctedReadings?.aToB || '',
-            bToC: data.insulation_resistance?.correctedReadings?.bToC || '',
-            cToA: data.insulation_resistance?.correctedReadings?.cToA || '',
-            aToN: data.insulation_resistance?.correctedReadings?.aToN || '',
-            bToN: data.insulation_resistance?.correctedReadings?.bToN || '',
-            cToN: data.insulation_resistance?.correctedReadings?.cToN || '',
-            aToG: data.insulation_resistance?.correctedReadings?.aToG || '',
-            bToG: data.insulation_resistance?.correctedReadings?.bToG || '',
-            cToG: data.insulation_resistance?.correctedReadings?.cToG || '',
-            nToG: data.insulation_resistance?.correctedReadings?.nToG || ''
+            aToB: J('insulation_resistance')?.correctedReadings?.aToB || '',
+            bToC: J('insulation_resistance')?.correctedReadings?.bToC || '',
+            cToA: J('insulation_resistance')?.correctedReadings?.cToA || '',
+            aToN: J('insulation_resistance')?.correctedReadings?.aToN || '',
+            bToN: J('insulation_resistance')?.correctedReadings?.bToN || '',
+            cToN: J('insulation_resistance')?.correctedReadings?.cToN || '',
+            aToG: J('insulation_resistance')?.correctedReadings?.aToG || '',
+            bToG: J('insulation_resistance')?.correctedReadings?.bToG || '',
+            cToG: J('insulation_resistance')?.correctedReadings?.cToG || '',
+            nToG: J('insulation_resistance')?.correctedReadings?.nToG || ''
           },
           
           // Map test equipment from the separate column
-          megohmmeter: data.test_equipment?.megohmmeter?.name || data.report_info?.megohmmeter || '',
-          megohmSerial: data.test_equipment?.megohmmeter?.serialNumber || data.report_info?.megohmSerial || '',
-          megAmpId: data.test_equipment?.megohmmeter?.ampId || data.report_info?.megAmpId || '',
-          lowResistanceOhmmeter: data.test_equipment?.lowResistanceOhmmeter?.name || data.report_info?.lowResistanceOhmmeter || '',
-          lowResistanceSerial: data.test_equipment?.lowResistanceOhmmeter?.serialNumber || data.report_info?.lowResistanceSerial || '',
-          lowResistanceAmpId: data.test_equipment?.lowResistanceOhmmeter?.ampId || data.report_info?.lowResistanceAmpId || '',
+          megohmmeter: J('test_equipment')?.megohmmeter?.name || R('megohmmeter') || '',
+          megohmSerial: J('test_equipment')?.megohmmeter?.serialNumber || R('megohmSerial') || '',
+          megAmpId: J('test_equipment')?.megohmmeter?.ampId || R('megAmpId') || '',
+          lowResistanceOhmmeter: J('test_equipment')?.lowResistanceOhmmeter?.name || R('lowResistanceOhmmeter') || '',
+          lowResistanceSerial: J('test_equipment')?.lowResistanceOhmmeter?.serialNumber || R('lowResistanceSerial') || '',
+          lowResistanceAmpId: J('test_equipment')?.lowResistanceOhmmeter?.ampId || R('lowResistanceAmpId') || '',
           
           comments: data.comments || '',
           status: data.status || 'PASS',
           
-          insulationResistanceUnit: data.insulation_resistance?.units || data.report_info?.insulationResistanceUnit || 'MΩ',
+          insulationResistanceUnit: J('insulation_resistance')?.units || R('insulationResistanceUnit') || 'MΩ',
           contactResistanceUnit: 'μΩ', // Default value
           dielectricWithstandUnit: 'mA', // Default value
           
           cableRating: '', // Not used in this report
-          testVoltage: data.insulation_resistance?.testVoltage || data.report_info?.testVoltage1 || '',
+          testVoltage: J('insulation_resistance')?.testVoltage || R('testVoltage1') || '',
           
           dielectricPhaseA: '', // Not used in this report
           dielectricPhaseB: '', // Not used in this report

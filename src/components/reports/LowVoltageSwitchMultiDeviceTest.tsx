@@ -483,6 +483,12 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
               <div className="flex">
                 <div className="flex-grow">
                   <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 visual-inspection-table">
+                    <colgroup>
+                      <col style={{ width: '25%' }} />
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <col key={`vmi-col-${i}`} style={{ width: '6.25%' }} />
+                      ))}
+                    </colgroup>
                     <thead>
                       <tr>
                         <th colSpan={13} className="border border-gray-300 dark:border-gray-700 p-2 text-center bg-gray-50 dark:bg-dark-200">
@@ -500,27 +506,42 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       {Array.from({ length: 5 }).map((_, rowIndex) => (
                         <tr key={`visual-${rowIndex}`}>
                           <td className="border border-gray-300 dark:border-gray-700 p-2 w-[25%]">
-                            {rowIndex === 4 ? 'P1-' : (
-                              <input
-                                type="text"
-                                value={formData.visualInspection.items[rowIndex]?.identifier || ''}
-                                onChange={(e) => handleVisualInspectionChange(rowIndex, 'identifier', e.target.value)}
-                                readOnly={!isEditing}
-                                className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                              />
+                            {rowIndex === 4 ? (
+                              <>
+                                <span className="print-only">P1-</span>
+                                <span className="screen-only">P1-</span>
+                              </>
+                            ) : (
+                              <>
+                                <input
+                                  type="text"
+                                  value={formData.visualInspection.items[rowIndex]?.identifier || ''}
+                                  onChange={(e) => handleVisualInspectionChange(rowIndex, 'identifier', e.target.value)}
+                                  readOnly={!isEditing}
+                                  className={`w-full bg-transparent border-none focus:ring-0 screen-only ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                />
+                                <span className="print-only">
+                                  {formData.visualInspection.items[rowIndex]?.identifier || ''}
+                                </span>
+                              </>
                             )}
                           </td>
                           {Array.from({ length: 12 }).map((_, colIndex) => (
                             <td key={`visual-${rowIndex}-${colIndex}`} className="border border-gray-300 dark:border-gray-700 p-2 w-[6.25%]">
-                              <select
-                                value={formData.visualInspection.items[rowIndex]?.values[`${colIndex + 1}`] || ''}
-                                onChange={(e) => handleVisualInspectionChange(rowIndex, `${colIndex + 1}`, e.target.value)}
-                                disabled={!isEditing}
-                                className={`w-full bg-transparent border-none focus:ring-0 text-center ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                              >
-                                <option value=""></option>
-                                {['Y','N','N/A'].map(opt => (<option key={opt} value={opt}>{opt}</option>))}
-                              </select>
+                              <>
+                                <select
+                                  value={formData.visualInspection.items[rowIndex]?.values[`${colIndex + 1}`] || ''}
+                                  onChange={(e) => handleVisualInspectionChange(rowIndex, `${colIndex + 1}`, e.target.value)}
+                                  disabled={!isEditing}
+                                  className={`w-full bg-transparent border-none focus:ring-0 text-center screen-only ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                >
+                                  <option value=""></option>
+                                  {['Y','N','N/A'].map(opt => (<option key={opt} value={opt}>{opt}</option>))}
+                                </select>
+                                <span className="print-only block text-center">
+                                  {formData.visualInspection.items[rowIndex]?.values[`${colIndex + 1}`] || ''}
+                                </span>
+                              </>
                             </td>
                           ))}
                         </tr>
@@ -902,8 +923,33 @@ if (typeof document !== 'undefined') {
       button:not(.print-visible) { display: none !important; }
 
       table { border-collapse: collapse; width: 100% !important; table-layout: fixed !important; }
-      th, td { border: 1px solid black !important; padding: 3px 4px !important; font-size: 9px !important; line-height: 1.15 !important; vertical-align: middle !important; }
+      th, td { border: 1px solid black !important; padding: 2px 3px !important; font-size: 8px !important; line-height: 1.05 !important; vertical-align: middle !important; }
       th { background-color: #f0f0f0 !important; font-weight: bold !important; }
+
+      /* Visual & Mechanical: match on-screen layout exactly */
+      .visual-mechanical-section .visual-inspection-table { table-layout: fixed !important; }
+      .visual-mechanical-section .visual-inspection-table col:nth-child(1) { width: 25% !important; }
+      .visual-mechanical-section .visual-inspection-table col:nth-child(n+2):nth-child(-n+13) { width: 6.25% !important; }
+      .visual-mechanical-section .visual-inspection-table th,
+      .visual-mechanical-section .visual-inspection-table td {
+        text-align: center !important;
+        padding: 2px 3px !important;
+        font-size: 8px !important;
+        line-height: 1 !important;
+        height: 12px !important;
+      }
+      .visual-mechanical-section .visual-inspection-table td:first-child,
+      .visual-mechanical-section .visual-inspection-table th:first-child { text-align: left !important; }
+      .visual-mechanical-section select { width: 100% !important; background: transparent !important; border: none !important; padding: 0 !important; font-size: 8px !important; height: 12px !important; }
+      .visual-mechanical-section input[type="text"] { width: 100% !important; background: transparent !important; border: none !important; padding: 0 !important; font-size: 8px !important; height: 12px !important; }
+
+      /* Keep legend tight and aligned to the right of the table */
+      .visual-mechanical-section .satisfactory-table { width: auto !important; }
+      .visual-mechanical-section .satisfactory-table th,
+      .visual-mechanical-section .satisfactory-table td { font-size: 8px !important; padding: 2px 3px !important; line-height: 1 !important; }
+      /* Remove internal vertical dividing line artifacts in print */
+      .visual-mechanical-section .visual-inspection-table td,
+      .visual-mechanical-section .visual-inspection-table th { border-color: black !important; }
 
       /* Insulation tables: exact column widths */
       .insulation-measured-section table col:nth-child(1),
@@ -918,6 +964,22 @@ if (typeof document !== 'undefined') {
         padding: 2px !important; font-size: 10px !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important;
       }
       select { background-image: none !important; padding-right: 8px !important; }
+      /* Screen/print visibility helpers */
+      .screen-only { display: inline; }
+      .print-only { display: none; }
+      @media print {
+        .screen-only { display: none !important; }
+        .print-only { display: inline !important; }
+      }
+      
+      /* Force layout for Visual & Mechanical section in print */
+      @media print {
+        .visual-mechanical-section .overflow-x-auto { overflow: visible !important; }
+        .visual-mechanical-section .flex { display: grid !important; grid-template-columns: 1fr 140px !important; column-gap: 12px !important; align-items: start !important; }
+        .visual-mechanical-section .flex > .flex-grow { width: 100% !important; }
+        .visual-mechanical-section .satisfactory-table { width: 140px !important; }
+        .visual-mechanical-section .visual-inspection-table { width: 100% !important; }
+      }
 
       .insulation-measured-section table input,
       .insulation-corrected-section table input { width: 100% !important; font-size: 9px !important; padding: 1px !important; }

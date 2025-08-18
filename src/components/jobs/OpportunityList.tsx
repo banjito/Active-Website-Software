@@ -29,6 +29,7 @@ interface FormData {
   expected_value: string;
   probability: string;
   expected_close_date: string;
+  proposal_due_date: string;
   notes: string;
   amp_division: string;
   sales_person: string;
@@ -72,6 +73,7 @@ const initialFormData: FormData = {
   expected_value: '',
   probability: '0',
   expected_close_date: '',
+  proposal_due_date: '',
   notes: '',
   amp_division: '',
   sales_person: ''
@@ -360,7 +362,22 @@ export default function OpportunityList() {
 
       let nextQuoteNumber = await computeNextQuoteNumber();
 
-      const opportunityDataBase = {
+      // Detect if proposal_due_date column exists
+      let includeProposalDueDate = false;
+      try {
+        const { data: columnInfo, error: columnError } = await supabase
+          .schema('business')
+          .rpc('get_columns_info', { table_name: 'opportunities' });
+        if (!columnError && columnInfo) {
+          includeProposalDueDate = columnInfo.some((col: any) => col.column_name === 'proposal_due_date');
+        }
+      } catch (err) {
+        // If RPC not available, skip including optional column
+        includeProposalDueDate = false;
+      }
+
+      // Create a new object with processed data
+      const opportunityDataBase: any = {
         customer_id: formData.customer_id,
         contact_id: formData.contact_id || null, // Ensure contact_id can be null
         title: formData.title || '',
@@ -375,6 +392,10 @@ export default function OpportunityList() {
         user_id: user.id,
         quote_number: String(nextQuoteNumber)
       };
+
+      if (includeProposalDueDate) {
+        opportunityDataBase.proposal_due_date = formData.proposal_due_date || null;
+      }
       
       console.log('Sending to Supabase:', opportunityDataBase);
 
@@ -899,6 +920,19 @@ export default function OpportunityList() {
                   onChange={handleChange}
                   className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Proposal Due Date
+                </label>
+                <input
+                  type="date"
+                  name="proposal_due_date"
+                  value={formData.proposal_due_date}
+                  onChange={handleChange}
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
                 />
               </div>
 

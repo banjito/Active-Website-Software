@@ -333,13 +333,34 @@ export default function OpportunityList() {
         return;
       }
       
-      // Generate a fallback quote number in case the trigger fails
-      const currentYear = new Date().getFullYear();
-      const randomNumber = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
-      const fallbackQuoteNumber = `Q${currentYear}-${randomNumber}`;
-      
-      // Create a new object with processed data
-      const opportunityData = {
+      // Compute the next sequential quote number (numeric, starting at 3803)
+      async function computeNextQuoteNumber(): Promise<number> {
+        // Fetch recent opportunities and compute max numeric quote_number
+        const { data: recent, error: recentError } = await supabase
+          .schema('business')
+          .from('opportunities')
+          .select('quote_number')
+          .order('created_at', { ascending: false })
+          .limit(500);
+
+        if (recentError) {
+          console.warn('Error reading existing quote numbers, defaulting seed:', recentError);
+        }
+
+        const nums: number[] = (recent || [])
+          .map(r => (r as any)?.quote_number)
+          .filter((q: any) => typeof q === 'string' && /^[0-9]+$/.test(q))
+          .map((q: string) => parseInt(q, 10))
+          .filter(n => Number.isFinite(n));
+
+        const maxNumeric = nums.length ? Math.max(...nums) : 0;
+        const base = 3802; // so next becomes 3803 if none exist
+        return Math.max(maxNumeric, base) + 1;
+      }
+
+      let nextQuoteNumber = await computeNextQuoteNumber();
+
+      const opportunityDataBase = {
         customer_id: formData.customer_id,
         contact_id: formData.contact_id || null, // Ensure contact_id can be null
         title: formData.title || '',
@@ -352,19 +373,31 @@ export default function OpportunityList() {
         amp_division: formData.amp_division,
         sales_person: user.email, // Automatically set to the user's email
         user_id: user.id,
-        quote_number: fallbackQuoteNumber
+        quote_number: String(nextQuoteNumber)
       };
       
-      console.log('Sending to Supabase:', opportunityData);
+      console.log('Sending to Supabase:', opportunityDataBase);
 
-      // Try to insert into the business schema
-      const { data, error } = await supabase
-        .schema('business') // Specify schema
-        .from('opportunities')
-        .insert(opportunityData)
-        .select()
-        .single();
-      
+      // Try to insert into the business schema with retry on unique conflict
+      let data: any = null;
+      let error: any = null;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        ({ data, error } = await supabase
+          .schema('business')
+          .from('opportunities')
+          .insert({ ...opportunityDataBase, quote_number: String(nextQuoteNumber) })
+          .select()
+          .single());
+
+        if (!error) break;
+        if (error?.code === '23505') {
+          // Unique violation on quote_number: increment and retry
+          nextQuoteNumber += 1;
+          continue;
+        }
+        break;
+      }
+ 
       if (error) {
         console.error('Detailed Supabase error:', {
           message: error.message,

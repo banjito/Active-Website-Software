@@ -1400,6 +1400,27 @@ export default function PortalLanding() {
         </Tabs>
       </main>
 
+      {/* Logout Section */}
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-200 dark:border-dark-200">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center p-4 rounded-full bg-gray-100 dark:bg-dark-700/20 mb-4">
+            <LogOut className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Need to sign out?</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+            Click the button below to securely sign out of your account and return to the login page.
+          </p>
+          <Button 
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+            variant="outline"
+            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700/20 hover:text-gray-900 dark:hover:text-white"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            {isSigningOut ? 'Signing out...' : 'Sign Out'}
+          </Button>
+        </div>
+      </section>
       {/* Popup */}
       {showPopup && (
         <div 

@@ -21,36 +21,29 @@ export default function AuthCallback() {
         const fullUrl = window.location.href;
         console.log('Processing auth callback from URL:', fullUrl);
         
-        // Check if we're getting a direct Supabase callback that needs fixing
-        if (fullUrl.includes('supabase.co/ampos.io')) {
-          console.log('Detected direct Supabase URL, extracting token...');
-          
-          // Extract the access token
-          const hashParams = new URLSearchParams(
-            window.location.hash.substring(1) // Remove the # character
-          );
+        // Check if the URL contains an access token from Supabase (hash fragment)
+        if (window.location.hash.includes('access_token=')) {
+          console.log('Detected access_token in URL hash, extracting token...');
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
-          const type = hashParams.get('type');
-          
+
           if (accessToken) {
             console.log('Found access token, setting session...');
-            
-            // Set the session manually
+
             const { error: sessionError } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken || ''
             });
-            
+
             if (sessionError) {
               console.error('Error setting session:', sessionError);
               throw sessionError;
             }
-            
-            // Proceed with successful auth
+
             setSuccess(true);
             setTimeout(() => {
-              window.location.href = 'https://ampos.io/profile-setup';
+              navigate('/profile-setup', { replace: true });
             }, 2000);
             return;
           }
@@ -101,8 +94,7 @@ export default function AuthCallback() {
           setSuccess(true);
           // Redirect to profile setup after a short delay to show success message
           setTimeout(() => {
-            // Use ampos.io domain for the profile setup route
-            window.location.href = 'https://ampos.io/profile-setup';
+            navigate('/profile-setup', { replace: true });
           }, 2000);
         }
       } catch (err) {
@@ -135,7 +127,7 @@ export default function AuthCallback() {
           <p>{error}</p>
         </div>
         <button 
-          onClick={() => window.location.href = 'https://ampos.io/login'}
+          onClick={() => navigate('/login', { replace: true })}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Return to Login

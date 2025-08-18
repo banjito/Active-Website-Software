@@ -386,6 +386,18 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             {renderMenuItems()}
           </div>
         </div>
+        {/* Bottom Logout Button */}
+        <div className="p-3 lg:p-4 border-t border-black/10 dark:border-dark-200">
+          <Button
+            variant="ghost"
+            className="w-full justify-start pl-0 text-left font-medium text-red-600 hover:bg-black/5 dark:text-red-400 dark:hover:bg-dark-50 !justify-start"
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            {isSigningOut ? 'Signing out...' : 'Sign Out'}
+          </Button>
+        </div>
       </div>
 
       {/* Main Content Area */}

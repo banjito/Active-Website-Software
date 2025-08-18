@@ -161,7 +161,7 @@ export class SwitchgearPanelboardMTSImporter extends BaseImporter implements Rep
               bPhase: row.b || '',
               cPhase: row.c || '',
               neutral: row.neutral || '',
-              ground: ''
+              ground: row.g || row.ground || row.gnd || ''
             }));
             reportData.contactResistanceUnit = section.fields[0].value.rows[0]?.unit || 'µΩ';
           }
@@ -307,7 +307,7 @@ export class SwitchgearPanelboardMTSImporter extends BaseImporter implements Rep
           bPhase: row.b || '',
           cPhase: row.c || '',
           neutral: row.neutral || '',
-          ground: ''
+          ground: row.g || row.ground || row.gnd || ''
         }));
         reportData.contactResistanceUnit = fields.switchgearContact.rows[0]?.unit || 'µΩ';
       }

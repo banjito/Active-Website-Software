@@ -119,8 +119,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const profileIncomplete = !user.user_metadata?.name;
   if (profileIncomplete && location.pathname !== '/profile-setup') {
     console.log("User profile incomplete, redirecting to /profile-setup");
-    window.location.href = 'https://ampos.io/profile-setup';
-    return null;
+    return <Navigate to="/profile-setup" replace />;
   }
 
   return <>{children}</>;

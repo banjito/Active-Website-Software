@@ -192,7 +192,7 @@ export class SwitchgearImporter extends BaseImporter implements ReportImporter {
                 bPhase: row.b || '',
                 cPhase: row.c || '',
                 neutral: row.neutral || '',
-                ground: ''
+                ground: row.g || row.ground || row.gnd || ''
               },
               testVoltage: '2.2 kVAC', // Default value
               unit: row.unit || 'µΩ'
@@ -343,7 +343,7 @@ export class SwitchgearImporter extends BaseImporter implements ReportImporter {
             bPhase: row.b || '',
             cPhase: row.c || '',
             neutral: row.neutral || '',
-            ground: ''
+            ground: row.g || row.ground || row.gnd || ''
           },
           testVoltage: '2.2 kVAC',
           unit: row.unit || 'µΩ'

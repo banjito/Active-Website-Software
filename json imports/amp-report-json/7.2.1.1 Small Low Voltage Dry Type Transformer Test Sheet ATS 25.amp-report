@@ -1,0 +1,67 @@
+{
+  "reportType": "TwoSmallDryTyperXfmrATSReport",
+  "createdAt": "2025-08-18T06:44:21.768Z",
+  "updatedAt": "2025-08-18T06:44:21.768Z",
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "Job #"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "Technicians"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Date",
+          "type": "text",
+          "value": "Temp."
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "PASS"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "Eqpt. Location"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "-17.8"
+        },
+        {
+          "label": "Humidity %",
+          "type": "number",
+          "value": "%"
+        }
+      ]
+    }
+  ]
+}

@@ -107,6 +107,7 @@ export default function OpportunityList() {
   const [customerSearch, setCustomerSearch] = useState('');
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [showDivisionAnalytics, setShowDivisionAnalytics] = useState(false);
@@ -122,9 +123,14 @@ export default function OpportunityList() {
   }, [user, page, debouncedSearch]);
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 300);
+    const t = setTimeout(() => {
+      if (searchTerm !== debouncedSearch) {
+        setDebouncedSearch(searchTerm.trim());
+        setPage(1); // Only reset page when search actually changes
+      }
+    }, 300);
     return () => clearTimeout(t);
-  }, [searchTerm]);
+  }, [searchTerm, debouncedSearch]);
 
   useEffect(() => {
     if (formData.customer_id) {
@@ -148,7 +154,11 @@ export default function OpportunityList() {
   }, [customerSearch, customers]);
 
   async function fetchOpportunities() {
-    setLoading(true);
+    if (debouncedSearch) {
+      setSearchLoading(true);
+    } else {
+      setLoading(true);
+    }
     try {
       // 1. Fetch base opportunities from the 'business' schema (paged)
       const pageSize = 50;
@@ -208,7 +218,11 @@ export default function OpportunityList() {
     } catch (error) {
       console.error('Error in fetchOpportunities function:', error);
     } finally {
-      setLoading(false);
+      if (debouncedSearch) {
+        setSearchLoading(false);
+      } else {
+        setLoading(false);
+      }
     }
   }
 
@@ -434,13 +448,27 @@ export default function OpportunityList() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-              placeholder="Search by quote #, title, description, sales person"
-              className="w-72 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by quote #, title, description, sales person"
+                className={`w-72 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                  searchTerm ? 'border-[#f26722] bg-orange-50 dark:bg-orange-900/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150'
+                } text-gray-900 dark:text-white`}
+              />
+              {searchLoading && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#f26722]"></div>
+                </div>
+              )}
+              {searchTerm && !searchLoading && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-2 h-2 bg-[#f26722] rounded-full"></div>
+                </div>
+              )}
+            </div>
             <button
               type="button"
               onClick={() => {

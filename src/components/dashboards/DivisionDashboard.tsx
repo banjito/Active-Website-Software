@@ -60,7 +60,7 @@ interface Job {
   customers: {
     company_name?: string | null;
     name: string;
-  };
+  } | null;
 }
 
 interface Opportunity {
@@ -69,10 +69,12 @@ interface Opportunity {
   title: string;
   status: string;
   expected_value: number | null;
+  customer_id: string;
   customers: {
     company_name?: string | null;
     name: string;
-  };
+  } | null;
+  created_at: string;
 }
 
 interface DivisionDashboardProps {
@@ -103,6 +105,10 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
   const [recentJobs, setRecentJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Add opportunities state
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [opportunitiesLoading, setOpportunitiesLoading] = useState(false);
   
   // Stats state
   const [counts, setCounts] = useState<CountsData>({
@@ -148,13 +154,19 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             division: job.division,
             job_number: job.job_number,
             due_date: job.due_date,
-            customers: {
-              company_name: job.customer?.company_name || null,
-              name: job.customer?.name || 'Unknown Customer'
-            }
+            customers: job.customers ? {
+              company_name: job.customers.company_name || null,
+              name: job.customers.name || 'Unknown Customer'
+            } : null
           }));
           
           setRecentJobs(transformedJobs);
+
+          // Fetch opportunities for NETA divisions
+          if (isNETADivision) {
+            const opportunitiesData = await fetchOpportunities();
+            setOpportunities(opportunitiesData);
+          }
 
         } catch (err: any) {
           console.error(`${divisionName} Dashboard - Error loading data:`, err);
@@ -371,9 +383,11 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
     }
   }
   
-  async function fetchRecentJobs() {
+  async function fetchRecentJobs(): Promise<Job[]> {
     try {
-      const query = supabase
+      console.log(`${divisionName} Dashboard - Fetching recent jobs for division:`, division);
+      
+      const { data, error } = await supabase
         .schema('neta_ops')
         .from('jobs')
         .select(`
@@ -387,19 +401,19 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         `)
         .eq('division', division)
         .order('created_at', { ascending: false })
-        .limit(5);
-
-      const { data, error } = await query;
+        .limit(6);
 
       if (error) {
-        console.error('Error fetching recent jobs:', error);
+        console.error(`Error fetching recent jobs for ${divisionName}:`, error);
         throw error;
       }
+
+      console.log(`${divisionName} Dashboard - Fetched ${data?.length || 0} recent jobs`);
 
       // Fetch customer data for each job
       const jobsWithCustomers = await Promise.all((data || []).map(async (job) => {
         if (!job.customer_id) {
-          return { ...job, customer: null };
+          return { ...job, customers: null };
         }
 
         const { data: customerData, error: customerError } = await supabase
@@ -411,16 +425,147 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 
         if (customerError) {
           console.warn(`Error fetching customer for job ${job.id}:`, customerError);
-          return { ...job, customer: null };
+          return { ...job, customers: null };
         }
 
-        return { ...job, customer: customerData };
+        return { ...job, customers: customerData };
       }));
 
       return jobsWithCustomers;
     } catch (error) {
       console.error(`Unexpected error in ${divisionName} fetchRecentJobs:`, error);
       throw error;
+    }
+  }
+
+  // Function to fetch opportunities for NETA divisions
+  async function fetchOpportunities(): Promise<Opportunity[]> {
+    if (!isNETADivision) return [];
+    
+    try {
+      setOpportunitiesLoading(true);
+      console.log(`${divisionName} Dashboard - Fetching opportunities for division:`, division);
+      
+      const { data, error } = await supabase
+        .schema('business')
+        .from('opportunities')
+        .select(`
+          id,
+          quote_number,
+          title,
+          status,
+          expected_value,
+          customer_id,
+          created_at
+        `)
+        .eq('amp_division', division)
+        .in('status', ['awarded', 'decision - forecasted win', 'quote'])
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (error) {
+        console.error(`Error fetching opportunities for ${divisionName}:`, error);
+        throw error;
+      }
+
+      console.log(`${divisionName} Dashboard - Fetched ${data?.length || 0} opportunities`);
+
+      // Fetch customer data for each opportunity
+      const opportunitiesWithCustomers = await Promise.all((data || []).map(async (opp) => {
+        if (!opp.customer_id) {
+          return { ...opp, customers: null };
+        }
+
+        const { data: customerData, error: customerError } = await supabase
+          .schema('common')
+          .from('customers')
+          .select('id, name, company_name')
+          .eq('id', opp.customer_id)
+          .single();
+
+        if (customerError) {
+          console.warn(`Error fetching customer for opportunity ${opp.id}:`, customerError);
+          return { ...opp, customers: null };
+        }
+
+        return { ...opp, customers: customerData };
+      }));
+
+      return opportunitiesWithCustomers;
+    } catch (error) {
+      console.error(`Unexpected error in ${divisionName} fetchOpportunities:`, error);
+      return [];
+    } finally {
+      setOpportunitiesLoading(false);
+    }
+  }
+
+  // Function to create a job from an opportunity
+  async function createJobFromOpportunity(opportunity: Opportunity) {
+    try {
+      if (!user?.id || !opportunity.customer_id) {
+        alert('Unable to create job: Missing user or customer information');
+        return;
+      }
+
+      // Create the job
+      const { data: jobData, error: jobError } = await supabase
+        .schema('neta_ops')
+        .from('jobs')
+        .insert({
+          title: opportunity.title,
+          customer_id: opportunity.customer_id,
+          division: division,
+          status: 'pending',
+          user_id: user.id,
+          opportunity_id: opportunity.id
+        })
+        .select()
+        .single();
+
+      if (jobError) {
+        console.error('Error creating job:', jobError);
+        alert('Failed to create job. Please try again.');
+        return;
+      }
+
+      // Update the opportunity to link it to the job
+      const { error: updateError } = await supabase
+        .schema('business')
+        .from('opportunities')
+        .update({ job_id: jobData.id })
+        .eq('id', opportunity.id);
+
+      if (updateError) {
+        console.warn('Warning: Job created but could not link to opportunity:', updateError);
+      }
+
+      alert(`Job created successfully! Job ID: ${jobData.job_number || jobData.id}`);
+      
+      // Refresh the data
+      const [newCountsData, newJobs] = await Promise.all([
+        fetchCounts(),
+        fetchRecentJobs()
+      ]);
+      setCounts(newCountsData);
+      setRecentJobs(newJobs.map((job: any) => ({
+        id: job.id,
+        title: job.title,
+        status: job.status,
+        division: job.division,
+        job_number: job.job_number,
+        due_date: job.due_date,
+        customers: job.customers ? {
+          company_name: job.customers.company_name || null,
+          name: job.customers.name || 'Unknown Customer'
+        } : null
+      })));
+
+      // Navigate to the new job
+      navigate(`/jobs/${jobData.id}`);
+    } catch (error) {
+      console.error('Error creating job from opportunity:', error);
+      alert('Failed to create job. Please try again.');
     }
   }
 
@@ -499,10 +644,30 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">Schedule and track maintenance</p>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2 mobile-icon-sm" />
               </div>
             </Link>
           </Card>
+
+          {/* Opportunities Quick Action - Only for NETA Divisions */}
+          {isNETADivision && (
+            <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer touch-target">
+              <Link to="/sales-dashboard/opportunities" className="block p-3 sm:p-4 mobile-card-sm">
+                <div className="flex items-center justify-between mobile-gap-2">
+                  <div className="flex items-center min-w-0 flex-1 mobile-gap-2">
+                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0 mobile-p-2">
+                      <BriefcaseIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 mobile-icon-sm" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate mobile-card-title">Sales Opportunities</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mobile-text-xs">View and convert opportunities to jobs</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2 mobile-icon-sm" />
+                </div>
+              </Link>
+            </Card>
+          )}
           
           <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer touch-target">
             <Link to={`/${division}/profiles`} className="block p-3 sm:p-4">
@@ -730,6 +895,21 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 </div>
               </TabsTrigger>
             )}
+
+            {/* Opportunities Tab - Only for NETA Divisions */}
+            {isNETADivision && (
+              <TabsTrigger 
+                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
+                value="opportunities"
+              >
+                <div className="flex flex-col items-center justify-center px-2">
+                  <span className="truncate">Opportunities</span>
+                  <span className="text-xs text-muted-foreground mt-1">
+                    {counts.opportunities || 0} opportunities
+                  </span>
+                </div>
+              </TabsTrigger>
+            )}
           </TabsList>
           
           <TabsContent value="jobs" className="p-3 sm:p-6">
@@ -807,6 +987,128 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                   <Button className="touch-target">Browse Documentation</Button>
                 </div>
               </Card>
+            </TabsContent>
+          )}
+
+          {showCalibrations && (
+            <TabsContent value="calibrations" className="p-3 sm:p-6">
+              <Card>
+                <div className="p-4 sm:p-6 text-center py-6 sm:py-8">
+                  <Wrench className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-300 dark:text-gray-600" />
+                  <h3 className="text-base sm:text-lg font-medium mb-2">Calibrations Module</h3>
+                  <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-4">
+                    Access to calibration services and equipment management.
+                  </p>
+                  <Button className="touch-target">Browse Calibrations</Button>
+                </div>
+              </Card>
+            </TabsContent>
+          )}
+
+          {/* Opportunities Tab Content - Only for NETA Divisions */}
+          {isNETADivision && (
+            <TabsContent value="opportunities" className="p-3 sm:p-6">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sales Opportunities</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    View opportunities that can be converted to jobs
+                  </p>
+                </div>
+                
+                {/* Opportunities List */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {opportunitiesLoading ? (
+                    <Card className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600">
+                      <div className="text-center py-6">
+                        <BriefcaseIcon className="h-12 w-12 mx-auto mb-3 text-gray-400 dark:text-gray-500" />
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Loading Opportunities</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Fetching available opportunities...
+                        </p>
+                      </div>
+                    </Card>
+                  ) : opportunities.length === 0 ? (
+                    <Card className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600">
+                      <div className="text-center py-6">
+                        <BriefcaseIcon className="h-12 w-12 mx-auto mb-3 text-gray-400 dark:text-gray-500" />
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">No Opportunities Found</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          No opportunities found for this division.
+                        </p>
+                      </div>
+                    </Card>
+                  ) : (
+                    opportunities.map((opportunity) => (
+                      <Card key={opportunity.id} className="p-4 hover:shadow-md transition-shadow duration-200">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{opportunity.title}</h4>
+                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{opportunity.customers?.company_name || opportunity.customers?.name || 'No customer'}</p>
+                          </div>
+                          <Badge 
+                            className={`
+                              px-1.5 sm:px-2 py-1 text-xs font-normal whitespace-nowrap flex-shrink-0 mobile-badge
+                              ${opportunity.status === 'awarded' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : ''}
+                              ${opportunity.status === 'decision - forecasted win' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' : ''}
+                              ${opportunity.status === 'quote' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' : ''}
+                            `}
+                          >
+                            {opportunity.status?.replace(/-/g, ' ')}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between mt-auto pt-2 sm:pt-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 mt-2 sm:mt-3">
+                          <div className="flex items-center min-w-0 flex-1">
+                            <DollarSign className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
+                            <span className="truncate">{opportunity.quote_number || 'No quote number'}</span>
+                          </div>
+                          <div className="flex items-center flex-shrink-0 ml-2">
+                            <CalendarIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
+                            <span className="hidden sm:inline">{formatDate(opportunity.created_at)}</span>
+                            <span className="sm:hidden">{new Date(opportunity.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                          </div>
+                        </div>
+                        <div className="flex justify-end mt-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="touch-target"
+                            onClick={() => createJobFromOpportunity(opportunity)}
+                          >
+                            Convert to Job
+                          </Button>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+                
+                <div className="flex justify-center mt-6">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="touch-target"
+                    onClick={() => navigate('/sales-dashboard/opportunities')}
+                  >
+                    View All Opportunities
+                    <ChevronRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </div>
+                
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <BriefcaseIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="ml-3">
+                      <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100">Create Jobs from Opportunities</h4>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                        Click "Convert to Job" on any opportunity to create a new job. This will automatically link the opportunity to the job and set the job status to pending.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </TabsContent>
           )}
         </Tabs>

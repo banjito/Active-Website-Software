@@ -36,6 +36,7 @@ interface Contact {
 
 interface OpportunityWithCustomer extends Opportunity {
   customers: CustomerInfo | null;
+  proposal_due_date?: string | null;
 }
 
 const initialFormData: OpportunityFormData = {
@@ -47,6 +48,7 @@ const initialFormData: OpportunityFormData = {
   expected_value: '',
   probability: '0',
   expected_close_date: '',
+  proposal_due_date: '',
   notes: '',
   sales_person: '',
   amp_division: ''
@@ -216,6 +218,7 @@ export default function OpportunityDetail() {
   const [isEditingPDF, setIsEditingPDF] = useState(false);
   const [isSavingPDF, setIsSavingPDF] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (user && id) {
@@ -234,6 +237,9 @@ export default function OpportunityDetail() {
         status: opportunity.status || '',
         expected_close_date: opportunity.expected_close_date 
           ? opportunity.expected_close_date.substring(0, 10)
+          : '',
+        proposal_due_date: opportunity.proposal_due_date 
+          ? opportunity.proposal_due_date.substring(0, 10)
           : '',
         sales_person: opportunity.sales_person || '',
         notes: opportunity.notes || '',
@@ -292,24 +298,24 @@ export default function OpportunityDetail() {
         ...opportunityData,
         customers: customerInfo
       });
-      
-      // Initialize subcontractor agreements
-      // setSubcontractorAgreements(opportunityData.subcontractor_agreements || []); // This line is now handled by the useEffect
-      
-      // Initialize form data for editing
-      setFormData({
-        customer_id: opportunityData.customer_id?.toString() || '',
-        contact_id: opportunityData.contact_id?.toString() || '', 
-        title: opportunityData.title || '',
-        description: opportunityData.description || '',
-        status: opportunityData.status,
-        expected_value: opportunityData.expected_value?.toString() || '',
-        probability: opportunityData.probability?.toString() || '0',
-        expected_close_date: opportunityData.expected_close_date || '',
-        notes: opportunityData.notes || '',
-        sales_person: opportunityData.sales_person || '',
-        amp_division: opportunityData.amp_division || ''
-      });
+
+      // Safely try to fetch optional proposal_due_date without breaking if it doesn't exist
+      try {
+        const { data: pd, error: pdError } = await supabase
+          .schema('business')
+          .from('opportunities')
+          .select('proposal_due_date')
+          .eq('id', id)
+          .maybeSingle();
+        if (!pdError && pd && 'proposal_due_date' in (pd as any)) {
+          setOpportunity(prev => prev ? { ...prev, proposal_due_date: (pd as any).proposal_due_date } : prev);
+        }
+      } catch (e: any) {
+        // If column doesn't exist (42703) or any other error, ignore gracefully
+        if (e?.code !== '42703') {
+          console.warn('Optional proposal_due_date fetch warning:', e);
+        }
+      }
          
       if (opportunityData.job_id) {
         setJobId(opportunityData.job_id.toString());
@@ -374,28 +380,50 @@ export default function OpportunityDetail() {
 
     try {
       const expectedCloseDate = editFormData.expected_close_date
-        ? new Date(editFormData.expected_close_date).toISOString()
+        ? editFormData.expected_close_date
+        : null;
+      const proposalDueDate = editFormData.proposal_due_date
+        ? editFormData.proposal_due_date
         : null;
 
       console.log("Submitting with expected_close_date:", expectedCloseDate);
 
-      const { error } = await supabase
+      const updatePayload: any = {
+        customer_id: editFormData.customer_id,
+        title: editFormData.title,
+        description: editFormData.description,
+        expected_value: editFormData.expected_value ? parseFloat(editFormData.expected_value) : null,
+        status: editFormData.status,
+        expected_close_date: expectedCloseDate,
+        sales_person: editFormData.sales_person,
+        notes: editFormData.notes,
+        probability: editFormData.probability ? parseFloat(editFormData.probability) : 0,
+        amp_division: editFormData.amp_division
+      };
+      updatePayload.proposal_due_date = proposalDueDate;
+
+      // Try update with proposal_due_date included first
+      let updateError = null as any;
+      let res = await supabase
         .schema('business')
         .from('opportunities')
-        .update({
-          customer_id: editFormData.customer_id,
-          title: editFormData.title,
-          description: editFormData.description,
-          expected_value: editFormData.expected_value ? parseFloat(editFormData.expected_value) : null,
-          status: editFormData.status,
-          expected_close_date: expectedCloseDate,
-          sales_person: editFormData.sales_person,
-          notes: editFormData.notes,
-          probability: editFormData.probability ? parseFloat(editFormData.probability) : 0,
-          amp_division: editFormData.amp_division
-        })
+        .update({ ...updatePayload, proposal_due_date: proposalDueDate })
         .eq('id', opportunity.id)
         .select();
+      updateError = res.error;
+
+      // If column missing (42703), retry without proposal_due_date
+      if (updateError && updateError.code === '42703') {
+        res = await supabase
+          .schema('business')
+          .from('opportunities')
+          .update(updatePayload)
+          .eq('id', opportunity.id)
+          .select();
+        updateError = res.error;
+      }
+
+      const error = updateError;
 
       if (error) throw error;
 
@@ -714,6 +742,25 @@ export default function OpportunityDetail() {
     }
   };
 
+  async function handleDeleteOpportunity() {
+    if (!opportunity || !user) return;
+    try {
+      const { error } = await supabase
+        .schema('business')
+        .from('opportunities')
+        .delete()
+        .eq('id', opportunity.id);
+      if (error) throw error;
+      alert('Opportunity deleted.');
+      navigate('/sales-dashboard/opportunities');
+    } catch (err: any) {
+      console.error('Error deleting opportunity:', err);
+      alert(`Failed to delete: ${err?.message || 'Unknown error'}`);
+    } finally {
+      setShowDeleteConfirm(false);
+    }
+  }
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -784,6 +831,9 @@ export default function OpportunityDetail() {
                         expected_close_date: opportunity.expected_close_date 
                           ? opportunity.expected_close_date.substring(0, 10)
                           : '',
+                        proposal_due_date: opportunity.proposal_due_date 
+                          ? opportunity.proposal_due_date.substring(0, 10)
+                          : '',
                         sales_person: opportunity.sales_person || '',
                         notes: opportunity.notes || '',
                         probability: opportunity.probability?.toString() || '0',
@@ -795,6 +845,15 @@ export default function OpportunityDetail() {
                 >
                   <Edit className="h-4 w-4 mr-1" />
                   Edit
+                </button>
+              )}
+              {!isEditing && (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
                 </button>
               )}
             </div>
@@ -957,6 +1016,19 @@ export default function OpportunityDetail() {
                       id="expected_close_date"
                       name="expected_close_date"
                       value={editFormData.expected_close_date}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="proposal_due_date" className="block text-sm font-medium text-gray-700 dark:text-white">
+                      Proposal Due Date
+                    </label>
+                    <input
+                      type="date"
+                      id="proposal_due_date"
+                      name="proposal_due_date"
+                      value={editFormData.proposal_due_date || ''}
                       onChange={handleInputChange}
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
                     />
@@ -1144,6 +1216,14 @@ export default function OpportunityDetail() {
                           : 'Not specified'}
                       </p>
                     </div>
+                    {opportunity.proposal_due_date && (
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-500 dark:text-dark-400">Proposal Due Date</p>
+                        <p className="text-gray-900 dark:text-dark-900">
+                          {formatDateSafe(opportunity.proposal_due_date)}
+                        </p>
+                      </div>
+                    )}
                     {opportunity.awarded_date && (
                       <div className="mb-4">
                         <p className="text-sm text-gray-500 dark:text-dark-400">Awarded Date</p>
@@ -1152,7 +1232,15 @@ export default function OpportunityDetail() {
                         </p>
                       </div>
                     )}
-                    
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Proposal Due Date</p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {opportunity.proposal_due_date
+                          ? formatDateSafe(opportunity.proposal_due_date)
+                          : 'Not specified'}
+                      </p>
+                    </div>
+
                     {/* Subcontractor Agreements Section */}
                     <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                       <div className="flex justify-between items-center mb-3">
@@ -1606,6 +1694,51 @@ export default function OpportunityDetail() {
                       )}
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+          </Dialog>
+
+          {/* Delete Opportunity Confirmation Dialog */}
+          <Dialog
+            open={showDeleteConfirm}
+            onClose={() => setShowDeleteConfirm(false)}
+            className="fixed inset-0 z-50 overflow-y-auto"
+          >
+            <div className="flex items-center justify-center min-h-screen">
+              <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+
+              <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-md w-full mx-auto p-6 shadow-xl">
+                <div className="absolute top-0 right-0 pt-4 pr-4">
+                  <button
+                    type="button"
+                    className="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200"
+                    onClick={() => setShowDeleteConfirm(false)}
+                  >
+                    <span className="sr-only">Close</span>
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Delete Opportunity
+                </Dialog.Title>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to delete this opportunity? This action cannot be undone.</p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none"
+                    onClick={() => setShowDeleteConfirm(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                    onClick={handleDeleteOpportunity}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             </div>

@@ -91,6 +91,8 @@ export default function JobList() {
   const [formData, setFormData] = useState<JobFormData>(initialFormData);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -98,6 +100,25 @@ export default function JobList() {
       fetchCustomers();
     }
   }, [user, division]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredJobs(jobs);
+    } else {
+      const filtered = jobs.filter(job => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          job.title?.toLowerCase().includes(searchLower) ||
+          job.customers?.company_name?.toLowerCase().includes(searchLower) ||
+          job.customers?.name?.toLowerCase().includes(searchLower) ||
+          job.job_number?.toLowerCase().includes(searchLower) ||
+          job.status?.toLowerCase().includes(searchLower) ||
+          job.description?.toLowerCase().includes(searchLower)
+        );
+      });
+      setFilteredJobs(filtered);
+    }
+  }, [searchTerm, jobs]);
 
   async function fetchJobs() {
     setLoading(true);
@@ -159,6 +180,7 @@ export default function JobList() {
       }));
 
       setJobs(jobsWithCustomers as Job[]); // Cast to Job[]
+      setFilteredJobs(jobsWithCustomers as Job[]); // Initialize filtered jobs
 
     } catch (error) {
       console.error('Error in fetchJobs function:', error);
@@ -295,6 +317,7 @@ export default function JobList() {
 
       setIsOpen(false);
       setFormData(initialFormData);
+      setSearchTerm(''); // Clear search when adding new job
       fetchJobs();
     } catch (error) {
       console.error('Caught error in handleSubmit:', error);
@@ -419,6 +442,37 @@ export default function JobList() {
         </div>
       </div>
 
+      {/* Search Section */}
+      <div className="mt-6">
+        <div className="relative">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search jobs by title, customer, job number, status, or description..."
+            className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+          />
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            >
+              <X className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+            </button>
+          )}
+        </div>
+        {searchTerm && (
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Found {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} matching "{searchTerm}"
+          </div>
+        )}
+      </div>
+
       <div className="mt-8">
         <div className="-mx-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
           <table className="min-w-full divide-y divide-gray-300">
@@ -454,7 +508,7 @@ export default function JobList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-dark-150">
-              {jobs.map((job) => (
+              {filteredJobs.map((job) => (
                 <tr 
                   key={job.id} 
                   className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out cursor-pointer"

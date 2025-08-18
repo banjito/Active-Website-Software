@@ -1,0 +1,436 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K2FQPFCJAFRV7XB0MGWHP1MR",
+  "reportType": "12-CurrentTransformerTestMTSReport.tsx",
+  "createdAt": "2025-08-12T18:10:33.082Z",
+  "updatedAt": "2025-08-12T18:11:48.659Z",
+  "version": 202,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "123"
+        },
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "123"
+        },
+        {
+          "label": "Address",
+          "type": "textarea",
+          "value": "121245"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "dfg"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "23"
+        },
+        {
+          "label": "Equipment Location",
+          "type": "text",
+          "value": "dfgg"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "2025-08-12"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "s1dfsdfsdf"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "122"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "sdfgsdg"
+        }
+      ]
+    },
+    {
+      "title": "Device Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "412"
+        },
+        {
+          "label": "Class",
+          "type": "text",
+          "value": "1234123"
+        },
+        {
+          "label": "CT Ratio",
+          "type": "text",
+          "value": "123"
+        },
+        {
+          "label": "Catalog Number",
+          "type": "text",
+          "value": "14"
+        },
+        {
+          "label": "Voltage Rating (V)",
+          "type": "text",
+          "value": "sadvf"
+        },
+        {
+          "label": "Polarity Facing",
+          "type": "text",
+          "value": "sadfv"
+        },
+        {
+          "label": "Type",
+          "type": "text",
+          "value": "asdfv"
+        },
+        {
+          "label": "Frequency",
+          "type": "text",
+          "value": "asfvd"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.10.1.A.1",
+                "description": "Compare equipment nameplate data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.1.A.2",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.10.1.A.3",
+                "description": "Verify correct connection of transformers with system requirements.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.10.1.A.4",
+                "description": "Verify that adequate clearances exist between primary and secondary circuit wiring.",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.10.1.A.5",
+                "description": "Verify the unit is clean.",
+                "result": "Not Applicable"
+              },
+              {
+                "id": "7.10.1.A.6",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.10.1.B.1."
+              },
+              {
+                "id": "7.10.1.A.7",
+                "description": "Verify that all required grounding and shorting connections provide contact."
+              },
+              {
+                "id": "7.10.1.A.8",
+                "description": "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "CT Identification",
+      "fields": [
+        {
+          "label": "CT Identification",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "phase": "asdfv",
+                "serial": "asdfv"
+              },
+              {
+                "phase": "asdfv",
+                "serial": "asdfv"
+              },
+              {
+                "phase": "asdfv",
+                "serial": "asdfv"
+              },
+              {
+                "phase": "asfv",
+                "serial": "asfv"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests",
+      "fields": [
+        {
+          "label": "Ratio and Polarity",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "rp-0",
+                "identifier": "1234",
+                "ratio": "1234",
+                "testValue": "312",
+                "pri": "123",
+                "sec": "124",
+                "measuredRatio": "124",
+                "ratioDev": "124",
+                "polarity": "Satisfactory"
+              },
+              {
+                "id": "rp-1"
+              },
+              {
+                "id": "rp-2"
+              },
+              {
+                "id": "rp-3"
+              }
+            ],
+            "testType": "voltage"
+          }
+        },
+        {
+          "label": "Primary Winding - 1 min. Insulation Resistance to Ground",
+          "type": "table",
+          "value": {
+            "readingPhase1": "123",
+            "tempCorrection20CPhase1": "489.54",
+            "readingPhase2": "123",
+            "tempCorrection20CPhase2": "489.54",
+            "readingPhase3": "3",
+            "tempCorrection20CPhase3": "11.94",
+            "readingNeutral": "123",
+            "tempCorrection20CNeutral": "489.54",
+            "testVoltage": "2500V"
+          }
+        },
+        {
+          "label": "Secondary Winding - 1 min. Insulation Resistance to Ground",
+          "type": "table",
+          "value": {
+            "readingPhase1": "123",
+            "tempCorrection20CPhase1": "489.54",
+            "readingPhase2": "213",
+            "tempCorrection20CPhase2": "847.74",
+            "readingPhase3": "312",
+            "tempCorrection20CPhase3": "1241.76",
+            "readingNeutral": "44",
+            "tempCorrection20CNeutral": "175.12"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "asdfg"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asdg"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asdg"
+        },
+        {
+          "label": "CT Ratio Test Set",
+          "type": "text",
+          "value": "sdasdf"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "sdfa"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "asdfasdf"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "sdfgsdg",
+    "reportType": "12-CurrentTransformerTestMTSReport",
+    "fields": {
+      "jobNumber": "123",
+      "customerName": "123",
+      "customerAddress": "121245",
+      "technicians": "dfg",
+      "substation": "23",
+      "eqptLocation": "dfgg",
+      "date": "2025-08-12",
+      "userName": "s1dfsdfsdf",
+      "temperatureF": "122",
+      "identifier": "sdfgsdg",
+      "manufacturer": "412",
+      "class": "1234123",
+      "ctRatio": "123",
+      "catalogNumber": "14",
+      "voltageRating": "sadvf",
+      "polarityFacing": "sadfv",
+      "type": "asdfv",
+      "frequency": "asfvd",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.10.1.A.1",
+            "description": "Compare equipment nameplate data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.1.A.2",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.10.1.A.3",
+            "description": "Verify correct connection of transformers with system requirements.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.10.1.A.4",
+            "description": "Verify that adequate clearances exist between primary and secondary circuit wiring.",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.10.1.A.5",
+            "description": "Verify the unit is clean.",
+            "result": "Not Applicable"
+          },
+          {
+            "id": "7.10.1.A.6",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.10.1.B.1."
+          },
+          {
+            "id": "7.10.1.A.7",
+            "description": "Verify that all required grounding and shorting connections provide contact."
+          },
+          {
+            "id": "7.10.1.A.8",
+            "description": "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces."
+          }
+        ]
+      },
+      "ctId": {
+        "rows": [
+          {
+            "phase": "asdfv",
+            "serial": "asdfv"
+          },
+          {
+            "phase": "asdfv",
+            "serial": "asdfv"
+          },
+          {
+            "phase": "asdfv",
+            "serial": "asdfv"
+          },
+          {
+            "phase": "asfv",
+            "serial": "asfv"
+          }
+        ]
+      },
+      "ratioPolarity": {
+        "rows": [
+          {
+            "id": "rp-0",
+            "identifier": "1234",
+            "ratio": "1234",
+            "testValue": "312",
+            "pri": "123",
+            "sec": "124",
+            "measuredRatio": "124",
+            "ratioDev": "124",
+            "polarity": "Satisfactory"
+          },
+          {
+            "id": "rp-1"
+          },
+          {
+            "id": "rp-2"
+          },
+          {
+            "id": "rp-3"
+          }
+        ],
+        "testType": "voltage"
+      },
+      "primaryInsulation": {
+        "readingPhase1": "123",
+        "tempCorrection20CPhase1": "489.54",
+        "readingPhase2": "123",
+        "tempCorrection20CPhase2": "489.54",
+        "readingPhase3": "3",
+        "tempCorrection20CPhase3": "11.94",
+        "readingNeutral": "123",
+        "tempCorrection20CNeutral": "489.54",
+        "testVoltage": "2500V"
+      },
+      "secondaryInsulation": {
+        "readingPhase1": "123",
+        "tempCorrection20CPhase1": "489.54",
+        "readingPhase2": "213",
+        "tempCorrection20CPhase2": "847.74",
+        "readingPhase3": "312",
+        "tempCorrection20CPhase3": "1241.76",
+        "readingNeutral": "44",
+        "tempCorrection20CNeutral": "175.12"
+      },
+      "megohmmeter": "asdfg",
+      "serialNumber": "asdg",
+      "ampId": "asdg",
+      "ctRatioTestSetName": "sdasdf",
+      "ctRatioTestSetSerial": "asdf",
+      "ctRatioTestSetAmpId": "sdfa",
+      "comments": "asdfasdf"
+    }
+  }
+}

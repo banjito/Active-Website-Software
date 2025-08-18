@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K2JB7G5008B7YBPVB8SFJWCK",
+  "reportType": "TanDeltaChartMTS.tsx",
+  "createdAt": "2025-08-13T18:31:24.391Z",
+  "updatedAt": "2025-08-13T18:31:37.303Z",
+  "version": 22,
+  "sections": [
+    {
+      "title": "Tan Delta Test",
+      "fields": [
+        {
+          "label": "Tan Delta",
+          "type": "table",
+          "value": {
+            "systemVoltageL2G": "14.4",
+            "values": [
+              {
+                "voltageStep": "0.5 Uo",
+                "kV": "7.200",
+                "phaseA": {
+                  "stdDev": "10",
+                  "td": "32"
+                },
+                "phaseB": {
+                  "stdDev": "5",
+                  "td": "23"
+                },
+                "phaseC": {
+                  "stdDev": "5",
+                  "td": "442"
+                }
+              },
+              {
+                "voltageStep": "1.0 Uo",
+                "kV": "14.400",
+                "phaseA": {
+                  "stdDev": "10",
+                  "td": "4"
+                },
+                "phaseB": {
+                  "stdDev": "5",
+                  "td": "3"
+                },
+                "phaseC": {
+                  "stdDev": "5",
+                  "td": "4"
+                }
+              },
+              {
+                "voltageStep": "1.5 Uo",
+                "kV": "21.600",
+                "phaseA": {
+                  "stdDev": "10",
+                  "td": "44"
+                },
+                "phaseB": {
+                  "stdDev": "5",
+                  "td": "3"
+                },
+                "phaseC": {
+                  "stdDev": "5",
+                  "td": "4"
+                }
+              },
+              {
+                "voltageStep": "2.0 Uo",
+                "kV": "28.800",
+                "phaseA": {
+                  "stdDev": "10",
+                  "td": "4"
+                },
+                "phaseB": {
+                  "stdDev": "5",
+                  "td": "3"
+                },
+                "phaseC": {
+                  "stdDev": "5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Test Equipment Used",
+          "type": "table",
+          "value": {
+            "megohmmeter": {
+              "name": "ddddd"
+            },
+            "lowResistanceOhmmeter": {},
+            "primaryInjectionTestSet": {}
+          }
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": ""
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "UNSET",
+    "reportType": "TanDeltaChartMTS",
+    "fields": {
+      "mvTanDelta": {
+        "systemVoltageL2G": "14.4",
+        "values": [
+          {
+            "voltageStep": "0.5 Uo",
+            "kV": "7.200",
+            "phaseA": {
+              "stdDev": "10",
+              "td": "32"
+            },
+            "phaseB": {
+              "stdDev": "5",
+              "td": "23"
+            },
+            "phaseC": {
+              "stdDev": "5",
+              "td": "442"
+            }
+          },
+          {
+            "voltageStep": "1.0 Uo",
+            "kV": "14.400",
+            "phaseA": {
+              "stdDev": "10",
+              "td": "4"
+            },
+            "phaseB": {
+              "stdDev": "5",
+              "td": "3"
+            },
+            "phaseC": {
+              "stdDev": "5",
+              "td": "4"
+            }
+          },
+          {
+            "voltageStep": "1.5 Uo",
+            "kV": "21.600",
+            "phaseA": {
+              "stdDev": "10",
+              "td": "44"
+            },
+            "phaseB": {
+              "stdDev": "5",
+              "td": "3"
+            },
+            "phaseC": {
+              "stdDev": "5",
+              "td": "4"
+            }
+          },
+          {
+            "voltageStep": "2.0 Uo",
+            "kV": "28.800",
+            "phaseA": {
+              "stdDev": "10",
+              "td": "4"
+            },
+            "phaseB": {
+              "stdDev": "5",
+              "td": "3"
+            },
+            "phaseC": {
+              "stdDev": "5"
+            }
+          }
+        ]
+      },
+      "testEquipment3": {
+        "megohmmeter": {
+          "name": "ddddd"
+        },
+        "lowResistanceOhmmeter": {},
+        "primaryInjectionTestSet": {}
+      },
+      "comments": ""
+    }
+  }
+}

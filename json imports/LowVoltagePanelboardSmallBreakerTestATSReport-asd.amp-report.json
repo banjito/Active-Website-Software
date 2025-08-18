@@ -1,0 +1,1039 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K2G9DPNX8VRSJSJ1WA7GTFS1",
+  "reportType": "LowVoltagePanelboardSmallBreakerTestATSReport.tsx",
+  "createdAt": "2025-08-12T23:20:16.930Z",
+  "updatedAt": "2025-08-12T23:21:35.146Z",
+  "version": 130,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "0023-12-31"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "213"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": "123"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "123"
+        },
+        {
+          "label": "Equipment Location",
+          "type": "text",
+          "value": "123"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "asd"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Panelboard Manufacturer",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Panelboard Type/Catalog #",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Panelboard Size (A)",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Panelboard Voltage (V)",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Panelboard SCCR (kA)",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Main Breaker Manufacturer",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Main Breaker Type",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Main Breaker Frame Size (A)",
+          "type": "text",
+          "value": "as"
+        },
+        {
+          "label": "Main Breaker Rating Plug (A)",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Main Breaker I.C. Rating (kA)",
+          "type": "text",
+          "value": "asd"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.6.1.2.A.1",
+                "description": "Compare equipment nameplate data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.6.1.2.A.2",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.6.1.2.A.3",
+                "description": "Inspect anchorage and alignment.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.6.1.2.A.4",
+                "description": "Verify that all maintenance devices are available for servicing and operating the breaker.",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.6.1.2.A.5",
+                "description": "Verify the unit is clean.",
+                "result": "Not Applicable"
+              },
+              {
+                "id": "7.6.1.2.A.6",
+                "description": "Verify the arc chutes are intact."
+              },
+              {
+                "id": "7.6.1.2.A.7",
+                "description": "Inspect moving and stationary contacts for condition and alignment."
+              },
+              {
+                "id": "7.6.1.2.A.10.1",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.6.1.2.B.1."
+              },
+              {
+                "id": "7.6.1.2.A.14",
+                "description": "Perform adjustments for final protective device settings per coordination study."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "ad"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Low-Resistance Ohmmeter",
+          "type": "text",
+          "value": "sdg"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "gsd"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "sdg"
+        },
+        {
+          "label": "Primary Injection Test Set",
+          "type": "text",
+          "value": "sdg"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "gdsg"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "sdg"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "sdg"
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests",
+      "fields": [
+        {
+          "label": "# of circuit spaces",
+          "type": "number",
+          "value": 20
+        },
+        {
+          "label": "Ordering",
+          "type": "text",
+          "value": "Sequential"
+        },
+        {
+          "label": "Trip Curve #’s",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Breakers",
+          "type": "table",
+          "value": {
+            "numberOfSpaces": 20,
+            "breakers": [
+              {
+                "circuitNumber": "1",
+                "result": "PASS",
+                "poles": "",
+                "manuf": "123",
+                "type": "123",
+                "frameA": "123",
+                "tripA": "123",
+                "ratedCurrentA": "123",
+                "testCurrentA": "369",
+                "tripToleranceMin": "123",
+                "tripToleranceMax": "123",
+                "tripTime": "123",
+                "insulationLL": "3",
+                "insulationLP": "1",
+                "insulationPP": "3"
+              },
+              {
+                "circuitNumber": "2",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "3",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "4",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "5",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "6",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "7",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "8",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "9",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "10",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "11",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "12",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "13",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "14",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "15",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "16",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "17",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "18",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "19",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              },
+              {
+                "circuitNumber": "20",
+                "result": "",
+                "poles": "",
+                "manuf": "",
+                "type": "",
+                "frameA": "",
+                "tripA": "",
+                "ratedCurrentA": "",
+                "testCurrentA": "",
+                "tripToleranceMin": "",
+                "tripToleranceMax": "",
+                "tripTime": "",
+                "insulationLL": "",
+                "insulationLP": "",
+                "insulationPP": ""
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "asd",
+    "reportType": "LowVoltagePanelboardSmallBreakerTestATSReport",
+    "fields": {
+      "customer": "asd",
+      "address": "asd",
+      "jobNumber": "asd",
+      "date": "0023-12-31",
+      "technicians": "asd",
+      "identifier": "asd",
+      "temperatureF": "213",
+      "humidity": "123",
+      "substation": "123",
+      "eqptLocation": "123",
+      "user": "asd",
+      "panelboardManufacturer": "asd",
+      "panelboardTypeCat": "asd",
+      "panelboardSizeA": "asd",
+      "panelboardVoltageV": "asd",
+      "panelboardSCCRkA": "asd",
+      "mainBreakerManufacturer": "asd",
+      "mainBreakerType": "asd",
+      "mainBreakerFrameSizeA": "as",
+      "mainBreakerRatingPlugA": "asd",
+      "mainBreakerICRatingkA": "asd",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.6.1.2.A.1",
+            "description": "Compare equipment nameplate data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.6.1.2.A.2",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.6.1.2.A.3",
+            "description": "Inspect anchorage and alignment.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.6.1.2.A.4",
+            "description": "Verify that all maintenance devices are available for servicing and operating the breaker.",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.6.1.2.A.5",
+            "description": "Verify the unit is clean.",
+            "result": "Not Applicable"
+          },
+          {
+            "id": "7.6.1.2.A.6",
+            "description": "Verify the arc chutes are intact."
+          },
+          {
+            "id": "7.6.1.2.A.7",
+            "description": "Inspect moving and stationary contacts for condition and alignment."
+          },
+          {
+            "id": "7.6.1.2.A.10.1",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.6.1.2.B.1."
+          },
+          {
+            "id": "7.6.1.2.A.14",
+            "description": "Perform adjustments for final protective device settings per coordination study."
+          }
+        ]
+      },
+      "megohmmeter": "ad",
+      "megohmmeterSerial": "asdf",
+      "megohmmeterAmpId": "asd",
+      "lro": "sdg",
+      "lroSerial": "gsd",
+      "lroAmpId": "sdg",
+      "piSet": "sdg",
+      "piSetSerial": "gdsg",
+      "piSetAmpId": "sdg",
+      "comments": "sdg",
+      "numberOfCircuitSpaces": 20,
+      "electricalTestOrdering": "Sequential",
+      "tripCurveNumbers": "",
+      "panelboardBreakers": {
+        "numberOfSpaces": 20,
+        "breakers": [
+          {
+            "circuitNumber": "1",
+            "result": "PASS",
+            "poles": "",
+            "manuf": "123",
+            "type": "123",
+            "frameA": "123",
+            "tripA": "123",
+            "ratedCurrentA": "123",
+            "testCurrentA": "369",
+            "tripToleranceMin": "123",
+            "tripToleranceMax": "123",
+            "tripTime": "123",
+            "insulationLL": "3",
+            "insulationLP": "1",
+            "insulationPP": "3"
+          },
+          {
+            "circuitNumber": "2",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "3",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "4",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "5",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "6",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "7",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "8",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "9",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "10",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "11",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "12",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "13",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "14",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "15",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "16",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "17",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "18",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "19",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          },
+          {
+            "circuitNumber": "20",
+            "result": "",
+            "poles": "",
+            "manuf": "",
+            "type": "",
+            "frameA": "",
+            "tripA": "",
+            "ratedCurrentA": "",
+            "testCurrentA": "",
+            "tripToleranceMin": "",
+            "tripToleranceMax": "",
+            "tripTime": "",
+            "insulationLL": "",
+            "insulationLP": "",
+            "insulationPP": ""
+          }
+        ]
+      }
+    }
+  }
+}

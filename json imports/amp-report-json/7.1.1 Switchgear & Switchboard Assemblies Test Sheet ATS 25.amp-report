@@ -1,0 +1,202 @@
+{
+  "reportType": "SwitchgearReport",
+  "createdAt": "2025-08-18T06:44:21.746Z",
+  "updatedAt": "2025-08-18T06:44:21.746Z",
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "Job #"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "Technicians"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Date",
+          "type": "text",
+          "value": "Temp."
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "PASS"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "Eqpt. Location"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "89"
+        },
+        {
+          "label": "Humidity %",
+          "type": "number",
+          "value": "%"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "Rated Voltage (V)"
+        },
+        {
+          "label": "Catalog Number",
+          "type": "text",
+          "value": "System Voltage (V)"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "Rated Current (A)"
+        },
+        {
+          "label": "Series",
+          "type": "text",
+          "value": "AIC Rating (kA)"
+        },
+        {
+          "label": "Type",
+          "type": "text",
+          "value": "Phase Configuration"
+        },
+        {
+          "label": "System Voltage",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Rated Voltage",
+          "type": "text",
+          "value": "34500"
+        },
+        {
+          "label": "Rated Current",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "AIC Rating",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Phase Configuration",
+          "type": "text",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "vm-table",
+          "type": "table",
+          "value": {
+            "rows": []
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Measured Insulation Resistance Values",
+      "fields": [
+        {
+          "label": "insulationMeasured",
+          "type": "table",
+          "value": {
+            "rows": []
+          }
+        }
+      ]
+    },
+    {
+      "title": "Temperature Corrected Values",
+      "fields": [
+        {
+          "label": "insulationCorrected",
+          "type": "table",
+          "value": {
+            "rows": []
+          }
+        }
+      ]
+    },
+    {
+      "title": "Contact Resistance",
+      "fields": [
+        {
+          "label": "switchgearContact",
+          "type": "table",
+          "value": {
+            "rows": []
+          }
+        }
+      ]
+    },
+    {
+      "title": "Dielectric Withstand",
+      "fields": [
+        {
+          "label": "switchgearDielectric",
+          "type": "table",
+          "value": {
+            "rows": []
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "testEquipment3",
+          "type": "object",
+          "value": {}
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "comments",
+          "type": "textarea",
+          "value": ""
+        }
+      ]
+    }
+  ]
+}

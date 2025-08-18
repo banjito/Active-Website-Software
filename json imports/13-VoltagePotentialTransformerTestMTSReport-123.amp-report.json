@@ -1,0 +1,427 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K2FSSEFGKFP32EDZKDWA0VXX",
+  "reportType": "13-VoltagePotentialTransformerTestMTSReport.tsx",
+  "createdAt": "2025-08-12T18:46:41.439Z",
+  "updatedAt": "2025-08-12T18:48:21.331Z",
+  "version": 159,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "2025-08-12"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "123"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "123"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": "1234"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "sadf"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "asdf"
+        }
+      ]
+    },
+    {
+      "title": "Device Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "Catalog Number",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "Accuracy Class",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "Manufactured Year",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "Voltage Rating",
+          "type": "text",
+          "value": "sadf"
+        },
+        {
+          "label": "Insulation Class",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "Frequency",
+          "type": "text",
+          "value": "asdf"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.10.2.1",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.2.3",
+                "description": "Clean the unit.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.10.2.4",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.10.1.B.1.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.10.2.5",
+                "description": "Verify that all required grounding and connections provide contact.",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.10.2.6",
+                "description": "Verify correct operation of transformer withdrawal mechanism and grounding operation.",
+                "result": "See Comments"
+              },
+              {
+                "id": "7.10.2.7",
+                "description": "Verify correct primary and secondary fuse sizes for voltage transformers.",
+                "result": "Not Applicable"
+              },
+              {
+                "id": "7.10.2.8",
+                "description": "Use appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Fuse Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "sdfa"
+        },
+        {
+          "label": "Catalog Number",
+          "type": "text",
+          "value": "asdf"
+        },
+        {
+          "label": "Class",
+          "type": "text",
+          "value": "sdf"
+        },
+        {
+          "label": "Voltage Rating (kV)",
+          "type": "text",
+          "value": "safd"
+        },
+        {
+          "label": "Ampacity (A)",
+          "type": "text",
+          "value": "sfd"
+        },
+        {
+          "label": "I.C. Rating (kA)",
+          "type": "text",
+          "value": "123"
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Fuse Resistance",
+      "fields": [
+        {
+          "label": "Fuse Resistance",
+          "type": "table",
+          "value": {
+            "asFound": "123",
+            "asLeft": "1132"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance & Ratio",
+      "fields": [
+        {
+          "label": "Insulation Resistance",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "Primary to Ground",
+                "units": "MΩ",
+                "results": "123123123123",
+                "corrected": "18369969969.95",
+                "testVoltage": "250V"
+              },
+              {
+                "id": "Secondary to Ground",
+                "units": "MΩ",
+                "results": "2134",
+                "corrected": "318.39",
+                "testVoltage": "1000V"
+              },
+              {
+                "id": "Primary to Secondary",
+                "units": "MΩ"
+              }
+            ]
+          }
+        },
+        {
+          "label": "Secondary Voltage at as-found tap (V)",
+          "type": "number",
+          "value": "120"
+        },
+        {
+          "label": "Turns Ratio Test",
+          "type": "table",
+          "value": {
+            "tap": "afs",
+            "calculatedRatio": "0.2000",
+            "percentDeviation": "-155900.00",
+            "passFail": "Fail",
+            "primaryVoltage": "24",
+            "measuredH1H2": "312"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "Low Resistance Ohmmeter",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asf"
+        },
+        {
+          "label": "TTR Test Set",
+          "type": "text",
+          "value": "f"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "asd"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "asd"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "asd"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "123",
+    "reportType": "13-VoltagePotentialTransformerTestMTSReport",
+    "fields": {
+      "customer": "asd",
+      "jobNumber": "asd",
+      "technicians": "asd",
+      "date": "2025-08-12",
+      "identifier": "123",
+      "temperatureF": "123",
+      "humidity": "1234",
+      "substation": "sadf",
+      "eqptLocation": "asdf",
+      "user": "asdf",
+      "manufacturer": "asdf",
+      "catalogNumber": "asdf",
+      "serialNumber": "asdf",
+      "accuracyClass": "asdf",
+      "manufacturedYear": "asdf",
+      "voltageRating": "sadf",
+      "insulationClass": "asdf",
+      "frequency": "asdf",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.10.2.1",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.2.3",
+            "description": "Clean the unit.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.10.2.4",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.10.1.B.1.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.10.2.5",
+            "description": "Verify that all required grounding and connections provide contact.",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.10.2.6",
+            "description": "Verify correct operation of transformer withdrawal mechanism and grounding operation.",
+            "result": "See Comments"
+          },
+          {
+            "id": "7.10.2.7",
+            "description": "Verify correct primary and secondary fuse sizes for voltage transformers.",
+            "result": "Not Applicable"
+          },
+          {
+            "id": "7.10.2.8",
+            "description": "Use appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces."
+          }
+        ]
+      },
+      "fuseManufacturer": "sdfa",
+      "fuseCatalogNumber": "asdf",
+      "fuseClass": "sdf",
+      "fuseVoltageRatingKv": "safd",
+      "fuseAmpacityA": "sfd",
+      "fuseIcRatingKa": "123",
+      "fuseResistance": {
+        "asFound": "123",
+        "asLeft": "1132"
+      },
+      "vtInsulation": {
+        "rows": [
+          {
+            "id": "Primary to Ground",
+            "units": "MΩ",
+            "results": "123123123123",
+            "corrected": "18369969969.95",
+            "testVoltage": "250V"
+          },
+          {
+            "id": "Secondary to Ground",
+            "units": "MΩ",
+            "results": "2134",
+            "corrected": "318.39",
+            "testVoltage": "1000V"
+          },
+          {
+            "id": "Primary to Secondary",
+            "units": "MΩ"
+          }
+        ]
+      },
+      "secondaryVoltageTap": "120",
+      "turnsRatio": {
+        "tap": "afs",
+        "calculatedRatio": "0.2000",
+        "percentDeviation": "-155900.00",
+        "passFail": "Fail",
+        "primaryVoltage": "24",
+        "measuredH1H2": "312"
+      },
+      "megohmmeter": "asf",
+      "megohmmeterSerial": "asf",
+      "megohmmeterAmpId": "asf",
+      "lro": "asf",
+      "lroSerial": "asf",
+      "lroAmpId": "asf",
+      "ttr": "f",
+      "ttrSerial": "asd",
+      "ttrAmpId": "asd",
+      "comments": "asd"
+    }
+  }
+}

@@ -380,6 +380,13 @@ export default function PortalLanding() {
               >
                 Learn More
               </Button>
+              <a
+                href="/assets/offline-software.zip"
+                download
+                className="inline-flex items-center justify-center h-11 px-5 text-base rounded-md border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:border-dark-300 dark:text-white dark:hover:text-white dark:hover:bg-dark-700/20"
+              >
+                Get Offline Software
+              </a>
             </div>
           </div>
         </div>

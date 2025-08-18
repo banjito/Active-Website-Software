@@ -273,6 +273,25 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
           ? 'secondary'
           : 'primaryToSecondary';
 
+        // Build updated DA/PI objects first so we can compute Acceptable reliably
+        const nextDA = {
+          ...prev.electricalTestsInsulationResistance.dielectricAbsorption,
+          [labelKey]: da,
+        } as FormData['electricalTestsInsulationResistance']['dielectricAbsorption'];
+
+        const nextPI = {
+          ...prev.electricalTestsInsulationResistance.polarizationIndex,
+          [labelKey]: pi,
+        } as FormData['electricalTestsInsulationResistance']['polarizationIndex'];
+
+        const allValues = [
+          nextDA.primary, nextDA.secondary, nextDA.primaryToSecondary,
+          nextPI.primary, nextPI.secondary, nextPI.primaryToSecondary,
+        ]
+          .map(v => parseFloat(String(v)))
+          .filter(v => !Number.isNaN(v));
+        const acceptableDAPI = allValues.length > 0 && allValues.every(v => v > 1.0) ? 'Yes' : 'No';
+
         return ({
           ...prev,
           electricalTestsInsulationResistance: {
@@ -281,14 +300,9 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
               ...prev.electricalTestsInsulationResistance[testKey],
               correctedValues: { halfMin: correctedHalfMin, oneMin: correctedOneMin, tenMin: correctedTenMin },
             },
-            dielectricAbsorption: {
-              ...prev.electricalTestsInsulationResistance.dielectricAbsorption,
-              [labelKey]: da,
-            },
-            polarizationIndex: {
-              ...prev.electricalTestsInsulationResistance.polarizationIndex,
-              [labelKey]: pi,
-            }
+            dielectricAbsorption: nextDA,
+            polarizationIndex: nextPI,
+            acceptableDAPI,
           }
         });
       });
@@ -360,7 +374,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
       
       const { data, error } = await supabase
         .schema('neta_ops')
-        .from('low_voltage_cable_test_3sets')
+        .from('liquid_xfmr_visual_mts_reports')
         .select('*')
         .eq('id', reportId)
         .single();
@@ -374,11 +388,12 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
       }
       
       if (data) {
-        console.log('Loaded report data:', data);
+        console.log('Loaded report row:', data);
         
-        // Handle the data structure from the importer
-        if (data.data) {
-          const importedData = data.data;
+        // Support both legacy `data` and current `report_data` columns
+        const importedData = (data as any).report_data || (data as any).data;
+        if (importedData) {
+          console.log('Using imported report payload:', importedData);
           console.log('🚀 Processing imported data:', importedData);
           console.log('📋 reportInfo:', importedData.reportInfo);
           console.log('🔍 visualInspection:', importedData.visualInspection);
@@ -616,7 +631,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
     const reportPayload = {
       job_id: jobId,
       user_id: user.id,
-      data: {
+      report_data: {
         reportInfo: {
           customer: formData.customer,
           address: formData.address,
@@ -629,7 +644,8 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
             ambient: formData.temperature.fahrenheit,
             fahrenheit: formData.temperature.fahrenheit,
             celsius: formData.temperature.celsius,
-            correctionFactor: formData.temperature.tcf
+            correctionFactor: formData.temperature.tcf,
+            humidity: formData.temperature.humidity
           },
           substation: formData.substation,
           eqptLocation: formData.eqptLocation,
@@ -654,6 +670,14 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
               voltsSecondary: formData.nameplate.secondaryVolts2,
               connection: formData.nameplate.secondaryConnectionDelta ? 'Delta' : (formData.nameplate.secondaryConnectionWye ? 'Wye' : ''),
               material: formData.nameplate.secondaryWindingMaterialAluminum ? 'Aluminum' : (formData.nameplate.secondaryWindingMaterialCopper ? 'Copper' : '')
+            },
+            tapConfiguration: {
+              voltages: formData.nameplate.tapVoltages,
+              positions: formData.nameplate.tapPositions,
+              currentPosition: formData.nameplate.tapPositionLeft1,
+              currentPositionSecondary: formData.nameplate.tapPositionLeft2,
+              tapVoltsSpecific: formData.nameplate.tapVoltsSpecific,
+              tapPercentSpecific: formData.nameplate.tapPercentSpecific
             }
           },
           oilLevel: formData.indicatorGaugeValues.oilLevel,
@@ -662,6 +686,46 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
           windingTemperature: formData.indicatorGaugeValues.windingTemperature,
           oilTempRange: formData.indicatorGaugeValues.oilTempRange,
           windingTempRange: formData.indicatorGaugeValues.windingTempRange,
+          insulationResistance: {
+            primaryToGround: {
+              testVoltage: formData.electricalTestsInsulationResistance.primaryToGround.testVoltage,
+              unit: formData.electricalTestsInsulationResistance.primaryToGround.units,
+              readings: {
+                halfMinute: formData.electricalTestsInsulationResistance.primaryToGround.values.halfMin,
+                oneMinute: formData.electricalTestsInsulationResistance.primaryToGround.values.oneMin,
+                tenMinute: formData.electricalTestsInsulationResistance.primaryToGround.values.tenMin
+              }
+            },
+            secondaryToGround: {
+              testVoltage: formData.electricalTestsInsulationResistance.secondaryToGround.testVoltage,
+              unit: formData.electricalTestsInsulationResistance.secondaryToGround.units,
+              readings: {
+                halfMinute: formData.electricalTestsInsulationResistance.secondaryToGround.values.halfMin,
+                oneMinute: formData.electricalTestsInsulationResistance.secondaryToGround.values.oneMin,
+                tenMinute: formData.electricalTestsInsulationResistance.secondaryToGround.values.tenMin
+              }
+            },
+            primaryToSecondary: {
+              testVoltage: formData.electricalTestsInsulationResistance.primaryToSecondary.testVoltage,
+              unit: formData.electricalTestsInsulationResistance.primaryToSecondary.units,
+              readings: {
+                halfMinute: formData.electricalTestsInsulationResistance.primaryToSecondary.values.halfMin,
+                oneMinute: formData.electricalTestsInsulationResistance.primaryToSecondary.values.oneMin,
+                tenMinute: formData.electricalTestsInsulationResistance.primaryToSecondary.values.tenMin
+              }
+            },
+            dielectricAbsorption: {
+              primary: formData.electricalTestsInsulationResistance.dielectricAbsorption.primary,
+              secondary: formData.electricalTestsInsulationResistance.dielectricAbsorption.secondary,
+              primaryToSecondary: formData.electricalTestsInsulationResistance.dielectricAbsorption.primaryToSecondary
+            },
+            polarizationIndex: {
+              primary: formData.electricalTestsInsulationResistance.polarizationIndex.primary,
+              secondary: formData.electricalTestsInsulationResistance.polarizationIndex.secondary,
+              primaryToSecondary: formData.electricalTestsInsulationResistance.polarizationIndex.primaryToSecondary
+            },
+            acceptable: formData.electricalTestsInsulationResistance.acceptableDAPI
+          },
           comments: formData.visualMechanicalInspectionComments
         },
         visualInspection: formData.visualMechanicalInspection.reduce((acc, item) => {
@@ -686,7 +750,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
       if (reportId) {
         result = await supabase
           .schema('neta_ops')
-          .from('low_voltage_cable_test_3sets')
+          .from('liquid_xfmr_visual_mts_reports')
           .update(reportPayload)
           .eq('id', reportId)
           .select()
@@ -694,7 +758,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
       } else {
         result = await supabase
           .schema('neta_ops')
-          .from('low_voltage_cable_test_3sets')
+          .from('liquid_xfmr_visual_mts_reports')
           .insert(reportPayload)
           .select()
           .single();
@@ -1052,21 +1116,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                           ))}
                       </div>
                   </div>
-                  <div className="flex items-center">
-                    <label className="w-32 text-sm font-medium text-gray-700 dark:text-gray-300"></label> {/* Empty label for alignment */}
-                    <div className="grid grid-cols-7 gap-2 flex-1">
-                      {formData.nameplate.tapPositions.map((posValue, index) => (
-                        <input
-                          key={`tap-pos-val-${index}`}
-                          type="text"
-                          value={posValue}
-                          onChange={e => { const newTaps = [...formData.nameplate.tapPositions]; newTaps[index] = e.target.value; handleChange('nameplate.tapPositions', newTaps); }}
-                          readOnly={!isEditing}
-                          className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  
 
                   <div className="flex items-center pt-2">
                     <label className="w-32 text-sm font-medium text-gray-700 dark:text-gray-300">Tap Position Left</label>

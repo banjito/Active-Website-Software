@@ -302,6 +302,8 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
       if (data && data.report_data) {
         // Parse the saved data and merge with current formData structure
+        console.log('Loading report data:', data.report_data);
+        console.log('Loading testEquipment:', data.report_data.testEquipment);
         setFormData(prev => ({
           ...prev,
           ...data.report_data,
@@ -594,13 +596,21 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
     setFormData(prev => {
       const newData = { ...prev };
       
-      // Handle nested fields
+      // Handle nested fields (including multi-level nesting like testEquipment.megohmmeter.name)
       if (field.includes('.')) {
-        const [parent, child] = field.split('.');
-        (newData as any)[parent] = {
-          ...(newData as any)[parent],
-          [child]: value
-        };
+        const parts = field.split('.');
+        let current = newData as any;
+        
+        // Navigate to the parent object
+        for (let i = 0; i < parts.length - 1; i++) {
+          if (!current[parts[i]]) {
+            current[parts[i]] = {};
+          }
+          current = current[parts[i]];
+        }
+        
+        // Set the value on the final property
+        current[parts[parts.length - 1]] = value;
 
         // Auto-fill secondary winding voltage when nameplate secondary voltage changes
         if (field === 'nameplate.voltsSecondary') {
@@ -695,6 +705,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
 
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
+
+    console.log('Saving formData:', formData);
+    console.log('Saving testEquipment:', formData.testEquipment);
 
     const reportPayload = {
       job_id: jobId,
@@ -1014,7 +1027,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 />
               </div>
               {/* Connections */}
-              <div className="flex justify-center space-x-4">
+              <div className="flex justify-center space-x-4 connections-group">
                 {['Delta', 'Wye', 'Single Phase'].map(conn => (
                   <label key={`pri-${conn}`} className="inline-flex items-center">
                     <input
@@ -1031,7 +1044,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 ))}
               </div>
               {/* Winding Material */}
-              <div className="flex justify-center space-x-4">
+              <div className="flex justify-center space-x-4 materials-group">
                 {['Aluminum', 'Copper'].map(mat => (
                   <label key={`pri-${mat}`} className="inline-flex items-center">
                     <input
@@ -1071,7 +1084,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 />
               </div>
               {/* Connections */}
-              <div className="flex justify-center space-x-4">
+              <div className="flex justify-center space-x-4 connections-group">
                 {['Delta', 'Wye', 'Single Phase'].map(conn => (
                   <label key={`sec-${conn}`} className="inline-flex items-center">
                     <input
@@ -1088,7 +1101,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                 ))}
               </div>
               {/* Winding Material */}
-              <div className="flex justify-center space-x-4">
+              <div className="flex justify-center space-x-4 materials-group">
                 {['Aluminum', 'Copper'].map(mat => (
                   <label key={`sec-${mat}`} className="inline-flex items-center">
                     <input
@@ -1348,7 +1361,21 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
               <input id="turnsRatio.secondaryWindingVoltage" type="text" name="turnsRatio.secondaryWindingVoltage" value={formData.turnsRatio.secondaryWindingVoltage} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input w-24 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /> <span className="ml-1">V</span>
           </div>
           <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 turns-ratio-table">
+                  <colgroup>
+                    <col className="tr-tap" />
+                    <col className="tr-nameplate" />
+                    <col className="tr-calc" />
+                    <col className="tr-h1-meas" />
+                    <col className="tr-h1-dev" />
+                    <col className="tr-h1-pf" />
+                    <col className="tr-h2-meas" />
+                    <col className="tr-h2-dev" />
+                    <col className="tr-h2-pf" />
+                    <col className="tr-h3-meas" />
+                    <col className="tr-h3-dev" />
+                    <col className="tr-h3-pf" />
+                  </colgroup>
                   <thead>
                       <tr>
                           <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Tap</th>
@@ -1535,8 +1562,8 @@ if (typeof document !== 'undefined') {
         display: none !important;
       }
       
-      /* Form elements - ensure text shows in boxes */
-      input, select, textarea { 
+      /* Form elements - ensure text shows in boxes (exclude radios/checkboxes) */
+      input:not([type="radio"]):not([type="checkbox"]), select, textarea { 
         background-color: white !important; 
         border: 1px solid black !important; 
         color: black !important;
@@ -1596,32 +1623,18 @@ if (typeof document !== 'undefined') {
         -moz-appearance: textfield !important;
       }
       
-      /* Radio buttons - show selected state */
+      /* Use native radio look for print to match on-screen (and ATS output) */
       input[type="radio"] {
-        -webkit-appearance: none !important;
-        -moz-appearance: none !important;
-        appearance: none !important;
-        width: 12px !important;
-        height: 12px !important;
-        border: 1px solid black !important;
-        border-radius: 50% !important;
-        background: white !important;
-        margin-right: 4px !important;
+        -webkit-appearance: radio !important;
+        -moz-appearance: radio !important;
+        appearance: auto !important;
+        background: initial !important;
+        border: initial !important;
+        width: 16px !important;
+        height: 16px !important;
+        margin-right: 6px !important;
       }
-      
-      input[type="radio"]:checked {
-        background: black !important;
-        border: 2px solid black !important;
-      }
-      
-      input[type="radio"]:checked::after {
-        content: "●" !important;
-        color: white !important;
-        font-size: 8px !important;
-        text-align: center !important;
-        display: block !important;
-        line-height: 8px !important;
-      }
+      input[type="radio"]:checked::after { content: none !important; }
       
       /* Table styling */
       table { 
@@ -1688,6 +1701,49 @@ if (typeof document !== 'undefined') {
       /* Improve table borders and spacing */
       .table-border {
         border: 1px solid black !important;
+      }
+
+      /* Turns Ratio column sizing for print */
+      table.turns-ratio-table col.tr-tap { width: 6% !important; }
+      table.turns-ratio-table col.tr-nameplate { width: 10% !important; }
+      table.turns-ratio-table col.tr-calc { width: 10% !important; }
+      table.turns-ratio-table col.tr-h1-meas,
+      table.turns-ratio-table col.tr-h2-meas,
+      table.turns-ratio-table col.tr-h3-meas { width: 11% !important; }
+      table.turns-ratio-table col.tr-h1-dev,
+      table.turns-ratio-table col.tr-h2-dev,
+      table.turns-ratio-table col.tr-h3-dev { width: 7% !important; }
+      table.turns-ratio-table col.tr-h1-pf,
+      table.turns-ratio-table col.tr-h2-pf,
+      table.turns-ratio-table col.tr-h3-pf { width: 7% !important; }
+
+      table.turns-ratio-table input, table.turns-ratio-table select { font-size: 10px !important; padding: 1px 2px !important; }
+      table.turns-ratio-table td { padding: 2px !important; }
+
+      /* Turns Ratio: allow header text to wrap and stay readable */
+      table.turns-ratio-table th {
+        white-space: normal !important;
+        word-break: break-word !important;
+        hyphens: auto !important;
+        line-height: 1.1 !important;
+        font-size: 9px !important;
+        padding: 2px !important;
+        text-align: center !important;
+      }
+
+      /* Center and slightly shrink inputs/selects for better fit */
+      table.turns-ratio-table input,
+      table.turns-ratio-table select {
+        width: 88% !important;
+        margin: 0 auto !important;
+        text-align: center !important;
+      }
+
+      /* First three narrow columns: make fields even smaller */
+      table.turns-ratio-table td:nth-child(1) select,
+      table.turns-ratio-table td:nth-child(2) input,
+      table.turns-ratio-table td:nth-child(3) input {
+        width: 75% !important;
       }
       
       /* Better page break handling */

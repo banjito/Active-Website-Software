@@ -106,27 +106,9 @@ const INSULATION_RESISTANCE_UNITS = [
 const TEST_VOLTAGES = ["250V", "500V", "1000V", "2500V", "5000V"];
 
 const CABLE_SIZES = [
-  "14 AWG",
-  "12 AWG", 
-  "10 AWG",
-  "8 AWG",
-  "6 AWG",
-  "4 AWG",
-  "3 AWG",
-  "2 AWG",
-  "1 AWG",
-  "1/0 AWG",
-  "2/0 AWG",
-  "3/0 AWG",
-  "4/0 AWG",
-  "250 kcmil",
-  "300 kcmil",
-  "350 kcmil",
-  "400 kcmil",
-  "500 kcmil",
-  "600 kcmil",
-  "750 kcmil",
-  "1000 kcmil"
+  "#18", "#16", "#12", "#10", "#8", "#6", "#4", "#2", "#1",
+  "1/0", "2/0", "3/0", "4/0", "250", "300", "350", "400",
+  "500", "600", "750", "1000"
 ];
 
 const CONFIGURATION_OPTIONS = [
@@ -626,6 +608,23 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           padding: 0 !important;
         }
         /* ...rest of your print CSS... */
+        
+        /* Standardized Visual & Mechanical print table (match ATS) */
+        table.vm-standard { width: 100% !important; table-layout: fixed !important; }
+        table.vm-standard th, table.vm-standard td { 
+          white-space: normal !important; 
+          word-break: break-word !important; 
+          font-size: 9px !important; 
+          line-height: 1.15 !important; 
+          padding: 3px 4px !important; 
+          vertical-align: top !important;
+        }
+        table.vm-standard thead th:first-child,
+        table.vm-standard tbody td:first-child { width: 18% !important; text-align: left !important; }
+        table.vm-standard thead th:nth-child(2),
+        table.vm-standard tbody td:nth-child(2) { width: 62% !important; text-align: left !important; }
+        table.vm-standard thead th:nth-child(3),
+        table.vm-standard tbody td:nth-child(3) { width: 20% !important; text-align: center !important; }
         /* Stronger borders for Visual and Mechanical Inspection table */
         table.visual-mechanical-table,
         table.visual-mechanical-table th,
@@ -725,15 +724,22 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         table.electrical-tests-table { table-layout: fixed !important; border-spacing: 0 !important; }
         table.electrical-tests-table thead { display: table-header-group !important; }
         table.electrical-tests-table th, table.electrical-tests-table td { box-sizing: border-box !important; padding: 0 !important; }
-        /* Inputs/selects: snug fit within table cells with tiny insets to prevent bleeding across borders */
-        table.electrical-tests-table td { position: relative !important; }
-        table.electrical-tests-table input,
-        table.electrical-tests-table select {
-          width: calc(100% - 2px) !important;
-          height: calc(100% - 2px) !important;
-          border: 0 !important;
-          margin: 1px !important; /* creates a 1px inset on all sides to avoid overlap from rounding */
-          padding: 0 !important;
+        /* Inputs/selects: full fit inside cell without bleeding borders */
+        table.electrical-tests-table td { position: relative !important; box-sizing: border-box !important; overflow: hidden !important; }
+        /* Absolutely position inputs/selects with a 1px inset so they cannot cross borders */
+        table.electrical-tests-table td > input,
+        table.electrical-tests-table td > select {
+          position: absolute !important;
+          top: 50.5% !important;             /* near vertical center */
+          left: -10px !important;              /* shift slightly left */
+          right: 0 !important;               /* maximize right space */
+          transform: translateY(-50%) !important;
+          width: auto !important;
+          height: auto !important;
+          border: none !important;
+          outline: none !important;
+          margin: 0 !important;
+          padding: 0 1px 0 0 !important;     /* bias content to the left */
           display: block !important;
           font-size: 9px !important;
           line-height: 1.1 !important;
@@ -743,6 +749,26 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           -moz-appearance: none !important;
           appearance: none !important;
           background-image: none !important;
+          text-align: left !important;       /* shift readings left to prevent right cut-off */
+        }
+
+        /* Column-specific overrides: keep Size/Config centered; target both row sets (colspan=2 for size/config) */
+        table.electrical-tests-table tbody tr:first-child td[colspan="2"] > select,
+        table.electrical-tests-table tbody tr:first-child td[colspan="2"] > input,
+        table.electrical-tests-table tbody tr + tr td[colspan="2"] > select,
+        table.electrical-tests-table tbody tr + tr td[colspan="2"] > input {
+          left: 0 !important;
+          right: 0 !important;
+          text-align: center !important;
+        }
+
+        /* Continuity and Results centered using rowSpan targets (they span both rows at the end) */
+        table.electrical-tests-table tbody tr td[rowspan="2"]:nth-last-child(2) > select,
+        table.electrical-tests-table tbody tr td[rowspan="2"]:nth-last-child(2) > input,
+        table.electrical-tests-table tbody tr td[rowspan="2"]:last-child > select,
+        table.electrical-tests-table tbody tr td[rowspan="2"]:last-child > input {
+          left: 0 !important;
+          right: 0 !important;
           text-align: center !important;
         }
         /* Size (2 columns) */
@@ -769,8 +795,8 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         .electrical-tests-table col:nth-child(15) { width: 5.5% !important; }
         .electrical-tests-table col:nth-child(16) { width: 5.3% !important; }
         .electrical-tests-table col:nth-child(17) { width: 7.6% !important; }
-        /* Add a tiny right inset for the last reading input to guarantee no touching */
-        table.electrical-tests-table td:nth-child(15) input { margin-right: 2px !important; }
+        /* Guarantee no overflow on tight columns */
+        table.electrical-tests-table td input, table.electrical-tests-table td select { max-width: 100% !important; }
         /* Ultra-aggressive targeting for From/To inputs specifically */
         table.electrical-tests-table tbody td[rowspan="2"]:first-child input,
         table.electrical-tests-table tbody td[rowspan="2"]:nth-child(2) input {
@@ -992,7 +1018,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
       from: "",
       to: "",
       size: "",
-      config: "Select One",
+      config: "",
       result: "",
       configuration: "",
       readings: {
@@ -1261,13 +1287,29 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
     setError(null);
     try {
         // Log the schema and table name for debugging
-        console.log('Attempting to save to schema: neta_ops, table: low_voltage_cable_test_3sets'); // Changed table name
+        console.log('Attempting to save to schema: neta_ops, table: low_voltage_cable_test_12sets');
         
+        // Normalize test sets to ensure size/config/continuity persist
+        const normalizedTestSets = formData.testSets.map((set) => ({
+            ...set,
+            size: set.size ?? '',
+            config: set.config ?? '',
+            result: set.result ?? '',
+            readings: {
+              ...set.readings,
+              continuity: set.readings?.continuity ?? ''
+            },
+            correctedReadings: {
+              ...set.correctedReadings,
+              continuity: set.correctedReadings?.continuity ?? set.readings?.continuity ?? ''
+            }
+        }));
+
         // Structure the data to be saved (assuming a 'data' column)
         const reportPayload = {
             job_id: jobId,
             user_id: user?.id,
-            data: formData // Store the entire form state
+            data: { ...formData, testSets: normalizedTestSets } // Store the entire form state with normalized test sets
         };
 
         // Log the payload for debugging
@@ -1279,8 +1321,8 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
             // Update existing report
             const { error: updateError } = await supabase
                 .schema('neta_ops')
-                .from('low_voltage_cable_test_3sets') // Changed table name
-                .update({ data: formData, updated_at: new Date() })
+                .from('low_voltage_cable_test_12sets')
+                .update({ data: { ...formData, testSets: normalizedTestSets }, updated_at: new Date() })
                 .eq('id', reportId);
             if (updateError) {
                 console.error('Update error details:', updateError);
@@ -1299,7 +1341,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 console.log('Trying regular insert...');
                 const { data: insertData, error: insertError } = await supabase
                     .schema('neta_ops')
-                    .from('low_voltage_cable_test_3sets') // Changed table name
+                    .from('low_voltage_cable_test_12sets')
                     .insert(reportPayload)
                     .select('id')
                     .single();
@@ -1313,7 +1355,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 // Create an asset entry for the saved report
                 const assetData = {
                     name: getAssetName(reportSlug, formData.identifier || ''),
-                    file_url: `report:/jobs/${jobId}/low-voltage-cable-test-3sets/${savedReportId}`, // Changed asset URL
+                    file_url: `report:/jobs/${jobId}/low-voltage-cable-test-12sets/${savedReportId}`,
                     user_id: user?.id,
                     created_at: new Date().toISOString()
                 };
@@ -1517,7 +1559,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
   }
 
   return (
-    <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>
+    <div id="report-container" className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>
       {/* Print Header - Only visible when printing */}
       <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
         <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 35, marginLeft: '5px', marginTop: '2px' }} />
@@ -1666,7 +1708,10 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
               </div>
             </div>
         </div>
-          
+
+        {/* Orange divider between Job Info and Cable Data */}
+        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+
         {/* Cable Data Section */}
         <div className="mb-6">
           <h2 className="section-cable-data text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Cable Data</h2>
@@ -1719,7 +1764,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         <div className="mb-6">
           <h2 className="section-visual-mechanical text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[600px]">
+              <table className="w-full border-collapse min-w-[600px] vm-standard">
                 <thead>
                   <tr className="bg-gray-50 dark:bg-dark-200">
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">NETA Section</th>

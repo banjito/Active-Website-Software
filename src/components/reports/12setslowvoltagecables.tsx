@@ -925,7 +925,46 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
         /* Electrical tests table alignment identical to 3-LowVoltageCableMTS */
         table.electrical-tests-table { border-collapse: collapse !important; border: none !important; outline: none !important; box-shadow: none !important; table-layout: fixed !important; border-spacing: 0 !important; }
         table.electrical-tests-table th, table.electrical-tests-table td { border-width: 1.5px !important; border-style: solid !important; border-color: black !important; box-sizing: border-box !important; padding: 0 !important; height: 14px !important; vertical-align: middle !important; text-align: center !important; font-size: 9px !important; line-height: 1.1 !important; }
-        table.electrical-tests-table input, table.electrical-tests-table select { width: calc(100% - 2px) !important; height: calc(100% - 2px) !important; margin: 1px !important; border: 0 !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; outline: none !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; text-align: center !important; vertical-align: middle !important; }
+        /* Fit inputs exactly within cells; no bleed */
+        table.electrical-tests-table td { position: relative !important; box-sizing: border-box !important; overflow: hidden !important; }
+        table.electrical-tests-table td > input,
+        table.electrical-tests-table td > select {
+          position: absolute !important;
+          top: 50.5% !important;
+          left: -10px !important; /* match MTS left bias exactly */
+          right: 0 !important;
+          transform: translateY(-50%) !important;
+          width: auto !important;
+          height: auto !important;
+          border: none !important;
+          outline: none !important;
+          margin: 0 !important;
+          padding: 0 1px 0 0 !important;
+          display: block !important;
+          font-size: 9px !important;
+          line-height: 1.1 !important;
+          background: transparent !important;
+          box-sizing: border-box !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+          background-image: none !important;
+          text-align: left !important;
+        }
+        /* Center Size/Config (colspan=2) */
+        table.electrical-tests-table tbody tr:first-child td[colspan="2"] > select,
+        table.electrical-tests-table tbody tr:first-child td[colspan="2"] > input,
+        table.electrical-tests-table tbody tr + tr td[colspan="2"] > select,
+        table.electrical-tests-table tbody tr + tr td[colspan="2"] > input {
+          left: 0 !important; right: 0 !important; text-align: center !important;
+        }
+        /* Center Continuity and Results (rowSpan at end) */
+        table.electrical-tests-table tbody tr td[rowspan="2"]:nth-last-child(2) > select,
+        table.electrical-tests-table tbody tr td[rowspan="2"]:nth-last-child(2) > input,
+        table.electrical-tests-table tbody tr td[rowspan="2"]:last-child > select,
+        table.electrical-tests-table tbody tr td[rowspan="2"]:last-child > input {
+          left: 0 !important; right: 0 !important; text-align: center !important;
+        }
         table.electrical-tests-table select { background-image: none !important; }
         table.electrical-tests-table colgroup col:nth-child(1) { width: 6.5% !important; }
         table.electrical-tests-table colgroup col:nth-child(2) { width: 6.5% !important; }
@@ -1622,11 +1661,27 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
         // Log the schema and table name for debugging
         console.log('Attempting to save to schema: neta_ops, table: low_voltage_cable_test_12sets');
         
+        // Normalize test sets to ensure size/config/continuity persist
+        const normalizedTestSets = formData.testSets.map((set) => ({
+          ...set,
+          size: set.size ?? '',
+          config: set.config ?? '',
+          result: set.result ?? '',
+          readings: {
+            ...set.readings,
+            continuity: set.readings?.continuity ?? ''
+          },
+          correctedReadings: {
+            ...set.correctedReadings,
+            continuity: set.correctedReadings?.continuity ?? set.readings?.continuity ?? ''
+          }
+        }));
+
         // Structure the data to be saved (assuming a 'data' column)
         const reportPayload = {
             job_id: jobId,
             user_id: user?.id,
-            data: formData // Store the entire form state
+            data: { ...formData, testSets: normalizedTestSets } // Store the entire form state
         };
 
         // Log the payload for debugging
@@ -1639,7 +1694,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
             const { error: updateError } = await supabase
                 .schema('neta_ops')
                 .from('low_voltage_cable_test_12sets')
-                .update({ data: formData, updated_at: new Date() })
+                .update({ data: { ...formData, testSets: normalizedTestSets }, updated_at: new Date() })
                 .eq('id', reportId);
             if (updateError) {
                 console.error('Update error details:', updateError);

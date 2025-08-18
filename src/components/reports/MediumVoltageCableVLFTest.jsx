@@ -1194,6 +1194,7 @@ const MediumVoltageCableVLFTest = () => {
       console.log('Saving with jobId:', effectiveJobId);
       console.log('Saving with user.id:', user.id);
       console.log('Form data to save:', formData);
+      console.log('Equipment data to save:', formData.equipment);
 
       let result;
       if (reportId) {
@@ -1345,6 +1346,11 @@ const MediumVoltageCableVLFTest = () => {
       setIsSaving(false);
     }
   };
+
+  // Debug: Monitor equipment data changes
+  useEffect(() => {
+    console.log('Equipment data changed:', formData.equipment);
+  }, [formData.equipment]);
 
   // Update temperature correction factor when celsius value changes
   useEffect(() => {
@@ -1499,20 +1505,21 @@ const MediumVoltageCableVLFTest = () => {
 
       if (data && data.data) {
         console.log('loadReport: Found report, setting form data.');
+        console.log('Raw report data loaded:', data.data);
         // The report data is now stored in the 'data' column as JSONB
         const reportData = data.data;
         
         setFormData(prev => ({
           ...prev,
           ...reportData, // Spread all the report data
-          // Ensure specific nested objects are properly handled
-          cableInfo: reportData.cableInfo || prev.cableInfo,
-          terminationData: reportData.terminationData || prev.terminationData,
-          visualInspection: reportData.visualInspection || prev.visualInspection,
-          shieldContinuity: reportData.shieldContinuity || prev.shieldContinuity,
-          insulationTest: reportData.insulationTest || prev.insulationTest,
-          equipment: reportData.equipment || prev.equipment,
-          temperature: reportData.temperature || prev.temperature,
+          // Ensure specific nested objects are properly handled and merged
+          cableInfo: { ...prev.cableInfo, ...reportData.cableInfo },
+          terminationData: { ...prev.terminationData, ...reportData.terminationData },
+          visualInspection: { ...prev.visualInspection, ...reportData.visualInspection },
+          shieldContinuity: { ...prev.shieldContinuity, ...reportData.shieldContinuity },
+          insulationTest: { ...prev.insulationTest, ...reportData.insulationTest },
+          equipment: { ...prev.equipment, ...reportData.equipment },
+          temperature: { ...prev.temperature, ...reportData.temperature },
           withstandTest: reportData.withstandTest || {
             readings: [
               { 
@@ -1602,6 +1609,7 @@ const MediumVoltageCableVLFTest = () => {
             editingTanDeltaData: false
           },
         }));
+        
         setIsEditMode(false); // Set to view mode since report was loaded
       } else {
         console.warn('Report data loaded but data is missing or empty.');
@@ -2106,7 +2114,7 @@ const MediumVoltageCableVLFTest = () => {
       <section className="mb-6 visual-mechanical-section">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">7.3.3.A Visual and Mechanical Inspection</h2>
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 print:hidden">
           <div className="flex items-center">
             <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.1 Inspect exposed sections of cables and connectors for physical damage and evidence of degradation and corona.</label>
             <select
@@ -2191,13 +2199,87 @@ const MediumVoltageCableVLFTest = () => {
             </select>
           </div>
         </div>
+
+        {/* Print-only standardized table layout for Visual & Mechanical */}
+        <div className="hidden print:block overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 vm-standard table-fixed">
+            <colgroup>
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '62%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
+            <thead className="bg-gray-50 dark:bg-dark-200">
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.1</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Inspect exposed sections of cables and connectors for physical damage and evidence of degradation and corona.</td>
+                <td className="px-3 py-2 text-center">
+                  <select value={formData.visualInspection?.inspectCablesAndConnectors || InspectionResult.SELECT} onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, inspectCablesAndConnectors: e.target.value })} disabled={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                    {Object.values(InspectionResult).map((result) => (<option key={result} value={result}>{result}</option>))}
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.2</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Inspect terminations and splices for physical damage, evidence of overheating, and corona.</td>
+                <td className="px-3 py-2 text-center">
+                  <select value={formData.visualInspection?.inspectTerminationsAndSplices || InspectionResult.SELECT} onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, inspectTerminationsAndSplices: e.target.value })} disabled={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                    {Object.values(InspectionResult).map((result) => (<option key={result} value={result}>{result}</option>))}
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.3.1</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.</td>
+                <td className="px-3 py-2 text-center">
+                  <select value={formData.visualInspection?.useOhmmeter || InspectionResult.SELECT} onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, useOhmmeter: e.target.value })} disabled={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                    {Object.values(InspectionResult).map((result) => (<option key={result} value={result}>{result}</option>))}
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.4</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Inspect shield grounding, cable support.</td>
+                <td className="px-3 py-2 text-center">
+                  <select value={formData.visualInspection?.inspectShieldGrounding || InspectionResult.SELECT} onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, inspectShieldGrounding: e.target.value })} disabled={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                    {Object.values(InspectionResult).map((result) => (<option key={result} value={result}>{result}</option>))}
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.5</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Verify that visible cable bends are not less than ICEA and/or manufacturer's minimum allowable bending radius.</td>
+                <td className="px-3 py-2 text-center">
+                  <select value={formData.visualInspection?.verifyBendRadius || InspectionResult.SELECT} onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, verifyBendRadius: e.target.value })} disabled={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                    {Object.values(InspectionResult).map((result) => (<option key={result} value={result}>{result}</option>))}
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.7</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">If cables are terminated through window-type current transformers, inspect to verify neutral and ground conductors are correctly placed and shields are correctly terminated for operation of protective devices.</td>
+                <td className="px-3 py-2 text-center">
+                  <select value={formData.visualInspection?.inspectCurrentTransformers || InspectionResult.SELECT} onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, inspectCurrentTransformers: e.target.value })} disabled={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                    {Object.values(InspectionResult).map((result) => (<option key={result} value={result}>{result}</option>))}
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       {/* Electrical Tests - Shield Continuity */}
       <section className="mb-6 shield-continuity-section">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Shield Continuity</h2>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto print:hidden ir-screen">
           <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
             <thead>
               <tr>
@@ -2273,7 +2355,7 @@ const MediumVoltageCableVLFTest = () => {
           <span className="ml-2 text-gray-900 dark:text-white">V</span>
             </div>
         
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto print:hidden ir-screen">
           <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
             <thead>
               <tr>
@@ -2407,9 +2489,89 @@ const MediumVoltageCableVLFTest = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Print-only standardized layout for Insulation Resistance Values */}
+        <div className="hidden print:block overflow-x-auto ir-print">
+          <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 table-fixed">
+            <colgroup>
+              <col style={{ width: '5%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '5%' }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th className="border border-gray-300 dark:border-gray-700 px-1 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" colSpan={3}>Insulation Resistance</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" colSpan={3}>Temperature Corrected</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-1 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Units</th>
+              </tr>
+              <tr>
+                <th className="border border-gray-300 dark:border-gray-700 px-1 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">A-G</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">B-G</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">C-G</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">A-G</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">B-G</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">C-G</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-1 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border border-gray-300 dark:border-gray-700 px-1 py-1 whitespace-nowrap text-xs text-gray-900 dark:text-white">Pre-Test</td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.preTest.ag} onChange={(e) => handleInsulationTestValueChange('preTest', 'ag', e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.preTest.bg} onChange={(e) => handleInsulationTestValueChange('preTest', 'bg', e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.preTest.cg} onChange={(e) => handleInsulationTestValueChange('preTest', 'cg', e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.preTestCorrected.ag} readOnly={true} className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200" />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.preTestCorrected.bg} readOnly={true} className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200" />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.preTestCorrected.cg} readOnly={true} className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200" />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-1 py-1 whitespace-nowrap text-xs text-gray-900 dark:text-white">{formData.insulationTest.unit}</td>
+              </tr>
+              <tr>
+                <td className="border border-gray-300 dark:border-gray-700 px-1 py-1 whitespace-nowrap text-xs text-gray-900 dark:text-white">Post-Test</td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.postTest.ag} onChange={(e) => handleInsulationTestValueChange('postTest', 'ag', e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.postTest.bg} onChange={(e) => handleInsulationTestValueChange('postTest', 'bg', e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.postTest.cg} onChange={(e) => handleInsulationTestValueChange('postTest', 'cg', e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.postTestCorrected.ag} readOnly={true} className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200" />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.postTestCorrected.bg} readOnly={true} className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200" />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
+                  <input type="text" value={formData.insulationTest.postTestCorrected.cg} readOnly={true} className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200" />
+                </td>
+                <td className="border border-gray-300 dark:border-gray-700 px-1 py-1 whitespace-nowrap text-xs text-gray-900 dark:text-white">{formData.insulationTest.unit}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         
         {/* Add unit dropdown at the bottom of the table */}
-        <div className="mt-2 flex justify-end items-center">
+        <div className="mt-2 flex justify-end items-center print:hidden">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Units:</label>
               <select
             value={formData.insulationTest.unit}

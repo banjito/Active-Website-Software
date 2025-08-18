@@ -453,6 +453,8 @@ export default function MediumVoltageSwitchOilReport() {
             eqptLocation: data.report_info?.eqptLocation || formData.eqptLocation,
             temperature: data.report_info?.temperature ?? formData.temperature,
             humidity: data.report_info?.humidity ?? formData.humidity,
+            // Top-level comments field saved on the report row
+            comments: (data as any)?.comments ?? formData.comments,
             
             // Nameplate fields from report_info
             nameplate_manufacturer: data.report_info?.manufacturer
@@ -1906,7 +1908,7 @@ export default function MediumVoltageSwitchOilReport() {
         </section>
 
         {/* Comments Section */}
-        <section className="mb-6">
+        <section className="mb-6 comments-section">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Comments
@@ -2025,6 +2027,8 @@ if (typeof document !== 'undefined') {
       
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }
+      /* Enlarge comments box vertically for print */
+      .comments-section textarea { height: 170px !important; width: 100% !important; }
     }
   `;
   document.head.appendChild(style);

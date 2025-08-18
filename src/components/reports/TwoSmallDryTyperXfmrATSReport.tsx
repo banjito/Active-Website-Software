@@ -78,7 +78,9 @@ interface FormData {
     kvaBase: string;
     kvaCooling: string; 
     voltsPrimary: string;
+    voltsPrimaryInternal: string;
     voltsSecondary: string;
+    voltsSecondaryInternal: string;
     connectionsPrimary: string; 
     connectionsSecondary: string; 
     windingMaterialPrimary: string; 
@@ -208,6 +210,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
     eqptLocation: '',
     nameplate: {
       manufacturer: '', kvaBase: '', kvaCooling: '', voltsPrimary: '', voltsSecondary: '',
+      voltsPrimaryInternal: '', voltsSecondaryInternal: '',
       connectionsPrimary: 'Delta', connectionsSecondary: 'Wye',
       windingMaterialPrimary: 'Aluminum', windingMaterialSecondary: 'Copper',
       catalogNumber: '', tempRise: '', serialNumber: '', impedance: '',
@@ -454,6 +457,97 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
     }
   }, [(formData.temperature as any).correctionFactor, formData.temperature.tcf]);
 
+  // Sync Tap Position Left volts/percent based on selected tap and primary volts
+  useEffect(() => {
+    if (!isEditing && reportId) return;
+    const tapIndex = Math.max(0, (parseInt(formData.nameplate.tapPosition) || 1) - 1);
+    const tapVolt = formData.nameplate.tapVoltages[tapIndex] || '';
+    const primaryNominal = parseFloat(formData.nameplate.voltsPrimary) || NaN;
+    const percent = isFinite(primaryNominal) && primaryNominal !== 0 && tapVolt
+      ? ((parseFloat(tapVolt) / primaryNominal) * 100).toFixed(1)
+      : '';
+
+    const changed = tapVolt !== formData.nameplate.tapPositionLeftVolts || percent !== formData.nameplate.tapPositionLeftPercent;
+    if (!changed) return;
+
+    setFormData(prev => ({
+      ...prev,
+      nameplate: {
+        ...prev.nameplate,
+        tapPositionLeftVolts: tapVolt,
+        tapPositionLeftPercent: percent
+      }
+    }));
+  }, [
+    isEditing,
+    reportId,
+    formData.nameplate.tapPosition,
+    formData.nameplate.tapVoltages,
+    formData.nameplate.voltsPrimary,
+    formData.nameplate.tapPositionLeftVolts,
+    formData.nameplate.tapPositionLeftPercent
+  ]);
+
+  // Calculate Turns Ratio table values based on selected tap voltages and secondary winding voltage
+  useEffect(() => {
+    if (!isEditing && reportId) return;
+    const secVolt = parseFloat(formData.turnsRatio.secondaryWindingVoltage);
+
+    const nextTests = formData.turnsRatio.tests.map(test => {
+      const tapIdx = Math.max(0, (parseInt(test.tap) || 1) - 1);
+      const tapVolt = formData.nameplate.tapVoltages[tapIdx];
+      const nameplateVoltage = test.nameplateVoltage && test.nameplateVoltage.trim() !== '' ? test.nameplateVoltage : (tapVolt || '');
+      let calculatedRatio = '';
+      const np = parseFloat(nameplateVoltage);
+      if (isFinite(np) && isFinite(secVolt) && secVolt !== 0) {
+        calculatedRatio = (np / secVolt).toFixed(3);
+      }
+      const computeDev = (measured: string, calculated: string) => {
+        if (!measured || !calculated) return { deviation: '', passFail: '' };
+        const measuredValue = parseFloat(measured);
+        const calculatedValue = parseFloat(calculated);
+        if (!isFinite(measuredValue) || !isFinite(calculatedValue) || calculatedValue === 0) return { deviation: '', passFail: '' };
+        const deviation = ((measuredValue - calculatedValue) / calculatedValue * 100).toFixed(3);
+        const dv = parseFloat(deviation);
+        const passFail = (dv > -0.501 && dv < 0.501) ? 'PASS' : 'FAIL';
+        return { deviation, passFail };
+      };
+
+      const d1 = computeDev(test.measuredH1H2, calculatedRatio);
+      const d2 = computeDev(test.measuredH2H3, calculatedRatio);
+      const d3 = computeDev(test.measuredH3H1, calculatedRatio);
+
+      return {
+        ...test,
+        nameplateVoltage,
+        calculatedRatio,
+        devH1H2: d1.deviation,
+        passFailH1H2: d1.passFail,
+        devH2H3: d2.deviation,
+        passFailH2H3: d2.passFail,
+        devH3H1: d3.deviation,
+        passFailH3H1: d3.passFail
+      };
+    });
+
+    const changed = JSON.stringify(nextTests) !== JSON.stringify(formData.turnsRatio.tests);
+    if (!changed) return;
+
+    setFormData(prev => ({
+      ...prev,
+      turnsRatio: {
+        ...prev.turnsRatio,
+        tests: nextTests
+      }
+    }));
+  }, [
+    isEditing,
+    reportId,
+    formData.nameplate.tapVoltages,
+    formData.turnsRatio.secondaryWindingVoltage,
+    formData.turnsRatio.tests
+  ]);
+
   // Compute Dielectric Absorption Ratio (1 min / 0.5 min) like MTS and update Calculated As section
   useEffect(() => {
     const tests = formData.insulationResistance.tests || [];
@@ -698,7 +792,21 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA - ATS 7.2.1.1</div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA - ATS 7.2.1.1
+          <div className="mt-2">
+            <div
+              className="inline-block px-2 py-1 text-xs font-bold rounded border-2"
+              style={{
+                borderColor: '#000',
+                backgroundColor: 'transparent',
+                color: '#000'
+              }}
+            >
+              {formData.status}
+            </div>
+          </div>
+        </div>
       </div>
       {/* End Print Header */}
       
@@ -710,7 +818,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </div>
           
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2">
                <div>
@@ -777,7 +885,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
            </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
                 <div>
@@ -824,7 +932,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
               <div className="col-span-3 flex items-center">
                 <input type="text" name="nameplate.voltsPrimary" placeholder="Primary" value={formData.nameplate.voltsPrimary} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm w-1/2 mr-1 text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 <span className="text-gray-500 dark:text-gray-400">/</span>
-                <input type="text" name="nameplate.voltsPrimaryInternal" placeholder="" disabled className={`form-input text-sm w-1/2 ml-1 text-center bg-gray-100 dark:bg-dark-200 opacity-0 cursor-default`} />
+                <input type="text" name="nameplate.voltsPrimaryInternal" placeholder="Secondary" value={formData.nameplate.voltsPrimaryInternal} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm w-1/2 ml-1 text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
               <div className="col-span-4 flex justify-around items-center">
                 {connectionOptions.map(opt => (
@@ -849,7 +957,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
               <div className="col-span-3 flex items-center">
                 <input type="text" name="nameplate.voltsSecondary" placeholder="Secondary" value={formData.nameplate.voltsSecondary} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm w-1/2 mr-1 text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 <span className="text-gray-500 dark:text-gray-400">/</span>
-                <input type="text" name="nameplate.voltsSecondaryInternal" placeholder="" disabled className={`form-input text-sm w-1/2 ml-1 text-center bg-gray-100 dark:bg-dark-200 opacity-0 cursor-default`} />
+                <input type="text" name="nameplate.voltsSecondaryInternal" placeholder="Internal" value={formData.nameplate.voltsSecondaryInternal} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm w-1/2 ml-1 text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
               <div className="col-span-4 flex justify-around items-center">
                 {connectionOptions.map(opt => (
@@ -948,7 +1056,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
           
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Indicator Gauge Values</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -967,7 +1075,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto mb-4">
               <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
@@ -1014,7 +1122,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Measured Insulation Resistance</h2>
             <div className="overflow-x-auto mb-4">
               <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
@@ -1117,14 +1225,28 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Turns Ratio</h2>
             <div className="flex justify-end mb-4">
                 <label htmlFor="turnsRatio.secondaryWindingVoltage" className="form-label mr-2">Secondary Winding Voltage (L-N for Wye, L-L for Delta):</label>
                 <input id="turnsRatio.secondaryWindingVoltage" type="text" name="turnsRatio.secondaryWindingVoltage" value={formData.turnsRatio.secondaryWindingVoltage} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input w-24 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /> <span className="ml-1">V</span>
             </div>
             <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 turns-ratio-table">
+                    <colgroup>
+                      <col className="tr-tap" />
+                      <col className="tr-nameplate" />
+                      <col className="tr-calc" />
+                      <col className="tr-h1-meas" />
+                      <col className="tr-h1-dev" />
+                      <col className="tr-h1-pf" />
+                      <col className="tr-h2-meas" />
+                      <col className="tr-h2-dev" />
+                      <col className="tr-h2-pf" />
+                      <col className="tr-h3-meas" />
+                      <col className="tr-h3-dev" />
+                      <col className="tr-h3-pf" />
+                    </colgroup>
                     <thead>
                         <tr>
                             <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Tap</th>
@@ -1191,7 +1313,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -1214,7 +1336,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <textarea 
                 name="comments" 
@@ -1239,13 +1361,20 @@ if (typeof document !== 'undefined') {
       * { color: black !important; background: white !important; box-sizing: border-box !important; }
       body { margin: 0 !important; padding: 20px !important; font-family: Arial, sans-serif !important; font-size: 12px !important; }
 
-      /* Remove card/shadow visuals in print */
-      .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow, .shadow-md, .shadow-lg, .border, .border-gray-200, .dark\\:border-gray-700 { 
-        background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; 
-      }
+      /* Remove shadows only; keep borders for structure */
+      .shadow, .shadow-md, .shadow-lg { box-shadow: none !important; }
 
       /* Section headers */
       section > h2 { border-bottom: 1px solid black !important; padding-bottom: 2px !important; margin-bottom: 6px !important; font-weight: bold !important; }
+
+      /* Ensure orange dividers render in print even when background printing is disabled */
+      .print-divider {
+        background: transparent !important; /* Avoid reliance on background-color in print */
+        height: 0 !important;
+        border-top: 2px solid black !important;
+        margin: 0 0 12px 0 !important;
+        display: block !important;
+      }
 
       /* Job info grid: force compact columns */
       section:has(> h2:contains('Job Information')) .grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 8px !important; }
@@ -1255,6 +1384,50 @@ if (typeof document !== 'undefined') {
       table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
       th, td { border: 1px solid black !important; padding: 3px !important; font-size: 10px !important; }
       th { background-color: #f0f0f0 !important; }
+
+      /* Turns Ratio column sizing for print */
+      table.turns-ratio-table col.tr-tap { width: 6% !important; }
+      table.turns-ratio-table col.tr-nameplate { width: 10% !important; }
+      table.turns-ratio-table col.tr-calc { width: 10% !important; }
+      table.turns-ratio-table col.tr-h1-meas,
+      table.turns-ratio-table col.tr-h2-meas,
+      table.turns-ratio-table col.tr-h3-meas { width: 11% !important; }
+      table.turns-ratio-table col.tr-h1-dev,
+      table.turns-ratio-table col.tr-h2-dev,
+      table.turns-ratio-table col.tr-h3-dev { width: 7% !important; }
+      table.turns-ratio-table col.tr-h1-pf,
+      table.turns-ratio-table col.tr-h2-pf,
+      table.turns-ratio-table col.tr-h3-pf { width: 7% !important; }
+
+      /* Tighten small fields inside Turns Ratio */
+      table.turns-ratio-table input, table.turns-ratio-table select { font-size: 10px !important; padding: 1px 2px !important; }
+      table.turns-ratio-table td { padding: 2px !important; }
+
+      /* Turns Ratio: allow header text to wrap and stay readable */
+      table.turns-ratio-table th { 
+        white-space: normal !important; 
+        word-break: break-word !important; 
+        hyphens: auto !important; 
+        line-height: 1.1 !important; 
+        font-size: 9px !important; 
+        padding: 2px !important; 
+        text-align: center !important;
+      }
+
+      /* Center and slightly shrink inputs/selects for better fit */
+      table.turns-ratio-table input, 
+      table.turns-ratio-table select { 
+        width: 88% !important; 
+        margin: 0 auto !important; 
+        text-align: center !important; 
+      }
+
+      /* First three narrow columns: make fields even smaller */
+      table.turns-ratio-table td:nth-child(1) select,
+      table.turns-ratio-table td:nth-child(2) input,
+      table.turns-ratio-table td:nth-child(3) input { 
+        width: 75% !important; 
+      }
 
       /* Inputs inside tables */
       table input, table select { width: 95% !important; height: 18px !important; border: 1px solid black !important; font-size: 10px !important; padding: 1px 2px !important; background: transparent !important; }

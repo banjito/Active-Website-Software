@@ -223,6 +223,31 @@ export class ReportImportService {
     }
   }
 
+  // Batch import multiple reports; returns lists of successes and failures
+  async batchImportReports(
+    reports: ReportData[],
+    jobId: string,
+    userId: string
+  ): Promise<{ successful: { data: ReportData; result: ReportImportResult }[]; failed: { data: ReportData; error: string }[] }> {
+    const successful: { data: ReportData; result: ReportImportResult }[] = [];
+    const failed: { data: ReportData; error: string }[] = [];
+
+    for (const data of reports) {
+      try {
+        const result = await this.importReport(data, jobId, userId);
+        if (result && (result as any).success !== false && !(result as any).error) {
+          successful.push({ data, result });
+        } else {
+          failed.push({ data, error: (result as any)?.error || 'Import failed' });
+        }
+      } catch (err: any) {
+        failed.push({ data, error: err?.message || 'Import error' });
+      }
+    }
+
+    return { successful, failed };
+  }
+
   private findImporterByReportType(reportType: string): ReportImporter | null {
     // Create a mapping from reportType to importer
     const reportTypeMap = this.createReportTypeMap();

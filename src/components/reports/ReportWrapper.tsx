@@ -31,6 +31,13 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           #report-container .vm-standard tbody td:nth-child(2) { width: 62% !important; text-align: left !important; }
           #report-container .vm-standard thead th:nth-child(3),
           #report-container .vm-standard tbody td:nth-child(3) { width: 20% !important; text-align: center !important; }
+
+          /* Force-print toggle helpers for IR table */
+          #report-container .ir-screen { display: none !important; }
+          #report-container .ir-print { display: block !important; }
+          #report-container .ir-print table { width: 100% !important; table-layout: fixed !important; }
+          #report-container .ir-print th, 
+          #report-container .ir-print td { font-size: 9px !important; padding: 2px 3px !important; }
         }
       `;
       document.head.appendChild(style);

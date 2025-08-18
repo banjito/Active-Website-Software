@@ -617,6 +617,90 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     setIsEditing(!reportId);
   }, [reportId]);
 
+  useEffect(() => {
+    if (isPrintMode) {
+      const style = document.createElement('style');
+      style.textContent = `
+        @media print {
+          .grid.grid-cols-4 {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 0.125rem !important;
+            max-width: 100% !important;
+            overflow: visible !important;
+          }
+          
+          .grid.grid-cols-4 label {
+            width: 3rem !important;
+            font-size: 8px !important;
+            margin: 0 !important;
+          }
+          
+          .grid.grid-cols-4 input {
+            width: 3rem !important;
+            font-size: 8px !important;
+            padding: 1px 2px !important;
+            margin: 0 !important;
+            border: 1px solid black !important;
+            background: white !important;
+            color: black !important;
+          }
+          
+          .grid.grid-cols-4 .space-y-1 > * {
+            margin-top: 0.125rem !important;
+          }
+
+          /* Table column width fixes for PDF export */
+          table th, table td {
+            min-width: auto !important;
+          }
+          
+          /* Force table layout and text positioning */
+          table {
+            table-layout: fixed !important;
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          
+          /* Specific column widths for ratio and polarity table */
+          table colgroup col:nth-child(1) { width: 12% !important; }
+          table colgroup col:nth-child(2) { width: 10% !important; }
+          table colgroup col:nth-child(3) { width: 12% !important; }
+          table colgroup col:nth-child(4) { width: 8% !important; }
+          table colgroup col:nth-child(5) { width: 8% !important; }
+          table colgroup col:nth-child(6) { width: 12% !important; }
+          table colgroup col:nth-child(7) { width: 10% !important; }
+          table colgroup col:nth-child(8) { width: 28% !important; }
+          
+          /* Force left alignment and prevent text cutoff */
+          table th, table td {
+            text-align: left !important;
+            padding: 4px 8px !important;
+            overflow: visible !important;
+            white-space: nowrap !important;
+          }
+          
+          /* Ensure polarity text is fully visible and left-aligned */
+          table td:nth-child(8) select,
+          table td:nth-child(8) .print\\:inline-block {
+            font-size: 8px !important;
+            width: 100% !important;
+            text-align: left !important;
+            padding-left: 0 !important;
+            margin-left: 0 !important;
+            overflow: visible !important;
+            white-space: nowrap !important;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+      return () => {
+        if (document.head.contains(style)) {
+          document.head.removeChild(style);
+        }
+      };
+    }
+  }, [isPrintMode]);
 
   const handleFahrenheitChange = (fahrenheit: number) => {
     const celsius = ((fahrenheit - 32) * 5) / 9;
@@ -734,16 +818,16 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   };
 
   const renderCtIdentification = () => (
-    <div className="ct-ident-grid grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2">
+    <div className="grid grid-cols-4 gap-x-1 gap-y-1">
       {[
         { label: 'Phase 1', topKey: 'phase1', serialKey: 'phase1Serial' },
         { label: 'Phase 2', topKey: 'phase2', serialKey: 'phase2Serial' },
         { label: 'Phase 3', topKey: 'phase3', serialKey: 'phase3Serial' },
         { label: 'Neutral', topKey: 'neutral', serialKey: 'neutralSerial' },
       ].map((item) => (
-        <div key={item.label}>
-          <div className="mb-2 flex items-center">
-            <label htmlFor={`ct-${item.topKey}`} className="form-label inline-block w-32">
+        <div key={item.label} className="space-y-1">
+          <div className="flex items-center">
+            <label htmlFor={`ct-${item.topKey}`} className="text-xs font-medium text-gray-700 dark:text-gray-300 w-16">
               {item.label}:
             </label>
             <input
@@ -753,11 +837,11 @@ const CurrentTransformerTestATSReport: React.FC = () => {
               value={formData.ctIdentification[item.topKey as keyof typeof formData.ctIdentification]}
               onChange={(e) => handleChange(`ctIdentification.${item.topKey}`, e.target.value)}
               readOnly={!isEditing}
-              className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+              className={`ml-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded w-16 bg-white dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
             />
           </div>
           <div className="flex items-center">
-            <label htmlFor={`ct-${item.serialKey}`} className="form-label inline-block w-32">
+            <label htmlFor={`ct-${item.serialKey}`} className="text-xs font-medium text-gray-700 dark:text-gray-300 w-16">
               Serial #:
             </label>
             <input
@@ -767,7 +851,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
               value={formData.ctIdentification[item.serialKey as keyof typeof formData.ctIdentification]}
               onChange={(e) => handleChange(`ctIdentification.${item.serialKey}`, e.target.value)}
               readOnly={!isEditing}
-              className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+              className={`ml-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded w-16 bg-white dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
             />
           </div>
         </div>
@@ -1073,13 +1157,23 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         <div>
           <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-100">Ratio and Polarity</h3>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <table className="w-full table-fixed border-collapse">
+              <colgroup>
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '28%' }} />
+              </colgroup>
               <thead className="bg-gray-50 dark:bg-dark-200">
                 <tr>
                   {['Identifier', 'Ratio', 
                     formData.electricalTests.ratioPolarity[0]?.testType === 'current' ? 'Test Current' : 'Test Voltage', 
                     'Pri.', 'Sec.', 'Measured Ratio', 'Ratio dev.', 'Polarity'].map(header => (
-                    <th key={header} className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th key={header} className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       {header === 'Test Current' || header === 'Test Voltage' ? (
                         <div className="flex items-center space-x-2">
                           <span>{header}</span>
@@ -1114,9 +1208,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
               <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                 {formData.electricalTests.ratioPolarity.map((item, index) => (
                   <tr key={item.id}>
-                    <td><input type="text" value={item.identifier} onChange={(e) => handleRatioPolarityChange(index, 'identifier', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
-                    <td><input type="text" value={item.ratio} onChange={(e) => handleRatioPolarityChange(index, 'ratio', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
-                    <td>
+                    <td className="px-2 py-2"><input type="text" value={item.identifier} onChange={(e) => handleRatioPolarityChange(index, 'identifier', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td className="px-2 py-2"><input type="text" value={item.ratio} onChange={(e) => handleRatioPolarityChange(index, 'ratio', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td className="px-2 py-2">
                       <input 
                         type="text" 
                         value={item.testValue} 
@@ -1126,11 +1220,11 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                         className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
-                    <td><input type="text" value={item.pri} onChange={(e) => handleRatioPolarityChange(index, 'pri', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
-                    <td><input type="text" value={item.sec} onChange={(e) => handleRatioPolarityChange(index, 'sec', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
-                    <td><input type="text" value={item.measuredRatio} onChange={(e) => handleRatioPolarityChange(index, 'measuredRatio', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
-                    <td><input type="text" value={item.ratioDev} onChange={(e) => handleRatioPolarityChange(index, 'ratioDev', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
-                    <td>
+                    <td className="px-2 py-2"><input type="text" value={item.pri} onChange={(e) => handleRatioPolarityChange(index, 'pri', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td className="px-2 py-2"><input type="text" value={item.sec} onChange={(e) => handleRatioPolarityChange(index, 'sec', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td className="px-2 py-2"><input type="text" value={item.measuredRatio} onChange={(e) => handleRatioPolarityChange(index, 'measuredRatio', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td className="px-2 py-2"><input type="text" value={item.ratioDev} onChange={(e) => handleRatioPolarityChange(index, 'ratioDev', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                    <td className="px-2 py-2">
                       <select value={item.polarity} onChange={(e) => handleRatioPolarityChange(index, 'polarity', e.target.value)} disabled={!isEditing} className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
                         <option value="Select One" disabled>Select One</option>
                         {ratioPolarityOptions.map(option => <option key={option} value={option}>{option}</option>)}

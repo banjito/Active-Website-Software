@@ -1216,21 +1216,31 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
               </select>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 ins-res-table">
+                <colgroup>
+                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '9%' }} />
+                </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-[16.6%]" rowSpan={2}></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Measured Values</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Temperature Corrected</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]" rowSpan={2}>Units</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Pole to...</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={3}>Measured Values</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={3}>Temperature Corrected</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Units</th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P1</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P2</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P3</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P1</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P2</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P3</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">P1</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">P2</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">P3</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">P1</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">P2</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">P3</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -1515,24 +1525,36 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             <div>
               <h3 className="text-lg font-medium mb-2 text-center dark:text-white">Secondary Injection</h3>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 secondary-injection-table">
+                  <colgroup>
+                    <col style={{ width: '8%' }} />  {/* Function */}
+                    <col style={{ width: '10%' }} /> {/* Amperes 1 */}
+                    <col style={{ width: '10%' }} /> {/* Amperes 2 */}
+                    <col style={{ width: '8%' }} />  {/* Tolerance Min */}
+                    <col style={{ width: '8%' }} />  {/* Tolerance Max */}
+                    <col style={{ width: '12%' }} /> {/* Pole 1 */}
+                    <col style={{ width: '12%' }} /> {/* Pole 2 */}
+                    <col style={{ width: '12%' }} /> {/* Pole 3 */}
+                    <col style={{ width: '10%' }} /> {/* Units */}
+                    <col style={{ width: '10%' }} /> {/* Pass/Fail */}
+                  </colgroup>
                   <thead className="bg-gray-50 dark:bg-dark-200">
                     <tr>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-[10%]" rowSpan={2}>Function</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Amperes</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Tolerance</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Results</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]" rowSpan={2}>Units</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]" rowSpan={2}>Pass/Fail</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Function</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={2}>Amperes</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={2}>Tolerance</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={3}>Results</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Units</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Pass/Fail</th>
                     </tr>
                     <tr>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">1</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">2</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">Min</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">Max</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">Pole 1</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">Pole 2</th>
-                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[10%]">Pole 3</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">1</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">2</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Min</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Max</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 1</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 2</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 3</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -1847,6 +1869,30 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             font-size: 7px !important;
             padding: 2px 2px !important;
           }
+          
+          /* Insulation Resistance table explicit widths for PDF */
+          .ins-res-table { table-layout: fixed !important; width: 100% !important; }
+          .ins-res-table col:nth-child(1) { width: 16% !important; }
+          .ins-res-table col:nth-child(2),
+          .ins-res-table col:nth-child(3),
+          .ins-res-table col:nth-child(4),
+          .ins-res-table col:nth-child(5),
+          .ins-res-table col:nth-child(6),
+          .ins-res-table col:nth-child(7) { width: 12.5% !important; }
+          .ins-res-table col:nth-child(8) { width: 9% !important; }
+          
+          /* Secondary Injection table explicit widths for PDF */
+          .secondary-injection-table { table-layout: fixed !important; width: 100% !important; }
+          .secondary-injection-table col:nth-child(1) { width: 8% !important; }
+          .secondary-injection-table col:nth-child(2),
+          .secondary-injection-table col:nth-child(3) { width: 10% !important; }
+          .secondary-injection-table col:nth-child(4),
+          .secondary-injection-table col:nth-child(5) { width: 8% !important; }
+          .secondary-injection-table col:nth-child(6),
+          .secondary-injection-table col:nth-child(7),
+          .secondary-injection-table col:nth-child(8) { width: 12% !important; }
+          .secondary-injection-table col:nth-child(9),
+          .secondary-injection-table col:nth-child(10) { width: 10% !important; }
         }
       `}</style>
 

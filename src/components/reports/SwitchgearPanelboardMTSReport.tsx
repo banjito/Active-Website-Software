@@ -414,15 +414,27 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         .section-insulation-resistance thead th:first-child,
         .section-temp-corrected thead th:first-child,
         .section-contact-resistance thead th:first-child,
-        .section-dielectric thead th:first-child { width: 10% !important; text-align: left !important; }
+        .section-dielectric thead th:first-child { width: 8% !important; text-align: left !important; }
         .section-insulation-resistance thead th:last-child,
         .section-temp-corrected thead th:last-child,
         .section-contact-resistance thead th:last-child,
         .section-dielectric thead th:last-child { width: 8% !important; }
-        .section-insulation-resistance td input,
-        .section-temp-corrected td input,
-        .section-contact-resistance td input,
-        .section-dielectric td input { width: 100% !important; }
+
+        /* Narrow Bus Section and Units inputs to prevent clipping */
+        .section-insulation-resistance td:first-child input,
+        .section-temp-corrected td:first-child input,
+        .section-contact-resistance td:first-child input,
+        .section-dielectric td:first-child input { width: 45px !important; max-width: 45px !important; padding: 0 2px !important; box-sizing: border-box !important; }
+
+        .section-temp-corrected td:last-child input,
+        .section-insulation-resistance td:last-child select,
+        .section-contact-resistance td:last-child select,
+        .section-dielectric td:last-child select { width: 45px !important; max-width: 45px !important; padding-right: 2px !important; box-sizing: border-box !important; }
+
+        /* Compact table cells */
+        .section-temp-corrected th, .section-temp-corrected td,
+        .section-contact-resistance th, .section-contact-resistance td,
+        .section-dielectric th, .section-dielectric td { padding: 2px 3px !important; font-size: 8px !important; }
       }
       
       .form-label {
@@ -436,6 +448,12 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
       }
       .table-header {
         @apply px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider;
+      }
+
+      /* Prevent comments from breaking across pages and auto-size for print */
+      @media print {
+        .section-comments { break-inside: avoid !important; page-break-inside: avoid !important; }
+        .section-comments textarea { min-height: 120px !important; height: auto !important; }
       }
     `;
     document.head.appendChild(style);
@@ -801,6 +819,19 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         </div>
         <div className="overflow-x-auto section-insulation-resistance">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+            <colgroup>
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '8%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
@@ -872,6 +903,19 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Values</h2>
         <div className="overflow-x-auto section-temp-corrected">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+            <colgroup>
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '9.3%' }} />
+              <col style={{ width: '8%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
@@ -950,6 +994,15 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         </div>
         <div className="overflow-x-auto section-contact-resistance">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+            <colgroup>
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '18.4%' }} />
+              <col style={{ width: '18.4%' }} />
+              <col style={{ width: '18.4%' }} />
+              <col style={{ width: '18.4%' }} />
+              <col style={{ width: '18.4%' }} />
+              <col style={{ width: '8%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
@@ -1032,6 +1085,13 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         </div>
         <div className="overflow-x-auto section-dielectric">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+            <colgroup>
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '28%' }} />
+              <col style={{ width: '28%' }} />
+              <col style={{ width: '28%' }} />
+              <col style={{ width: '8%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Bus Section</th>
@@ -1198,7 +1258,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         </div>
 
       {/* Comments */}
-      <div className="mb-6">
+      <section className="mb-6 section-comments">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
           Comments
@@ -1206,12 +1266,12 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         <textarea
           value={formData.comments}
           onChange={e => handleInputChange('comments', e.target.value)}
-          rows={1}
+          rows={4}
           readOnly={!isEditing}
           className={`form-textarea w-full resize-none ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
           placeholder="Enter comments here..."
         />
-      </div>
+      </section>
       </div>
       </div>
     </ReportWrapper>

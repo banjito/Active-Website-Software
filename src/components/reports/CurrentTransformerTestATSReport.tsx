@@ -816,11 +816,18 @@ if (typeof document !== 'undefined') {
     body { overflow-x: hidden; min-height: 100vh; padding-bottom: 100px; }
     textarea { min-height: 200px !important; }
 
+    /* Default (screen) - hide print text mirrors in Visual & Mechanical to avoid duplicates */
+    .visual-mechanical-table td span { display: none !important; }
+ 
     @media print {
       * { 
         color: black !important;
         background: white !important;
       }
+ 
+      /* Hide standalone orange divider bars and use h2 top border instead */
+      [class*="bg-\\[\\#f26722\\]"][class*="h-1"] { display: none !important; }
+      h2 { border-top: 2px solid #f26722 !important; padding-top: 6px !important; margin-top: 10px !important; }
       
       .form-input, .form-select, .form-textarea {
         background-color: white !important;
@@ -829,6 +836,10 @@ if (typeof document !== 'undefined') {
         padding: 2px !important;
         font-size: 10px !important;
       }
+ 
+      /* In Visual & Mechanical table, hide selects in print so value appears only once */
+      .visual-mechanical-table select { display: none !important; }
+      .visual-mechanical-table td span { display: inline-block !important; width: 100% !important; text-align: center !important; }
       
       select {
         background-image: none !important;

@@ -82,6 +82,11 @@ const TanDeltaChartMTS: React.FC = () => {
     setIsEditing(!reportId);
   }, [jobId, reportId]);
 
+  // Debug: Monitor data changes for chart updates
+  useEffect(() => {
+    console.log('Chart data updated:', data);
+  }, [data]);
+
   const loadJobInfo = async () => {
     if (!jobId) return;
     
@@ -263,6 +268,7 @@ const TanDeltaChartMTS: React.FC = () => {
     } else {
       newData[index][field] = typeof value === 'number' ? value : (parseFloat(String(value)) || 0);
     }
+    console.log('Data changed:', { index, field, value, newData });
     setData(newData);
   };
 
@@ -413,9 +419,9 @@ const TanDeltaChartMTS: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter Serial:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter:</label>
                 <input
                   type="text"
                   value={equipment.megohmeterSerial}
@@ -425,7 +431,17 @@ const TanDeltaChartMTS: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter AMP ID:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number:</label>
+                <input
+                  type="text"
+                  value={equipment.megohmeterSerial}
+                  onChange={(e) => setEquipment(prev => ({ ...prev, megohmeterSerial: e.target.value }))}
+                  disabled={!isEditing}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID:</label>
                 <input
                   type="text"
                   value={equipment.megohmmeterAmpId}
@@ -435,7 +451,7 @@ const TanDeltaChartMTS: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">VLF Hipot Serial:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">VLF Hipot:</label>
                 <input
                   type="text"
                   value={equipment.vlfHipotSerial}
@@ -445,7 +461,17 @@ const TanDeltaChartMTS: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">VLF Hipot AMP ID:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number:</label>
+                <input
+                  type="text"
+                  value={equipment.vlfHipotSerial}
+                  onChange={(e) => setEquipment(prev => ({ ...prev, vlfHipotSerial: e.target.value }))}
+                  disabled={!isEditing}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID:</label>
                 <input
                   type="text"
                   value={equipment.vlfHipotAmpId}
@@ -558,17 +584,57 @@ const TanDeltaChartMTS: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Tan Delta Chart</h2>
-            <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-4">
-              <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={data}>
+            <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700 p-6" style={{ height: '400px' }}>
+              <ResponsiveContainer>
+                <LineChart
+                  data={data}
+                  margin={{ top: 30, right: 40, left: 30, bottom: 20 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="voltageLabel" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="phaseA" stroke="#8884d8" name="Phase A" />
-                  <Line type="monotone" dataKey="phaseB" stroke="#82ca9d" name="Phase B" />
-                  <Line type="monotone" dataKey="phaseC" stroke="#ffc658" name="Phase C" />
+                  <XAxis 
+                    dataKey="kV" 
+                    label={{ value: 'Test Voltage (kV)', position: 'bottom', offset: 10 }} 
+                    padding={{ left: 20, right: 20 }}
+                  />
+                  <YAxis
+                    label={{ value: 'Tan Delta (E-3)', angle: -90, position: 'insideLeft', offset: -10 }}
+                    domain={[0, 'auto']}
+                    padding={{ top: 20 }}
+                  />
+                  <Tooltip formatter={(value) => [`${value}`, 'Tan Delta (E-3)']} />
+                  <Legend 
+                    layout="horizontal" 
+                    verticalAlign="top" 
+                    align="center"
+                    wrapperStyle={{ paddingBottom: '20px' }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="phaseA"
+                    name="A Phase"
+                    stroke="#8884d8"
+                    activeDot={{ r: 8 }}
+                    strokeWidth={2}
+                    dot={{ strokeWidth: 2, r: 5 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="phaseB"
+                    name="B Phase"
+                    stroke="#82ca9d"
+                    activeDot={{ r: 8 }}
+                    strokeWidth={2}
+                    dot={{ strokeWidth: 2, r: 5 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="phaseC"
+                    name="C Phase"
+                    stroke="#ff7300"
+                    activeDot={{ r: 8 }}
+                    strokeWidth={2}
+                    dot={{ strokeWidth: 2, r: 5 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -584,7 +650,19 @@ if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
     @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      /* Force all elements to print styles */
+      * { 
+        color: black !important; 
+        background-color: white !important;
+        box-sizing: border-box !important;
+      }
+      
+      body { 
+        margin: 0 !important; 
+        padding: 20px !important; 
+        font-family: Arial, sans-serif !important; 
+        font-size: 12px !important;
+      }
       
       /* Hide all navigation and header elements */
       header, nav, .navigation, [class*="nav"], [class*="header"], 
@@ -596,24 +674,11 @@ if (typeof document !== 'undefined') {
       button[class*="Back"], 
       *[class*="Back to Job"], 
       h2[class*="Division"],
-      .mobile-nav-text,
-      [class*="formatDivisionName"] {
-        display: none !important;
+      .mobile-nav-text { 
+        display: none !important; 
       }
       
-      .print\\:break-before-page { page-break-before: always; }
-      .print\\:break-after-page { page-break-after: always; }
-      .print\\:break-inside-avoid { page-break-inside: avoid; }
-      .print\\:text-black { color: black !important; }
-      .print\\:bg-white { background-color: white !important; }
-      .print\\:border-black { border-color: black !important; }
-      .print\\:font-bold { font-weight: bold !important; }
-      .print\\:text-center { text-align: center !important; }
-      
-      table { border-collapse: collapse; width: 100%; }
-      th, td { border: 1px solid black !important; padding: 4px !important; }
-      th { background-color: #f0f0f0 !important; font-weight: bold !important; }
-      
+      /* Form elements - hide interactive indicators */
       input, select, textarea { 
         background-color: white !important; 
         border: 1px solid black !important; 
@@ -623,6 +688,9 @@ if (typeof document !== 'undefined') {
         -webkit-appearance: none !important;
         -moz-appearance: none !important;
         appearance: none !important;
+        width: 100% !important; 
+        min-width: 0 !important;
+        box-sizing: border-box !important;
       }
       
       /* Hide dropdown arrows and form control indicators */
@@ -641,14 +709,132 @@ if (typeof document !== 'undefined') {
         -moz-appearance: textfield !important;
       }
       
+      /* Table styling - Force all tables to have proper layout */
+      table { 
+        border-collapse: collapse !important; 
+        width: 100% !important; 
+        table-layout: fixed !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      th, td { 
+        border: 1px solid black !important; 
+        padding: 3px !important; 
+        font-size: 8px !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+        vertical-align: top !important;
+        text-align: left !important;
+        min-width: 0 !important;
+        max-width: none !important;
+      }
+      
+      th { 
+        background-color: #f0f0f0 !important; 
+        font-weight: bold !important; 
+        font-size: 7px !important;
+        text-align: center !important;
+      }
+      
       /* Hide interactive elements */
       button:not(.print-visible) { display: none !important; }
       
       /* Section styling */
       section { break-inside: avoid !important; margin-bottom: 20px !important; }
       
-      /* Ensure all text is black for maximum readability */
-      * { color: black !important; }
+      /* PRINT-SPECIFIC TABLE LAYOUT - Force override all existing styles */
+      
+      /* Tan Delta Data Table - Optimize column widths */
+      table th:first-child,
+      table td:first-child { 
+        width: 15% !important; 
+        min-width: 80px !important;
+        max-width: 15% !important;
+      }
+      table th:nth-child(2),
+      table td:nth-child(2) { 
+        width: 8% !important; 
+        min-width: 50px !important;
+        max-width: 8% !important;
+      }
+      table th:nth-child(3),
+      table td:nth-child(3),
+      table th:nth-child(5),
+      table td:nth-child(5),
+      table th:nth-child(7),
+      table td:nth-child(7) { 
+        width: 12% !important; 
+        min-width: 70px !important;
+        max-width: 12% !important;
+      }
+      table th:nth-child(4),
+      table td:nth-child(4),
+      table th:nth-child(6),
+      table td:nth-child(6),
+      table th:nth-child(8),
+      table td:nth-child(8) { 
+        width: 12% !important; 
+        min-width: 70px !important;
+        max-width: 12% !important;
+      }
+      
+      /* Force table layout for all tables */
+      table { 
+        table-layout: fixed !important; 
+        width: 100% !important; 
+        min-width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      /* Ensure text doesn't overflow in cells - Override all existing styles */
+      table td { 
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+        font-size: 8px !important;
+        line-height: 1.2 !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+      }
+      
+      /* Make headers more compact - Override all existing styles */
+      table th { 
+        font-size: 7px !important;
+        line-height: 1.1 !important;
+        padding: 2px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      
+      /* Force input fields to fit properly in print */
+      table input,
+      table select { 
+        width: 100% !important; 
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        font-size: 8px !important;
+        padding: 1px !important;
+        margin: 0 !important;
+        border: 1px solid black !important;
+        background-color: white !important;
+        color: black !important;
+      }
+      
+      /* Chart styling for print */
+      .recharts-wrapper {
+        page-break-inside: avoid !important;
+        margin: 20px 0 !important;
+      }
+      
+      /* Ensure proper spacing between sections */
+      .mb-6 {
+        margin-bottom: 20px !important;
+        page-break-inside: avoid !important;
+      }
     }
   `;
   document.head.appendChild(style);

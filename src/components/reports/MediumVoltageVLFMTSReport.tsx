@@ -174,7 +174,9 @@ interface MediumVoltageVLFMTSReportForm {
     megohmSerialNumber: string;
     vlfHipot: string;
     vlfSerialNumber: string;
-    ampId: string;
+    ohmAmpId: string;
+    megohmAmpId: string;
+    vlfAmpId: string;
     vlfTestSet?: string;
   };
   
@@ -438,8 +440,11 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
       preTestCorrected: { ag: "", bg: "", cg: "" }, postTestCorrected: { ag: "", bg: "", cg: "" },
     },
     equipment: {
-      ohmmeter: "", ohmSerialNumber: "", megohmmeter: "", megohmSerialNumber: "",
-      vlfHipot: "", vlfSerialNumber: "", ampId: "", vlfTestSet: "",
+      ohmmeter: "", ohmSerialNumber: "",
+      megohmmeter: "", megohmSerialNumber: "",
+      vlfHipot: "", vlfSerialNumber: "",
+      ohmAmpId: "", megohmAmpId: "", vlfAmpId: "",
+      vlfTestSet: "",
     },
     temperature: { fahrenheit: 68, celsius: 20, humidity: 0, tcf: 1.000 },
     comments: "",
@@ -879,41 +884,41 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
       <section className="mb-6 visual-mechanical-inspection">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">7.3.3.A Visual and Mechanical Inspection</h2>
-        <div className="grid grid-cols-1 gap-4">
-          {[ { label: "7.3.3.A.1 Compare cable data with drawings and specifications.", field: "inspectCablesAndConnectors" },
-             { label: "7.3.3.A.2 Inspect exposed sections of cables for physical damage.", field: "inspectTerminationsAndSplices" },
-             { label: "7.3.3.A.3.1 Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.", field: "useOhmmeter" },
-             { label: "7.3.3.A.4 Inspect shield grounding, cable supports, and terminations.", field: "inspectShieldGrounding" },
-             { label: "7.3.3.A.5 Verify that visible cable bends meet or exceed ICEA and manufacturer's minimum published bending radius.", field: "verifyBendRadius" },
-             { label: "7.3.3.A.7 If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed and that shields are correctly terminated for operation of protective devices.", field: "inspectCurrentTransformers" },
-          ].map((item, idx) => (
-            <div className="flex items-center" key={idx}>
-              <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</label>
-              <select value={formData.visualInspection[item.field] || InspectionResult.SELECT} 
-                      onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, [item.field]: e.target.value as InspectionResult})} 
-                      disabled={!isEditMode} 
-                      className="w-1/4 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white">
-                {Object.values(InspectionResult).map((result) => (
-                  <option key={result} value={result}>{result}</option>
-                ))}
-              </select>
-            </div>
-          ))}
-          
-          {/* Comments field for visual inspection */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Comments
-            </label>
-            <Textarea
-              value={formData.visualInspection.comments}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, comments: e.target.value})}
-              disabled={!isEditMode}
-              className="w-full"
-              rows={4}
-              placeholder="Enter any additional comments or observations..."
-            />
-          </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 vm-standard table-fixed">
+            <colgroup>
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '62%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
+            <thead className="bg-gray-50 dark:bg-dark-200">
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              {[ 
+                { id: '7.3.3.A.1', desc: 'Compare cable data with drawings and specifications.', field: 'inspectCablesAndConnectors' },
+                { id: '7.3.3.A.2', desc: 'Inspect exposed sections of cables for physical damage.', field: 'inspectTerminationsAndSplices' },
+                { id: '7.3.3.A.3.1', desc: 'Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.', field: 'useOhmmeter' },
+                { id: '7.3.3.A.4', desc: 'Inspect shield grounding, cable supports, and terminations.', field: 'inspectShieldGrounding' },
+                { id: '7.3.3.A.5', desc: 'Verify that visible cable bends meet or exceed ICEA and manufacturer\'s minimum published bending radius.', field: 'verifyBendRadius' },
+                { id: '7.3.3.A.7', desc: 'If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed and that shields are correctly terminated for operation of protective devices.', field: 'inspectCurrentTransformers' }
+              ].map(row => (
+                <tr key={row.id}>
+                  <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{row.id}</td>
+                  <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{row.desc}</td>
+                  <td className="px-3 py-2 text-center">
+                    <select value={formData.visualInspection[row.field] || InspectionResult.SELECT} onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, [row.field]: e.target.value as InspectionResult })} disabled={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                      {Object.values(InspectionResult).map(result => (<option key={result} value={result}>{result}</option>))}
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -956,22 +961,32 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
           </select>
           <span className="ml-2 text-gray-900 dark:text-white">V</span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+        <div className="overflow-x-auto section-insulation-resistance">
+          <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 table-fixed">
+            <colgroup>
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '8%' }} />
+            </colgroup>
             <thead><tr>
-                <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"></th>
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" colSpan={3}>Insulation Resistance</th>
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" colSpan={3}>Temperature Corrected</th>
-                <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Units</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Units</th>
             </tr><tr>
-                <th className="border border-gray-300 dark:border-gray-700 px-3 py-2"></th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-2"></th>
                 {Array(2).fill(null).map((_, i) => ["A-G", "B-G", "C-G"].map(phase => <th key={`${i}-${phase}`} className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{phase}</th>))}
-                <th className="border border-gray-300 dark:border-gray-700 px-3 py-2"></th>
+                <th className="border border-gray-300 dark:border-gray-700 px-2 py-2"></th>
             </tr></thead>
             <tbody>
             {[ {label: "Pre-Test", type: "preTest"}, {label: "Post-Test", type: "postTest"} ].map(test => (
               <tr key={test.type}>
-                <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{test.label}</td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">{test.label}</td>
                 {[ "ag", "bg", "cg" ].map(phase => (
                   <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap" key={`${test.type}-${phase}-input`}>
                     <input type="text" value={formData.insulationTest[test.type][phase]} onChange={(e) => handleInsulationTestValueChange(test.type as 'preTest'|'postTest', phase, e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/>
@@ -982,7 +997,7 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
                     <input type="text" value={formData.insulationTest[`${test.type}Corrected`][phase]} readOnly={true} className="w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm dark:bg-dark-100 dark:text-white bg-gray-100 dark:bg-dark-200"/>
                   </td>
                 ))}
-                <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{formData.insulationTest.unit}</td>
+                <td className="border border-gray-300 dark:border-gray-700 px-2 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">{formData.insulationTest.unit}</td>
               </tr>
             ))}
             </tbody>
@@ -1046,9 +1061,9 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[ {label: "Ohmmeter", field: "ohmmeter"}, {label: "Serial Number", field: "ohmSerialNumber"}, {label: "AMP ID", field: "ampId"},
-             {label: "Megohmmeter", field: "megohmmeter"}, {label: "Serial Number", field: "megohmSerialNumber"}, {label: "AMP ID", field: "ampId"},
-             {label: "VLF Hipot", field: "vlfHipot"}, {label: "Serial Number", field: "vlfSerialNumber"}, {label: "AMP ID", field: "ampId"}
+          {[ {label: "Ohmmeter", field: "ohmmeter"}, {label: "Serial Number", field: "ohmSerialNumber"}, {label: "AMP ID", field: "ohmAmpId"},
+             {label: "Megohmmeter", field: "megohmmeter"}, {label: "Serial Number", field: "megohmSerialNumber"}, {label: "AMP ID", field: "megohmAmpId"},
+             {label: "VLF Hipot", field: "vlfHipot"}, {label: "Serial Number", field: "vlfSerialNumber"}, {label: "AMP ID", field: "vlfAmpId"}
           ].map((item, idx) => (
             <div key={idx}>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</label>

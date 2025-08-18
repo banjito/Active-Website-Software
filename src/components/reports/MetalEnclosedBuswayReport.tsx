@@ -1252,7 +1252,8 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       <section className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-        <div className="grid grid-cols-2 gap-6">
+        {/* Screen layout */}
+        <div className="grid grid-cols-2 gap-6 jobinfo-screen">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Job #</label>
@@ -1403,13 +1404,49 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </div>
           </div>
         </div>
+        {/* Print-only compact table */}
+        <table className="jobinfo-print" style={{ display: 'none' }}>
+          <tbody>
+            <tr>
+              <td>Job #</td>
+              <td>{formData.jobNumber}</td>
+              <td>Date</td>
+              <td>{formData.date}</td>
+            </tr>
+            <tr>
+              <td>Customer</td>
+              <td>{formData.customer}</td>
+              <td>User</td>
+              <td>{formData.user}</td>
+            </tr>
+            <tr>
+              <td>Location</td>
+              <td>{formData.address}</td>
+              <td>Identifier</td>
+              <td>{formData.identifier}</td>
+            </tr>
+            <tr>
+              <td>Technicians</td>
+              <td>{formData.technicians}</td>
+              <td>Substation</td>
+              <td>{formData.substation}</td>
+            </tr>
+            <tr>
+              <td>Equipment Location</td>
+              <td>{formData.equipment}</td>
+              <td>Temp/TCF/Humidity</td>
+              <td>{formData.temperature} °F / {formData.temperature ? convertFtoC(formData.temperature) : ''} °C  |  TCF {formData.tcf}  |  {formData.humidity}%</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
 
       {/* Nameplate Data */}
       <section className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
-        <div className="grid grid-cols-2 gap-4">
+        {/* Screen layout */}
+        <div className="grid grid-cols-2 gap-4 nameplate-screen">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
@@ -1503,6 +1540,35 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             </div>
           </div>
         </div>
+        {/* Print-only compact table */}
+        <table className="nameplate-print" style={{ display: 'none' }}>
+          <tbody>
+            <tr>
+              <td>Manufacturer</td>
+              <td>{formData.manufacturer}</td>
+              <td>Catalog Number</td>
+              <td>{formData.catalogNumber}</td>
+            </tr>
+            <tr>
+              <td>Serial Number</td>
+              <td>{formData.serialNumber}</td>
+              <td>Fed From</td>
+              <td>{formData.fedFrom}</td>
+            </tr>
+            <tr>
+              <td>Conductor Material</td>
+              <td>{formData.conductorMaterial}</td>
+              <td>Rated Voltage (kV)</td>
+              <td>{formData.ratedVoltage}</td>
+            </tr>
+            <tr>
+              <td>Operating Voltage (kV)</td>
+              <td>{formData.operatingVoltage}</td>
+              <td>Ampacity (A)</td>
+              <td>{formData.ampacity}</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
       
       {/* Visual and Mechanical Inspection */}
@@ -1510,10 +1576,10 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 vm-standard">
             <thead>
               <tr>
-                <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
                 <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
                 <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
               </tr>
@@ -1666,11 +1732,25 @@ const MetalEnclosedBuswayReport: React.FC = () => {
 
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 ir-table">
+            {/* Print-only column sizing */}
+            <colgroup>
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-units-col" />
+            </colgroup>
             <thead>
               <tr>
                 <th colSpan={10} className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Insulation Resistance</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
+                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ir-units">Units</th>
               </tr>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-B</th>
@@ -1700,7 +1780,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     />
                   </td>
                 ))}
-                <td className="px-3 py-2 text-center text-sm text-gray-900 dark:text-white">
+                <td className="px-3 py-2 text-center text-sm text-gray-900 dark:text-white ir-units">
                   {formData.insulationResistanceUnit}
                 </td>
               </tr>
@@ -1757,11 +1837,25 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 ir-table">
+            {/* Print-only column sizing */}
+            <colgroup>
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-col" />
+              <col className="ir-units-col" />
+            </colgroup>
             <thead>
               <tr>
                 <th colSpan={10} className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Temperature Corrected Values</th>
-                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Units</th>
+                <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ir-units">Units</th>
               </tr>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">A-B</th>
@@ -1789,7 +1883,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     />
                   </td>
                 ))}
-                <td className="px-3 py-2 text-center text-sm text-gray-900 dark:text-white">
+                <td className="px-3 py-2 text-center text-sm text-gray-900 dark:text-white ir-units">
                   {formData.insulationResistanceUnit}
                 </td>
               </tr>
@@ -1802,78 +1896,62 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       <section className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-        <div className="grid grid-cols-1 gap-6">
+        {/* Screen layout */}
+        <div className="grid grid-cols-1 gap-6 print:hidden">
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label>
-              <input
-                type="text"
-                name="megohmmeter"
-                value={formData.megohmmeter}
-                onChange={handleInputChange}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
+              <input type="text" name="megohmmeter" value={formData.megohmmeter} onChange={handleInputChange} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-              <input
-                type="text"
-                name="megohmSerial"
-                value={formData.megohmSerial}
-                onChange={handleInputChange}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
+              <input type="text" name="megohmSerial" value={formData.megohmSerial} onChange={handleInputChange} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
-              <input
-                type="text"
-                name="megAmpId"
-                value={formData.megAmpId}
-                onChange={handleInputChange}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
+              <input type="text" name="megAmpId" value={formData.megAmpId} onChange={handleInputChange} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Low Resistance Ohmmeter</label>
-              <input
-                type="text"
-                name="lowResistanceOhmmeter"
-                value={formData.lowResistanceOhmmeter}
-                onChange={handleInputChange}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
+              <input type="text" name="lowResistanceOhmmeter" value={formData.lowResistanceOhmmeter} onChange={handleInputChange} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-              <input
-                type="text"
-                name="lowResistanceSerial"
-                value={formData.lowResistanceSerial}
-                onChange={handleInputChange}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
+              <input type="text" name="lowResistanceSerial" value={formData.lowResistanceSerial} onChange={handleInputChange} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
-              <input
-                type="text"
-                name="lowResistanceAmpId"
-                value={formData.lowResistanceAmpId}
-                onChange={handleInputChange}
-                readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
+              <input type="text" name="lowResistanceAmpId" value={formData.lowResistanceAmpId} onChange={handleInputChange} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
           </div>
         </div>
+        {/* Print-only compact arrangement */}
+        <table className="te-print" style={{ display: 'none' }}>
+          <tbody>
+            <tr>
+              <td style={{ width: '34%' }}>Megohmmeter</td>
+              <td style={{ width: '33%' }}>Serial</td>
+              <td style={{ width: '33%' }}>AMP ID</td>
+            </tr>
+            <tr>
+              <td>{formData.megohmmeter}</td>
+              <td>{formData.megohmSerial}</td>
+              <td>{formData.megAmpId}</td>
+            </tr>
+            <tr>
+              <td>Low Resistance Ohmmeter</td>
+              <td>Serial</td>
+              <td>AMP ID</td>
+            </tr>
+            <tr>
+              <td>{formData.lowResistanceOhmmeter}</td>
+              <td>{formData.lowResistanceSerial}</td>
+              <td>{formData.lowResistanceAmpId}</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
       
       {/* Comments */}
@@ -2031,7 +2109,34 @@ if (typeof document !== 'undefined') {
       }
       
       /* Section styling */
-      section { break-inside: avoid !important; margin-bottom: 20px !important; }
+      section { break-inside: avoid !important; margin-bottom: 14px !important; }
+
+      /* Print-only compact Job Info table */
+      .jobinfo-print { display: table !important; width: 100% !important; border-collapse: collapse !important; }
+      .jobinfo-print td { border: 1px solid black !important; padding: 2px 4px !important; font-size: 9px !important; }
+      .jobinfo-screen { display: none !important; }
+
+      /* Print-only compact Nameplate table */
+      .nameplate-print { display: table !important; width: 100% !important; border-collapse: collapse !important; }
+      .nameplate-print td { border: 1px solid black !important; padding: 2px 4px !important; font-size: 9px !important; }
+      .nameplate-screen { display: none !important; }
+      /* Insulation Resistance tables: narrow Units col on right */
+      .ir-table { table-layout: fixed !important; width: 100% !important; }
+      .ir-table .ir-col { width: 9% !important; }
+      .ir-table .ir-units-col { width: 10% !important; }
+      .ir-table .ir-units { font-size: 9px !important; }
+      /* Visual & Mechanical standardized three-column layout */
+      table.vm-standard { table-layout: fixed !important; width: 100% !important; }
+      table.vm-standard thead th:nth-child(1),
+      table.vm-standard tbody td:nth-child(1) { width: 18% !important; }
+      table.vm-standard thead th:nth-child(2),
+      table.vm-standard tbody td:nth-child(2) { width: 62% !important; }
+      table.vm-standard thead th:nth-child(3),
+      table.vm-standard tbody td:nth-child(3) { width: 20% !important; }
+
+      /* Test Equipment print table */
+      .te-print { display: table !important; width: 100% !important; border-collapse: collapse !important; }
+      .te-print td { border: 1px solid black !important; padding: 2px 4px !important; font-size: 9px !important; }
     }
   `;
   document.head.appendChild(style);

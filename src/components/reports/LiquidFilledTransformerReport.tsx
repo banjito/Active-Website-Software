@@ -13,8 +13,8 @@ type SupabaseError = {
     code?: string;
 };
 
-// Define table name constant
-const LIQUID_TRANSFORMER_TABLE = 'low_voltage_cable_test_3sets' as const;
+// Define table name constant (ATS)
+const LIQUID_TRANSFORMER_TABLE = 'liquid_filled_transformer_reports' as const;
 
 // Temperature conversion and TCF tables (same as DryTypeTransformer)
 const tempConvTable = [
@@ -341,7 +341,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
       impedance: '',
       primary: { volts: '', voltsSecondary: '', connection: '', material: '' },
       secondary: { volts: '', voltsSecondary: '', connection: '', material: '' },
-      tapConfiguration: { positions: [], voltages: [], currentPosition: 1, currentPositionSecondary: '', tapVoltsSpecific: '', tapPercentSpecific: '' },
+      tapConfiguration: { positions: [1,2,3,4,5,6,7], voltages: Array(7).fill(''), currentPosition: 1, currentPositionSecondary: '', tapVoltsSpecific: '', tapPercentSpecific: '' },
       indicatorGauges: { oilLevel: '', tankPressure: '', oilTemperature: '', windingTemperature: '', oilTempRange: '', windingTempRange: '' }
     },
     visualInspection: {
@@ -504,32 +504,30 @@ const LiquidFilledTransformerReport: React.FC = () => {
 
    const handleDeepNestedChange = (section: keyof FormData, subsection: string, nestedSection: string, field: string, value: any) => {
        setFormData(prev => {
-            const currentSection = prev[section];
-             if (typeof currentSection !== 'object' || currentSection === null) {
-                console.error(`Section "${section}" is invalid.`); return prev;
+            const currentSection: any = prev[section];
+            if (typeof currentSection !== 'object' || currentSection === null) {
+                console.error(`Section "${section}" is invalid.`);
+                return prev;
             }
-            const currentSubsection = currentSection[subsection];
+            const currentSubsection: any = currentSection[subsection];
             if (typeof currentSubsection !== 'object' || currentSubsection === null) {
-                 console.error(`Subsection "${subsection}" in "${section}" is invalid.`); return prev;
+                 console.error(`Subsection "${subsection}" in "${section}" is invalid.`);
+                 return prev;
             }
-            const currentNestedSection = currentSubsection[nestedSection];
-            if (typeof currentNestedSection !== 'object' || currentNestedSection === null) {
-                console.error(`Nested section "${nestedSection}" in "${section}.${subsection}" is invalid.`); return prev;
+            const currentNested = currentSubsection[nestedSection];
+
+            const newSection: any = { ...currentSection };
+            const newSubsection: any = { ...currentSubsection };
+
+            if (field && typeof currentNested === 'object' && currentNested !== null) {
+                newSubsection[nestedSection] = { ...currentNested, [field]: value };
+            } else {
+                newSubsection[nestedSection] = value;
             }
 
-           return {
-               ...prev,
-               [section]: {
-                   ...(currentSection as object),
-                   [subsection]: {
-                       ...(currentSubsection as object),
-                       [nestedSection]: {
-                           ...(currentNestedSection as object),
-                           [field]: value
-                       }
-                   }
-               }
-           };
+            newSection[subsection] = newSubsection;
+
+            return { ...prev, [section]: newSection };
        });
    };
 
@@ -740,8 +738,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
 
           if (error) {
               if (error.code === 'PGRST116') {
-                  console.warn(`Report with ID ${reportId} not found in ${LIQUID_TRANSFORMER_TABLE}. Starting new report.`);
-                  setIsEditing(true);
+                  console.warn(`Report with ID ${reportId} not found in ${LIQUID_TRANSFORMER_TABLE}.`);
+                  // Keep view mode when opened from an asset link even if the row is missing
+                  setIsEditing(false);
               } else {
                   throw error;
               }
@@ -749,44 +748,61 @@ const LiquidFilledTransformerReport: React.FC = () => {
 
           if (data) {
               console.log("Loaded report data:", data);
-              setFormData(prev => ({
-                ...prev,
-                customer: data.data?.reportInfo?.customer ?? prev.customer,
-                address: data.data?.reportInfo?.address ?? prev.address,
-                date: data.data?.reportInfo?.date ?? prev.date,
-                technicians: data.data?.reportInfo?.technicians ?? '',
-                jobNumber: data.data?.reportInfo?.jobNumber ?? prev.jobNumber,
-                substation: data.data?.reportInfo?.substation ?? '',
-                eqptLocation: data.data?.reportInfo?.eqptLocation ?? '',
-                identifier: data.data?.reportInfo?.identifier ?? '',
-                userName: data.data?.reportInfo?.userName ?? '',
-                temperature: data.data?.reportInfo?.temperature ?? prev.temperature,
-                nameplateData: {
-                  ...prev.nameplateData,
-                  ...data.data?.reportInfo?.nameplateData,
-                  // Map the flat indicator gauge properties to the nested structure
-                  indicatorGauges: {
-                    oilLevel: data.data?.reportInfo?.oilLevel ?? '',
-                    tankPressure: data.data?.reportInfo?.tankPressure ?? '',
-                    oilTemperature: data.data?.reportInfo?.oilTemperature ?? '',
-                    windingTemperature: data.data?.reportInfo?.windingTemperature ?? '',
-                    oilTempRange: data.data?.reportInfo?.oilTempRange ?? '',
-                    windingTempRange: data.data?.reportInfo?.windingTempRange ?? ''
-                  }
-                },
-                visualInspection: data.data?.visualInspection ?? prev.visualInspection,
-                insulationResistance: data.data?.insulationResistance ?? prev.insulationResistance,
-                testEquipment: data.data?.testEquipment ?? prev.testEquipment,
-                comments: data.data?.comments ?? '',
-                status: data.data?.status ?? 'PASS'
-              }));
-              setIsEditing(false);
+              const normalized: any = (data as any).data
+                || (data as any).report_data
+                || ((data as any).report_info ? {
+                  reportInfo: (data as any).report_info,
+                  visualInspection: (data as any).visual_inspection ?? {},
+                  insulationResistance: (data as any).insulation_resistance ?? {},
+                  testEquipment: (data as any).test_equipment ?? {},
+                  comments: (data as any).comments ?? '',
+                  status: (data as any).status ?? undefined
+                } : null);
+
+              if (normalized) {
+                setFormData(prev => ({
+                  ...prev,
+                  customer: normalized?.reportInfo?.customer ?? prev.customer,
+                  address: normalized?.reportInfo?.address ?? prev.address,
+                  date: normalized?.reportInfo?.date ?? prev.date,
+                  technicians: normalized?.reportInfo?.technicians ?? '',
+                  jobNumber: normalized?.reportInfo?.jobNumber ?? prev.jobNumber,
+                  substation: normalized?.reportInfo?.substation ?? '',
+                  eqptLocation: normalized?.reportInfo?.eqptLocation ?? '',
+                  identifier: normalized?.reportInfo?.identifier ?? '',
+                  userName: normalized?.reportInfo?.userName ?? '',
+                  temperature: normalized?.reportInfo?.temperature ?? prev.temperature,
+                  nameplateData: {
+                    ...prev.nameplateData,
+                    ...normalized?.reportInfo?.nameplateData,
+                    indicatorGauges: (() => {
+                      const ig = (normalized?.reportInfo?.nameplateData?.indicatorGauges as any) || {};
+                      return {
+                        oilLevel: normalized?.reportInfo?.oilLevel ?? ig.oilLevel ?? '',
+                        tankPressure: normalized?.reportInfo?.tankPressure ?? ig.tankPressure ?? '',
+                        oilTemperature: normalized?.reportInfo?.oilTemperature ?? ig.oilTemperature ?? '',
+                        windingTemperature: normalized?.reportInfo?.windingTemperature ?? ig.windingTemperature ?? '',
+                        oilTempRange: normalized?.reportInfo?.oilTempRange ?? ig.oilTempRange ?? '',
+                        windingTempRange: normalized?.reportInfo?.windingTempRange ?? ig.windingTempRange ?? '',
+                        humidity: ig.humidity ?? ''
+                      };
+                    })()
+                  },
+                  visualInspection: normalized?.visualInspection ?? prev.visualInspection,
+                  insulationResistance: normalized?.insulationResistance ?? prev.insulationResistance,
+                  testEquipment: normalized?.testEquipment ?? prev.testEquipment,
+                  comments: normalized?.comments ?? '',
+                  status: normalized?.status ?? 'PASS'
+                }));
+                setIsEditing(false);
+              }
           }
       } catch (error) {
           const err = error as SupabaseError;
           console.error(`Error loading report from ${LIQUID_TRANSFORMER_TABLE}:`, err);
           alert(`Failed to load report: ${err.message}`);
-          setIsEditing(true);
+          // Do not force edit mode on load failure if reportId exists
+          if (!reportId) setIsEditing(true);
       } finally {
           setLoading(false);
       }
@@ -800,33 +816,45 @@ const LiquidFilledTransformerReport: React.FC = () => {
           return;
       }
 
-       // --- IMPORTANT: Structure the data for the Supabase table ---
-       // --- This needs to match the schema of 'low_voltage_cable_test_3sets' ---
-       const tableName = 'low_voltage_cable_test_3sets'; // <<< CHANGE AS NEEDED
-       const reportData = {
+       // Target ATS table
+       const tableName = 'liquid_filled_transformer_reports';
+       const baseData = {
+           reportInfo: {
+               customer: formData.customer,
+               address: formData.address,
+               date: formData.date,
+               technicians: formData.technicians,
+               jobNumber: formData.jobNumber,
+               substation: formData.substation,
+               eqptLocation: formData.eqptLocation,
+               identifier: formData.identifier,
+               userName: formData.userName,
+               temperature: formData.temperature,
+               nameplateData: {
+                 ...formData.nameplateData,
+                 indicatorGauges: {
+                   ...(formData.nameplateData.indicatorGauges as any)
+                 }
+               }
+           },
+           visualInspection: formData.visualInspection,
+           insulationResistance: formData.insulationResistance,
+           testEquipment: formData.testEquipment,
+           comments: formData.comments,
+           status: formData.status
+       };
+
+       const reportData = { job_id: jobId, user_id: user.id, data: baseData } as const;
+       const reportDataReportData = { job_id: jobId, user_id: user.id, report_data: baseData } as const;
+       const reportDataSplit = {
            job_id: jobId,
            user_id: user.id,
-           data: {
-               reportInfo: {
-                   customer: formData.customer,
-                   address: formData.address,
-                   date: formData.date,
-                   technicians: formData.technicians,
-                   jobNumber: formData.jobNumber,
-                   substation: formData.substation,
-                   eqptLocation: formData.eqptLocation,
-                   identifier: formData.identifier,
-                   userName: formData.userName,
-                   temperature: formData.temperature,
-                   nameplateData: formData.nameplateData
-               },
-               visualInspection: formData.visualInspection,
-               insulationResistance: formData.insulationResistance,
-               testEquipment: formData.testEquipment,
-               comments: formData.comments,
-               status: formData.status
-           }
-       };
+           report_info: baseData.reportInfo,
+           visual_inspection: baseData.visualInspection,
+           insulation_resistance: baseData.insulationResistance,
+           test_equipment: baseData.testEquipment,
+           comments: baseData.comments
+       } as const;
 
        console.log(`Saving data to ${tableName}:`, reportData);
 
@@ -835,25 +863,35 @@ const LiquidFilledTransformerReport: React.FC = () => {
            let result;
            let currentReportId = reportId; // Use ID from URL for updates
 
+           const upsert = async (payload: any) => {
+               if (currentReportId) {
+                   return await supabase.schema('neta_ops').from(tableName).update(payload).eq('id', currentReportId).select().single();
+               }
+               return await supabase.schema('neta_ops').from(tableName).insert(payload).select().single();
+           };
+
            if (currentReportId) {
-               // Update existing report
                console.log(`Updating ${tableName} with ID: ${currentReportId}`);
-               result = await supabase
-                   .schema('neta_ops') // Use schema
-                   .from(tableName)
-                   .update(reportData)
-                   .eq('id', currentReportId)
-                   .select()
-                   .single();
+               result = await upsert(reportData);
+               if (result.error && /data.*(does not exist|schema cache)/i.test(result.error.message)) {
+                   console.warn('Column "data" missing; retrying with report_data...');
+                   result = await upsert(reportDataReportData);
+                   if (result.error && /report_data.*(does not exist|schema cache)/i.test(result.error.message)) {
+                       console.warn('Column "report_data" missing; retrying with split columns...');
+                       result = await upsert(reportDataSplit);
+                   }
+               }
            } else {
-               // Create new report
                console.log(`Inserting into ${tableName} for job ID: ${jobId}`);
-               result = await supabase
-                   .schema('neta_ops') // Use schema
-                   .from(tableName) 
-                   .insert(reportData)
-                   .select()
-                   .single();
+               result = await upsert(reportData);
+               if (result.error && /data.*(does not exist|schema cache)/i.test(result.error.message)) {
+                   console.warn('Column "data" missing; retrying with report_data...');
+                   result = await upsert(reportDataReportData);
+                   if (result.error && /report_data.*(does not exist|schema cache)/i.test(result.error.message)) {
+                       console.warn('Column "report_data" missing; retrying with split columns...');
+                       result = await upsert(reportDataSplit);
+                   }
+               }
 
                if (result.data?.id) {
                    currentReportId = result.data.id; // Get the new report ID
@@ -1052,7 +1090,22 @@ const LiquidFilledTransformerReport: React.FC = () => {
                   </div>
                 </div>
                 <div><label className="form-label">TCF:</label><input type="number" value={formData.temperature.correctionFactor} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-16" /></div>
-                <div><label className="form-label">Humidity:</label><input type="number" value={0} readOnly className="form-input w-16 bg-gray-100 dark:bg-dark-200" /><span className="ml-1 text-xs">%</span></div>
+                <div>
+                  <label className="form-label">Humidity:</label>
+                  <input
+                    type="number"
+                    value={(formData.nameplateData && (formData as any).nameplateData?.indicatorGauges?.humidity) || ''}
+                    onChange={(e) => {
+                      const humidity = e.target.value;
+                      // Store humidity alongside other indicator gauge values in nameplateData
+                      const ig = { ...(formData.nameplateData.indicatorGauges as any), humidity };
+                      handleNestedChange('nameplateData', 'indicatorGauges', ig);
+                    }}
+                    readOnly={!isEditing}
+                    className={`form-input w-16 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+                  <span className="ml-1 text-xs">%</span>
+                </div>
                 <div><label className="form-label">Substation:</label><input type="text" value={formData.substation} onChange={(e) => handleChange(null, 'substation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                 <div><label className="form-label">Eqpt. Location:</label><input type="text" value={formData.eqptLocation} onChange={(e) => handleChange(null, 'eqptLocation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                 <div className="md:col-span-2"><label className="form-label">User:</label><input type="text" value={formData.userName} onChange={(e) => handleChange(null, 'userName', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -1279,6 +1332,8 @@ const LiquidFilledTransformerReport: React.FC = () => {
                       ))}
                     </div>
                   </div>
+
+                  
 
                   <div className="flex items-center">
                     <label className="w-32 text-sm font-medium text-gray-700 dark:text-gray-300">Tap Position Left</label>
@@ -1884,6 +1939,15 @@ if (typeof document !== 'undefined') {
       .nameplate-section input, .tap-configuration-section input, .indicator-gauges-section input { width: 100% !important; }
       .tap-configuration-section .w-16 { width: 40px !important; }
       .tap-configuration-section .w-24 { width: 60px !important; }
+      
+      /* Shift Tap Voltages/Positions further left (match Dry Type ATS print layout) */
+      .nameplate-section .tap-configuration-section label.w-32 { width: 70px !important; }
+      .tap-configuration-section .grid { gap: 4px !important; justify-items: start !important; justify-content: start !important; }
+      /* Reduce spacing created by space-x utilities when printing */
+      .tap-configuration-section .flex.items-center > * + * { margin-left: 6px !important; }
+      .tap-configuration-section .flex.items-center.space-x-8 > * + * { margin-left: 6px !important; }
+      /* Ensure the 7-column tap grids do not center and use available width */
+      .tap-configuration-section .grid.grid-cols-7 { width: auto !important; justify-content: start !important; }
       .nameplate-section label.inline-flex { display: inline-flex !important; align-items: center !important; margin-right: 8px !important; }
       .nameplate-section input[type="radio"] { width: 10px !important; height: 10px !important; margin-right: 4px !important; }
     }

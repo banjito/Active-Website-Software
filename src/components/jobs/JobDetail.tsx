@@ -370,13 +370,7 @@ export default function JobDetail() {
       created_at: new Date().toISOString(),
       template_type: 'ATS'
     },
-    {
-      id: 'medium-voltage-vlf-tan-delta-mts',
-      name: '4-Medium Voltage Cable VLF Tan Delta Test MTS',
-      file_url: `report:/jobs/${id}/medium-voltage-vlf-tan-delta-mts?returnToAssets=true`,
-      created_at: new Date().toISOString(),
-      template_type: 'MTS'
-    },
+    // Removed from Add Asset dropdown per request; this report will be accessed under Job Details
     {
       id: 'medium-voltage-vlf',
       name: '4-Medium Voltage Cable VLF Test ATS',

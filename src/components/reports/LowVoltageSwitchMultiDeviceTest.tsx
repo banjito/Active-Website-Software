@@ -114,6 +114,13 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
     comments: '',
   });
 
+  // Load job information when component mounts
+  useEffect(() => {
+    if (jobId) {
+      loadJobInfo();
+    }
+  }, [jobId]);
+
   // Keep Fahrenheit/Celsius/TCF in sync using the shared TCF table
   useEffect(() => {
     const c = Math.round((formData.temperature.fahrenheit - 32) * 5 / 9);
@@ -165,6 +172,54 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
       cur[keys[keys.length - 1]] = value;
       return clone;
     });
+  };
+
+  // Load job information (customer, job number, technicians, etc.)
+  const loadJobInfo = async () => {
+    if (!jobId) return;
+    
+    try {
+      const { data: jobData, error: jobError } = await supabase
+        .schema('neta_ops')
+        .from('jobs')
+        .select(`
+          title,
+          job_number,
+          customer_id
+        `)
+        .eq('id', jobId)
+        .single();
+
+      if (jobError) throw jobError;
+
+      // Fetch customer information
+      if (jobData?.customer_id) {
+        const { data: customerData, error: customerError } = await supabase
+          .schema('common')
+          .from('customers')
+          .select(`
+            name,
+            company_name,
+            address
+          `)
+          .eq('id', jobData.customer_id)
+          .single();
+
+        if (!customerError && customerData) {
+          setFormData(prev => ({
+            ...prev,
+            customer: customerData.company_name || customerData.name || '',
+            jobNumber: jobData.job_number || '',
+            // Set current date if not already set
+            date: prev.date || new Date().toISOString().split('T')[0],
+            // Set current user if not already set
+            user: prev.user || user?.email || '',
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading job info:', error);
+    }
   };
 
   // Load existing report from normalized store
@@ -950,14 +1005,69 @@ if (typeof document !== 'undefined') {
       /* Remove internal vertical dividing line artifacts in print */
       .visual-mechanical-section .visual-inspection-table td,
       .visual-mechanical-section .visual-inspection-table th { border-color: black !important; }
+      /* Hide form controls in V&M cells during print to avoid duplicate letters */
+      .visual-mechanical-section select,
+      .visual-mechanical-section input[type="text"] { display: none !important; }
+      .visual-mechanical-section .print-only { display: inline !important; }
+      /* Ensure only one value shows: hide any stray text in value cells */
+      .visual-mechanical-section .visual-inspection-table tbody td:nth-child(n+2) { color: transparent !important; }
+      .visual-mechanical-section .visual-inspection-table tbody td:nth-child(n+2) .print-only { color: black !important; }
 
       /* Insulation tables: exact column widths */
+      /* Make Position/Identifier smaller to spread readings */
+      .insulation-measured-section table { table-layout: fixed !important; }
+      .insulation-corrected-section table { table-layout: fixed !important; }
       .insulation-measured-section table col:nth-child(1),
-      .insulation-corrected-section table col:nth-child(1) { width: 20% !important; }
+      .insulation-corrected-section table col:nth-child(1) { width: 12% !important; }
       .insulation-measured-section table col:nth-child(n+2):nth-child(-n+10),
-      .insulation-corrected-section table col:nth-child(n+2):nth-child(-n+10) { width: 7% !important; }
+      .insulation-corrected-section table col:nth-child(n+2):nth-child(-n+10) { width: 9% !important; }
       .insulation-measured-section table col:nth-child(11),
-      .insulation-corrected-section table col:nth-child(11) { width: 6% !important; }
+      .insulation-corrected-section table col:nth-child(11) { width: 7% !important; }
+
+      /* Switch Data: shrink first col, redistribute others */
+      .switch-data-section table { table-layout: fixed !important; }
+      .switch-data-section table th:first-child,
+      .switch-data-section table td:first-child { width: 12% !important; text-align: left !important; }
+      .switch-data-section table th:nth-child(2), .switch-data-section table td:nth-child(2) { width: 16% !important; }
+      .switch-data-section table th:nth-child(3), .switch-data-section table td:nth-child(3) { width: 14% !important; }
+      .switch-data-section table th:nth-child(4), .switch-data-section table td:nth-child(4) { width: 14% !important; }
+      .switch-data-section table th:nth-child(5), .switch-data-section table td:nth-child(5) { width: 10% !important; }
+      .switch-data-section table th:nth-child(6), .switch-data-section table td:nth-child(6) { width: 17% !important; }
+      .switch-data-section table th:nth-child(7), .switch-data-section table td:nth-child(7) { width: 17% !important; }
+
+      /* Fuse Data: shrink first col, redistribute */
+      .fuse-data-section table { table-layout: fixed !important; }
+      .fuse-data-section table th:first-child,
+      .fuse-data-section table td:first-child { width: 12% !important; text-align: left !important; }
+      .fuse-data-section table th:nth-child(2), .fuse-data-section table td:nth-child(2) { width: 14% !important; }
+      .fuse-data-section table th:nth-child(3), .fuse-data-section table td:nth-child(3) { width: 12% !important; }
+      .fuse-data-section table th:nth-child(4), .fuse-data-section table td:nth-child(4) { width: 8% !important; }
+      .fuse-data-section table th:nth-child(5), .fuse-data-section table td:nth-child(5) { width: 18% !important; }
+      .fuse-data-section table th:nth-child(6), .fuse-data-section table td:nth-child(6) { width: 18% !important; }
+      .fuse-data-section table th:nth-child(7), .fuse-data-section table td:nth-child(7) { width: 18% !important; }
+
+      /* Contact Resistance: shrink first col */
+      .contact-resistance-section table { table-layout: fixed !important; }
+      .contact-resistance-section table th:first-child,
+      .contact-resistance-section table td:first-child { width: 12% !important; text-align: left !important; }
+      .contact-resistance-section table th:nth-child(2), .contact-resistance-section table td:nth-child(2) { width: 26% !important; }
+      .contact-resistance-section table th:nth-child(3), .contact-resistance-section table td:nth-child(3) { width: 26% !important; }
+      .contact-resistance-section table th:nth-child(4), .contact-resistance-section table td:nth-child(4) { width: 26% !important; }
+      .contact-resistance-section table th:nth-child(5), .contact-resistance-section table td:nth-child(5) { width: 10% !important; }
+
+      /* NETA Reference: larger font, section on far left, description spans */
+      .neta-reference-section table { table-layout: fixed !important; width: 100% !important; }
+      .neta-reference-section table th:first-child,
+      .neta-reference-section table td:first-child { width: 10% !important; text-align: left !important; }
+      .neta-reference-section table th:nth-child(2),
+      .neta-reference-section table td:nth-child(2) { width: 90% !important; text-align: left !important; }
+      .neta-reference-section table th, .neta-reference-section table td {
+        font-size: 14px !important;
+        line-height: 1.25 !important;
+        padding: 4px 6px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+      }
 
       input:not([type="checkbox"]):not([type="radio"]), select, textarea {
         background-color: white !important; border: 1px solid black !important; color: black !important;

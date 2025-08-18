@@ -2023,132 +2023,175 @@ const MediumVoltageVLFReport: React.FC = () => {
       <section className="mb-6 visual-mechanical-inspection">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">7.3.3.A Visual and Mechanical Inspection</h2>
-        <div className="grid grid-cols-1 gap-4">
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.1 Compare cable data with drawings and specifications.</label>
-            <select
-              value={formData.visualInspection?.compareData || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, compareData: e.target.value as InspectionResult})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 vm-standard table-fixed">
+            <colgroup>
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '62%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
+            <thead className="bg-gray-50 dark:bg-dark-200">
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.1</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Compare cable data with drawings and specifications.</td>
+                <td className="px-3 py-2 text-center">
+                  <select
+                    value={formData.visualInspection?.compareData || InspectionResult.SELECT}
+                    onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, compareData: e.target.value as InspectionResult })}
+                    disabled={!isEditMode}
+                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  >
+                    {Object.values(InspectionResult).map((result) => (
+                      <option key={result} value={result}>{result}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
 
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.2 Inspect exposed sections of cables for physical damage.</label>
-            <select
-              value={formData.visualInspection?.inspectDamage || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectDamage: e.target.value as InspectionResult})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.2</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Inspect exposed sections of cables for physical damage.</td>
+                <td className="px-3 py-2 text-center">
+                  <select
+                    value={formData.visualInspection?.inspectDamage || InspectionResult.SELECT}
+                    onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, inspectDamage: e.target.value as InspectionResult })}
+                    disabled={!isEditMode}
+                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  >
+                    {Object.values(InspectionResult).map((result) => (
+                      <option key={result} value={result}>{result}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
 
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.3.1 Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.</label>
-            <select
-              value={formData.visualInspection?.useOhmmeter || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, useOhmmeter: e.target.value as InspectionResult})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.3.1</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.</td>
+                <td className="px-3 py-2 text-center">
+                  <select
+                    value={formData.visualInspection?.useOhmmeter || InspectionResult.SELECT}
+                    onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, useOhmmeter: e.target.value as InspectionResult })}
+                    disabled={!isEditMode}
+                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  >
+                    {Object.values(InspectionResult).map((result) => (
+                      <option key={result} value={result}>{result}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
 
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.4 Inspect compression-applied connectors for correct cable match and indentation.</label>
-            <select
-              value={formData.visualInspection?.inspectConnectors || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectConnectors: e.target.value as InspectionResult})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.4</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Inspect compression-applied connectors for correct cable match and indentation.</td>
+                <td className="px-3 py-2 text-center">
+                  <select
+                    value={formData.visualInspection?.inspectConnectors || InspectionResult.SELECT}
+                    onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, inspectConnectors: e.target.value as InspectionResult })}
+                    disabled={!isEditMode}
+                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  >
+                    {Object.values(InspectionResult).map((result) => (
+                      <option key={result} value={result}>{result}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
 
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.5 Inspect shield grounding, cable supports, and terminations.</label>
-            <select
-              value={formData.visualInspection?.inspectGrounding || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectGrounding: e.target.value as InspectionResult})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.5</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Inspect shield grounding, cable supports, and terminations.</td>
+                <td className="px-3 py-2 text-center">
+                  <select
+                    value={formData.visualInspection?.inspectGrounding || InspectionResult.SELECT}
+                    onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, inspectGrounding: e.target.value as InspectionResult })}
+                    disabled={!isEditMode}
+                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  >
+                    {Object.values(InspectionResult).map((result) => (
+                      <option key={result} value={result}>{result}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
 
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.6 Verify that visible cable bends meet or exceed ICEA and manufacturer's minimum published bending radius.</label>
-            <select
-              value={formData.visualInspection?.verifyBends || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, verifyBends: e.target.value as InspectionResult})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.6</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Verify that visible cable bends meet or exceed ICEA and manufacturer's minimum published bending radius.</td>
+                <td className="px-3 py-2 text-center">
+                  <select
+                    value={formData.visualInspection?.verifyBends || InspectionResult.SELECT}
+                    onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, verifyBends: e.target.value as InspectionResult })}
+                    disabled={!isEditMode}
+                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  >
+                    {Object.values(InspectionResult).map((result) => (
+                      <option key={result} value={result}>{result}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
 
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.8 If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed and that shields are correctly terminated for operation of protective devices.</label>
-            <select
-              value={formData.visualInspection?.inspectCurrentTransformers || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectCurrentTransformers: e.target.value as InspectionResult})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.8</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed and that shields are correctly terminated for operation of protective devices.</td>
+                <td className="px-3 py-2 text-center">
+                  <select
+                    value={formData.visualInspection?.inspectCurrentTransformers || InspectionResult.SELECT}
+                    onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, inspectCurrentTransformers: e.target.value as InspectionResult })}
+                    disabled={!isEditMode}
+                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  >
+                    {Object.values(InspectionResult).map((result) => (
+                      <option key={result} value={result}>{result}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
 
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.9 Inspect for correct identification and arrangements.</label>
-            <select
-              value={formData.visualInspection?.inspectIdentification || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectIdentification: e.target.value as InspectionResult})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.9</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Inspect for correct identification and arrangements.</td>
+                <td className="px-3 py-2 text-center">
+                  <select
+                    value={formData.visualInspection?.inspectIdentification || InspectionResult.SELECT}
+                    onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, inspectIdentification: e.target.value as InspectionResult })}
+                    disabled={!isEditMode}
+                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  >
+                    {Object.values(InspectionResult).map((result) => (
+                      <option key={result} value={result}>{result}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
 
-          <div className="flex items-center">
-            <label className="w-3/4 text-sm font-medium text-gray-700 dark:text-gray-300">7.3.3.A.10 Inspect cable jacket and insulation condition.</label>
-            <select
-              value={formData.visualInspection?.inspectJacket || InspectionResult.SELECT}
-              onChange={(e) => handleChange('visualInspection', {...formData.visualInspection, inspectJacket: e.target.value as InspectionResult})}
-              disabled={!isEditMode}
-              className={`w-1/4 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              {Object.values(InspectionResult).map((result) => (
-                <option key={result} value={result}>{result}</option>
-              ))}
-            </select>
-          </div>
+              <tr>
+                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">7.3.3.A.10</td>
+                <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">Inspect cable jacket and insulation condition.</td>
+                <td className="px-3 py-2 text-center">
+                  <select
+                    value={formData.visualInspection?.inspectJacket || InspectionResult.SELECT}
+                    onChange={(e) => handleChange('visualInspection', { ...formData.visualInspection, inspectJacket: e.target.value as InspectionResult })}
+                    disabled={!isEditMode}
+                    className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  >
+                    {Object.values(InspectionResult).map((result) => (
+                      <option key={result} value={result}>{result}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 

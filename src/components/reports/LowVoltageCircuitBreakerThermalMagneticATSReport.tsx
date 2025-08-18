@@ -1282,21 +1282,31 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
               </select>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 ins-res-table">
+                <colgroup>
+                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '9%' }} />
+                </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-[16.6%]" rowSpan={2}></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}></th>
                     <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Measured Values</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Temperature Corrected</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]" rowSpan={2}>Units</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Units</th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P1 (P1-P2)</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P2 (P2-P3)</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P3 (P3-P1)</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P1 (P1-P2)</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P2 (P2-P3)</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-[12.5%]">P3 (P3-P1)</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P1 (P1-P2)</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P2 (P2-P3)</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P3 (P3-P1)</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P1 (P1-P2)</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P2 (P2-P3)</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P3 (P3-P1)</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -1445,97 +1455,108 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
 
             {/* Primary Injection Results Table */}
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table">
+                <colgroup>
+                  <col style={{ width: '16%' }} /> {/* Function */}
+                  <col style={{ width: '10%' }} /> {/* Amperes 1 */}
+                  <col style={{ width: '12%' }} /> {/* Multiplier Tolerance */}
+                  <col style={{ width: '10%' }} /> {/* Amperes 2 */}
+                  <col style={{ width: '8%' }} />  {/* Tol Min */}
+                  <col style={{ width: '8%' }} />  {/* Tol Max */}
+                  <col style={{ width: '12%' }} /> {/* Pole 1 */}
+                  <col style={{ width: '12%' }} /> {/* Pole 2 */}
+                  <col style={{ width: '12%' }} /> {/* Pole 3 */}
+                </colgroup>
                 <caption className="caption-top p-2 text-lg font-medium text-gray-900 dark:text-white">
                   Primary Injection
                 </caption>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Function</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Amperes</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Multiplier Tolerance</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Amperes</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Tolerance</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Pole</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Function</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Amperes</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Multiplier Tolerance</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Amperes</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Tolerance</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Pole</th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Min</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Max</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">1 sec.</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">2 sec.</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">3 sec.</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Min</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Max</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">1 sec.</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">2 sec.</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">3 sec.</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {/* Thermal Row */}
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">Thermal</td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.primaryInjection.results.thermal.amperes1} onChange={(e) => handleChange('primaryInjection.results.thermal.amperes1', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">Thermal</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                      <input type="text" value={formData.primaryInjection.results.thermal.amperes1} onChange={(e) => handleChange('primaryInjection.results.thermal.amperes1', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm text-gray-900 dark:text-white">300%</td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateSecondAmperes(formData.primaryInjection.results.thermal.amperes1, '300%')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">300%</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                      <input type="text" value={calculateSecondAmperes(formData.primaryInjection.results.thermal.amperes1, '300%')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200" />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.primaryInjection.results.thermal.toleranceMin} onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMin', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                      <input type="text" value={formData.primaryInjection.results.thermal.toleranceMin} onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMin', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.primaryInjection.results.thermal.toleranceMax} onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMax', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                      <input type="text" value={formData.primaryInjection.results.thermal.toleranceMax} onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMax', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <div className="flex items-center space-x-1">
-                        <input type="text" value={formData.primaryInjection.results.thermal.pole1.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole1.sec', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        <input type="text" value={formData.primaryInjection.results.thermal.pole1.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole1.sec', e.target.value)} readOnly={!isEditing} className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`} />
                         <span className="text-xs">sec.</span>
                       </div>
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <div className="flex items-center space-x-1">
-                        <input type="text" value={formData.primaryInjection.results.thermal.pole2.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole2.sec', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        <input type="text" value={formData.primaryInjection.results.thermal.pole2.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole2.sec', e.target.value)} readOnly={!isEditing} className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`} />
                         <span className="text-xs">sec.</span>
                       </div>
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <div className="flex items-center space-x-1">
-                        <input type="text" value={formData.primaryInjection.results.thermal.pole3.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole3.sec', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        <input type="text" value={formData.primaryInjection.results.thermal.pole3.sec} onChange={(e) => handleChange('primaryInjection.results.thermal.pole3.sec', e.target.value)} readOnly={!isEditing} className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`} />
                         <span className="text-xs">sec.</span>
                       </div>
                     </td>
                   </tr>
                   {/* Magnetic Row */}
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">Magnetic</td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.primaryInjection.results.magnetic.amperes1} onChange={(e) => handleChange('primaryInjection.results.magnetic.amperes1', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">Magnetic</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                      <input type="text" value={formData.primaryInjection.results.magnetic.amperes1} onChange={(e) => handleChange('primaryInjection.results.magnetic.amperes1', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm text-gray-900 dark:text-white">-10% 10%</td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">-10% 10%</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                      <input type="text" value={calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200" />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateMagneticTolerance(calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%'), true)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                      <input type="text" value={calculateMagneticTolerance(calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%'), true)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200" />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateMagneticTolerance(calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%'), false)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                      <input type="text" value={calculateMagneticTolerance(calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%'), false)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200" />
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <div className="flex items-center space-x-1">
-                        <input type="text" value={formData.primaryInjection.results.magnetic.pole1.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole1.a', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        <input type="text" value={formData.primaryInjection.results.magnetic.pole1.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole1.a', e.target.value)} readOnly={!isEditing} className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`} />
                         <span className="text-xs">A</span>
                       </div>
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <div className="flex items-center space-x-1">
-                        <input type="text" value={formData.primaryInjection.results.magnetic.pole2.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole2.a', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        <input type="text" value={formData.primaryInjection.results.magnetic.pole2.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole2.a', e.target.value)} readOnly={!isEditing} className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`} />
                         <span className="text-xs">A</span>
                       </div>
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <div className="flex items-center space-x-1">
-                        <input type="text" value={formData.primaryInjection.results.magnetic.pole3.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole3.a', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        <input type="text" value={formData.primaryInjection.results.magnetic.pole3.a} onChange={(e) => handleChange('primaryInjection.results.magnetic.pole3.a', e.target.value)} readOnly={!isEditing} className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`} />
                         <span className="text-xs">A</span>
                       </div>
                     </td>
@@ -1740,29 +1761,27 @@ if (typeof document !== 'undefined') {
         overflow-wrap: break-word !important;
       }
       
-      /* Primary Injection table - make cells wider for better fit */
-      table caption:contains("Primary Injection") + thead th,
-      table caption:contains("Primary Injection") + thead + tbody td {
-        min-width: 80px !important;
-        width: auto !important;
-        padding: 6px 8px !important;
-      }
-      
-      /* Make input fields in primary injection table wider */
-      table caption:contains("Primary Injection") + thead + tbody input {
-        min-width: 60px !important;
-        width: 100% !important;
-        padding: 4px 6px !important;
-        font-size: 9px !important;
-      }
-      
-      /* Ensure proper spacing for the pole columns */
-      table caption:contains("Primary Injection") + thead + tbody td:nth-child(7),
-      table caption:contains("Primary Injection") + thead + tbody td:nth-child(8),
-      table caption:contains("Primary Injection") + thead + tbody td:nth-child(9) {
-        min-width: 70px !important;
-        padding: 4px 6px !important;
-      }
+      /* Insulation Resistance and Primary Injection explicit widths for PDF */
+      .ins-res-table { table-layout: fixed !important; width: 100% !important; }
+      .ins-res-table col:nth-child(1) { width: 16% !important; }
+      .ins-res-table col:nth-child(2),
+      .ins-res-table col:nth-child(3),
+      .ins-res-table col:nth-child(4),
+      .ins-res-table col:nth-child(5),
+      .ins-res-table col:nth-child(6),
+      .ins-res-table col:nth-child(7) { width: 12.5% !important; }
+      .ins-res-table col:nth-child(8) { width: 9% !important; }
+
+      .primary-injection-table { table-layout: fixed !important; width: 100% !important; }
+      .primary-injection-table col:nth-child(1) { width: 16% !important; }
+      .primary-injection-table col:nth-child(2) { width: 10% !important; }
+      .primary-injection-table col:nth-child(3) { width: 12% !important; }
+      .primary-injection-table col:nth-child(4) { width: 10% !important; }
+      .primary-injection-table col:nth-child(5) { width: 8% !important; }
+      .primary-injection-table col:nth-child(6) { width: 8% !important; }
+      .primary-injection-table col:nth-child(7),
+      .primary-injection-table col:nth-child(8),
+      .primary-injection-table col:nth-child(9) { width: 12% !important; }
     }
   `;
   document.head.appendChild(style);

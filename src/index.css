@@ -46,6 +46,11 @@
     --border: 0 0% 20%;
     --input: 0 0% 18%;
     --ring: 24 100% 50%;
+    
+    /* Dark mode specific colors for reports */
+    --dark-100: #242424;
+    --dark-150: #1a1a1a;
+    --dark-200: #2a2a2a;
   }
 }
 
@@ -131,6 +136,65 @@
     font-size: 16px; /* Prevents zoom on iOS */
     padding: 12px 16px;
     border-radius: 8px;
+  }
+
+  /* Standard form input classes */
+  .form-input, .form-select, .form-textarea {
+    @apply mt-1 block w-full p-2 
+      bg-gray-100 dark:bg-dark-100 
+      border border-gray-300 dark:border-gray-600 
+      rounded-md shadow-sm 
+      focus:outline-none focus:ring-[#f26722] focus:border-[#f26722]
+      text-gray-900 dark:text-white;
+  }
+
+  .form-input[readonly] {
+    @apply bg-gray-200 dark:bg-dark-200 
+      text-gray-700 dark:text-gray-300;
+  }
+
+  .form-label {
+    @apply text-gray-900 dark:text-white;
+  }
+
+  /* CT Identification alignment: labels fixed width, inputs fill, compact height */
+  .ct-ident-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.25rem;
+  }
+
+  .ct-ident-grid .form-label {
+    width: 3.5rem;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+  }
+
+  .ct-ident-grid .form-input {
+    width: 3.5rem;
+    margin-top: 0;
+  }
+
+  /* Print-specific CT identification layout */
+  @media print {
+    .ct-ident-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.125rem;
+      max-width: 100%;
+      overflow: visible;
+    }
+    
+    .ct-ident-grid .form-label {
+      width: 3rem;
+      font-size: 9px;
+    }
+    
+    .ct-ident-grid .form-input {
+      width: 3rem;
+      font-size: 9px;
+      padding: 1px 2px;
+    }
   }
 
   /* Prevent horizontal scroll */
@@ -304,5 +368,37 @@
       font-size: 15px; /* Slightly larger than mobile */
     }
   }
+}
+
+/* Global print fixes for section dividers */
+@media print {
+	/* Restore thin orange dividers as solid black rules in print */
+	.w-full.h-1 {
+		height: 0 !important;
+		border-top: 2px solid black !important;
+		background: transparent !important;
+		display: block !important;
+		margin-bottom: 12px !important;
+	}
+
+	/* Also match arbitrary Tailwind class orders using attribute selectors */
+	div[class*="w-full"][class*="h-1"] {
+		height: 0 !important;
+		border-top: 2px solid black !important;
+		background: transparent !important;
+		display: block !important;
+		margin-bottom: 12px !important;
+		-webkit-print-color-adjust: exact !important;
+		print-color-adjust: exact !important;
+	}
+
+	/* Legacy explicit divider class support */
+	.print-divider {
+		background: transparent !important;
+		height: 0 !important;
+		border-top: 2px solid black !important;
+		margin: 0 0 12px 0 !important;
+		display: block !important;
+	}
 }
 

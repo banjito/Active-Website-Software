@@ -1440,21 +1440,31 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
               </select>
             </div>
             <div className={tableStyles.container}>
-              <table className={tableStyles.table}>
+              <table className={`${tableStyles.table} ins-res-table`}>
+                <colgroup>
+                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '12.5%' }} />
+                  <col style={{ width: '9%' }} />
+                </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className={`${tableStyles.headerCell} w-[16.6%]`} rowSpan={2}></th>
-                    <th className={`${tableStyles.headerCell} text-center`} colSpan={3}>Measured Values</th>
-                    <th className={`${tableStyles.headerCell} text-center`} colSpan={3}>Temperature Corrected</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`} rowSpan={2}>Units</th>
+                    <th className={`${tableStyles.headerCell} text-left whitespace-nowrap`} rowSpan={2}>Pole to...</th>
+                    <th className={`${tableStyles.headerCell} text-center whitespace-nowrap`} colSpan={3}>Measured Values</th>
+                    <th className={`${tableStyles.headerCell} text-center whitespace-nowrap`} colSpan={3}>Temperature Corrected</th>
+                    <th className={`${tableStyles.headerCell} text-center whitespace-nowrap`} rowSpan={2}>Units</th>
                   </tr>
                   <tr>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P1 (P1-P2)</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P2 (P2-P3)</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P3 (P3-P1)</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P1 (P1-P2)</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P2 (P2-P3)</th>
-                    <th className={`${tableStyles.headerCell} text-center w-[12.5%]`}>P3 (P3-P1)</th>
+                    <th className={`${tableStyles.headerCell} text-center whitespace-nowrap`}>P1 (P1-P2)</th>
+                    <th className={`${tableStyles.headerCell} text-center whitespace-nowrap`}>P2 (P2-P3)</th>
+                    <th className={`${tableStyles.headerCell} text-center whitespace-nowrap`}>P3 (P3-P1)</th>
+                    <th className={`${tableStyles.headerCell} text-center whitespace-nowrap`}>P1 (P1-P2)</th>
+                    <th className={`${tableStyles.headerCell} text-center whitespace-nowrap`}>P2 (P2-P3)</th>
+                    <th className={`${tableStyles.headerCell} text-center whitespace-nowrap`}>P3 (P3-P1)</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -1736,27 +1746,39 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table">
+              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table">
+                <colgroup>
+                  <col style={{ width: '12%' }} /> {/* Function */}
+                  <col style={{ width: '10%' }} /> {/* Rated Amperes */}
+                  <col style={{ width: '8%' }} />  {/* Multiplier % Left */}
+                  <col style={{ width: '8%' }} />  {/* Multiplier % Right */}
+                  <col style={{ width: '10%' }} /> {/* Test Amperes */}
+                  <col style={{ width: '8%' }} />  {/* Tolerance Min */}
+                  <col style={{ width: '8%' }} />  {/* Tolerance Max */}
+                  <col style={{ width: '12%' }} /> {/* Pole 1 */}
+                  <col style={{ width: '12%' }} /> {/* Pole 2 */}
+                  <col style={{ width: '12%' }} /> {/* Pole 3 */}
+                </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Function</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Rated Amperes</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Multiplier %</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Test Amperes</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Tolerance</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 1</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 2</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 3</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Function</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Rated Amperes</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={2}>Multiplier %</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Test Amperes</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={2}>Tolerance</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 1</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 2</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 3</th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Tolerance</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Min</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Max</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Tolerance</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Min</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Max</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -3011,6 +3033,30 @@ if (typeof document !== 'undefined') {
         page-break-before: auto !important;
         break-before: auto !important;
       }
+      
+      /* Insulation Resistance table explicit widths for PDF */
+      .ins-res-table { table-layout: fixed !important; width: 100% !important; }
+      .ins-res-table col:nth-child(1) { width: 16% !important; }
+      .ins-res-table col:nth-child(2),
+      .ins-res-table col:nth-child(3),
+      .ins-res-table col:nth-child(4),
+      .ins-res-table col:nth-child(5),
+      .ins-res-table col:nth-child(6),
+      .ins-res-table col:nth-child(7) { width: 12.5% !important; }
+      .ins-res-table col:nth-child(8) { width: 9% !important; }
+      
+      /* Primary Injection table explicit widths for PDF */
+      .primary-injection-table { table-layout: fixed !important; width: 100% !important; }
+      .primary-injection-table col:nth-child(1) { width: 12% !important; }
+      .primary-injection-table col:nth-child(2) { width: 10% !important; }
+      .primary-injection-table col:nth-child(3),
+      .primary-injection-table col:nth-child(4) { width: 8% !important; }
+      .primary-injection-table col:nth-child(5) { width: 10% !important; }
+      .primary-injection-table col:nth-child(6),
+      .primary-injection-table col:nth-child(7) { width: 8% !important; }
+      .primary-injection-table col:nth-child(8),
+      .primary-injection-table col:nth-child(9),
+      .primary-injection-table col:nth-child(10) { width: 12% !important; }
       
       /* Add bottom margin to prevent cutoff */
       .space-y-6 > *:last-child {

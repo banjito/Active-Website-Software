@@ -919,26 +919,32 @@ const SwitchgearReport: React.FC = () => {
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+                <colgroup>
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '58%' }} />
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '15%' }} />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                    <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
-                    <th className="px-6 py-3 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Comments</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Comments</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={item.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{item.description}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
+                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{item.description}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
                         <select value={item.result} onChange={(e) => { const newItems = [...formData.visualInspectionItems]; newItems[index].result = e.target.value; setFormData({ ...formData, visualInspectionItems: newItems }); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
                           {visualInspectionOptions.map(option => (<option key={option} value={option}>{option}</option>))}
                         </select>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2">
                         <input type="text" value={item.comments} onChange={(e) => { const newItems = [...formData.visualInspectionItems]; newItems[index].comments = e.target.value; setFormData({ ...formData, visualInspectionItems: newItems }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                       </td>
                     </tr>
@@ -1304,6 +1310,38 @@ if (typeof document !== 'undefined') {
       
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }
+
+      /* Match Panelboard V&M print layout */
+      table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
+      table.visual-mechanical-table thead { display: table-header-group !important; }
+      table.visual-mechanical-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+      table.visual-mechanical-table th, table.visual-mechanical-table td { font-size: 8px !important; padding: 2px 3px !important; vertical-align: middle !important; }
+      table.visual-mechanical-table colgroup col:nth-child(1) { width: 12% !important; }
+      table.visual-mechanical-table colgroup col:nth-child(2) { width: 58% !important; }
+      table.visual-mechanical-table colgroup col:nth-child(3) { width: 15% !important; }
+      table.visual-mechanical-table colgroup col:nth-child(4) { width: 15% !important; }
+      table.visual-mechanical-table td:nth-child(2) { white-space: normal !important; word-break: break-word !important; }
+
+      /* Narrow Bus Section inputs so they don't collide with the first reading */
+      .section-insulation-resistance td:first-child input,
+      .section-temp-corrected td:first-child input,
+      .section-contact-resistance td:first-child input {
+        width: 45px !important;
+        max-width: 45px !important;
+        box-sizing: border-box !important;
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+      }
+
+      /* Narrow Units fields on the far right to avoid clipping against table edge */
+      .section-insulation-resistance td:last-child select,
+      .section-temp-corrected td:last-child input,
+      .section-contact-resistance td:last-child select {
+        width: 45px !important;
+        max-width: 45px !important;
+        box-sizing: border-box !important;
+        padding-right: 2px !important;
+      }
     }
   `;
   document.head.appendChild(style);

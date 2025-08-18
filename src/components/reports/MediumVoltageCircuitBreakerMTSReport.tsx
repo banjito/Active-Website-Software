@@ -906,39 +906,41 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
       </section>
 
       {/* Contact/Pole Resistance */}
-      <section className="mb-6">
+      <section className="mb-6 section-contact-resistance">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Contact/Pole Resistance</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Contact Resistance (As Found) */}
           <div>
-            <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
-              <thead>
+            <h3 className="text-lg font-medium mb-3 text-gray-900 dark:text-white">Contact Resistance (As Found)</h3>
+            <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
+              <colgroup>
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '25%' }} />
+              </colgroup>
+              <thead className="bg-gray-50 dark:bg-dark-200">
                 <tr>
-                  <th colSpan={4} className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
-                    Contact Resistance (As Found)
-                  </th>
-                </tr>
-                <tr>
-                  <th className="px-3 py-2 text-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">P1</th>
-                  <th className="px-3 py-2 text-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">P2</th>
-                  <th className="px-3 py-2 text-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">P3</th>
-                  <th className="px-3 py-2 text-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">Units</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">P1</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">P2</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">P3</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">Units</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white dark:bg-dark-150">
                 <tr>
-                  <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                    {renderInput("contactResistance.asFound.p1", "", "text", false, "w-full")}
+                  <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                    {renderInput("contactResistance.asFound.p1", "", "text", false, "w-full text-center")}
                   </td>
-                  <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                    {renderInput("contactResistance.asFound.p2", "", "text", false, "w-full")}
+                  <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                    {renderInput("contactResistance.asFound.p2", "", "text", false, "w-full text-center")}
                   </td>
-                  <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                    {renderInput("contactResistance.asFound.p3", "", "text", false, "w-full")}
+                  <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                    {renderInput("contactResistance.asFound.p3", "", "text", false, "w-full text-center")}
                   </td>
-                  <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                    {renderSelect("contactResistance.asFound.units", contactResistanceUnits, false, "w-full")}
+                  <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                    {renderSelect("contactResistance.asFound.units", contactResistanceUnits, false, "w-full text-center")}
                   </td>
                 </tr>
               </tbody>
@@ -947,33 +949,35 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
           {/* Contact Resistance (As Left) */}
           <div>
-            <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
-              <thead>
+            <h3 className="text-lg font-medium mb-3 text-gray-900 dark:text-white">Contact Resistance (As Left)</h3>
+            <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
+              <colgroup>
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '25%' }} />
+              </colgroup>
+              <thead className="bg-gray-50 dark:bg-dark-200">
                 <tr>
-                  <th colSpan={4} className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
-                    Contact Resistance (As Left)
-                  </th>
-                </tr>
-                <tr>
-                  <th className="px-3 py-2 text-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">P1</th>
-                  <th className="px-3 py-2 text-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">P2</th>
-                  <th className="px-3 py-2 text-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">P3</th>
-                  <th className="px-3 py-2 text-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">Units</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">P1</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">P2</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">P3</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">Units</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white dark:bg-dark-150">
                 <tr>
-                  <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                    {renderInput("contactResistance.asLeft.p1", "", "text", false, "w-full")}
+                  <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                    {renderInput("contactResistance.asLeft.p1", "", "text", false, "w-full text-center")}
                   </td>
-                  <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                    {renderInput("contactResistance.asLeft.p2", "", "text", false, "w-full")}
+                  <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                    {renderInput("contactResistance.asLeft.p2", "", "text", false, "w-full text-center")}
                   </td>
-                  <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                    {renderInput("contactResistance.asLeft.p3", "", "text", false, "w-full")}
+                  <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                    {renderInput("contactResistance.asLeft.p3", "", "text", false, "w-full text-center")}
                   </td>
-                  <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                    {renderSelect("contactResistance.asLeft.units", contactResistanceUnits, false, "w-full")}
+                  <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                    {renderSelect("contactResistance.asLeft.units", contactResistanceUnits, false, "w-full text-center")}
                   </td>
                 </tr>
               </tbody>
@@ -983,147 +987,169 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
       </section>
 
       {/* Insulation Resistance */}
-      <section className="mb-6">
+      <section className="mb-6 section-insulation-resistance">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance</h2>
         <div className="overflow-x-auto">
-          <div className="flex items-center mb-2">
+          <div className="flex items-center mb-4">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Test Voltage:</span>
             {renderSelect("insulationResistanceMeasured.testVoltage", insulationTestVoltages, false, "w-32")}
           </div>
-          <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
-            <thead>
+          <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
+            <colgroup>
+              <col style={{ width: '16%' }} />
+              <col style={{ width: '12.5%' }} />
+              <col style={{ width: '12.5%' }} />
+              <col style={{ width: '12.5%' }} />
+              <col style={{ width: '12.5%' }} />
+              <col style={{ width: '12.5%' }} />
+              <col style={{ width: '12.5%' }} />
+              <col style={{ width: '9%' }} />
+            </colgroup>
+            <thead className="bg-gray-50 dark:bg-dark-200">
               <tr>
-                <th className="w-24 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200"></th>
-                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200"></th>
-                <th colSpan={3} className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
-                  Measured Values<br />P1 (P1-P2) P2 (P2-P3) P3 (P3-P1)
-                </th>
-                <th colSpan={3} className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
-                  Temperature Corrected<br />P1 (P1-P2) P2 (P2-P3) P3 (P3-P1)
-                </th>
-                <th className="w-32 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">Units</th>
+                <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}></th>
+                <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Measured Values</th>
+                <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Temperature Corrected</th>
+                <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Units</th>
+              </tr>
+              <tr>
+                <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P1 (P1-P2)</th>
+                <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P2 (P2-P3)</th>
+                <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P3 (P3-P1)</th>
+                <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P1 (P1-P2)</th>
+                <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P2 (P2-P3)</th>
+                <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P3 (P3-P1)</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+              {/* Pole to Pole (Closed) */}
               <tr>
-                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Pole to Pole</td>
-                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Closed</td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderInput("insulationResistanceMeasured.poleToPoleClosedP1P2", "", "text", false, "w-full")}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">Pole to Pole (Closed)</td>
+                {/* Measured Values */}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderInput("insulationResistanceMeasured.poleToPoleClosedP1P2", "", "text", false, "w-full text-center")}
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderInput("insulationResistanceMeasured.poleToPoleClosedP2P3", "", "text", false, "w-full")}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderInput("insulationResistanceMeasured.poleToPoleClosedP2P3", "", "text", false, "w-full text-center")}
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderInput("insulationResistanceMeasured.poleToPoleClosedP3P1", "", "text", false, "w-full")}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderInput("insulationResistanceMeasured.poleToPoleClosedP3P1", "", "text", false, "w-full text-center")}
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                {/* Corrected Values */}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                   <input
                     type="text"
                     value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToPoleClosedP1P2, formData.temperature.tcf)}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-dark-200 shadow-sm dark:text-white"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                   />
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                   <input
                     type="text"
                     value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToPoleClosedP2P3, formData.temperature.tcf)}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-dark-200 shadow-sm dark:text-white"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                   />
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                   <input
                     type="text"
                     value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToPoleClosedP3P1, formData.temperature.tcf)}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-dark-200 shadow-sm dark:text-white"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                   />
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderSelect("insulationResistanceMeasured.poleToPoleUnits", insulationResistanceUnits, false, "w-full")}
+                {/* Units */}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderSelect("insulationResistanceMeasured.poleToPoleUnits", insulationResistanceUnits, false, "w-full text-center")}
                 </td>
               </tr>
+              {/* Pole to Frame (Closed) */}
               <tr>
-                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Pole to Frame</td>
-                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Closed</td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderInput("insulationResistanceMeasured.poleToFrameClosedP1", "", "text", false, "w-full")}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">Pole to Frame (Closed)</td>
+                {/* Measured Values */}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderInput("insulationResistanceMeasured.poleToFrameClosedP1", "", "text", false, "w-full text-center")}
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderInput("insulationResistanceMeasured.poleToFrameClosedP2", "", "text", false, "w-full")}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderInput("insulationResistanceMeasured.poleToFrameClosedP2", "", "text", false, "w-full text-center")}
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderInput("insulationResistanceMeasured.poleToFrameClosedP3", "", "text", false, "w-full")}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderInput("insulationResistanceMeasured.poleToFrameClosedP3", "", "text", false, "w-full text-center")}
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                {/* Corrected Values */}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                   <input
                     type="text"
                     value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToFrameClosedP1, formData.temperature.tcf)}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-dark-200 shadow-sm dark:text-white"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                   />
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                   <input
                     type="text"
                     value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToFrameClosedP2, formData.temperature.tcf)}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-dark-200 shadow-sm dark:text-white"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                   />
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                   <input
                     type="text"
                     value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToFrameClosedP3, formData.temperature.tcf)}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-dark-200 shadow-sm dark:text-white"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                   />
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderSelect("insulationResistanceMeasured.poleToFrameUnits", insulationResistanceUnits, false, "w-full")}
+                {/* Units */}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderSelect("insulationResistanceMeasured.poleToFrameUnits", insulationResistanceUnits, false, "w-full text-center")}
                 </td>
               </tr>
+              {/* Line to Load (Open) */}
               <tr>
-                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Line to Load</td>
-                <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Open</td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderInput("insulationResistanceMeasured.lineToLoadOpenP1", "", "text", false, "w-full")}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">Line to Load (Open)</td>
+                {/* Measured Values */}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderInput("insulationResistanceMeasured.lineToLoadOpenP1", "", "text", false, "w-full text-center")}
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderInput("insulationResistanceMeasured.lineToLoadOpenP2", "", "text", false, "w-full")}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderInput("insulationResistanceMeasured.lineToLoadOpenP2", "", "text", false, "w-full text-center")}
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderInput("insulationResistanceMeasured.lineToLoadOpenP3", "", "text", false, "w-full")}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderInput("insulationResistanceMeasured.lineToLoadOpenP3", "", "text", false, "w-full text-center")}
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                {/* Corrected Values */}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                   <input
                     type="text"
                     value={calculateCorrectedValue(formData.insulationResistanceMeasured.lineToLoadOpenP1, formData.temperature.tcf)}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-dark-200 shadow-sm dark:text-white"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                   />
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                   <input
                     type="text"
                     value={calculateCorrectedValue(formData.insulationResistanceMeasured.lineToLoadOpenP2, formData.temperature.tcf)}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-dark-200 shadow-sm dark:text-white"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                   />
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                   <input
                     type="text"
                     value={calculateCorrectedValue(formData.insulationResistanceMeasured.lineToLoadOpenP3, formData.temperature.tcf)}
                     readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-dark-200 shadow-sm dark:text-white"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center"
                   />
                 </td>
-                <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                  {renderSelect("insulationResistanceMeasured.lineToLoadUnits", insulationResistanceUnits, false, "w-full")}
+                {/* Units */}
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                  {renderSelect("insulationResistanceMeasured.lineToLoadUnits", insulationResistanceUnits, false, "w-full text-center")}
                 </td>
               </tr>
             </tbody>
@@ -1132,7 +1158,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
       </section>
 
       {/* Dielectric Withstand */}
-      <section className="mb-6">
+      <section className="mb-6 section-dielectric-withstand">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Dielectric Withstand</h2>
         <div className="space-y-6">
@@ -1152,41 +1178,47 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
             {/* Measurement Table */}
             <div className="lg:col-span-3">
-              <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
-                <thead>
+              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
+                <colgroup>
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                </colgroup>
+                <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th colSpan={4} className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                    <th colSpan={4} className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
                       Dielectric Withstand (Breaker In Closed Position)
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
                       P1 - Ground
                     </th>
-                    <th className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
                       P2 - Ground
                     </th>
-                    <th className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
                       P3 - Ground
                     </th>
-                    <th className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
                       Units
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("dielectricWithstand.closed.p1Ground", "", "text", false, "w-full")}
+                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                      {renderInput("dielectricWithstand.closed.p1Ground", "", "text", false, "w-full text-center")}
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("dielectricWithstand.closed.p2Ground", "", "text", false, "w-full")}
+                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                      {renderInput("dielectricWithstand.closed.p2Ground", "", "text", false, "w-full text-center")}
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("dielectricWithstand.closed.p3Ground", "", "text", false, "w-full")}
+                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                      {renderInput("dielectricWithstand.closed.p3Ground", "", "text", false, "w-full text-center")}
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderSelect("dielectricWithstand.closed.units", dielectricWithstandUnits, false, "w-full")}
+                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                      {renderSelect("dielectricWithstand.closed.units", dielectricWithstandUnits, false, "w-full text-center")}
                     </td>
                   </tr>
                 </tbody>
@@ -1210,41 +1242,47 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
             {/* Measurement Table */}
             <div className="lg:col-span-3">
-              <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
-                <thead>
+              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
+                <colgroup>
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                </colgroup>
+                <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th colSpan={4} className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                    <th colSpan={4} className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
                       Vacuum Bottle Integrity (Breaker In Open Position)
                     </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
                       P1
                     </th>
-                    <th className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
                       P2
                     </th>
-                    <th className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
                       P3
                     </th>
-                    <th className="px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
                       Units
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("dielectricWithstand.open.p1", "", "text", false, "w-full")}
+                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                      {renderInput("dielectricWithstand.open.p1", "", "text", false, "w-full text-center")}
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("dielectricWithstand.open.p2", "", "text", false, "w-full")}
+                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                      {renderInput("dielectricWithstand.open.p2", "", "text", false, "w-full text-center")}
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("dielectricWithstand.open.p3", "", "text", false, "w-full")}
+                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                      {renderInput("dielectricWithstand.open.p3", "", "text", false, "w-full text-center")}
                     </td>
-                    <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderSelect("dielectricWithstand.open.units", dielectricWithstandUnits, false, "w-full")}
+                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                      {renderSelect("dielectricWithstand.open.units", dielectricWithstandUnits, false, "w-full text-center")}
                     </td>
                   </tr>
                 </tbody>
@@ -1416,6 +1454,110 @@ if (typeof document !== 'undefined') {
         width: 100% !important;
         max-width: none !important;
       }
+      
+      /* Contact Resistance and Insulation Resistance table styling for print */
+      .section-contact-resistance table,
+      .section-insulation-resistance table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 20px !important;
+      }
+      
+      .section-contact-resistance th,
+      .section-contact-resistance td,
+      .section-insulation-resistance th,
+      .section-insulation-resistance td {
+        border: 1px solid black !important;
+        padding: 8px !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+      }
+      
+      .section-contact-resistance th,
+      .section-insulation-resistance th {
+        background-color: #f0f0f0 !important;
+        font-weight: bold !important;
+        color: black !important;
+      }
+      
+      .section-contact-resistance td,
+      .section-insulation-resistance td {
+        background-color: white !important;
+        color: black !important;
+      }
+      
+      /* Ensure proper column widths in print */
+      .section-contact-resistance table {
+        table-layout: fixed !important;
+      }
+      
+      .section-contact-resistance th:nth-child(1),
+      .section-contact-resistance td:nth-child(1) { width: 25% !important; }
+      .section-contact-resistance th:nth-child(2),
+      .section-contact-resistance td:nth-child(2) { width: 25% !important; }
+      .section-contact-resistance th:nth-child(3),
+      .section-contact-resistance td:nth-child(3) { width: 25% !important; }
+      .section-contact-resistance th:nth-child(4),
+      .section-contact-resistance td:nth-child(4) { width: 25% !important; }
+      
+      /* Insulation resistance table column widths */
+      .section-insulation-resistance table {
+        table-layout: fixed !important;
+      }
+      
+      .section-insulation-resistance th:first-child,
+      .section-insulation-resistance td:first-child { width: 16% !important; }
+      .section-insulation-resistance th:nth-child(2),
+      .section-insulation-resistance td:nth-child(2) { width: 12.5% !important; }
+      .section-insulation-resistance th:nth-child(3),
+      .section-insulation-resistance td:nth-child(3) { width: 12.5% !important; }
+      .section-insulation-resistance th:nth-child(4),
+      .section-insulation-resistance td:nth-child(4) { width: 12.5% !important; }
+      .section-insulation-resistance th:nth-child(5),
+      .section-insulation-resistance td:nth-child(5) { width: 12.5% !important; }
+      .section-insulation-resistance th:nth-child(6),
+      .section-insulation-resistance td:nth-child(6) { width: 12.5% !important; }
+      .section-insulation-resistance th:nth-child(7),
+      .section-insulation-resistance td:nth-child(7) { width: 12.5% !important; }
+      .section-insulation-resistance th:last-child,
+      .section-insulation-resistance td:last-child { width: 9% !important; }
+      
+      /* Dielectric withstand table styling for print */
+      .section-dielectric-withstand table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 20px !important;
+        table-layout: fixed !important;
+      }
+      
+      .section-dielectric-withstand th,
+      .section-dielectric-withstand td {
+        border: 1px solid black !important;
+        padding: 8px !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+      }
+      
+      .section-dielectric-withstand th {
+        background-color: #f0f0f0 !important;
+        font-weight: bold !important;
+        color: black !important;
+      }
+      
+      .section-dielectric-withstand td {
+        background-color: white !important;
+        color: black !important;
+      }
+      
+      /* Dielectric withstand table column widths */
+      .section-dielectric-withstand th:nth-child(1),
+      .section-dielectric-withstand td:nth-child(1) { width: 25% !important; }
+      .section-dielectric-withstand th:nth-child(2),
+      .section-dielectric-withstand td:nth-child(2) { width: 25% !important; }
+      .section-dielectric-withstand th:nth-child(3),
+      .section-dielectric-withstand td:nth-child(3) { width: 25% !important; }
+      .section-dielectric-withstand th:nth-child(4),
+      .section-dielectric-withstand td:nth-child(4) { width: 25% !important; }
       
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }

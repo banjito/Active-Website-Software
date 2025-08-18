@@ -198,6 +198,25 @@ const PanelboardReport: React.FC = () => {
       }
 
       @media print {
+        /* Spread IR/Corrected tables and push Units far right */
+        .ir-table th, .ir-table td, .ir-corrected-table th, .ir-corrected-table td { padding: 2px 3px !important; font-size: 8px !important; }
+        .ir-table colgroup col:last-child, .ir-corrected-table colgroup col:last-child { width: 7.75% !important; }
+        .ir-table colgroup col:not(:last-child), .ir-corrected-table colgroup col:not(:last-child) { width: 10.25% !important; }
+
+        /* Contact Resistance: give more room to value columns */
+        .contact-resistance-table th, .contact-resistance-table td { padding: 2px 3px !important; font-size: 8px !important; }
+        .contact-resistance-table colgroup col:nth-child(1) { width: 6% !important; }
+        .contact-resistance-table colgroup col:nth-child(2),
+        .contact-resistance-table colgroup col:nth-child(3),
+        .contact-resistance-table colgroup col:nth-child(4),
+        .contact-resistance-table colgroup col:nth-child(5),
+        .contact-resistance-table colgroup col:nth-child(6) { width: 17% !important; }
+        .contact-resistance-table colgroup col:nth-child(7) { width: 9% !important; }
+
+        /* Keep Comments header and textarea together on one page */
+        .comments-section { page-break-inside: avoid !important; break-inside: avoid !important; }
+        .comments-section h2 { page-break-after: avoid !important; }
+        .comments-section textarea { page-break-inside: avoid !important; }
         /* Visual & Mechanical table widths for readability */
         table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
         table.visual-mechanical-table thead { display: table-header-group !important; }
@@ -1451,7 +1470,19 @@ const PanelboardReport: React.FC = () => {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed ir-table">
+            <colgroup>
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '7.75%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={9}>Insulation Resistance</th>
@@ -1513,7 +1544,19 @@ const PanelboardReport: React.FC = () => {
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Values</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed ir-corrected-table">
+            <colgroup>
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '10.25%' }} />
+              <col style={{ width: '7.75%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" colSpan={9}>Insulation Resistance</th>
@@ -1587,7 +1630,16 @@ const PanelboardReport: React.FC = () => {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed contact-resistance-table">
+            <colgroup>
+              <col style={{ width: '6%' }} />
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '9%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200"></th>
@@ -1685,7 +1737,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Comments */}
-      <div className="mb-32" style={{ marginBottom: '150px' }}>
+      <div className="mb-32 comments-section" style={{ marginBottom: '150px' }}>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         <div className="space-y-4">
         <textarea

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Pencil, Trash2, X, ArrowLeft, Award } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { format } from 'date-fns';
@@ -114,6 +114,7 @@ export default function OpportunityList() {
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -796,6 +797,26 @@ export default function OpportunityList() {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Tab' && e.shiftKey) {
+                      e.preventDefault();
+                      const target = e.currentTarget;
+                      const start = target.selectionStart ?? 0;
+                      const end = target.selectionEnd ?? 0;
+                      const current = formData.description || '';
+                      const nextVal = current.slice(0, start) + '\n' + current.slice(end);
+                      setFormData(prev => ({ ...prev, description: nextVal }));
+                      // Restore caret after React updates value
+                      setTimeout(() => {
+                        if (descriptionRef.current) {
+                          const pos = start + 1;
+                          descriptionRef.current.selectionStart = pos;
+                          descriptionRef.current.selectionEnd = pos;
+                        }
+                      }, 0);
+                    }
+                  }}
+                  ref={descriptionRef}
                   rows={3}
                   className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
                   required

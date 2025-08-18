@@ -1142,7 +1142,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
               <div><label className="form-label">Customer:</label><input type="text" value={formData.customer} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
               <div className="md:col-span-2"><label htmlFor="address" className="form-label">Address:</label><input id="address" type="text" value={formData.address} onChange={(e) => handleChange('address', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
@@ -1167,6 +1167,66 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
               <div><label htmlFor="eqptLocation" className="form-label">Eqpt. Location:</label><input id="eqptLocation" type="text" value={formData.eqptLocation} onChange={(e) => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div className="md:col-span-2"><label htmlFor="user" className="form-label">User:</label><input id="user" type="text" value={formData.user} onChange={(e) => handleChange('user', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                       </div>
+
+              {/* Print-only compact job info table matching standardized layout */}
+              <div className="hidden print:block">
+                <table className="w-full border-collapse border border-gray-300 print:border-black">
+                  <tbody>
+                    <tr>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Customer:</div>
+                        <div className="mt-1">{formData.customer}</div>
+                      </td>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Temp:</div>
+                        <div className="mt-1">{`${formData.temperature.fahrenheit}°F (${formData.temperature.celsius}°C)`}</div>
+                      </td>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Job #:</div>
+                        <div className="mt-1">{formData.jobNumber}</div>
+                      </td>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Technicians:</div>
+                        <div className="mt-1">{formData.technicians}</div>
+                      </td>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Date:</div>
+                        <div className="mt-1">{formData.date ? (new Date(formData.date)).toLocaleDateString() : ''}</div>
+                      </td>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Identifier:</div>
+                        <div className="mt-1">{formData.identifier}</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Address:</div>
+                        <div className="mt-1">{formData.address}</div>
+                      </td>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">TCF:</div>
+                        <div className="mt-1">{formData.temperature.tcf}</div>
+                      </td>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Humidity:</div>
+                        <div className="mt-1">{`${formData.temperature.humidity}%`}</div>
+                      </td>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Substation:</div>
+                        <div className="mt-1">{formData.substation}</div>
+                      </td>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Eqpt. Location:</div>
+                        <div className="mt-1">{formData.eqptLocation}</div>
+                      </td>
+                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">User:</div>
+                        <div className="mt-1">{formData.user}</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
                       </div>
 
           {/* --- Nameplate Data Section --- */}
@@ -2206,6 +2266,8 @@ if (typeof document !== 'undefined') {
       
       /* Hide all non-print elements */
       .print\\:hidden { display: none !important; }
+      /* Hide original on-screen job info grid in print */
+      .job-info-onscreen, .job-info-onscreen * { display: none !important; }
       
       /* Hide second title and back button in print only */
       .flex.justify-between.items-center.mb-6 { display: none !important; }

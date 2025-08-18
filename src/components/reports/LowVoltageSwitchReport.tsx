@@ -787,6 +787,18 @@ export default function LowVoltageSwitchReport() {
           setFormData(current => ({
             ...current,
             ...data.report_info,
+            // Normalize temperature whether stored as number or object
+            temperature: typeof data.report_info?.temperature === 'number'
+              ? {
+                  fahrenheit: data.report_info.temperature,
+                  celsius: fahrenheitToCelsius(data.report_info.temperature),
+                  tcf: calculateTCF(data.report_info.temperature),
+                }
+              : {
+                  fahrenheit: data.report_info?.temperature?.fahrenheit ?? current.temperature.fahrenheit,
+                  celsius: data.report_info?.temperature?.celsius ?? current.temperature.celsius,
+                  tcf: data.report_info?.temperature?.tcf ?? current.temperature.tcf,
+                },
             switchData: data.switch_data || current.switchData,
             fuseData: data.fuse_data || current.fuseData,
             visualMechanicalInspection: data.visual_inspection || current.visualMechanicalInspection,
@@ -898,7 +910,12 @@ export default function LowVoltageSwitchReport() {
           substation: formData.substation,
           eqptLocation: formData.eqptLocation,
           identifier: formData.identifier,
-          temperature: formData.temperature.fahrenheit,
+          // Store full temperature object for clarity and future-proofing
+          temperature: {
+            fahrenheit: formData.temperature.fahrenheit,
+            celsius: fahrenheitToCelsius(formData.temperature.fahrenheit),
+            tcf,
+          },
           humidity: formData.humidity,
           manufacturer: formData.manufacturer,
           catalogNo: formData.catalogNo,

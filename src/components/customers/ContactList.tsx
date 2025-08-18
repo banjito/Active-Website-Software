@@ -66,6 +66,7 @@ export default function ContactList() {
   const [showCustomerResults, setShowCustomerResults] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Log location pathname whenever it changes
   useEffect(() => {
@@ -80,9 +81,14 @@ export default function ContactList() {
   }, [user, page, debouncedSearch]);
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 300);
+    const t = setTimeout(() => {
+      if (searchTerm !== debouncedSearch) {
+        setDebouncedSearch(searchTerm.trim());
+        setPage(1);
+      }
+    }, 300);
     return () => clearTimeout(t);
-  }, [searchTerm]);
+  }, [searchTerm, debouncedSearch]);
 
   useEffect(() => {
     if (customerSearch.trim()) {
@@ -98,7 +104,11 @@ export default function ContactList() {
   }, [customerSearch, customers]);
 
   async function fetchContacts() {
-    setLoading(true);
+    if (debouncedSearch) {
+      setSearchLoading(true);
+    } else {
+      setLoading(true);
+    }
     try {
       // 1. Fetch base contacts data (paged)
       const pageSize = 50;
@@ -159,7 +169,11 @@ export default function ContactList() {
     } catch (error) {
       console.error('Error in fetchContacts function:', error);
     } finally {
-      setLoading(false);
+      if (debouncedSearch) {
+        setSearchLoading(false);
+      } else {
+        setLoading(false);
+      }
     }
   }
 
@@ -313,10 +327,15 @@ export default function ContactList() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search contacts by name, email, phone"
             className="w-72 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
           />
+          {searchLoading && (
+            <div className="ml-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#f26722]"></div>
+            </div>
+          )}
           <button
             type="button"
             onClick={() => {

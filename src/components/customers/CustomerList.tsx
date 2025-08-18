@@ -48,6 +48,7 @@ export default function CustomerList() {
   const [formLoading, setFormLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+  const [searchLoading, setSearchLoading] = useState(false);
   const [activeFilters, setActiveFilters] = useState<{
     category_id?: string | null;
     status?: string | null;
@@ -60,13 +61,22 @@ export default function CustomerList() {
   }, [user, activeFilters, page, debouncedSearch]);
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 300);
+    const t = setTimeout(() => {
+      if (searchTerm !== debouncedSearch) {
+        setDebouncedSearch(searchTerm.trim());
+        setPage(1);
+      }
+    }, 300);
     return () => clearTimeout(t);
-  }, [searchTerm]);
+  }, [searchTerm, debouncedSearch]);
 
   async function fetchData() {
     try {
-      setLoading(true);
+      if (debouncedSearch) {
+        setSearchLoading(true);
+      } else {
+        setLoading(true);
+      }
       console.log("CustomerList: Fetching data with activeFilters:", activeFilters);
       
       // Get customers from common schema (paged)
@@ -84,7 +94,11 @@ export default function CustomerList() {
     } catch (error) {
       console.error('CustomerList: Error fetching data:', error);
     } finally {
-      setLoading(false);
+      if (debouncedSearch) {
+        setSearchLoading(false);
+      } else {
+        setLoading(false);
+      }
     }
   }
 
@@ -254,10 +268,15 @@ export default function CustomerList() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search customers by name, company, email"
             className="w-72 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
           />
+          {searchLoading && (
+            <div className="ml-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#f26722]"></div>
+            </div>
+          )}
           <button
             onClick={navigateToCategoriesPage}
             className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600"

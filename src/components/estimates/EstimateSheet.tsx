@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Tab, Dialog } from '@headlessui/react';
 import { X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -138,7 +138,7 @@ const styles = {
 
 interface EstimateSheetProps {
   opportunityId: string;
-  mode?: 'new' | 'view' | 'letter';
+  mode?: 'new' | 'view' | 'letter' | 'letters';
 }
 
 interface OpportunityData {
@@ -1477,6 +1477,12 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
 
   const [isQuoteSelectOpen, setIsQuoteSelectOpen] = useState(false);
   const [isLetterProposalOpen, setIsLetterProposalOpen] = useState(false);
+  const [isLettersListOpen, setIsLettersListOpen] = useState(false);
+  const [letters, setLetters] = useState<Array<{ id: string; html: string; created_at: string; quote_number?: string; neta_standard?: string }>>([]);
+  const [selectedLetterIndex, setSelectedLetterIndex] = useState<number>(-1);
+  const [currentLetterId, setCurrentLetterId] = useState<string | null>(null);
+  const letterUpdateSourceRef = useRef<'user' | 'programmatic'>('programmatic');
+  const letterEditorRef = useRef<HTMLDivElement | null>(null);
   const [selectedLetterQuoteIndex, setSelectedLetterQuoteIndex] = useState<number | null>(null);
   const [letterHtml, setLetterHtml] = useState<string>("");
   const [contactData, setContactData] = useState<{ first_name: string; last_name: string } | null>(null);
@@ -1498,11 +1504,34 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       const span = container.querySelector('#neta-standard-text') as HTMLElement | null;
       if (span) {
         span.textContent = option?.text || '[Select NETA Standard]';
+        letterUpdateSourceRef.current = 'programmatic';
         setLetterHtml(container.innerHTML);
       }
       setNetaStandard(value);
     } catch {}
   }
+
+  // When letterHtml changes due to programmatic updates, write it into the editor
+  useEffect(() => {
+    if (letterUpdateSourceRef.current !== 'programmatic') return;
+    const editor = letterEditorRef.current;
+    if (!editor) return;
+    try {
+      // Write HTML without triggering React re-render of contentEditable
+      if (editor.innerHTML !== letterHtml) {
+        editor.innerHTML = letterHtml;
+      }
+      // Restore caret at end to avoid jump-to-top-left
+      editor.focus();
+      const selection = window.getSelection();
+      if (!selection) return;
+      selection.removeAllRanges();
+      const range = document.createRange();
+      range.selectNodeContents(editor);
+      range.collapse(false);
+      selection.addRange(range);
+    } catch {}
+  }, [letterHtml]);
 
   function handleSelectQuoteForLetter(index: number) {
     setSelectedLetterQuoteIndex(index);
@@ -1586,6 +1615,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
     // Prefer opportunity's quote_number for the letter number
     const letterQuoteNumber = (opportunityData as any)?.quote_number || quote.id?.slice(0,6) || (index + 1);
 
+    const signatureUrl = (window as any)?.AMP_SIGNATURE_URL || '/img/brian-rodgers-signature.jpg';
     setLetterHtml(`
       <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; min-height: 1100px;">
         <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 8px; margin-bottom: 24px;">
@@ -1637,6 +1667,13 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
         <div style="margin-top: 16px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
         <div style="margin-top: 16px;">Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</div>
         <div>Should you have any questions please contact the undersigned.</div>
+        <div style="margin-top: 20px;">Sincerely,</div>
+        <div style="margin: 10px 0 6px 0; min-height: 60px;">
+          <img src="${signatureUrl}" alt="Signature" style="height: 60px; max-width: 280px; object-fit: contain;" onerror="this.style.display='none'"/>
+        </div>
+        <div>Brian Rodgers</div>
+        <div>Chief Executive Officer</div>
+        <div style="text-align:center; margin-top: 16px; font-size: 0.95em; color: #444;">END OF LETTER</div>
         <div class="amp-footer" style="position:absolute;left:0;right:0;bottom:0;width:100%;font-size:0.9em;color:#555;border-top:1px solid #ccc;padding:8px 0;text-align:center;background:white;">P.O. Box 526 | Huntsville, Alabama 35804 | (256) 513-8255</div>
         <div style="page-break-after: always; margin-top: 40px;"></div>
         <div style="margin-top: 32px;">
@@ -1697,6 +1734,8 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
           .procedure-section { break-inside: avoid; }
           .print-page-break { page-break-before: always; break-before: page; }
         }
+        /* Signature should render well */
+        img[alt="Signature"] { max-height: 60px; }
       </style></head><body>${letterHtml}</body></html>`);
       printWindow.document.close();
       printWindow.focus();
@@ -1766,6 +1805,27 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
     } else if (mode === 'letter') {
       setIsOpen(false); // Ensure saved estimates modal is closed
       handleGenerateLetterProposal();
+    } else if (mode === 'letters') {
+      setIsOpen(false);
+      setIsLetterProposalOpen(false);
+      (async () => {
+        try {
+          const { data, error } = await supabase
+            .schema('business')
+            .from('letter_proposals')
+            .select('id, html, created_at, quote_number, neta_standard')
+            .eq('opportunity_id', opportunityId)
+            .order('created_at', { ascending: false });
+          if (!error && data) {
+            setLetters(data as any);
+          } else {
+            setLetters([]);
+          }
+        } catch {
+          setLetters([]);
+        }
+        setIsLettersListOpen(true);
+      })();
     }
     // If mode is undefined, do nothing (default behavior)
   }, [mode]);
@@ -1790,6 +1850,25 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
     if (finalValue > 100000) return 0.10;
     return 0.00;
   }
+
+  useEffect(() => {
+    // If the HTML update was programmatic, try to preserve caret and scroll
+    if (letterUpdateSourceRef.current === 'programmatic') {
+      try {
+        // Restore previous selection if possible; otherwise keep caret at end
+        const editor = letterEditorRef.current;
+        if (!editor) return;
+        editor.focus();
+        const selection = window.getSelection();
+        if (!selection) return;
+        selection.removeAllRanges();
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+        selection.addRange(range);
+      } catch {}
+    }
+  }, [letterHtml]);
 
   return (
     <div className="flex space-x-4">
@@ -3227,6 +3306,59 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
         </Dialog>
       )}
 
+      {/* Saved Letters Modal */}
+      {isLettersListOpen && (
+        <Dialog open={isLettersListOpen} onClose={() => setIsLettersListOpen(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full">
+            <h2 className="text-lg font-bold mb-4">Saved Letter Proposals</h2>
+            {letters.length === 0 ? (
+              <div className="text-sm text-gray-500">No saved letters yet.</div>
+            ) : (
+              <ul className="divide-y">
+                {letters.map((l, idx) => (
+                  <li key={l.id} className="py-2 flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium">Letter # {(opportunityData as any)?.quote_number || (idx + 1)}</div>
+                      <div className="text-xs text-gray-500">{l.created_at?.slice(0,10)}</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={() => {
+                        setIsLettersListOpen(false);
+                        setIsLetterProposalOpen(true);
+                        setLetterHtml(l.html);
+                        setCurrentLetterId(l.id);
+                        setNetaStandard(l.neta_standard || '');
+                      }} className="bg-[#f26722] text-white">Open</Button>
+                      <Button onClick={async () => {
+                        if (!confirm('Delete this saved letter?')) return;
+                        try {
+                          const { error } = await supabase
+                            .schema('business')
+                            .from('letter_proposals')
+                            .delete()
+                            .eq('id', l.id);
+                          if (error) throw error;
+                          setLetters(prev => prev.filter(item => item.id !== l.id));
+                          if (currentLetterId === l.id) {
+                            setCurrentLetterId(null);
+                            setIsLetterProposalOpen(false);
+                          }
+                        } catch (e: any) {
+                          alert('Failed to delete: ' + (e?.message || 'Unknown error'));
+                        }
+                      }} className="bg-red-600 text-white">Delete</Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="mt-4 text-right">
+              <Button onClick={() => setIsLettersListOpen(false)}>Close</Button>
+            </div>
+          </div>
+        </Dialog>
+      )}
+
       {/* Letter Proposal Modal */}
       <Dialog open={isLetterProposalOpen} onClose={() => setIsLetterProposalOpen(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
         <div className="fixed inset-0 bg-black bg-opacity-60 z-40" onClick={() => setIsLetterProposalOpen(false)} />
@@ -3234,6 +3366,60 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
           <div className="flex justify-between items-center p-4 border-b">
             <h2 className="text-xl font-bold">Letter Proposal</h2>
             <div className="flex gap-2">
+              {currentLetterId ? (
+                <Button onClick={async () => {
+                  if (!confirm('Delete this saved letter?')) return;
+                  try {
+                    const { error } = await supabase
+                      .schema('business')
+                      .from('letter_proposals')
+                      .delete()
+                      .eq('id', currentLetterId);
+                    if (error) throw error;
+                    setCurrentLetterId(null);
+                    setIsLetterProposalOpen(false);
+                    alert('Letter deleted');
+                  } catch (e: any) {
+                    alert('Failed to delete letter: ' + (e?.message || 'Unknown error'));
+                  }
+                }} className="bg-red-600 text-white">Delete</Button>
+              ) : null}
+              <Button onClick={async () => {
+                try {
+                  const payload: any = {
+                    opportunity_id: opportunityId,
+                    html: letterHtml,
+                    quote_number: (opportunityData as any)?.quote_number || null,
+                    neta_standard: netaStandard || null,
+                    data: {
+                      calculatedValues: data.calculatedValues,
+                      hoursSummary: data.hoursSummary,
+                    }
+                  };
+                  if (currentLetterId) {
+                    const { error } = await supabase
+                      .schema('business')
+                      .from('letter_proposals')
+                      .update(payload)
+                      .eq('id', currentLetterId);
+                    if (error) throw error;
+                    alert('Letter updated successfully');
+                  } else {
+                    const { data: inserted, error } = await supabase
+                      .schema('business')
+                      .from('letter_proposals')
+                      .insert(payload)
+                      .select('id')
+                      .single();
+                    if (error) throw error;
+                    setCurrentLetterId(inserted?.id || null);
+                    alert('Letter saved successfully');
+                  }
+                } catch (e: any) {
+                  console.error('Save letter failed', e);
+                  alert('Failed to save letter: ' + (e?.message || 'Unknown error'));
+                }
+              }} className="bg-[#f26722] text-white">Save Letter</Button>
               <Button onClick={handlePrintLetter} className="bg-[#f26722] text-white">Print</Button>
               <Button onClick={() => setIsLetterProposalOpen(false)}>Close</Button>
             </div>
@@ -3255,11 +3441,14 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
           </div>
           <div className="flex-1 overflow-auto p-8" style={{ background: '#f9f9f9' }}>
             <div
+              ref={letterEditorRef}
               contentEditable
               suppressContentEditableWarning
               style={{ minHeight: '1000px', outline: 'none', background: 'white', padding: 32, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', maxWidth: 900, margin: '0 auto' }}
-              dangerouslySetInnerHTML={{ __html: letterHtml }}
-              onInput={e => setLetterHtml((e.target as HTMLElement).innerHTML)}
+              onInput={e => {
+                letterUpdateSourceRef.current = 'user';
+                setLetterHtml((e.target as HTMLElement).innerHTML);
+              }}
               onBlur={() => {
                 try {
                   const container = document.createElement('div');
@@ -3270,7 +3459,11 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                     const selected = sel.options[sel.selectedIndex]?.text || '';
                     txt.textContent = selected || txt.textContent;
                   }
-                  setLetterHtml(container.innerHTML);
+                  letterUpdateSourceRef.current = 'programmatic';
+                  // Only update HTML if it actually changed to avoid resetting caret unnecessarily
+                  if (container.innerHTML !== letterHtml) {
+                    setLetterHtml(container.innerHTML);
+                  }
                 } catch {}
               }}
             />

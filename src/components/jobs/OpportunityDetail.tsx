@@ -1408,6 +1408,19 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
+                        if (showEstimate === 'letters') {
+                          setShowEstimate(false);
+                          setTimeout(() => setShowEstimate('letters'), 0);
+                        } else {
+                          setShowEstimate('letters');
+                        }
+                      }}
+                      className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
+                    >
+                      Show Letter Proposals
+                    </button>
+                    <button
+                      onClick={() => {
                         if (showEstimate === 'letter') {
                           setShowEstimate(false);
                           setTimeout(() => setShowEstimate('letter'), 0);

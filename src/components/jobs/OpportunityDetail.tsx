@@ -91,23 +91,6 @@ async function createJobManually(
     throw new Error('Cannot create job: user ID is missing');
   }
   
-  // Get a unique job number from neta_ops schema
-  const { data: maxJobNumber } = await supabase
-    .schema('neta_ops')
-    .from('jobs')
-    .select('job_number')
-    .order('job_number', { ascending: false })
-    .limit(1);
-  
-  let nextJobNumber = 25097;
-  if (maxJobNumber && maxJobNumber.length > 0) {
-    const match = maxJobNumber[0].job_number.match(/\d+/);
-    if (match) {
-      const parsed = parseInt(match[0]);
-      nextJobNumber = Math.max(25097, parsed + 1);
-    }
-  }
-  
   // Create the job in neta_ops schema
   const { data: newJob, error: jobError } = await supabase
     .schema('neta_ops')
@@ -121,7 +104,6 @@ async function createJobManually(
       start_date: new Date().toISOString().substring(0, 10),
       budget: opportunity.expected_value,
       notes: (opportunity.notes || '') + '\n\nConverted from opportunity: ' + opportunity.quote_number,
-      job_number: nextJobNumber.toString(),
       priority: 'medium',
       division: opportunity.amp_division === 'Decatur' ? 'north_alabama' : opportunity.amp_division
     })

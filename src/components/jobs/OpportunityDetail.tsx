@@ -99,11 +99,12 @@ async function createJobManually(
     .order('job_number', { ascending: false })
     .limit(1);
   
-  let nextJobNumber = 1000;
+  let nextJobNumber = 25097;
   if (maxJobNumber && maxJobNumber.length > 0) {
     const match = maxJobNumber[0].job_number.match(/\d+/);
     if (match) {
-      nextJobNumber = parseInt(match[0]) + 1;
+      const parsed = parseInt(match[0]);
+      nextJobNumber = Math.max(25097, parsed + 1);
     }
   }
   
@@ -120,7 +121,7 @@ async function createJobManually(
       start_date: new Date().toISOString().substring(0, 10),
       budget: opportunity.expected_value,
       notes: (opportunity.notes || '') + '\n\nConverted from opportunity: ' + opportunity.quote_number,
-      job_number: 'JOB-' + nextJobNumber.toString().padStart(4, '0'),
+      job_number: nextJobNumber.toString(),
       priority: 'medium',
       division: opportunity.amp_division === 'Decatur' ? 'north_alabama' : opportunity.amp_division
     })

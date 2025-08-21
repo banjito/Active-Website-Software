@@ -819,19 +819,24 @@ export default function JobDetail() {
     try {
       setError(null);
       
+      const updatePayload: any = {
+        title: editFormData.title,
+        description: editFormData.description,
+        status: editFormData.status,
+        priority: editFormData.priority,
+        start_date: editFormData.start_date,
+        due_date: editFormData.due_date,
+        budget: editFormData.budget,
+        updated_at: new Date().toISOString()
+      };
+      if (typeof editFormData.job_number === 'string' && editFormData.job_number.trim() !== '') {
+        updatePayload.job_number = editFormData.job_number.trim();
+      }
+      
       const { error: updateError } = await supabase
         .schema('neta_ops')
         .from('jobs')
-        .update({
-          title: editFormData.title,
-          description: editFormData.description,
-          status: editFormData.status,
-          priority: editFormData.priority,
-          start_date: editFormData.start_date,
-          due_date: editFormData.due_date,
-          budget: editFormData.budget,
-          updated_at: new Date().toISOString()
-        })
+        .update(updatePayload)
         .eq('id', id);
 
       if (updateError) throw updateError;
@@ -1820,6 +1825,20 @@ export default function JobDetail() {
                   </div>
                   
                   <div className="grid grid-cols-1 gap-6">
+                    <div>
+                      <label htmlFor="job_number" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Job Number (NETA divisions)
+                      </label>
+                      <input
+                        type="text"
+                        id="job_number"
+                        value={editFormData?.job_number || ''}
+                        onChange={(e) => setEditFormData(prev => prev ? { ...prev, job_number: e.target.value } : null)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722]/20 dark:bg-dark-100 dark:text-white transition-all duration-200 font-mono"
+                        placeholder="JOB-0000"
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Applies to jobs in NETA divisions. Leave blank to keep current.</p>
+                    </div>
                     <div>
                       <label htmlFor="title" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         Job Title *

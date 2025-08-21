@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -95,18 +96,14 @@ interface FormData {
     tapPositionLeftPercent: string;
   };
 
-  // Indicator Gauge Values
-  indicatorGauges: {
-    liquidLevel: string;
-    temperature: string;
-    pressureVacuum: string;
-  };
+
 
   // Visual and Mechanical Inspection
   visualInspectionItems: Array<{
     netaSection: string;
     description: string;
     result: string;
+    comments?: string;
   }>;
   visualInspectionComments: string;
 
@@ -217,7 +214,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
       tapVoltages: Array(7).fill(''), tapPosition: '1',
       tapPositionLeftVolts: '', tapPositionLeftPercent: ''
     },
-    indicatorGauges: { liquidLevel: '', temperature: '', pressureVacuum: '' },
+
     visualInspectionItems: JSON.parse(JSON.stringify(initialVisualInspectionItems)),
     visualInspectionComments: '',
     insulationResistance: {
@@ -315,10 +312,6 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
             ...(prev.nameplate),
             ...(loadedFormData.nameplate || {}),
             tapVoltages: loadedFormData.nameplate?.tapVoltages || Array(7).fill(''),
-          },
-          indicatorGauges: {
-            ...(prev.indicatorGauges),
-            ...(loadedFormData.indicatorGauges || {}),
           },
           visualInspectionItems: loadedFormData.visualInspectionItems || JSON.parse(JSON.stringify(initialVisualInspectionItems)),
           insulationResistance: {
@@ -788,22 +781,35 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
       <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
-        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
+        <div style={{ width: '120px', display: 'flex', justifyContent: 'flex-start' }}>
+          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 35, marginLeft: '5px', marginTop: '2px' }} />
+        </div>
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c', width: '120px' }}>
           NETA - ATS 7.2.1.1
-          <div className="mt-2">
+          <div className="hidden print:block mt-2">
             <div
-              className="inline-block px-2 py-1 text-xs font-bold rounded border-2"
+              className="pass-fail-status-box"
               style={{
-                borderColor: '#000',
-                backgroundColor: 'transparent',
-                color: '#000'
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: '2px solid #16a34a',
+                backgroundColor: '#22c55e',
+                color: 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
               }}
             >
-              {formData.status}
+              {formData.status || 'PASS'}
             </div>
           </div>
         </div>
@@ -820,7 +826,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
                <div>
                  <label htmlFor="customer" className="form-label">Customer:</label>
                  <input id="customer" type="text" name="customer" value={formData.customer} onChange={(e) => handleChange("customer", e.target.value)} readOnly className={`form-input text-sm bg-gray-100 dark:bg-dark-200 cursor-not-allowed`} />
@@ -882,12 +888,30 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                  <input id="eqptLocation" type="text" name="eqptLocation" value={formData.eqptLocation} onChange={(e) => handleChange("eqptLocation", e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                </div>
              </div>
+             
+             {/* Print-only Job Information table */}
+             <div className="hidden print:block">
+               <JobInfoPrintTable
+                 data={{
+                   customer: formData.customer,
+                   address: formData.address,
+                   jobNumber: formData.jobNumber,
+                   technicians: formData.technicians,
+                   date: formData.date,
+                   identifier: formData.identifier,
+                   user: formData.user,
+                   substation: formData.substation,
+                   eqptLocation: formData.eqptLocation,
+                   temperature: { ...formData.temperature }
+                 }}
+               />
+             </div>
            </section>
 
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4 print:hidden nameplate-onscreen">
                 <div>
                     <label htmlFor="nameplate.manufacturer" className="form-label">Manufacturer</label>
                     <input id="nameplate.manufacturer" type="text" name="nameplate.manufacturer" value={formData.nameplate.manufacturer} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
@@ -901,7 +925,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                     <input id="nameplate.serialNumber" type="text" name="nameplate.serialNumber" value={formData.nameplate.serialNumber} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-6 print:hidden nameplate-onscreen">
                 <div>
                     <label htmlFor="nameplate.kvaBase" className="form-label">KVA</label>
                     <div className="flex items-center">
@@ -920,14 +944,14 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-x-2 mb-2">
+            <div className="grid grid-cols-12 gap-x-2 mb-2 print:hidden nameplate-onscreen">
               <div className="col-span-2">{/* Spacer */}</div>
               <div className="col-span-3 text-center form-label font-medium">Volts</div>
               <div className="col-span-4 text-center form-label font-medium">Connections</div>
               <div className="col-span-3 text-center form-label font-medium">Winding Material</div>
             </div>
 
-            <div className="grid grid-cols-12 gap-x-2 mb-4 items-center">
+            <div className="grid grid-cols-12 gap-x-2 mb-4 items-center print:hidden nameplate-onscreen">
               <div className="col-span-2 form-label self-center">Primary</div>
               <div className="col-span-3 flex items-center">
                 <input type="text" name="nameplate.voltsPrimary" placeholder="Primary" value={formData.nameplate.voltsPrimary} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm w-1/2 mr-1 text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
@@ -952,7 +976,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
               </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-x-2 mb-6 items-center">
+            <div className="grid grid-cols-12 gap-x-2 mb-6 items-center print:hidden nameplate-onscreen">
               <div className="col-span-2 form-label self-center">Secondary</div>
               <div className="col-span-3 flex items-center">
                 <input type="text" name="nameplate.voltsSecondary" placeholder="Secondary" value={formData.nameplate.voltsSecondary} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm w-1/2 mr-1 text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
@@ -977,8 +1001,8 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
               </div>
             </div>
 
-            <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white border-t dark:border-gray-700 pt-4">Tap Configuration</h3>
-            <div>
+            <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white border-t dark:border-gray-700 pt-4 print:hidden nameplate-onscreen">Tap Configuration</h3>
+            <div className="print:hidden nameplate-onscreen">
               <label className="form-label mb-1">Tap Voltages</label>
               <div className="grid grid-cols-7 gap-2">
                 {formData.nameplate.tapVoltages.map((_, index) => (
@@ -1004,7 +1028,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-end print:hidden nameplate-onscreen">
               <div>
                 <label htmlFor="nameplate.tapPosition" className="form-label">Tap Position</label>
                 <select 
@@ -1053,37 +1077,160 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                 </div>
               </div>
             </div>
-          </section>
-          
-          <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Indicator Gauge Values</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label htmlFor="indicatorGauges.liquidLevel" className="form-label">Liquid Level</label>
-                    <input id="indicatorGauges.liquidLevel" type="text" name="indicatorGauges.liquidLevel" value={formData.indicatorGauges.liquidLevel} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                </div>
-                <div>
-                    <label htmlFor="indicatorGauges.temperature" className="form-label">Temperature</label>
-                    <input id="indicatorGauges.temperature" type="text" name="indicatorGauges.temperature" value={formData.indicatorGauges.temperature} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                </div>
-                <div>
-                    <label htmlFor="indicatorGauges.pressureVacuum" className="form-label">Pressure / Vacuum</label>
-                    <input id="indicatorGauges.pressureVacuum" type="text" name="indicatorGauges.pressureVacuum" value={formData.indicatorGauges.pressureVacuum} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                </div>
+
+            {/* Print-only Nameplate Data tables */}
+            <div className="hidden print:block space-y-4">
+              {/* Table 1: Basic Information */}
+              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <colgroup>
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                      <span className="font-medium">Manufacturer:</span> {formData.nameplate.manufacturer || ''}
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                      <span className="font-medium">Catalog Number:</span> {formData.nameplate.catalogNumber || ''}
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                      <span className="font-medium">Serial Number:</span> {formData.nameplate.serialNumber || ''}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                      <span className="font-medium">KVA:</span> {formData.nameplate.kvaBase || ''} / {formData.nameplate.kvaCooling || ''}
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                      <span className="font-medium">Temp. Rise °C:</span> {formData.nameplate.tempRise || ''}
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                      <span className="font-medium">Impedance:</span> {formData.nameplate.impedance || ''}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Table 2: Primary/Secondary Details */}
+              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <colgroup>
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '18%' }} />
+                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '9%' }} />
+                  <col style={{ width: '9%' }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"></th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600" colSpan={1}>
+                      Volts
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600" colSpan={3}>
+                      Connections
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600" colSpan={2}>
+                      Winding Materials
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">Primary</td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">{formData.nameplate.voltsPrimary || ''} / {formData.nameplate.voltsPrimaryInternal || ''}</td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                      {formData.nameplate.connectionsPrimary === 'Delta' ? '☒' : '☐'} Delta
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                      {formData.nameplate.connectionsPrimary === 'Wye' ? '☒' : '☐'} Wye
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                      {formData.nameplate.connectionsPrimary === 'Single Phase' ? '☒' : '☐'} Single Phase
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                      {formData.nameplate.windingMaterialPrimary === 'Aluminum' ? '☒' : '☐'} Aluminum
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                      {formData.nameplate.windingMaterialPrimary === 'Copper' ? '☒' : '☐'} Copper
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">Secondary</td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">{formData.nameplate.voltsSecondary || ''} / {formData.nameplate.voltsSecondaryInternal || ''}</td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                      {formData.nameplate.connectionsSecondary === 'Delta' ? '☒' : '☐'} Delta
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                      {formData.nameplate.connectionsSecondary === 'Wye' ? '☒' : '☐'} Wye
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                      {formData.nameplate.connectionsSecondary === 'Single Phase' ? '☒' : '☐'} Single Phase
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                      {formData.nameplate.windingMaterialSecondary === 'Aluminum' ? '☒' : '☐'} Aluminum
+                    </td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                      {formData.nameplate.windingMaterialSecondary === 'Copper' ? '☒' : '☐'} Copper
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Table 3: Tap Configuration */}
+              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Tap Position</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">1</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">2</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">3</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">4</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">5</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">6</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">7</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">Tap Voltages</td>
+                    {formData.nameplate.tapVoltages.map((voltage, index) => (
+                      <td key={index} className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">{voltage || ''}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">Tap Position Left</td>
+                    <td colSpan={7} className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                      Position: {formData.nameplate.tapPosition || ''} / {formData.nameplate.tapPosition || ''} |
+                      Volts: {formData.nameplate.tapPositionLeftVolts || ''} |
+                      Percent: {formData.nameplate.tapPositionLeftPercent || ''}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </section>
+
+
 
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto mb-4">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 visual-mechanical-table table-fixed">
+                <colgroup>
+                  <col style={{ width: '6%' }} />
+                  <col style={{ width: '70%' }} />
+                  <col style={{ width: '24%' }} />
+                </colgroup>
                 <thead>
                   <tr>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">NETA Section</th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Description</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 w-40">Results</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Results</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1092,6 +1239,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                       <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm">{item.netaSection}</td>
                       <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm">{item.description}</td>
                       <td className="px-3 py-2 border border-gray-300 dark:border-gray-600">
+                        <div className="print:hidden">
                         <select
                           value={item.result}
                           onChange={(e) => handleArrayChange('visualInspectionItems', index, 'result', e.target.value)}
@@ -1102,13 +1250,15 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                             <option key={option} value={option}>{option}</option>
                           ))}
                         </select>
+                        </div>
+                        <div className="hidden print:block text-center">{item.result || ''}</div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="mt-4">
+            <div className="mt-4 print:hidden">
               <label htmlFor="visualInspectionComments" className="form-label">Comments:</label>
               <textarea
                 id="visualInspectionComments"
@@ -1118,6 +1268,24 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                 rows={3}
                 className={`form-textarea w-full mt-1 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
+            </div>
+            
+            {/* Print-only Visual Inspection Comments table */}
+            <div className="hidden print:block">
+              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Visual Inspection Comments</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[60px] align-top">
+                      {formData.visualInspectionComments || ''}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </section>
 
@@ -1315,7 +1483,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:hidden test-eqpt-onscreen">
                 <div>
                     <h3 className="font-medium mb-1 text-gray-900 dark:text-white">Megohmmeter:</h3>
                     <div className="grid grid-cols-3 gap-2">
@@ -1333,6 +1501,34 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                     </div>
                 </div>
             </div>
+            
+            {/* Print-only Test Equipment Used table */}
+            <div className="hidden print:block">
+              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Equipment</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Name</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Serial Number</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">AMP ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm font-medium">Megohmmeter</td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm">{formData.testEquipment.megohmmeter.name || ''}</td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm">{formData.testEquipment.megohmmeter.serialNumber || ''}</td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm">{formData.testEquipment.megohmmeter.ampId || ''}</td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm font-medium">TTR Test Set</td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm">{formData.testEquipment.ttrTestSet.name || ''}</td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm">{formData.testEquipment.ttrTestSet.serialNumber || ''}</td>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm">{formData.testEquipment.ttrTestSet.ampId || ''}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
 
           <section className="mb-6">
@@ -1344,8 +1540,26 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                 onChange={(e) => handleChange(e.target.name, e.target.value)} 
                 readOnly={!isEditing} 
                 rows={4} 
-                className={`form-textarea w-full text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`form-textarea w-full text-sm print:hidden ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
+            
+            {/* Print-only Comments table */}
+            <div className="hidden print:block">
+              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Comments</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[80px] align-top">
+                      {formData.comments || ''}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
         </div>
       </div>
@@ -1375,6 +1589,9 @@ if (typeof document !== 'undefined') {
         margin: 0 0 12px 0 !important;
         display: block !important;
       }
+
+      /* Ensure Tailwind print:flex headers render in print (match Panelboard) */
+      .print\\:flex { display: flex !important; }
 
       /* Job info grid: force compact columns */
       section:has(> h2:contains('Job Information')) .grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 8px !important; }
@@ -1434,6 +1651,63 @@ if (typeof document !== 'undefined') {
 
       /* Avoid page breaks mid-section */
       section { page-break-inside: avoid !important; margin-bottom: 14px !important; }
+      
+      /* Hide on-screen grids in print to avoid duplication */
+      .job-info-onscreen, .job-info-onscreen * { display: none !important; }
+
+      .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
+      .nameplate-onscreen, .nameplate-onscreen * { display: none !important; }
+      
+      /* Ensure print-only tables are visible */
+      .hidden.print\\:block { display: block !important; }
+      .hidden.print\\:block * { display: revert !important; }
+      
+      /* Visual & Mechanical table widths for readability */
+      table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
+      table.visual-mechanical-table thead { display: table-header-group !important; }
+      table.visual-mechanical-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+      table.visual-mechanical-table th, table.visual-mechanical-table td { font-size: 8px !important; padding: 2px 3px !important; vertical-align: middle !important; }
+      table.visual-mechanical-table colgroup col:nth-child(1) { width: 6% !important; }
+      table.visual-mechanical-table colgroup col:nth-child(2) { width: 70% !important; }
+      table.visual-mechanical-table colgroup col:nth-child(3) { width: 24% !important; }
+      table.visual-mechanical-table td:nth-child(2) { white-space: normal !important; word-break: break-word !important; }
+
+      /* Nameplate Details table - optimize column widths */
+      table:has(colgroup col[style*="33.33%"]) { table-layout: fixed !important; width: 100% !important; }
+      table:has(colgroup col[style*="33.33%"]) td:nth-child(1) { width: 33.33% !important; min-width: 33.33% !important; max-width: 33.33% !important; }
+      table:has(colgroup col[style*="33.33%"]) td:nth-child(2) { width: 33.33% !important; min-width: 33.33% !important; max-width: 33.33% !important; }
+      table:has(colgroup col[style*="33.33%"]) td:nth-child(3) { width: 33.33% !important; min-width: 33.33% !important; max-width: 33.33% !important; }
+      
+      table:has(colgroup col[style*="12%"]) { table-layout: fixed !important; width: 100% !important; }
+      table:has(colgroup col[style*="12%"]) td:nth-child(1) { width: 12% !important; min-width: 12% !important; max-width: 12% !important; }
+      table:has(colgroup col[style*="12%"]) td:nth-child(2) { width: 18% !important; min-width: 18% !important; max-width: 18% !important; }
+      table:has(colgroup col[style*="12%"]) td:nth-child(3) { width: 16% !important; min-width: 16% !important; max-width: 16% !important; }
+      table:has(colgroup col[style*="12%"]) td:nth-child(4) { width: 16% !important; min-width: 16% !important; max-width: 16% !important; }
+      table:has(colgroup col[style*="12%"]) td:nth-child(5) { width: 16% !important; min-width: 16% !important; max-width: 16% !important; }
+      table:has(colgroup col[style*="12%"]) td:nth-child(6) { width: 9% !important; min-width: 9% !important; max-width: 9% !important; }
+      table:has(colgroup col[style*="12%"]) td:nth-child(7) { width: 9% !important; min-width: 9% !important; max-width: 9% !important; }
+
+      /* PASS/FAIL status styles */
+      .pass-fail-status-box {
+        display: inline-block !important;
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        width: fit-content !important;
+        border-radius: 6px !important;
+        box-sizing: border-box !important;
+        min-width: 60px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color: #fff !important;
+        border: 2px solid transparent !important;
+        float: right !important;
+      }
+      .pass-fail-status-box.pass { background-color: #22c55e !important; border-color: #16a34a !important; }
+      .pass-fail-status-box.fail { background-color: #ef4444 !important; border-color: #dc2626 !important; }
+
+      button { display: none !important; }
     }
   `;
   document.head.appendChild(style);

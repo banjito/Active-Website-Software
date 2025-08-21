@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import _ from 'lodash';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
 
@@ -1764,7 +1765,7 @@ const OilInspectionReport: React.FC = () => {
       <section className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2 mb-8 print:hidden">
           {/* Left Column */}
           <div className="space-y-4 md:col-span-2">
             <div>
@@ -1900,6 +1901,24 @@ const OilInspectionReport: React.FC = () => {
             </div>
           </div>
         </div>
+        <JobInfoPrintTable
+          data={{
+            customer: formData.customer,
+            address: formData.address,
+            jobNumber: formData.jobNumber,
+            technicians: formData.technicians,
+            date: formData.date,
+            identifier: formData.identifier,
+            user: formData.userName,
+            substation: formData.substation,
+            eqptLocation: formData.eqptLocation,
+            temperature: {
+              fahrenheit: formData.temperature.fahrenheit,
+              celsius: formData.temperature.celsius,
+              tcf: formData.temperature.correctionFactor,
+            },
+          }}
+        />
       </section>
 
       {/* Nameplate Data */}

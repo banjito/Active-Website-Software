@@ -5,6 +5,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
+import NameplatePrintTable from './common/NameplatePrintTable';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -858,6 +860,28 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
         </div>
       </div>
       {/* End Print Header */}
+      {/* Print-only Job Information header and table at top */}
+      <div className="hidden print:block w-full h-1 bg-[#f26722] mb-2"></div>
+      <h2 className="hidden print:block text-xl font-semibold mb-2 text-black border-b border-black pb-1">Job Information</h2>
+      <JobInfoPrintTable
+        data={{
+          customer: formData.customer,
+          address: formData.address,
+          jobNumber: formData.jobNumber,
+          technicians: formData.technicians,
+          date: formData.date,
+          identifier: formData.identifier,
+          user: formData.user,
+          substation: formData.substation,
+          eqptLocation: formData.eqptLocation,
+          temperature: {
+            fahrenheit: formData.temperature?.fahrenheit,
+            celsius: formData.temperature?.celsius,
+            tcf: formData.temperature?.tcf,
+            humidity: formData.temperature?.humidity,
+          },
+        }}
+      />
       
       <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
         <div className="max-w-7xl w-full space-y-6">
@@ -917,7 +941,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden">
               <div><label className="form-label">Customer:</label><input type="text" value={formData.customer} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
               <div className="md:col-span-2"><label htmlFor="address" className="form-label">Address:</label><input id="address" type="text" value={formData.address} onChange={(e) => handleChange('address', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
@@ -948,7 +972,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 print:hidden nameplate-onscreen">
               <div><label htmlFor="manufacturer" className="form-label">Manufacturer:</label><input id="manufacturer" type="text" value={formData.manufacturer} onChange={(e) => handleChange('manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div><label htmlFor="catalogNumber" className="form-label">Catalog Number:</label><input id="catalogNumber" type="text" value={formData.catalogNumber} onChange={(e) => handleChange('catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div><label htmlFor="serialNumber" className="form-label">Serial Number:</label><input id="serialNumber" type="text" value={formData.serialNumber} onChange={(e) => handleChange('serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -963,33 +987,72 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
               <div><label htmlFor="mounting" className="form-label">Mounting:</label><input id="mounting" type="text" value={formData.mounting} onChange={(e) => handleChange('mounting', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div><label htmlFor="zoneInterlock" className="form-label">Zone Interlock:</label><input id="zoneInterlock" type="text" value={formData.zoneInterlock} onChange={(e) => handleChange('zoneInterlock', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div><label htmlFor="thermalMemory" className="form-label">Thermal Memory:</label><input id="thermalMemory" type="text" value={formData.thermalMemory} onChange={(e) => handleChange('thermalMemory', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-                       </div>
-                       </div>
+              </div>
+              {/* Print-only 7x2 Nameplate table (14 fields) */}
+              <div className="hidden print:block">
+                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                  <colgroup>
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                  </colgroup>
+                  <tbody>
+                    <tr>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Manufacturer:</div><div className="mt-0">{formData.manufacturer || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Catalog No.:</div><div className="mt-0">{formData.catalogNumber || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Serial Number:</div><div className="mt-0">{formData.serialNumber || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Type:</div><div className="mt-0">{formData.type || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Frame Size (A):</div><div className="mt-0">{formData.frameSize || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">I.C. Rating (kA):</div><div className="mt-0">{formData.icRating || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Trip Unit Type:</div><div className="mt-0">{formData.tripUnitType || ''}</div></td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Rating Plug (A):</div><div className="mt-0">{formData.ratingPlug || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Curve No.:</div><div className="mt-0">{formData.curveNo || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Charge Motor V:</div><div className="mt-0">{formData.chargeMotorVoltage || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Operation:</div><div className="mt-0">{formData.operation || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Mounting:</div><div className="mt-0">{formData.mounting || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Zone Interlock:</div><div className="mt-0">{formData.zoneInterlock || ''}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Thermal Memory:</div><div className="mt-0">{formData.thermalMemory || ''}</div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+          </div>
 
           {/* --- Visual and Mechanical Inspection Section */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 table-fixed visual-mechanical-table">
+                <colgroup>
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '65%' }} />
+                  <col style={{ width: '20%' }} />
+                </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/3">NETA Section</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/2">Description</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-1/6">Results</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={item.id}>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white break-words">{item.id}</td>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">{item.description}</td>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                      <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white break-words">{item.id}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{item.description}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
                         <select
                           value={item.result}
                           onChange={(e) => handleChange(`visualInspectionItems[${index}].result`, e.target.value)}
                           disabled={!isEditing}
-                          className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          className={`block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           <option value=""></option>
                           {visualInspectionResultsOptions.map(option => (
@@ -1002,6 +1065,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                 </tbody>
               </table>
             </div>
+            {/* removed duplicate JobInfoPrintTable here; top print table covers job info */}
           </div>
 
           {/* --- Device Settings Section */}
@@ -1140,8 +1204,8 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Contact/Pole Resistance</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+            <div className="overflow-x-auto" style={{ overflow: 'visible' }}>
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ pageBreakInside: 'auto' }}>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
                     <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Contact Resistance</th>
@@ -1459,7 +1523,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Trip Testing</h2>
 
             {/* Tested Settings Table */}
-            <div className="mb-4">
+            <div className="mb-2" style={{ pageBreakInside: 'avoid' }}>
               <h3 className="text-lg font-medium mb-2 text-center dark:text-white">Tested Settings</h3>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
@@ -1522,8 +1586,8 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             </div>
 
             {/* Secondary Injection Table */}
-            <div>
-              <h3 className="text-lg font-medium mb-2 text-center dark:text-white">Secondary Injection</h3>
+            <div className="secondary-injection-section">
+              <h3 className="text-lg font-medium mb-1 text-center dark:text-white">Secondary Injection</h3>
               <div className="overflow-x-auto">
                 <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 secondary-injection-table">
                   <colgroup>
@@ -1655,7 +1719,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           </div>
 
           {/* --- Test Equipment Used Section --- */}
-          <div className="mb-6">
+          <div className="mb-6 print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1672,7 +1736,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                     </div>
 
           {/* --- Comments Section --- */}
-          <div className="mb-6">
+          <div className="mb-6 print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <textarea
@@ -1683,6 +1747,50 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
               className={`form-textarea w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
+
+          {/* Print-Only Test Equipment Used Table */}
+          <div className="hidden print:block">
+            <h2 className="text-xl font-semibold mb-4 text-black border-b border-black pb-2 font-bold">Test Equipment Used</h2>
+            <table className="w-full border-collapse border border-black mb-6">
+              <thead>
+                <tr>
+                  <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-gray-100">Equipment</th>
+                  <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-gray-100">Serial Number</th>
+                  <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-gray-100">AMP ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.megohmmeter.name || 'Megohmmeter'}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.megohmmeter.serialNumber}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.megohmmeter.ampId}</td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.lowResistanceOhmmeter.name || 'Low-Res Ohmmeter'}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.lowResistanceOhmmeter.serialNumber}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.lowResistanceOhmmeter.ampId}</td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.secondaryInjectionTestSet.name || 'Secondary Inj Test Set'}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.secondaryInjectionTestSet.serialNumber}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.secondaryInjectionTestSet.ampId}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* Print-Only Comments Table (immediately under Test Equipment) */}
+            <h2 className="text-xl font-semibold mb-4 text-black border-b border-black pb-2 font-bold">Comments</h2>
+            <table className="w-full border-collapse border border-black mb-6">
+              <tbody>
+                <tr>
+                  <td className="border border-black px-4 py-8 text-sm align-top" style={{minHeight: '150px', height: '150px'}}>
+                    {formData.comments}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
         </div>
       </div>
 
@@ -1759,7 +1867,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           .print\\:font-bold { font-weight: bold !important; }
           .print\\:text-center { text-align: center !important; }
           
-          table { border-collapse: collapse; width: 100%; }
+          table { border-collapse: collapse; width: 100%; page-break-after: auto !important; }
           th, td { border: 1px solid black !important; padding: 4px !important; }
           th { background-color: #f0f0f0 !important; font-weight: bold !important; }
           
@@ -1792,38 +1900,49 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           
           /* Hide interactive elements */
           button:not(.print-visible) { display: none !important; }
+
+          /* Ensure elements with hidden print:block are visible when printing */
+          .hidden.print\:block { display: block !important; }
           
-          /* Section styling */
-          section { break-inside: avoid !important; margin-bottom: 20px !important; }
+          /* Allow natural flow across pages and avoid flex/grid print issues */
+          section { margin-bottom: 16px !important; }
+          .overflow-x-auto { overflow: visible !important; }
+          .flex { display: block !important; }
+          .grid { display: block !important; }
+          table { page-break-inside: auto !important; }
           
           /* Ensure all text is black for maximum readability */
           * { color: black !important; }
           
-          /* Page setup */
+          /* Page setup for two full pages */
           @page { 
             margin: 0.5in !important; 
-            size: A4 !important;
+            size: 8.5in 11in !important;
           }
           
-          /* Fix PDF cutoff issues */
           body {
             margin: 0 !important;
             padding: 0 !important;
-            min-height: 100vh !important;
+            min-height: auto !important;
           }
           
           .max-w-7xl {
             margin: 0 !important;
-            padding: 20px !important;
-            min-height: 100vh !important;
+            padding: 10px 20px 10px 20px !important;
+            min-height: auto !important;
           }
           
-          /* Ensure proper page breaks */
-          .mb-6 {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-            margin-bottom: 20px !important;
-          }
+          /* Reduce spacing to fit more content and prevent cutoff */
+          .mb-6 { margin-bottom: 6px !important; }
+          h2 { margin-bottom: 6px !important; margin-top: 8px !important; }
+          h3 { margin-bottom: 4px !important; margin-top: 6px !important; }
+          table { width: 100% !important; margin-bottom: 4px !important; }
+          thead { display: table-header-group !important; }
+          tbody { display: table-row-group !important; }
+          tfoot { display: table-footer-group !important; }
+
+          /* Minimize spacing around Secondary Injection */
+          .secondary-injection-section { margin-bottom: 8px !important; margin-top: 4px !important; }
           
           /* Force input boxes to stay within their cells */
           .max-w-7xl table input {
@@ -1881,8 +2000,12 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           .ins-res-table col:nth-child(7) { width: 12.5% !important; }
           .ins-res-table col:nth-child(8) { width: 9% !important; }
           
-          /* Secondary Injection table explicit widths for PDF */
-          .secondary-injection-table { table-layout: fixed !important; width: 100% !important; }
+          /* Secondary Injection table - make extremely compact */
+          .secondary-injection-table { 
+            table-layout: fixed !important; 
+            width: 100% !important;
+            font-size: 6px !important;
+          }
           .secondary-injection-table col:nth-child(1) { width: 8% !important; }
           .secondary-injection-table col:nth-child(2),
           .secondary-injection-table col:nth-child(3) { width: 10% !important; }
@@ -1893,6 +2016,26 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           .secondary-injection-table col:nth-child(8) { width: 12% !important; }
           .secondary-injection-table col:nth-child(9),
           .secondary-injection-table col:nth-child(10) { width: 10% !important; }
+
+          /* Ultra compact Secondary Injection table */
+          .secondary-injection-table th, .secondary-injection-table td {
+            padding: 1px 1px !important;
+            font-size: 6px !important;
+            line-height: 1.1 !important;
+            height: auto !important;
+          }
+          /* Ensure last table on page doesn't get clipped by bottom margin */
+          .secondary-injection-table { margin-bottom: 0 !important; }
+          .secondary-injection-table input, .secondary-injection-table select {
+            font-size: 6px !important;
+            padding: 1px !important;
+            height: 14px !important;
+            min-height: 14px !important;
+          }
+          .secondary-injection-section h3 { 
+            margin: 4px 0 2px 0 !important; 
+            font-size: 10px !important;
+          }
         }
       `}</style>
 

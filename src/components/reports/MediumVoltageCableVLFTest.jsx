@@ -25,6 +25,7 @@ import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '../ui/Label';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Types
 const TestStatus = {
@@ -1253,7 +1254,7 @@ const MediumVoltageCableVLFTest = () => {
             // Create the asset with correct structure
             const assetData = {
                               name: getAssetName(reportSlug, formData.identifier || formData.location || ''),
-              file_url: `report:/jobs/${effectiveJobId}/medium-voltage-cable-vlf-test/${result.data[0].id}`,
+              file_url: `report:/jobs/${effectiveJobId}/${reportSlug}/${result.data[0].id}`,
               user_id: user.id
             };
             
@@ -1449,9 +1450,27 @@ const MediumVoltageCableVLFTest = () => {
           /* Section styling */
           section { break-inside: avoid !important; margin-bottom: 20px !important; }
           .job-info-section .grid { display: grid !important; }
-          .nameplate-section .grid { display: grid !important; }
+          /* Do NOT force on-screen nameplate/cable grids to show in print */
+          /* We only want the compact table to print */
+          .nameplate-section .grid { display: none !important; }
+          .nameplate-section .grid * { display: none !important; }
           .insulation-resistance-section table { table-layout: fixed !important; width: 100% !important; }
           .insulation-resistance-section th, .insulation-resistance-section td { white-space: normal !important; word-break: break-word !important; vertical-align: middle !important; }
+          
+          /* Hide on-screen elements in print */
+          .cable-termination-onscreen, .cable-termination-onscreen * { display: none !important; }
+          /* Extra guard to prevent any residual flex/inputs printing in this section */
+          .nameplate-section input, 
+          .nameplate-section select, 
+          .nameplate-section textarea, 
+          .nameplate-section label, 
+          .nameplate-section .flex { display: none !important; }
+          .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
+          .conclusion-onscreen, .conclusion-onscreen * { display: none !important; }
+          .recommendations-onscreen, .recommendations-onscreen * { display: none !important; }
+          .comments-onscreen, .comments-onscreen * { display: none !important; }
+          .job-info-onscreen, .job-info-onscreen * { display: none !important; }
+          .shield-continuity-onscreen, .shield-continuity-onscreen * { display: none !important; }
           
           /* Ensure all text is black for maximum readability */
           * { color: black !important; }
@@ -1731,7 +1750,7 @@ const MediumVoltageCableVLFTest = () => {
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
         <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
-          NETA - ATS 7.3.3
+          {isMTSRoute ? 'NETA - MTS 7.3.3' : 'NETA - ATS 7.3.3'}
           <div className="mt-2">
             <div
               className="pass-fail-status-box"
@@ -1770,7 +1789,8 @@ const MediumVoltageCableVLFTest = () => {
       <section className="mb-6 job-info-section">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Details</h2>
-        <div className="grid grid-cols-2 gap-6">
+                {/* On-screen form - hidden in print */}
+        <div className="grid grid-cols-2 gap-6 print:hidden job-info-onscreen">
           {/* Left Column */}
             <div>
             <div className="mb-4 flex">
@@ -1940,15 +1960,38 @@ const MediumVoltageCableVLFTest = () => {
                 />
               </div>
             </div>
+            </div>
           </div>
+        {/* Print-only JobInfoPrintTable */}
+        <div className="hidden print:block">
+          <JobInfoPrintTable
+            data={{
+              customer: formData?.customerName,
+              address: formData?.siteAddress,
+              jobNumber: formData?.jobNumber,
+              technicians: Array.isArray(formData?.reportInfo?.technicians) ? formData.reportInfo.technicians.join(', ') : formData?.reportInfo?.technicians,
+              date: formData?.testDate || formData?.reportDate,
+              identifier: formData?.identifier,
+              user: formData?.testedBy || formData?.contactPerson,
+              substation: formData?.location,
+              eqptLocation: formData?.equipmentLocation,
+              temperature: {
+                fahrenheit: formData?.temperature?.fahrenheit,
+                celsius: formData?.temperature?.celsius,
+                tcf: formData?.temperature?.tcf,
+                humidity: formData?.temperature?.humidity,
+              },
+            }}
+          />
         </div>
       </section>
       
-      {/* Cable Information */}
+            {/* Cable Information */}
       <section className="mb-6 nameplate-section">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Cable & Termination Data</h2>
-        <div className="grid grid-cols-1 gap-6">
+        {/* On-screen form - hidden in print */}
+        <div className="grid grid-cols-1 gap-6 print:hidden cable-termination-onscreen">
           <div className="grid grid-cols-2 gap-x-6 gap-y-3">
             <div className="flex items-center">
               <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">Tested From</label>
@@ -1969,6 +2012,16 @@ const MediumVoltageCableVLFTest = () => {
                   type="text"
                   value={formData.cableInfo?.manufacturer || ''}
                   onChange={(e) => handleChange('cableInfo', {...formData.cableInfo, manufacturer: e.target.value})}
+                  readOnly={!isEditMode}
+                className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+            <div className="flex items-center">
+              <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">Cable Operating Voltage (kV)</label>
+                <input
+                  type="text"
+                value={formData.cableInfo?.operatingVoltage || ''}
+                onChange={(e) => handleChange('cableInfo', {...formData.cableInfo, operatingVoltage: e.target.value})}
                   readOnly={!isEditMode}
                 className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
@@ -2062,7 +2115,7 @@ const MediumVoltageCableVLFTest = () => {
                 onChange={(e) => handleChange('cableInfo', {...formData.cableInfo, to: e.target.value})}
                 readOnly={!isEditMode}
                 className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              />
+                />
           </div>
           
             <div className="flex items-center">
@@ -2107,6 +2160,91 @@ const MediumVoltageCableVLFTest = () => {
                 />
             </div>
           </div>
+        </div>
+        
+        {/* Print-only table */}
+        <div className="hidden print:block">
+          <table className="w-full border border-gray-300 print:border-black">
+            <colgroup>
+              <col style={{width: '20%'}} />
+              <col style={{width: '20%'}} />
+              <col style={{width: '20%'}} />
+              <col style={{width: '20%'}} />
+              <col style={{width: '20%'}} />
+            </colgroup>
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Tested From</div>
+                  <div>{formData.cableInfo?.testedFrom || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Manufacturer</div>
+                  <div>{formData.cableInfo?.manufacturer || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Cable Type</div>
+                  <div>{formData.cableType || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Conductor Size</div>
+                  <div>{formData.cableInfo?.size || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">From</div>
+                  <div>{formData.cableInfo?.from || ''}</div>
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Cable Operating Voltage (kV)</div>
+                  <div>{formData.cableInfo?.operatingVoltage || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Cable Rated Voltage (kV)</div>
+                  <div>{formData.cableInfo?.voltageRating || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Length (ft)</div>
+                  <div>{formData.cableLength || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Insulation Type</div>
+                  <div>{formData.cableInfo?.insulation || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Conductor Material</div>
+                  <div>{formData.cableInfo?.conductorMaterial || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">To</div>
+                  <div>{formData.cableInfo?.to || ''}</div>
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Insulation Thickness</div>
+                  <div>{formData.cableInfo?.insulationThickness || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Termination Data</div>
+                  <div>{formData.terminationData?.terminationData || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Termination Data 2</div>
+                  <div>{formData.terminationData?.terminationData2 || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Rated Voltage (kV)</div>
+                  <div>{formData.terminationData?.ratedVoltage || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold">Rated Voltage 2 (kV)</div>
+                  <div>{formData.terminationData?.ratedVoltage2 || ''}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -2279,7 +2417,8 @@ const MediumVoltageCableVLFTest = () => {
       <section className="mb-6 shield-continuity-section">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Shield Continuity</h2>
-        <div className="overflow-x-auto print:hidden ir-screen">
+        {/* On-screen form - hidden in print */}
+        <div className="overflow-x-auto print:hidden shield-continuity-onscreen">
           <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
             <thead>
               <tr>
@@ -2333,7 +2472,29 @@ const MediumVoltageCableVLFTest = () => {
               </tr>
             </tbody>
           </table>
-            </div>
+        </div>
+        
+        {/* Print-only table */}
+        <div className="hidden print:block">
+          <table className="w-full border border-gray-300 print:border-black">
+            <thead>
+              <tr>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">A Phase</th>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">B Phase</th>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">C Phase</th>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Units</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.shieldContinuity.phaseA || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.shieldContinuity.phaseB || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.shieldContinuity.phaseC || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.shieldContinuity.unit || ''}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       {/* Electrical Tests - Insulation Resistance Values */}
@@ -3005,7 +3166,8 @@ const MediumVoltageCableVLFTest = () => {
           {/* Test Equipment */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Equipment Used</h3>
-            <div className="grid grid-cols-3 gap-4">
+            {/* On-screen form - hidden in print */}
+            <div className="grid grid-cols-3 gap-4 print:hidden test-eqpt-onscreen">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ohmmeter</label>
                 <input
@@ -3097,45 +3259,127 @@ const MediumVoltageCableVLFTest = () => {
                 />
               </div>
             </div>
+            
+            {/* Print-only table */}
+            <div className="hidden print:block">
+              <table className="w-full border border-gray-300 print:border-black">
+                <thead>
+                  <tr>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Equipment</th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Make/Model</th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Serial Number</th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">AMP ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black font-semibold">Ohmmeter</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmmeter || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmSerialNumber || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmAmpId || ''}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black font-semibold">Megohmmeter</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmmeter || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmSerialNumber || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmAmpId || ''}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black font-semibold">VLF Test Set</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfHipot || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfSerialNumber || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfAmpId || ''}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           
           {/* Conclusion */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Conclusion</h3>
-            <textarea
-              value={formData.conclusion || ''}
-              onChange={(e) => handleChange('conclusion', e.target.value)}
-              readOnly={!isEditMode}
-              rows={4}
-              className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              placeholder="Enter test conclusion"
-            />
+            {/* On-screen form - hidden in print */}
+            <div className="print:hidden conclusion-onscreen">
+              <textarea
+                value={formData.conclusion || ''}
+                onChange={(e) => handleChange('conclusion', e.target.value)}
+                readOnly={!isEditMode}
+                rows={4}
+                className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                placeholder="Enter test conclusion"
+              />
+            </div>
+            
+            {/* Print-only table */}
+            <div className="hidden print:block">
+              <table className="w-full border border-gray-300 print:border-black">
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
+                      {formData.conclusion || 'No conclusion provided'}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           
           {/* Recommendations */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Recommendations</h3>
-            <textarea
-              value={formData.recommendations || ''}
-              onChange={(e) => handleChange('recommendations', e.target.value)}
-              readOnly={!isEditMode}
-              rows={4}
-              className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              placeholder="Enter recommendations"
-            />
+            {/* On-screen form - hidden in print */}
+            <div className="print:hidden recommendations-onscreen">
+              <textarea
+                value={formData.recommendations || ''}
+                onChange={(e) => handleChange('recommendations', e.target.value)}
+                readOnly={!isEditMode}
+                rows={4}
+                className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                placeholder="Enter recommendations"
+              />
+            </div>
+            
+            {/* Print-only table */}
+            <div className="hidden print:block">
+              <table className="w-full border border-gray-300 print:border-black">
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
+                      {formData.recommendations || 'No recommendations provided'}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           
           {/* Comments */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Additional Comments</h3>
-            <textarea
-              value={formData.comments || ''}
-              onChange={(e) => handleChange('comments', e.target.value)}
-              readOnly={!isEditMode}
-              rows={4}
-              className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              placeholder="Enter any additional comments"
-            />
+            {/* On-screen form - hidden in print */}
+            <div className="print:hidden comments-onscreen">
+              <textarea
+                value={formData.comments || ''}
+                onChange={(e) => handleChange('comments', e.target.value)}
+                readOnly={!isEditMode}
+                rows={4}
+                className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                placeholder="Enter any additional comments"
+              />
+            </div>
+            
+            {/* Print-only table */}
+            <div className="hidden print:block">
+              <table className="w-full border border-gray-300 print:border-black">
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
+                      {formData.comments || 'No additional comments'}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>

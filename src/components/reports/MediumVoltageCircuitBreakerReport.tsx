@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Temperature conversion and correction factor lookup tables (copied from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -679,7 +680,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print:hidden job-info-onscreen">
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer:</label>{renderInput("customer", "", "text", true)}</div>
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #:</label>{renderInput("jobNumber", "", "text", true)}</div>
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address:</label>{renderInput("address", "", "text", true)}</div>
@@ -690,7 +691,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Eqpt. Location:</label>{renderInput("eqptLocation")}</div>
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier:</label>{renderInput("identifier")}</div>
             </div>
-            <div className="grid grid-cols-4 gap-4 mt-4">
+            <div className="grid grid-cols-4 gap-4 mt-4 print:hidden job-info-onscreen">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. °F:</label>
                 <input
@@ -725,13 +726,27 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 {renderInput("humidity", "", "number")}
               </div>
             </div>
+            <JobInfoPrintTable
+              data={{
+                customer: formData.customer,
+                address: formData.address,
+                jobNumber: formData.jobNumber,
+                technicians: formData.technicians,
+                date: formData.date,
+                identifier: formData.identifier,
+                user: formData.user,
+                substation: formData.substation,
+                eqptLocation: formData.eqptLocation,
+                temperature: { ...formData.temperature, humidity: formData.humidity }
+              }}
+            />
           </section>
 
           {/* Nameplate Data */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print:hidden nameplate-onscreen">
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer:</label>{renderInput("manufacturer")}</div>
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">I.C. Rating (kA):</label>{renderInput("icRating")}</div>
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog Number:</label>{renderInput("catalogNumber")}</div>
@@ -743,6 +758,37 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturing Date:</label>{renderInput("manufacturingDate")}</div>
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">MVA Rating:</label>{renderInput("mvaRating")}</div>
             </div>
+            {/* Print-only Nameplate Data Table */}
+            <div className="hidden print:block">
+              <table className="w-full border-collapse border border-gray-300 print:border-black">
+                <colgroup>
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Manufacturer:</div><div className="text-xs">{formData.manufacturer || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">I.C. Rating (kA):</div><div className="text-xs">{formData.icRating || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Catalog Number:</div><div className="text-xs">{formData.catalogNumber || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Rated Voltage (kV):</div><div className="text-xs">{formData.ratedVoltage || ''}</div></td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Serial Number:</div><div className="text-xs">{formData.serialNumber || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Operating Voltage (kV):</div><div className="text-xs">{formData.operatingVoltage || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Type:</div><div className="text-xs">{formData.type || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Ampacity (A):</div><div className="text-xs">{formData.ampacity || ''}</div></td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Manufacturing Date:</div><div className="text-xs">{formData.manufacturingDate || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">MVA Rating:</div><div className="text-xs">{formData.mvaRating || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black"></td>
+                    <td className="p-2 border border-gray-300 print:border-black"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
 
           {/* Visual and Mechanical Inspection */}
@@ -750,7 +796,12 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+                <colgroup>
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '70%' }} />
+                  <col style={{ width: '18%' }} />
+                </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
@@ -762,9 +813,10 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                   {visualInspectionItemsList.map(item => (
                     <tr key={item.id}>
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
-                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{item.description}</td>
+                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{item.description}</td>
                       <td className="px-3 py-2 whitespace-nowrap">
-                        {renderSelect(`visualMechanicalInspection.${item.id}`, visualInspectionOptions)}
+                        <div className="print:hidden">{renderSelect(`visualMechanicalInspection.${item.id}`, visualInspectionOptions)}</div>
+                        <div className="hidden print:block text-center">{formData.visualMechanicalInspection[item.id] || ''}</div>
                       </td>
                     </tr>
                   ))}
@@ -914,7 +966,10 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     </td>
                     {/* Units */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderSelect("insulationResistanceMeasured.poleToPoleUnits", insulationResistanceUnits, false, "w-full text-center")}
+                      <div className="print:hidden">
+                        {renderSelect("insulationResistanceMeasured.poleToPoleUnits", insulationResistanceUnits, false, "w-full text-center")}
+                      </div>
+                      <div className="hidden print:block text-center">{formData.insulationResistanceMeasured.poleToPoleUnits}</div>
                     </td>
                   </tr>
                   {/* Pole to Frame (Closed) */}
@@ -957,7 +1012,10 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     </td>
                     {/* Units */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderSelect("insulationResistanceMeasured.poleToFrameUnits", insulationResistanceUnits, false, "w-full text-center")}
+                      <div className="print:hidden">
+                        {renderSelect("insulationResistanceMeasured.poleToFrameUnits", insulationResistanceUnits, false, "w-full text-center")}
+                      </div>
+                      <div className="hidden print:block text-center">{formData.insulationResistanceMeasured.poleToFrameUnits}</div>
                     </td>
                   </tr>
                   {/* Line to Load (Open) */}
@@ -1000,7 +1058,10 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     </td>
                     {/* Units */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderSelect("insulationResistanceMeasured.lineToLoadUnits", insulationResistanceUnits, false, "w-full text-center")}
+                      <div className="print:hidden">
+                        {renderSelect("insulationResistanceMeasured.lineToLoadUnits", insulationResistanceUnits, false, "w-full text-center")}
+                      </div>
+                      <div className="hidden print:block text-center">{formData.insulationResistanceMeasured.lineToLoadUnits}</div>
                     </td>
                   </tr>
                 </tbody>
@@ -1205,15 +1266,29 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
-            <textarea
-              name="comments"
-              value={formData.comments}
-              onChange={handleInputChange}
-              placeholder="Enter any comments or notes here..."
-              readOnly={!isEditing}
-              rows={6}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''} print:bg-white print:border-black print:text-black`}
-            />
+            <div className="print:hidden comments-onscreen">
+              <textarea
+                name="comments"
+                value={formData.comments}
+                onChange={handleInputChange}
+                placeholder="Enter any comments or notes here..."
+                readOnly={!isEditing}
+                rows={6}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              />
+            </div>
+            <div className="hidden print:block">
+              <table className="w-full border-collapse border border-gray-300 print:border-black">
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">Comments</div>
+                      <div className="text-xs">{formData.comments || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
         </div>
       </div>
@@ -1285,8 +1360,9 @@ if (typeof document !== 'undefined') {
         -moz-appearance: textfield !important;
       }
       
-      /* Hide interactive elements */
+      /* Hide interactive elements (but keep print header logo) */
       button:not(.print-visible) { display: none !important; }
+      .print\:flex img { display: inline-block !important; }
       
       /* Section styling */
       section { break-inside: avoid !important; margin-bottom: 20px !important; }
@@ -1298,6 +1374,10 @@ if (typeof document !== 'undefined') {
         min-height: 120px !important;
         resize: none !important;
       }
+
+      /* Hide on-screen job info unit labels/inputs in print */
+      .job-info-onscreen span { display: none !important; }
+      .job-info-onscreen input { display: none !important; }
       
       /* Contact Resistance and Insulation Resistance table styling for print */
       .section-contact-resistance table,

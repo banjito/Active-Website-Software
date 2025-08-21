@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import { FileText, Save, ChevronLeft, UploadIcon, Pencil as PencilIcon } from 'lucide-react';
 import { navigateAfterSave } from '../reports/ReportUtils';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // UI Components
 import { Button } from '../ui/Button';
@@ -786,7 +787,7 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
       <section className="mb-6 job-info-section">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
             <div> {/* Left Column */}
             <div className="mb-4 flex">
               <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">Customer</label>
@@ -848,16 +849,41 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
             </div></div>
           </div>
         </div>
+        
+        {/* Print-only JobInfoPrintTable */}
+        <div className="hidden print:block">
+          <JobInfoPrintTable
+            data={{
+              customer: formData.customerName,
+              address: formData.siteAddress,
+              jobNumber: formData.jobNumber,
+              technicians: formData.testedBy,
+              date: formData.testDate,
+              identifier: formData.identifier,
+              user: formData.contactPerson,
+              substation: formData.location,
+              eqptLocation: formData.equipmentLocation,
+              temperature: {
+                fahrenheit: formData.temperature.fahrenheit,
+                celsius: formData.temperature.celsius,
+                tcf: formData.temperature.tcf,
+                humidity: formData.temperature.humidity,
+              },
+            }}
+          />
+        </div>
       </section>
       
       {/* Cable Information (acts as Nameplate for this report) */}
       <section className="mb-6 nameplate-section">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Cable & Termination Data</h2>
-        <div className="grid grid-cols-1 gap-6">
+        {/* On-screen form - hidden in print */}
+        <div className="grid grid-cols-1 gap-6 print:hidden cable-termination-onscreen">
           <div className="grid grid-cols-2 gap-x-6 gap-y-3">
             {[ { label: "Tested From", field: "testedFrom", section: "cableInfo" }, { label: "", field: "", section: "" },
-               { label: "Manufacturer", field: "manufacturer", section: "cableInfo" }, { label: "Cable Rated Voltage (kV)", field: "voltageRating", section: "cableInfo" },
+               { label: "Manufacturer", field: "manufacturer", section: "cableInfo" }, { label: "Cable Operating Voltage (kV)", field: "operatingVoltage", section: "cableInfo" },
+               { label: "Cable Rated Voltage (kV)", field: "voltageRating", section: "cableInfo" }, { label: "", field: "", section: "" },
                { label: "Cable Type", field: "cableType", section: null }, { label: "Length (ft)", field: "cableLength", section: null },
                { label: "Conductor Size", field: "size", section: "cableInfo" }, { label: "Insulation Type", field: "insulation", section: "cableInfo" },
                { label: "Conductor Material", field: "conductorMaterial", section: "cableInfo" }, { label: "Insulation Thickness", field: "insulationThickness", section: "cableInfo" },
@@ -877,6 +903,91 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
               ) : <div key={idx}></div>
             ))}
           </div>
+        </div>
+        
+        {/* Print-only table - 5 columns wide, 3 rows down */}
+        <div className="hidden print:block">
+          <table className="w-full border border-gray-300 print:border-black">
+            <colgroup>
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Tested From:</div>
+                  <div className="mt-1">{formData.cableInfo?.testedFrom || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Manufacturer:</div>
+                  <div className="mt-1">{formData.cableInfo?.manufacturer || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Cable Operating Voltage (kV):</div>
+                  <div className="mt-1">{formData.cableInfo?.operatingVoltage || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Cable Rated Voltage (kV):</div>
+                  <div className="mt-1">{formData.cableInfo?.voltageRating || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Cable Type:</div>
+                  <div className="mt-1">{formData.cableType || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Length (ft):</div>
+                  <div className="mt-1">{formData.cableLength || ''}</div>
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Conductor Size:</div>
+                  <div className="mt-1">{formData.cableInfo?.size || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Insulation Type:</div>
+                  <div className="mt-1">{formData.cableInfo?.insulation || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Conductor Material:</div>
+                  <div className="mt-1">{formData.cableInfo?.conductorMaterial || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Insulation Thickness:</div>
+                  <div className="mt-1">{formData.cableInfo?.insulationThickness || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">From:</div>
+                  <div className="mt-1">{formData.cableInfo?.from || ''}</div>
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">To:</div>
+                  <div className="mt-1">{formData.cableInfo?.to || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Termination Data:</div>
+                  <div className="mt-1">{formData.terminationData?.terminationData || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Termination Data 2:</div>
+                  <div className="mt-1">{formData.terminationData?.terminationData2 || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Rated Voltage (kV):</div>
+                  <div className="mt-1">{formData.terminationData?.ratedVoltage || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Rated Voltage 2 (kV):</div>
+                  <div className="mt-1">{formData.terminationData?.ratedVoltage2 || ''}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -1060,7 +1171,8 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
       <section className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* On-screen form - hidden in print */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden test-eqpt-onscreen">
           {[ {label: "Ohmmeter", field: "ohmmeter"}, {label: "Serial Number", field: "ohmSerialNumber"}, {label: "AMP ID", field: "ohmAmpId"},
              {label: "Megohmmeter", field: "megohmmeter"}, {label: "Serial Number", field: "megohmSerialNumber"}, {label: "AMP ID", field: "megohmAmpId"},
              {label: "VLF Hipot", field: "vlfHipot"}, {label: "Serial Number", field: "vlfSerialNumber"}, {label: "AMP ID", field: "vlfAmpId"}
@@ -1071,14 +1183,62 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
             </div>
           ))}
         </div>
+        
+        {/* Print-only table */}
+        <div className="hidden print:block">
+          <table className="w-full border border-gray-300 print:border-black">
+            <thead>
+              <tr>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Equipment</th>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Make/Model</th>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Serial Number</th>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">AMP ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black font-semibold">Ohmmeter</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmmeter || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmSerialNumber || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmAmpId || ''}</td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black font-semibold">Megohmmeter</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmmeter || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmSerialNumber || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmAmpId || ''}</td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black font-semibold">VLF Hipot</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfHipot || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfSerialNumber || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfAmpId || ''}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
       
       {/* Comments */}
       <section className="mb-6 comments-section">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
-        <div>
+        {/* On-screen form - hidden in print */}
+        <div className="print:hidden comments-onscreen">
           <textarea value={formData.comments || ''} onChange={(e) => handleChange('comments', e.target.value)} readOnly={!isEditMode} rows={4} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/>
+        </div>
+        
+        {/* Print-only table */}
+        <div className="hidden print:block">
+          <table className="w-full border border-gray-300 print:border-black">
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
+                  {formData.comments || 'No comments'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
         </div>
@@ -1195,6 +1355,12 @@ if (typeof document !== 'undefined') {
       .job-info-section .flex-1 { border-bottom: 1px solid black !important; }
       .job-info-section input { background: white !important; border: none !important; width: 100% !important; padding: 0 !important; height: 14px !important; font-size: 11px !important; }
       .job-info-section input[type="date"] { height: 16px !important; }
+      
+      /* Hide on-screen elements in print */
+      .cable-termination-onscreen, .cable-termination-onscreen * { display: none !important; }
+      .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
+      .comments-onscreen, .comments-onscreen * { display: none !important; }
+      .job-info-onscreen, .job-info-onscreen * { display: none !important; }
       .job-info-section .w-16 { width: 50px !important; }
       .job-info-section span { margin: 0 6px !important; }
 

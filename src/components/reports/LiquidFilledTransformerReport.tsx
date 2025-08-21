@@ -6,6 +6,7 @@ import { navigateAfterSave } from './ReportUtils';
 import _ from 'lodash';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -1071,7 +1072,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
             <section className="mb-6">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
                 <div><label className="form-label">Customer:</label><input type="text" value={formData.customer} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
                 <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
                 <div><label className="form-label">Technicians:</label><input type="text" value={formData.technicians} onChange={(e) => handleChange(null, 'technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -1097,7 +1098,6 @@ const LiquidFilledTransformerReport: React.FC = () => {
                     value={(formData.nameplateData && (formData as any).nameplateData?.indicatorGauges?.humidity) || ''}
                     onChange={(e) => {
                       const humidity = e.target.value;
-                      // Store humidity alongside other indicator gauge values in nameplateData
                       const ig = { ...(formData.nameplateData.indicatorGauges as any), humidity };
                       handleNestedChange('nameplateData', 'indicatorGauges', ig);
                     }}
@@ -1110,13 +1110,34 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 <div><label className="form-label">Eqpt. Location:</label><input type="text" value={formData.eqptLocation} onChange={(e) => handleChange(null, 'eqptLocation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                 <div className="md:col-span-2"><label className="form-label">User:</label><input type="text" value={formData.userName} onChange={(e) => handleChange(null, 'userName', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               </div>
+              <div className="hidden print:block">
+                <JobInfoPrintTable
+                  data={{
+                    customer: formData.customer,
+                    address: formData.address,
+                    jobNumber: formData.jobNumber,
+                    technicians: formData.technicians,
+                    date: formData.date,
+                    identifier: formData.identifier,
+                    user: formData.userName,
+                    substation: formData.substation,
+                    eqptLocation: formData.eqptLocation,
+                    temperature: {
+                      fahrenheit: formData.temperature?.fahrenheit,
+                      celsius: formData.temperature?.celsius,
+                      tcf: formData.temperature?.correctionFactor,
+                      humidity: undefined,
+                    },
+                  }}
+                />
+              </div>
             </section>
             
             {/* Nameplate Data */}
             <section className="mb-6 nameplate-section">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-4 print:hidden nameplate-onscreen">
                 {/* Row 1: Manufacturer, Catalog, Serial */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
@@ -1150,7 +1171,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mt-4">
+              <div className="grid grid-cols-3 gap-4 mt-4 print:hidden nameplate-onscreen">
                 {/* Row 2: KVA, Temp Rise, Impedance */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">KVA</label>
@@ -1184,7 +1205,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-6">
+              <div className="mt-6 print:hidden nameplate-onscreen">
                 <div className="grid grid-cols-[100px_1fr_1fr_1fr] gap-4 items-center">
                   <div></div>
                   <div className="text-center text-sm font-medium text-gray-700 dark:text-gray-300">Volts</div>
@@ -1298,7 +1319,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
               </div>
 
               {/* Tap Configuration */}
-              <div className="mt-6 border-t dark:border-gray-700 pt-4 tap-configuration-section">
+              <div className="mt-6 border-t dark:border-gray-700 pt-4 tap-configuration-section print:hidden nameplate-onscreen">
                 <h3 className="text-md font-semibold mb-4 text-gray-800 dark:text-white">Tap Configuration</h3>
                 <div className="space-y-3">
                   <div className="flex items-center">
@@ -1379,124 +1400,295 @@ const LiquidFilledTransformerReport: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
-              {/* Indicator Gauge Values */}
-              <div className="mt-6 border-t dark:border-gray-700 pt-4 indicator-gauges-section">
-                <h3 className="text-md font-semibold mb-4 text-gray-800 dark:text-white">Indicator Gauge Values</h3>
-                <div className="grid grid-cols-3 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Oil Level</label>
-                    <input
-                      type="text"
-                      value={formData.nameplateData.indicatorGauges.oilLevel}
-                      onChange={(e) => handleDeepNestedChange('nameplateData', 'indicatorGauges', 'oilLevel', '', e.target.value)}
-                      readOnly={!isEditing}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Oil Temperature (°C)</label>
-                    <input
-                      type="text"
-                      value={formData.nameplateData.indicatorGauges.oilTemperature}
-                      onChange={(e) => handleDeepNestedChange('nameplateData', 'indicatorGauges', 'oilTemperature', '', e.target.value)}
-                      readOnly={!isEditing}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Oil Temp. Range</label>
-                    <input
-                      type="text"
-                      value={formData.nameplateData.indicatorGauges.oilTempRange}
-                      onChange={(e) => handleDeepNestedChange('nameplateData', 'indicatorGauges', 'oilTempRange', '', e.target.value)}
-                      readOnly={!isEditing}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tank Pressure</label>
-                    <input
-                      type="text"
-                      value={formData.nameplateData.indicatorGauges.tankPressure}
-                      onChange={(e) => handleDeepNestedChange('nameplateData', 'indicatorGauges', 'tankPressure', '', e.target.value)}
-                      readOnly={!isEditing}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Winding Temperature (°C)</label>
-                    <input
-                      type="text"
-                      value={formData.nameplateData.indicatorGauges.windingTemperature}
-                      onChange={(e) => handleDeepNestedChange('nameplateData', 'indicatorGauges', 'windingTemperature', '', e.target.value)}
-                      readOnly={!isEditing}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Winding Temp. Range</label>
-                    <input
-                      type="text"
-                      value={formData.nameplateData.indicatorGauges.windingTempRange}
-                      onChange={(e) => handleDeepNestedChange('nameplateData', 'indicatorGauges', 'windingTempRange', '', e.target.value)}
-                      readOnly={!isEditing}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
-                  </div>
-                </div>
+
+              {/* Print-only Nameplate Data tables */}
+              <div className="hidden print:block space-y-4">
+                {/* Table 1: Basic Information */}
+                <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                  <colgroup>
+                    <col style={{ width: '33.33%' }} />
+                    <col style={{ width: '33.33%' }} />
+                    <col style={{ width: '33.33%' }} />
+                  </colgroup>
+                  <tbody>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                        <span className="font-medium">Manufacturer:</span> {formData.nameplateData.manufacturer || ''}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                        <span className="font-medium">Catalog Number:</span> {formData.nameplateData.catalogNumber || ''}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                        <span className="font-medium">Serial Number:</span> {formData.nameplateData.serialNumber || ''}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                        <span className="font-medium">KVA:</span> {formData.nameplateData.kva || ''}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                        <span className="font-medium">Temp. Rise °C:</span> {formData.nameplateData.tempRise || ''}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                        <span className="font-medium">Impedance:</span> {formData.nameplateData.impedance || ''}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* Table 2: Primary/Secondary Details */}
+                <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                  <colgroup>
+                    <col style={{ width: '12%' }} />
+                    <col style={{ width: '18%' }} />
+                    <col style={{ width: '16%' }} />
+                    <col style={{ width: '16%' }} />
+                    <col style={{ width: '16%' }} />
+                    <col style={{ width: '9%' }} />
+                    <col style={{ width: '9%' }} />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"></th>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600" colSpan={1}>
+                        Volts
+                      </th>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600" colSpan={3}>
+                        Connections
+                      </th>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600" colSpan={2}>
+                        Winding Materials
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">Primary</td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">{formData.nameplateData.primary.volts || ''} / {formData.nameplateData.primary.voltsSecondary || ''}</td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                        {formData.nameplateData.primary.connection === 'Delta' ? '☒' : '☐'} Delta
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                        {formData.nameplateData.primary.connection === 'Wye' ? '☒' : '☐'} Wye
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                        {formData.nameplateData.primary.connection === 'Single Phase' ? '☒' : '☐'} Single Phase
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                        {formData.nameplateData.primary.material === 'Aluminum' ? '☒' : '☐'} Aluminum
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                        {formData.nameplateData.primary.material === 'Copper' ? '☒' : '☐'} Copper
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">Secondary</td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">{formData.nameplateData.secondary.volts || ''} / {formData.nameplateData.secondary.voltsSecondary || ''}</td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                        {formData.nameplateData.secondary.connection === 'Delta' ? '☒' : '☐'} Delta
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                        {formData.nameplateData.secondary.connection === 'Wye' ? '☒' : '☐'} Wye
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                        {formData.nameplateData.secondary.connection === 'Single Phase' ? '☒' : '☐'} Single Phase
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                        {formData.nameplateData.secondary.material === 'Aluminum' ? '☒' : '☐'} Aluminum
+                      </td>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">
+                        {formData.nameplateData.secondary.material === 'Copper' ? '☒' : '☐'} Copper
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* Table 3: Tap Configuration */}
+                <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                  <thead>
+                    <tr>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">Tap Position</th>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">1</th>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">2</th>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">3</th>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">4</th>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">5</th>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">6</th>
+                      <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">7</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">Tap Voltages</td>
+                      {formData.nameplateData.tapConfiguration.voltages.map((voltage, index) => (
+                        <td key={index} className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white text-center">{voltage || ''}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white">Tap Position Left</td>
+                      <td colSpan={7} className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white">
+                        Position: {formData.nameplateData.tapConfiguration.currentPosition || ''} / {formData.nameplateData.tapConfiguration.currentPositionSecondary || ''} |
+                        Volts: {formData.nameplateData.tapConfiguration.tapVoltsSpecific || ''} |
+                        Percent: {formData.nameplateData.tapConfiguration.tapPercentSpecific || ''}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </section>
 
+            {/* Indicator Gauge Values */}
+            <section className="mb-6 indicator-gauges-section">
+              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Indicator Gauge Values</h2>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 print:hidden indicator-gauges-onscreen">
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Oil Level:</label>
+                      <input type="text" value={formData.nameplateData?.indicatorGauges?.oilLevel || ''} onChange={(e) => {
+                        const ig = { ...(formData.nameplateData.indicatorGauges as any), oilLevel: e.target.value };
+                        handleNestedChange('nameplateData', 'indicatorGauges', ig);
+                      }} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} placeholder="Enter oil level" />
+                  </div>
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Oil Temperature (°C):</label>
+                      <input type="text" value={formData.nameplateData?.indicatorGauges?.oilTemperature || ''} onChange={(e) => {
+                        const ig = { ...(formData.nameplateData.indicatorGauges as any), oilTemperature: e.target.value };
+                        handleNestedChange('nameplateData', 'indicatorGauges', ig);
+                      }} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} placeholder="Enter oil temperature" />
+                  </div>
+                   <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Oil Temp. Range:</label>
+                      <input type="text" value={formData.nameplateData?.indicatorGauges?.oilTempRange || ''} onChange={(e) => {
+                        const ig = { ...(formData.nameplateData.indicatorGauges as any), oilTempRange: e.target.value };
+                        handleNestedChange('nameplateData', 'indicatorGauges', ig);
+                      }} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} placeholder="Enter oil temp range" />
+                  </div>
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tank Pressure:</label>
+                      <input type="text" value={formData.nameplateData?.indicatorGauges?.tankPressure || ''} onChange={(e) => {
+                        const ig = { ...(formData.nameplateData.indicatorGauges as any), tankPressure: e.target.value };
+                        handleNestedChange('nameplateData', 'indicatorGauges', ig);
+                      }} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} placeholder="Enter tank pressure" />
+                  </div>
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Winding Temperature (°C):</label>
+                      <input type="text" value={formData.nameplateData?.indicatorGauges?.windingTemperature || ''} onChange={(e) => {
+                        const ig = { ...(formData.nameplateData.indicatorGauges as any), windingTemperature: e.target.value };
+                        handleNestedChange('nameplateData', 'indicatorGauges', ig);
+                      }} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} placeholder="Enter winding temperature" />
+                  </div>
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Winding Temp. Range:</label>
+                      <input type="text" value={formData.nameplateData?.indicatorGauges?.windingTempRange || ''} onChange={(e) => {
+                        const ig = { ...(formData.nameplateData.indicatorGauges as any), windingTempRange: e.target.value };
+                        handleNestedChange('nameplateData', 'indicatorGauges', ig);
+                      }} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} placeholder="Enter winding temp range" />
+                  </div>
+                </div>
+
+                {/* Print-only compact Indicator Gauge Values table (3 columns x 2 rows) */}
+                <div className="hidden print:block">
+                  <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                    <colgroup>
+                      <col style={{ width: '33.33%' }} />
+                      <col style={{ width: '33.33%' }} />
+                      <col style={{ width: '33.33%' }} />
+                    </colgroup>
+                    <tbody>
+                      <tr>
+                        <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                          <div className="font-semibold">Oil Level:</div>
+                          <div className="mt-0">{formData.nameplateData?.indicatorGauges?.oilLevel || ''}</div>
+                        </td>
+                        <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                          <div className="font-semibold">Oil Temperature (°C):</div>
+                          <div className="mt-0">{formData.nameplateData?.indicatorGauges?.oilTemperature || ''}</div>
+                        </td>
+                        <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                          <div className="font-semibold">Oil Temp. Range:</div>
+                          <div className="mt-0">{formData.nameplateData?.indicatorGauges?.oilTempRange || ''}</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                          <div className="font-semibold">Tank Pressure:</div>
+                          <div className="mt-0">{formData.nameplateData?.indicatorGauges?.tankPressure || ''}</div>
+                        </td>
+                        <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                          <div className="font-semibold">Winding Temperature (°C):</div>
+                          <div className="mt-0">{formData.nameplateData?.indicatorGauges?.windingTemperature || ''}</div>
+                        </td>
+                        <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                          <div className="font-semibold">Winding Temp. Range:</div>
+                          <div className="mt-0">{formData.nameplateData?.indicatorGauges?.windingTempRange || ''}</div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
 
             {/* Visual and Mechanical Inspection */}
             <section className="mb-6 visual-mechanical-inspection">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+                  <colgroup>
+                    <col style={{ width: '12%' }} />
+                    <col style={{ width: '58%' }} />
+                    <col style={{ width: '15%' }} />
+                    <col style={{ width: '15%' }} />
+                  </colgroup>
                   <thead className="bg-gray-50 dark:bg-dark-200">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Section</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-40">Result</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Comments</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Comments</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                     {Object.keys(formData.visualInspection)
                        .filter(key => !key.endsWith('_comments'))
                        .sort((a, b) => {
-                         // Extract the numeric part from the section ID (e.g., "7.2.2.A.1" -> 1)
                          const aNum = parseInt(a.split('.').pop() || '0');
                          const bNum = parseInt(b.split('.').pop() || '0');
                          return aNum - bNum;
                        })
                        .map((id) => (
                       <tr key={id}>
-                        <td className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white">{id}</td>
-                        <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{getVisualInspectionDescription(id)}</td>
-                        <td className="px-4 py-2">
-                          <select
-                            value={formData.visualInspection[id]}
-                            onChange={(e) => handleVisualInspectionChange(id, 'result', e.target.value)}
-                            disabled={!isEditing}
-                            className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                          >
-                            {visualInspectionOptions.map(option => (
-                              <option key={option} value={option} className="dark:bg-dark-100 dark:text-white">{option}</option>
-                            ))}
-                          </select>
+                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{id.replace('*','')}</td>
+                        <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 whitespace-normal break-words">{getVisualInspectionDescription(id)}</td>
+                        <td className="px-3 py-2">
+                          <div className="print:hidden">
+                            <select
+                              value={formData.visualInspection[id]}
+                              onChange={(e) => handleVisualInspectionChange(id, 'result', e.target.value)}
+                              disabled={!isEditing}
+                              className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                            >
+                              {visualInspectionOptions.map(option => (
+                                <option key={option} value={option} className="dark:bg-dark-100 dark:text-white">{option}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="hidden print:block text-center">{formData.visualInspection[id] || ''}</div>
                         </td>
-                        <td className="px-4 py-2">
-                          <input
-                            type="text"
-                            value={formData.visualInspection[`${id}_comments`] || ''}
-                            onChange={(e) => handleVisualInspectionChange(id, 'comment', e.target.value)}
-                            readOnly={!isEditing}
-                            className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                            placeholder="Optional comments"
-                          />
+                        <td className="px-3 py-2">
+                          <div className="print:hidden">
+                            <input
+                              type="text"
+                              value={formData.visualInspection[`${id}_comments`] || ''}
+                              onChange={(e) => handleVisualInspectionChange(id, 'comment', e.target.value)}
+                              readOnly={!isEditing}
+                              className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                              placeholder="Optional comments"
+                            />
+                          </div>
+                          <div className="hidden print:block">{formData.visualInspection[`${id}_comments`] || ''}</div>
                         </td>
                       </tr>
                     ))}
@@ -1753,58 +1945,99 @@ const LiquidFilledTransformerReport: React.FC = () => {
             </section>
 
 
+
+
             {/* Test Equipment Used */}
             <section className="mb-6">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
-               <div className="grid grid-cols-1 gap-6">
-                 {/* Megohmmeter Section */}
-                 <div className="grid grid-cols-3 gap-4 border-b dark:border-gray-700 pb-4">
-                   <div>
-                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label>
-                     <input 
-                       type="text" 
-                       value={formData.testEquipment.megohmmeter.name} 
-                       onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, name: e.target.value })} 
-                       readOnly={!isEditing}
-                       className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                     />
-                   </div>
-                   <div>
-                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-                     <input 
-                       type="text" 
-                       value={formData.testEquipment.megohmmeter.serialNumber} 
-                       onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, serialNumber: e.target.value })} 
-                       readOnly={!isEditing}
-                       className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                     />
-                   </div>
-                   <div>
-                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
-                     <input 
-                       type="text" 
-                       value={formData.testEquipment.megohmmeter.ampId} 
-                       onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, ampId: e.target.value })} 
-                       readOnly={!isEditing}
-                       className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                     />
-                   </div>
-                 </div>
-               </div>
+              <div className="grid grid-cols-1 gap-6 print:hidden test-eqpt-onscreen">
+                {/* Megohmmeter Section */}
+                <div className="grid grid-cols-3 gap-4 border-b dark:border-gray-700 pb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label>
+                    <input 
+                      type="text" 
+                      value={formData.testEquipment.megohmmeter.name} 
+                      onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, name: e.target.value })} 
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
+                    <input 
+                      type="text" 
+                      value={formData.testEquipment.megohmmeter.serialNumber} 
+                      onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, serialNumber: e.target.value })} 
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
+                    <input 
+                      type="text" 
+                      value={formData.testEquipment.megohmmeter.ampId} 
+                      onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, ampId: e.target.value })} 
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    />
+                  </div>
+                </div>
+              </div>
+              {/* Print-only compact Test Equipment table */}
+              <div className="hidden print:block">
+                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                  <colgroup>
+                    <col style={{ width: '33.33%' }} />
+                    <col style={{ width: '33.33%' }} />
+                    <col style={{ width: '33.33%' }} />
+                  </colgroup>
+                  <tbody>
+                    <tr>
+                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Megohmmeter</div>
+                        <div className="mt-0">{formData.testEquipment.megohmmeter.name || ''}</div>
+                      </td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Serial Number</div>
+                        <div className="mt-0">{formData.testEquipment.megohmmeter.serialNumber || ''}</div>
+                      </td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">AMP ID</div>
+                        <div className="mt-0">{formData.testEquipment.megohmmeter.ampId || ''}</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             {/* Comments */}
             <section className="mb-6 comments-section">
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
-               <textarea
-                  value={formData.comments}
-                  onChange={(e) => handleChange(null, 'comments', e.target.value)}
-                  rows={4}
-                  readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                />
+              <textarea
+                value={formData.comments}
+                onChange={(e) => handleChange(null, 'comments', e.target.value)}
+                rows={4}
+                readOnly={!isEditing}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''} print:hidden`}
+              />
+              {/* Print-only comments table */}
+              <div className="hidden print:block">
+                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                  <tbody>
+                    <tr>
+                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                        <div className="font-semibold">Comments</div>
+                        <div className="mt-0">{formData.comments || ''}</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
           </div>
         </div>
@@ -1950,6 +2183,151 @@ if (typeof document !== 'undefined') {
       .tap-configuration-section .grid.grid-cols-7 { width: auto !important; justify-content: start !important; }
       .nameplate-section label.inline-flex { display: inline-flex !important; align-items: center !important; margin-right: 8px !important; }
       .nameplate-section input[type="radio"] { width: 10px !important; height: 10px !important; margin-right: 4px !important; }
+
+      /* Visual & Mechanical table widths for readability */
+      table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
+      table.visual-mechanical-table thead { display: table-header-group !important; }
+      table.visual-mechanical-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+      table.visual-mechanical-table th, table.visual-mechanical-table td { font-size: 8px !important; padding: 2px 3px !important; vertical-align: middle !important; }
+      table.visual-mechanical-table colgroup col:nth-child(1) { width: 12% !important; }
+      table.visual-mechanical-table colgroup col:nth-child(2) { width: 58% !important; }
+      table.visual-mechanical-table colgroup col:nth-child(3) { width: 15% !important; }
+      table.visual-mechanical-table colgroup col:nth-child(4) { width: 15% !important; }
+      table.visual-mechanical-table td:nth-child(2) { white-space: normal !important; word-break: break-word !important; }
+
+      /* Indicator Gauges: hide on-screen grid and use compact table in print */
+      .indicator-gauges-section .indicator-gauges-onscreen { display: none !important; }
+      .indicator-gauges-section .indicator-gauges-onscreen * { display: none !important; }
+      /* Extra guard: hide any remaining grids/inputs/labels in the section */
+      .indicator-gauges-section .grid { display: none !important; }
+      .indicator-gauges-section input, .indicator-gauges-section label { display: none !important; }
+      /* Ensure the print table wrapper is visible */
+      .indicator-gauges-section .hidden.print\:block { display: block !important; }
+      /* Force indicator gauges table to be visible and properly styled in print */
+      .indicator-gauges-section table.indicator-gauges-table { 
+        display: table !important; 
+        table-layout: fixed !important; 
+        width: 100% !important; 
+        border-collapse: collapse !important; 
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+      }
+      .indicator-gauges-section table.indicator-gauges-table thead { display: table-header-group !important; }
+      .indicator-gauges-section table.indicator-gauges-table tbody { display: table-row-group !important; }
+      .indicator-gauges-section table.indicator-gauges-table tr { display: table-row !important; }
+      .indicator-gauges-section table.indicator-gauges-table th, 
+      .indicator-gauges-section table.indicator-gauges-table td { 
+        display: table-cell !important;
+        font-size: 10px !important; 
+        padding: 4px 6px !important; 
+        vertical-align: middle !important; 
+        border: 1px solid black !important;
+        text-align: center !important;
+      }
+      .indicator-gauges-section table.indicator-gauges-table th { 
+        background-color: #f0f0f0 !important; 
+        font-weight: bold !important; 
+      }
+
+      /* Hide on-screen elements in print */
+      .job-info-onscreen,
+      .job-info-onscreen *,
+      .indicator-gauges-onscreen,
+      .indicator-gauges-onscreen *,
+      .test-eqpt-onscreen,
+      .test-eqpt-onscreen *,
+      .nameplate-onscreen,
+      .nameplate-onscreen * {
+        display: none !important;
+      }
+
+      /* Ensure print-only elements are visible */
+      .hidden.print\\:block {
+        display: block !important;
+      }
+
+      /* Force-hide on-screen Test Equipment section to avoid duplication */
+      .test-eqpt-onscreen, .test-eqpt-onscreen * {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      /* Enforce table layouts for specific tables */
+      table:has(colgroup col[style*="33.33%"]) {
+        table-layout: fixed !important;
+        width: 100% !important;
+      }
+
+      table:has(colgroup col[style*="12%"]) {
+        table-layout: fixed !important;
+        width: 100% !important;
+      }
+
+      table:has(colgroup col[style*="33.33%"]) th,
+      table:has(colgroup col[style*="33.33%"]) td {
+        width: 33.33% !important;
+        min-width: 33.33% !important;
+        max-width: 33.33% !important;
+      }
+
+      table:has(colgroup col[style*="12%"]) th,
+      table:has(colgroup col[style*="12%"]) td {
+        width: auto !important;
+        min-width: auto !important;
+        max-width: auto !important;
+      }
+
+      table:has(colgroup col[style*="12%"]) th:nth-child(1),
+      table:has(colgroup col[style*="12%"]) td:nth-child(1) {
+        width: 12% !important;
+        min-width: 12% !important;
+        max-width: 12% !important;
+      }
+
+      table:has(colgroup col[style*="12%"]) th:nth-child(2),
+      table:has(colgroup col[style*="12%"]) td:nth-child(2) {
+        width: 18% !important;
+        min-width: 18% !important;
+        max-width: 18% !important;
+      }
+
+      table:has(colgroup col[style*="12%"]) th:nth-child(3),
+      table:has(colgroup col[style*="12%"]) td:nth-child(3) {
+        width: 16% !important;
+        min-width: 16% !important;
+        max-width: 16% !important;
+      }
+
+      table:has(colgroup col[style*="12%"]) th:nth-child(4),
+      table:has(colgroup col[style*="12%"]) td:nth-child(4) {
+        width: 16% !important;
+        min-width: 16% !important;
+        max-width: 16% !important;
+      }
+
+      table:has(colgroup col[style*="12%"]) th:nth-child(5),
+      table:has(colgroup col[style*="12%"]) td:nth-child(5) {
+        width: 16% !important;
+        min-width: 16% !important;
+        max-width: 16% !important;
+      }
+
+      table:has(colgroup col[style*="12%"]) th:nth-child(6),
+      table:has(colgroup col[style*="12%"]) td:nth-child(6) {
+        width: 9% !important;
+        min-width: 9% !important;
+        max-width: 9% !important;
+      }
+
+      table:has(colgroup col[style*="12%"]) th:nth-child(7),
+      table:has(colgroup col[style*="12%"]) td:nth-child(7) {
+        width: 9% !important;
+        min-width: 9% !important;
+        max-width: 9% !important;
+      }
     }
   `;
   document.head.appendChild(style);

@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation, useSearchParams } from 'react-rout
 import { useAuth } from '../../lib/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { navigateAfterSave } from './ReportUtils';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { getReportName, getAssetName } from './reportMappings';
 
 // Types
@@ -400,6 +401,10 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           margin-top: 16px;
         }
       @media print {
+      /* Hide on-screen elements in print */
+      .cable-data-onscreen, .cable-data-onscreen * { display: none !important; }
+      .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
+      
       /* Job info: ensure Temp/TCF area doesn't overlap; render values inline with clear spacing */
       .job-info-grid { grid-template-columns: repeat(6, minmax(0,1fr)) !important; gap: 6px 8px !important; }
       .job-info-grid input[type="number"],
@@ -608,6 +613,26 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           padding: 0 !important;
         }
         /* ...rest of your print CSS... */
+        
+        /* Standardized Visual & Mechanical print table (match Panelboard) */
+        table.visual-mechanical-table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
+        table.visual-mechanical-table th, table.visual-mechanical-table td { 
+          white-space: normal !important; 
+          word-break: break-word !important; 
+          font-size: 8px !important; 
+          line-height: 1.15 !important; 
+          padding: 2px 3px !important; 
+          vertical-align: middle !important;
+          border: 0.5px solid black !important;
+        }
+        table.visual-mechanical-table thead th:first-child,
+        table.visual-mechanical-table tbody td:first-child { width: 12% !important; text-align: left !important; }
+        table.visual-mechanical-table thead th:nth-child(2),
+        table.visual-mechanical-table tbody td:nth-child(2) { width: 58% !important; text-align: left !important; }
+        table.visual-mechanical-table thead th:nth-child(3),
+        table.visual-mechanical-table tbody td:nth-child(3) { width: 15% !important; text-align: center !important; }
+        table.visual-mechanical-table thead th:nth-child(4),
+        table.visual-mechanical-table tbody td:nth-child(4) { width: 15% !important; text-align: center !important; }
         
         /* Standardized Visual & Mechanical print table (match ATS) */
         table.vm-standard { width: 100% !important; table-layout: fixed !important; }
@@ -960,7 +985,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
 
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
-  const reportSlug = 'low-voltage-cable-test-3sets'; // This component handles the low-voltage-cable-test-3sets route
+  const reportSlug = 'low-voltage-cable-test-3sets'; // This component handles the low-voltage-cable-test-3sets route (MTS)
   const reportName = getReportName(reportSlug);
 
   const [formData, setFormData] = useState<CableTestData>({
@@ -1114,11 +1139,11 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
       setLoading(true);
       console.log(`Loading report with ID: ${reportId}`);
       
-      const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('low_voltage_cable_test_3sets') // Changed table name
-        .select('*')
-        .eq('id', reportId);
+              const { data, error } = await supabase
+          .schema('neta_ops')
+          .from('low_voltage_cable_test_3sets')
+          .select('*')
+          .eq('id', reportId);
       
       if (error) {
         console.error('Error loading report:', error);
@@ -1287,7 +1312,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
     setError(null);
     try {
         // Log the schema and table name for debugging
-        console.log('Attempting to save to schema: neta_ops, table: low_voltage_cable_test_12sets');
+                        console.log('Attempting to save to schema: neta_ops, table: low_voltage_cable_test_3sets');
         
         // Normalize test sets to ensure size/config/continuity persist
         const normalizedTestSets = formData.testSets.map((set) => ({
@@ -1321,7 +1346,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
             // Update existing report
             const { error: updateError } = await supabase
                 .schema('neta_ops')
-                .from('low_voltage_cable_test_12sets')
+                .from('low_voltage_cable_test_3sets')
                 .update({ data: { ...formData, testSets: normalizedTestSets }, updated_at: new Date() })
                 .eq('id', reportId);
             if (updateError) {
@@ -1341,7 +1366,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 console.log('Trying regular insert...');
                 const { data: insertData, error: insertError } = await supabase
                     .schema('neta_ops')
-                    .from('low_voltage_cable_test_12sets')
+                    .from('low_voltage_cable_test_3sets')
                     .insert(reportPayload)
                     .select('id')
                     .single();
@@ -1355,7 +1380,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 // Create an asset entry for the saved report
                 const assetData = {
                     name: getAssetName(reportSlug, formData.identifier || ''),
-                    file_url: `report:/jobs/${jobId}/low-voltage-cable-test-12sets/${savedReportId}`,
+                    file_url: `report:/jobs/${jobId}/low-voltage-cable-test-3sets/${savedReportId}`,
                     user_id: user?.id,
                     created_at: new Date().toISOString()
                 };
@@ -1404,7 +1429,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 
                 // Try to check if we have SELECT access at least
                 const { data: checkData, error: checkError } = await supabase
-                    .from('neta_ops.low_voltage_cable_test_3sets') // Changed table name
+                    .from('neta_ops.low_voltage_cable_test_3sets')
                     .select('id')
                     .limit(1);
                 
@@ -1430,7 +1455,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                     console.log('Fallback save result:', { data: fallbackData, error: fallbackError });
                     
                     if (!fallbackError) {
-                        alert("Fallback save successful. This indicates the low_voltage_cable_test_3sets table has permission issues."); // Changed message
+                        alert("Fallback save successful. This indicates the low_voltage_cable_test_3sets table has permission issues.");
                         savedReportId = fallbackData.id;
                         
                         // Even with fallback, navigate back to job details
@@ -1649,7 +1674,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         <div className="mb-6">
           <h2 className="section-job-info text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
 
-            <div className="job-info-grid grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2">
+            <div className="job-info-grid grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 print:hidden">
               <div>
                 <label htmlFor="customer" className="form-label">Customer:</label>
                 <input id="customer" name="customer" type="text" value={formData.customer} onChange={handleChange} readOnly className={`form-input text-sm bg-gray-100 dark:bg-dark-200 cursor-not-allowed`} />
@@ -1707,6 +1732,25 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 <input id="eqptLocation" name="eqptLocation" type="text" value={formData.eqptLocation} onChange={handleChange} readOnly={!isEditMode} className={`form-input text-sm ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
             </div>
+            <JobInfoPrintTable
+              data={{
+                customer: formData.customer,
+                address: formData.address,
+                jobNumber: formData.jobNumber,
+                technicians: formData.technicians,
+                date: formData.date,
+                identifier: formData.identifier,
+                user: formData.user,
+                substation: formData.substation,
+                eqptLocation: formData.eqptLocation,
+                temperature: {
+                  fahrenheit: formData.temperature,
+                  celsius: Number.isFinite(celsiusTemperature) ? Number(celsiusTemperature.toFixed(0)) : undefined,
+                  tcf: getTCF(convertFahrenheitToCelsius(formData.temperature)),
+                  humidity: formData.humidity,
+                },
+              }}
+            />
         </div>
 
         {/* Orange divider between Job Info and Cable Data */}
@@ -1715,7 +1759,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         {/* Cable Data Section */}
         <div className="mb-6">
           <h2 className="section-cable-data text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Cable Data</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden cable-data-onscreen">
               {/* Column 1 */}
               <div>
                 <div className="mb-4">
@@ -1758,21 +1802,53 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 </div>
               </div>
             </div>
+            {/* Print-only Cable Data table */}
+            <div className="hidden print:block">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                <colgroup>
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Tested From:</div><div className="mt-0">{formData.testedFrom || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Manufacturer:</div><div className="mt-0">{formData.manufacturer || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Conductor Material:</div><div className="mt-0">{formData.conductorMaterial || ''}</div></td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Insulation Type:</div><div className="mt-0">{formData.insulationType || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">System Voltage:</div><div className="mt-0">{formData.systemVoltage || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Rated Voltage:</div><div className="mt-0">{formData.ratedVoltage || ''}</div></td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border" colSpan={3}><div className="font-semibold">Length:</div><div className="mt-0">{formData.length || ''}</div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
         </div>
           
         {/* Visual and Mechanical Inspection Section */}
         <div className="mb-6">
           <h2 className="section-visual-mechanical text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[600px] vm-standard">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+                <colgroup>
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '58%' }} />
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '15%' }} />
+                </colgroup>
                 <thead>
-                  <tr className="bg-gray-50 dark:bg-dark-200">
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">NETA Section</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">Description</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-48">Results</th>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Comments</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {Object.entries({
                     "7.3.1.A.1": "Inspect exposed sections of cables and connectors for physical damage and evidence of degradation.",
                     "7.3.1.A.2.1": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
@@ -1781,20 +1857,34 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                     "7.3.1.A.5*": "Compare cable data with drawings and cable schedule. *Optional"
                   }).map(([section, description]) => (
                     <tr key={section} className="hover:bg-gray-50 dark:hover:bg-dark-200">
-                      <td className="px-4 py-2 text-sm font-mono text-gray-900 dark:text-white">{section}</td>
-                      <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{description}</td>
-                      <td className="px-4 py-2">
-                        <select
-                          id={`inspection-${section}`}
-                          value={formData.inspectionResults[section]}
-                          onChange={(e) => handleInspectionChange(section, e.target.value)}
-                        className={`form-select w-full text-sm ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                          disabled={!isEditMode}
-                        >
-                          {INSPECTION_RESULTS_OPTIONS.map(option => (
-                            <option key={option} value={option}>{option}</option>
-                          ))}
-                        </select>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{section}</td>
+                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{description}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="print:hidden">
+                          <select
+                            id={`inspection-${section}`}
+                            value={formData.inspectionResults[section]}
+                            onChange={(e) => handleInspectionChange(section, e.target.value)}
+                            disabled={!isEditMode}
+                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          >
+                            {INSPECTION_RESULTS_OPTIONS.map(option => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="hidden print:block text-center">{formData.inspectionResults[section] ?? ''}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <input
+                            type="text"
+                            value=""
+                            readOnly={!isEditMode}
+                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          />
+                        </div>
+                        <div className="hidden print:block"></div>
                       </td>
                     </tr>
                   ))}
@@ -2040,7 +2130,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         {/* Test Equipment Used */}
         <div className="mb-6 page-break-before">
           <h2 className="section-test-equipment text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 print:hidden test-eqpt-onscreen">
               <div>
                 <label htmlFor="megohmmeter" className="form-label inline-block w-32">Megohmmeter:</label>
                 <input
@@ -2096,6 +2186,32 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 />
               </div>
             </div>
+            {/* Print-only compact Test Equipment table (3 boxes wide, 1 row) */}
+            <div className="hidden print:block">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                <colgroup>
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Megohmmeter:</div>
+                      <div className="mt-0">{formData.testEquipment.megohmmeter || ''}</div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Serial Number:</div>
+                      <div className="mt-0">{formData.testEquipment.serialNumber || ''}</div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">AMP ID:</div>
+                      <div className="mt-0">{formData.testEquipment.ampId || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
         </div>
 
         {/* Comments Section */}
@@ -2113,10 +2229,23 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 }
               }))}
               rows={10}
-            className={`w-full form-textarea resize-vertical min-h-[250px] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            className={`w-full form-textarea resize-vertical min-h-[250px] ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''} print:hidden`}
               placeholder="Enter any additional comments..."
               readOnly={!isEditMode}
             />
+            {/* Print-only Comments table */}
+            <div className="hidden print:block">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Comments</div>
+                      <div className="mt-1 whitespace-pre-wrap">{formData.testEquipment.comments || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -1093,7 +1094,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden">
                 {/* Column 1 */}
                 <div>
                     <div className="mb-4 flex items-center">
@@ -1152,6 +1153,20 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <JobInfoPrintTable
+              data={{
+                customer: formData.customer,
+                address: formData.address,
+                jobNumber: formData.jobNumber,
+                technicians: formData.technicians,
+                date: formData.date,
+                identifier: formData.identifier,
+                user: formData.user,
+                substation: formData.substation,
+                eqptLocation: formData.eqptLocation,
+                temperature: { ...formData.temperature }
+              }}
+            />
           </div>
 
         {/* --- Nameplate Data Section --- */}

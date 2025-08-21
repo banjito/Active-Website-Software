@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 const getVisualInspectionDescription = (section: string): string => {
   const descriptions: Record<string, string> = {
@@ -1144,7 +1145,7 @@ export default function LowVoltageSwitchReport() {
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden">
               <div>
                 <label htmlFor="customer" className="form-label inline-block w-32">Customer:</label>
                 <input
@@ -1262,6 +1263,20 @@ export default function LowVoltageSwitchReport() {
                 <span className="mx-2">%</span>
               </div>
             </div>
+            <JobInfoPrintTable
+              data={{
+                customer: formData.customer,
+                address: formData.address,
+                jobNumber: formData.jobNumber,
+                technicians: formData.technicians,
+                date: formData.date,
+                identifier: formData.identifier,
+                user: formData.user,
+                substation: formData.substation,
+                eqptLocation: formData.eqptLocation,
+                temperature: { fahrenheit: formData.temperature.fahrenheit, celsius: formData.temperature.celsius, tcf, humidity: formData.humidity }
+              }}
+            />
           </section>
 
           {/* Enclosure Data */}

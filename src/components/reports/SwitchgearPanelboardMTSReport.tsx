@@ -4,7 +4,9 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { getReportName, getAssetName } from './reportMappings';
+import NameplatePrintTable from './common/NameplatePrintTable';
 
 // Temperature conversion and correction factor lookup tables
 const TCF_TABLE: { [key: string]: number } = {
@@ -332,7 +334,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
     const style = document.createElement('style');
     style.textContent = `
       @media print {
-        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif !important; }
+        html, body { font-size: 9px !important; color: black !important; background: white !important; line-height: 1 !important; }
         
         /* Hide all navigation and header elements */
         header, nav, .navigation, [class*="nav"], [class*="header"], 
@@ -358,8 +361,13 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         .print\\:font-bold { font-weight: bold !important; }
         .print\\:text-center { text-align: center !important; }
         
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid black !important; padding: 4px !important; }
+        /* Remove non-table borders to avoid conflicts and ensure crisp table lines */
+        * { border: none !important; box-shadow: none !important; outline: none !important; }
+        table { border-collapse: collapse !important; width: 100% !important; margin: 1px 0 !important; font-size: 8px !important; }
+        thead { display: table-header-group !important; }
+        tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+        table, th, td, thead, tbody, tr { border: 1px solid black !important; }
+        th, td { padding: 2px 3px !important; text-align: center !important; font-size: 8px !important; height: 12px !important; line-height: 1 !important; }
         th { background-color: #f0f0f0 !important; font-weight: bold !important; }
         
         input, select, textarea { 
@@ -398,13 +406,13 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         /* Ensure all text is black for maximum readability */
         * { color: black !important; }
 
-        /* Visual & Mechanical table standardization (NETA left, Description wide, Result right) */
-        #report-container .vm-standard { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
-        #report-container .vm-standard thead { display: table-header-group !important; }
-        #report-container .vm-standard tr { break-inside: avoid !important; page-break-inside: avoid !important; }
-        #report-container .vm-standard th:first-child, #report-container .vm-standard td:first-child { width: 18% !important; text-align: left !important; }
-        #report-container .vm-standard th:nth-child(2), #report-container .vm-standard td:nth-child(2) { width: 62% !important; text-align: left !important; }
-        #report-container .vm-standard th:nth-child(3), #report-container .vm-standard td:nth-child(3) { width: 20% !important; text-align: center !important; }
+        /* Visual & Mechanical table standardization like Panelboard */
+        table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
+        table.visual-mechanical-table thead { display: table-header-group !important; }
+        table.visual-mechanical-table tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+        table.visual-mechanical-table th:first-child, table.visual-mechanical-table td:first-child { width: 12% !important; text-align: left !important; }
+        table.visual-mechanical-table th:nth-child(2), table.visual-mechanical-table td:nth-child(2) { width: 58% !important; text-align: left !important; }
+        table.visual-mechanical-table th:nth-child(3), table.visual-mechanical-table td:nth-child(3) { width: 30% !important; text-align: center !important; }
 
         /* Bus-section based tables: give left Bus column and right Units narrow widths to free space for readings */
         .section-insulation-resistance table,
@@ -628,43 +636,43 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
-      <div className="p-6 flex justify-center">
-      <div className="max-w-7xl w-full space-y-6">
-        {/* Print Header - Only visible when printing */}
-        <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
-          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
-          <div className="flex-1 text-center flex flex-col items-center justify-center">
-            <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
-          </div>
-          <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
-            NETA - MTS 7.1
-            <div className="hidden print:block mt-2">
-              <div 
-                className="pass-fail-status-box"
-                style={{
-                  display: 'inline-block',
-                  padding: '4px 10px',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  width: 'fit-content',
-                  borderRadius: '6px',
-                  border: '2px solid #16a34a',
-                  backgroundColor: '#22c55e',
-                  color: 'white',
-                  WebkitPrintColorAdjust: 'exact',
-                  printColorAdjust: 'exact',
-                  boxSizing: 'border-box',
-                  minWidth: '50px',
-                }}
-              >
-                {formData.status || 'PASS'}
+      {/* Print Header - Only visible when printing */}
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
+        <div className="flex-1 text-center flex flex-col items-center justify-center">
+          <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
+        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+          NETA - MTS 7.1
+          <div className="hidden print:block mt-2">
+            <div 
+              className="pass-fail-status-box"
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: 'fit-content',
+                borderRadius: '6px',
+                border: '2px solid #16a34a',
+                backgroundColor: '#22c55e',
+                color: 'white',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+                boxSizing: 'border-box',
+                minWidth: '50px',
+              }}
+            >
+              {formData.status || 'PASS'}
             </div>
           </div>
         </div>
-        {/* End Print Header */}
-        
+      </div>
+      {/* End Print Header */}
+      
+      <div className="p-6 flex justify-center">
+      <div className="max-w-7xl w-full space-y-6">
         {/* Header */}
         <div className="print:hidden flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
@@ -715,7 +723,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">Job Information</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
             <div><label className="form-label">Customer:</label><input type="text" value={formData.customerName} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
             <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
             <div><label htmlFor="technicians" className="form-label">Technicians:</label><input id="technicians" type="text" value={formData.technicians} onChange={e => handleInputChange('technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -740,6 +748,25 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
             <div className="md:col-span-2"><label htmlFor="customerLocation" className="form-label">Address:</label><input id="customerLocation" type="text" value={formData.customerLocation} readOnly className="form-input bg-gray-100 dark:bg-dark-200" style={{ width: `${Math.max(200, Math.min(500, formData.customerLocation.length * 10))}px`, minWidth: '200px', maxWidth: '500px' }} /></div>
             <div><label htmlFor="humidity" className="form-label">Humidity %:</label><input id="humidity" type="number" value={formData.temperature.humidity} onChange={e => handleInputChange('temperature.humidity', parseFloat(e.target.value))} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Optional" /></div>
           </div>
+          <JobInfoPrintTable
+            data={{
+              customer: formData.customerName,
+              address: formData.customerLocation,
+              jobNumber: formData.jobNumber,
+              technicians: formData.technicians,
+              date: formData.date,
+              identifier: formData.identifier,
+              user: formData.userName,
+              substation: formData.substation,
+              eqptLocation: formData.eqptLocation,
+              temperature: {
+                fahrenheit: formData.temperature.fahrenheit,
+                celsius: formData.temperature.celsius,
+                tcf: formData.temperature.tcf,
+                humidity: formData.temperature.humidity,
+              },
+            }}
+          />
         </div>
 
       {/* Nameplate Data */}
@@ -747,24 +774,38 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-nameplate-data">Nameplate Data</h2>
           
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4 print:hidden nameplate-onscreen">
             <div><label className="form-label">Manufacturer:</label><input type="text" value={formData.nameplate.manufacturer} onChange={e => handleInputChange('nameplate.manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label className="form-label">Catalog Number:</label><input type="text" value={formData.nameplate.catalogNumber} onChange={e => handleInputChange('nameplate.catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label className="form-label">Serial Number:</label><input type="text" value={formData.nameplate.serialNumber} onChange={e => handleInputChange('nameplate.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             </div>
-          <div className="grid grid-cols-3 gap-4 mt-4">
+          <div className="grid grid-cols-3 gap-4 mt-4 print:hidden nameplate-onscreen">
             <div><label className="form-label">Series:</label><input type="text" value={formData.nameplate.series} onChange={e => handleInputChange('nameplate.series', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label className="form-label">Type:</label><input type="text" value={formData.nameplate.type} onChange={e => handleInputChange('nameplate.type', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label className="form-label">System Voltage:</label><input type="text" value={formData.nameplate.systemVoltage} onChange={e => handleInputChange('nameplate.systemVoltage', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
         </div>
-          <div className="grid grid-cols-3 gap-4 mt-4">
+          <div className="grid grid-cols-3 gap-4 mt-4 print:hidden nameplate-onscreen">
             <div><label className="form-label">Rated Voltage:</label><input type="text" value={formData.nameplate.ratedVoltage} onChange={e => handleInputChange('nameplate.ratedVoltage', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label className="form-label">Rated Current:</label><input type="text" value={formData.nameplate.ratedCurrent} onChange={e => handleInputChange('nameplate.ratedCurrent', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label className="form-label">AIC Rating:</label><input type="text" value={formData.nameplate.aicRating} onChange={e => handleInputChange('nameplate.aicRating', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
           </div>
-          <div className="grid grid-cols-3 gap-4 mt-4">
+          <div className="grid grid-cols-3 gap-4 mt-4 print:hidden nameplate-onscreen">
             <div><label className="form-label">Phase Configuration:</label><input type="text" value={formData.nameplate.phaseConfiguration} onChange={e => handleInputChange('nameplate.phaseConfiguration', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
           </div>
+          <NameplatePrintTable
+            data={{
+              manufacturer: formData.nameplate.manufacturer,
+              catalogNumber: formData.nameplate.catalogNumber,
+              serialNumber: formData.nameplate.serialNumber,
+              type: formData.nameplate.type,
+              systemVoltage: formData.nameplate.systemVoltage,
+              ratedVoltage: formData.nameplate.ratedVoltage,
+              ratedCurrent: formData.nameplate.ratedCurrent,
+              phaseConfiguration: formData.nameplate.phaseConfiguration,
+              aicRating: formData.nameplate.aicRating,
+              series: formData.nameplate.series,
+            }}
+          />
         </div>
 
       {/* Visual and Mechanical Inspection */}
@@ -772,23 +813,31 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+            <colgroup>
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '68%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
             <thead className="bg-gray-50 dark:bg-dark-200">
               <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/6">NETA Section</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-2/3">Description</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/6">Result</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
               {formData.visualInspectionItems.map((item, index) => (
                 <tr key={item.id}>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{item.id}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{item.description}</td>
-                    <td className="px-6 py-4">
-                      <select value={item.result} onChange={e => handleListInputChange('visualInspectionItems', index, 'result', e.target.value)} disabled={!isEditing} className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
-                      {VISUAL_INSPECTION_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
+                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 whitespace-normal break-words">{item.description}</td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="print:hidden">
+                        <select value={item.result} onChange={e => handleListInputChange('visualInspectionItems', index, 'result', e.target.value)} disabled={!isEditing} className={`form-select w-full md:w-48 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                        {VISUAL_INSPECTION_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                      </div>
+                      <div className="hidden print:block text-center">{item.result}</div>
                   </td>
                 </tr>
               ))}
@@ -818,7 +867,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           </div>
         </div>
         <div className="overflow-x-auto section-insulation-resistance">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed ir-table">
             <colgroup>
               <col style={{ width: '8%' }} />
               <col style={{ width: '9.3%' }} />
@@ -856,39 +905,48 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               {formData.measuredInsulationResistance.map((test, index) => (
                 <tr key={index}>
                   <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={test.busSection}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
+                    <div className="print:hidden">
+                      <input
+                        type="text"
+                        value={test.busSection}
+                        readOnly
+                        className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
+                      />
+                    </div>
+                    <div className="hidden print:block text-center">{test.busSection}</div>
                   </td>
                   {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
                     <td key={key} className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={test[key]}
-                        onChange={(e) => {
-                          const newTests = [...formData.measuredInsulationResistance];
-                          newTests[index][key] = e.target.value;
-                          setFormData(prev => ({ ...prev, measuredInsulationResistance: newTests }));
-                        }}
-                        readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                      />
+                      <div className="print:hidden">
+                        <input
+                          type="text"
+                          value={test[key]}
+                          onChange={(e) => {
+                            const newTests = [...formData.measuredInsulationResistance];
+                            newTests[index][key] = e.target.value;
+                            setFormData(prev => ({ ...prev, measuredInsulationResistance: newTests }));
+                          }}
+                          readOnly={!isEditing}
+                          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        />
+                      </div>
+                      <div className="hidden print:block text-center">{test[key]}</div>
                     </td>
                   ))}
                   <td className="px-3 py-2">
-                    <select
-                      value={formData.insulationResistanceUnit}
-                      onChange={(e) => handleInputChange('insulationResistanceUnit', e.target.value)}
-                      disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    >
-                      {INSULATION_RESISTANCE_UNITS.map(unit => (
-                        <option key={unit} value={unit} className="dark:bg-dark-100 dark:text-white">{unit}</option>
-                      ))}
-                    </select>
+                    <div className="print:hidden">
+                      <select
+                        value={formData.insulationResistanceUnit}
+                        onChange={(e) => handleInputChange('insulationResistanceUnit', e.target.value)}
+                        disabled={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      >
+                        {INSULATION_RESISTANCE_UNITS.map(unit => (
+                          <option key={unit} value={unit} className="dark:bg-dark-100 dark:text-white">{unit}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="hidden print:block text-center">{formData.insulationResistanceUnit}</div>
                   </td>
                 </tr>
               ))}
@@ -902,7 +960,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Values</h2>
         <div className="overflow-x-auto section-temp-corrected">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed ir-corrected-table">
             <colgroup>
               <col style={{ width: '8%' }} />
               <col style={{ width: '9.3%' }} />
@@ -940,30 +998,39 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               {formData.tempCorrectedInsulationResistance.map((test, index) => (
                 <tr key={index}>
                   <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={test.busSection}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
-                  </td>
-                  {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
-                    <td key={key} className="px-3 py-2">
+                    <div className="print:hidden">
                       <input
                         type="text"
-                        value={test[key]}
+                        value={test.busSection}
                         readOnly
                         className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
                       />
+                    </div>
+                    <div className="hidden print:block text-center">{test.busSection}</div>
+                  </td>
+                  {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
+                    <td key={key} className="px-3 py-2">
+                      <div className="print:hidden">
+                        <input
+                          type="text"
+                          value={test[key]}
+                          readOnly
+                          className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
+                        />
+                      </div>
+                      <div className="hidden print:block text-center">{test[key]}</div>
                     </td>
                   ))}
                   <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={formData.insulationResistanceUnit}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
+                    <div className="print:hidden">
+                      <input
+                        type="text"
+                        value={formData.insulationResistanceUnit}
+                        readOnly
+                        className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
+                      />
+                    </div>
+                    <div className="hidden print:block text-center">{formData.insulationResistanceUnit}</div>
                   </td>
                 </tr>
               ))}
@@ -993,7 +1060,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           </div>
         </div>
         <div className="overflow-x-auto section-contact-resistance">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed contact-resistance-table">
             <colgroup>
               <col style={{ width: '8%' }} />
               <col style={{ width: '18.4%' }} />
@@ -1023,39 +1090,48 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               {formData.contactResistanceTests.map((test, index) => (
                 <tr key={index}>
                   <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={test.busSection}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
+                    <div className="print:hidden">
+                      <input
+                        type="text"
+                        value={test.busSection}
+                        readOnly
+                        className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
+                      />
+                    </div>
+                    <div className="hidden print:block text-center">{test.busSection}</div>
                   </td>
                   {['aPhase', 'bPhase', 'cPhase', 'neutral', 'ground'].map((key) => (
                     <td key={key} className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={test[key]}
-                        onChange={(e) => {
-                          const newTests = [...formData.contactResistanceTests];
-                          newTests[index][key] = e.target.value;
-                          setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
-                        }}
-                        readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                      />
+                      <div className="print:hidden">
+                        <input
+                          type="text"
+                          value={test[key]}
+                          onChange={(e) => {
+                            const newTests = [...formData.contactResistanceTests];
+                            newTests[index][key] = e.target.value;
+                            setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
+                          }}
+                          readOnly={!isEditing}
+                          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        />
+                      </div>
+                      <div className="hidden print:block text-center">{test[key]}</div>
                     </td>
                   ))}
                   <td className="px-3 py-2">
-                    <select
-                      value={formData.contactResistanceUnit}
-                      onChange={(e) => handleInputChange('contactResistanceUnit', e.target.value)}
-                      disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    >
-                      {CONTACT_RESISTANCE_UNITS.map(unit => (
-                        <option key={unit} value={unit} className="dark:bg-dark-100 dark:text-white">{unit}</option>
-                      ))}
-                    </select>
+                    <div className="print:hidden">
+                      <select
+                        value={formData.contactResistanceUnit}
+                        onChange={(e) => handleInputChange('contactResistanceUnit', e.target.value)}
+                        disabled={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      >
+                        {CONTACT_RESISTANCE_UNITS.map(unit => (
+                          <option key={unit} value={unit} className="dark:bg-dark-100 dark:text-white">{unit}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="hidden print:block text-center">{formData.contactResistanceUnit}</div>
                   </td>
                 </tr>
               ))}
@@ -1084,7 +1160,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           </div>
         </div>
         <div className="overflow-x-auto section-dielectric">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed dielectric-table">
             <colgroup>
               <col style={{ width: '8%' }} />
               <col style={{ width: '28%' }} />
@@ -1110,39 +1186,48 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               {formData.dielectricWithstandTests.map((test, index) => (
                 <tr key={index}>
                   <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={test.busSection}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
+                    <div className="print:hidden">
+                      <input
+                        type="text"
+                        value={test.busSection}
+                        readOnly
+                        className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
+                      />
+                    </div>
+                    <div className="hidden print:block text-center">{test.busSection}</div>
                   </td>
                   {['ag', 'bg', 'cg'].map((key) => (
                     <td key={key} className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={test[key]}
-                        onChange={(e) => {
-                          const newTests = [...formData.dielectricWithstandTests];
-                          newTests[index][key] = e.target.value;
-                          setFormData(prev => ({ ...prev, dielectricWithstandTests: newTests }));
-                        }}
-                        readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                      />
+                      <div className="print:hidden">
+                        <input
+                          type="text"
+                          value={test[key]}
+                          onChange={(e) => {
+                            const newTests = [...formData.dielectricWithstandTests];
+                            newTests[index][key] = e.target.value;
+                            setFormData(prev => ({ ...prev, dielectricWithstandTests: newTests }));
+                          }}
+                          readOnly={!isEditing}
+                          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        />
+                      </div>
+                      <div className="hidden print:block text-center">{test[key]}</div>
                     </td>
                   ))}
                   <td className="px-3 py-2">
-                    <select
-                      value={formData.dielectricWithstandUnit}
-                      onChange={(e) => handleInputChange('dielectricWithstandUnit', e.target.value)}
-                      disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    >
-                      {DIELECTRIC_WITHSTAND_UNITS.map(unit => (
-                        <option key={unit} value={unit} className="dark:bg-dark-100 dark:text-white">{unit}</option>
-                      ))}
-                    </select>
+                    <div className="print:hidden">
+                      <select
+                        value={formData.dielectricWithstandUnit}
+                        onChange={(e) => handleInputChange('dielectricWithstandUnit', e.target.value)}
+                        disabled={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      >
+                        {DIELECTRIC_WITHSTAND_UNITS.map(unit => (
+                          <option key={unit} value={unit} className="dark:bg-dark-100 dark:text-white">{unit}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="hidden print:block text-center">{formData.dielectricWithstandUnit}</div>
                   </td>
                 </tr>
               ))}
@@ -1157,7 +1242,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
             Test Equipment Used
           </h2>
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-6 print:hidden test-eqpt-onscreen">
             <div className="grid grid-cols-3 gap-4 border-b dark:border-gray-700 pb-4">
               <div>
                 <label className="form-label">Megohmmeter:</label>
@@ -1168,7 +1253,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   readOnly={!isEditing}
                   className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
-          </div>
+              </div>
               <div>
                 <label className="form-label">Serial Number:</label>
                 <input
@@ -1255,6 +1340,61 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               </div>
             </div>
           </div>
+          
+          {/* Print-only compact Test Equipment table */}
+          <div className="hidden print:block">
+            <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+              <colgroup>
+                <col style={{ width: '33.33%' }} />
+                <col style={{ width: '33.33%' }} />
+                <col style={{ width: '33.33%' }} />
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Megohmmeter:</div>
+                    <div className="mt-0">{formData.testEquipment.megohmmeter.name || ''}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Serial Number:</div>
+                    <div className="mt-0">{formData.testEquipment.megohmmeter.serialNumber || ''}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">AMP ID:</div>
+                    <div className="mt-0">{formData.testEquipment.megohmmeter.ampId || ''}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Low Resistance Ohmmeter:</div>
+                    <div className="mt-0">{formData.testEquipment.lowResistanceOhmmeter.name || ''}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Serial Number:</div>
+                    <div className="mt-0">{formData.testEquipment.lowResistanceOhmmeter.serialNumber || ''}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">AMP ID:</div>
+                    <div className="mt-0">{formData.testEquipment.lowResistanceOhmmeter.ampId || ''}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Hipot:</div>
+                    <div className="mt-0">{formData.testEquipment.hipot.name || ''}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Serial Number:</div>
+                    <div className="mt-0">{formData.testEquipment.hipot.serialNumber || ''}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">AMP ID:</div>
+                    <div className="mt-0">{formData.testEquipment.hipot.ampId || ''}</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
       {/* Comments */}
@@ -1268,9 +1408,22 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           onChange={e => handleInputChange('comments', e.target.value)}
           rows={4}
           readOnly={!isEditing}
-          className={`form-textarea w-full resize-none ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+          className={`form-textarea w-full resize-none ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''} print:hidden`}
           placeholder="Enter comments here..."
         />
+        {/* Print-only comments box */}
+        <div className="hidden print:block">
+          <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+            <tbody>
+              <tr>
+                <td className="p-2 align-top border border-gray-300 print:border-black">
+                  <div className="font-semibold">Comments</div>
+                  <div className="mt-0">{formData.comments || ''}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
       </div>
       </div>

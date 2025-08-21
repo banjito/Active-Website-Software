@@ -5,6 +5,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
+import NameplatePrintTable from './common/NameplatePrintTable';
 
 // Add these constants at the top of the file, after the imports
 const visualInspectionOptions = [
@@ -830,7 +832,7 @@ const SwitchgearReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
               <div>
                 <label htmlFor="customer" className="form-label">Customer:</label>
                 <input id="customer" type="text" name="customer" value={formData.customerName} onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))} readOnly className={`form-input text-sm bg-gray-100 dark:bg-dark-200 cursor-not-allowed`} />
@@ -892,13 +894,32 @@ const SwitchgearReport: React.FC = () => {
                 <input id="eqptLocation" type="text" name="eqptLocation" value={formData.eqptLocation} onChange={(e) => setFormData(prev => ({ ...prev, eqptLocation: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
             </div>
+            <JobInfoPrintTable
+              data={{
+                customer: formData.customerName,
+                address: formData.customerLocation,
+                jobNumber: formData.jobNumber,
+                technicians: formData.technicians,
+                date: formData.date,
+                identifier: formData.identifier,
+                user: formData.userName,
+                substation: formData.substation,
+                eqptLocation: formData.eqptLocation,
+                temperature: {
+                  fahrenheit: formData.temperature.fahrenheit,
+                  celsius: formData.temperature.celsius,
+                  tcf: formData.temperature.tcf,
+                  humidity: formData.temperature.humidity,
+                },
+              }}
+            />
           </div>
 
           {/* Nameplate Data */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 print:hidden nameplate-onscreen">
               <div className="space-y-4">
                 <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label><input type="text" value={formData.manufacturer} onChange={(e) => setFormData(prev => ({ ...prev, manufacturer: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                 <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog No.</label><input type="text" value={formData.catalogNumber} onChange={(e) => setFormData(prev => ({ ...prev, catalogNumber: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -912,6 +933,18 @@ const SwitchgearReport: React.FC = () => {
                 <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phase Configuration</label><input type="text" value={formData.phaseConfiguration} onChange={(e) => setFormData(prev => ({ ...prev, phaseConfiguration: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               </div>
             </div>
+            <NameplatePrintTable
+              data={{
+                manufacturer: formData.manufacturer,
+                catalogNumber: formData.catalogNumber,
+                serialNumber: formData.serialNumber,
+                type: formData.type,
+                systemVoltage: formData.systemVoltage,
+                ratedVoltage: formData.ratedVoltage,
+                ratedCurrent: formData.ratedCurrent,
+                phaseConfiguration: formData.phaseConfiguration,
+              }}
+            />
           </div>
 
           {/* Visual and Mechanical Inspection */}
@@ -940,12 +973,18 @@ const SwitchgearReport: React.FC = () => {
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
                       <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{item.description}</td>
                       <td className="px-3 py-2 whitespace-nowrap">
-                        <select value={item.result} onChange={(e) => { const newItems = [...formData.visualInspectionItems]; newItems[index].result = e.target.value; setFormData({ ...formData, visualInspectionItems: newItems }); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
-                          {visualInspectionOptions.map(option => (<option key={option} value={option}>{option}</option>))}
-                        </select>
+                        <div className="print:hidden">
+                          <select value={item.result} onChange={(e) => { const newItems = [...formData.visualInspectionItems]; newItems[index].result = e.target.value; setFormData({ ...formData, visualInspectionItems: newItems }); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                            {visualInspectionOptions.map(option => (<option key={option} value={option}>{option}</option>))}
+                          </select>
+                        </div>
+                        <div className="hidden print:block text-center">{item.result}</div>
                       </td>
                       <td className="px-3 py-2">
-                        <input type="text" value={item.comments} onChange={(e) => { const newItems = [...formData.visualInspectionItems]; newItems[index].comments = e.target.value; setFormData({ ...formData, visualInspectionItems: newItems }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                        <div className="print:hidden">
+                          <input type="text" value={item.comments} onChange={(e) => { const newItems = [...formData.visualInspectionItems]; newItems[index].comments = e.target.value; setFormData({ ...formData, visualInspectionItems: newItems }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                        </div>
+                        <div className="hidden print:block">{item.comments}</div>
                       </td>
                     </tr>
                   ))}
@@ -972,7 +1011,7 @@ const SwitchgearReport: React.FC = () => {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+              <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700 print:border-black">
                 <colgroup>
                   <col style={{ width: '8%' }} />
                   <col style={{ width: '9.3%' }} />
@@ -1010,17 +1049,26 @@ const SwitchgearReport: React.FC = () => {
                   {formData.insulationResistanceTests.map((test, index) => (
                     <tr key={index}>
                       <td className="px-3 py-2">
-                        <input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" />
+                        <div className="print:hidden">
+                          <input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" />
+                        </div>
+                        <div className="hidden print:block text-center">{test.busSection}</div>
                       </td>
                       {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
                         <td key={key} className="px-3 py-2">
-                          <input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.insulationResistanceTests]; newTests[index].values[key] = e.target.value; setFormData(prev => ({ ...prev, insulationResistanceTests: newTests, temperatureCorrectedTests: newTests.map(test => ({ ...test, values: { ag: test.values.ag ? (parseFloat(test.values.ag) * prev.temperature.tcf).toFixed(2) : '', bg: test.values.bg ? (parseFloat(test.values.bg) * prev.temperature.tcf).toFixed(2) : '', cg: test.values.cg ? (parseFloat(test.values.cg) * prev.temperature.tcf).toFixed(2) : '', ab: test.values.ab ? (parseFloat(test.values.ab) * prev.temperature.tcf).toFixed(2) : '', bc: test.values.bc ? (parseFloat(test.values.bc) * prev.temperature.tcf).toFixed(2) : '', ca: test.values.ca ? (parseFloat(test.values.ca) * prev.temperature.tcf).toFixed(2) : '', an: test.values.an ? (parseFloat(test.values.an) * prev.temperature.tcf).toFixed(2) : '', bn: test.values.bn ? (parseFloat(test.values.bn) * prev.temperature.tcf).toFixed(2) : '', cn: test.values.cn ? (parseFloat(test.values.cn) * prev.temperature.tcf).toFixed(2) : '' }, unit: test.unit })) })); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                          <div className="print:hidden">
+                            <input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.insulationResistanceTests]; newTests[index].values[key] = e.target.value; setFormData(prev => ({ ...prev, insulationResistanceTests: newTests, temperatureCorrectedTests: newTests.map(test => ({ ...test, values: { ag: test.values.ag ? (parseFloat(test.values.ag) * prev.temperature.tcf).toFixed(2) : '', bg: test.values.bg ? (parseFloat(test.values.bg) * prev.temperature.tcf).toFixed(2) : '', cg: test.values.cg ? (parseFloat(test.values.cg) * prev.temperature.tcf).toFixed(2) : '', ab: test.values.ab ? (parseFloat(test.values.ab) * prev.temperature.tcf).toFixed(2) : '', bc: test.values.bc ? (parseFloat(test.values.bc) * prev.temperature.tcf).toFixed(2) : '', ca: test.values.ca ? (parseFloat(test.values.ca) * prev.temperature.tcf).toFixed(2) : '', an: test.values.an ? (parseFloat(test.values.an) * prev.temperature.tcf).toFixed(2) : '', bn: test.values.bn ? (parseFloat(test.values.bn) * prev.temperature.tcf).toFixed(2) : '', cn: test.values.cn ? (parseFloat(test.values.cn) * prev.temperature.tcf).toFixed(2) : '' }, unit: test.unit })) })); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                          </div>
+                          <div className="hidden print:block text-center">{test.values[key]}</div>
                         </td>
                       ))}
                       <td className="px-3 py-2">
-                        <select value={test.unit} onChange={(e) => { const newTests = [...formData.insulationResistanceTests]; newTests[index].unit = e.target.value; setFormData(prev => ({ ...prev, insulationResistanceTests: newTests })); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
-                          {insulationResistanceUnits.map(unit => (<option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>))}
-                        </select>
+                        <div className="print:hidden">
+                          <select value={test.unit} onChange={(e) => { const newTests = [...formData.insulationResistanceTests]; newTests[index].unit = e.target.value; setFormData(prev => ({ ...prev, insulationResistanceTests: newTests })); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                            {insulationResistanceUnits.map(unit => (<option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>))}
+                          </select>
+                        </div>
+                        <div className="hidden print:block text-center">{test.unit}</div>
                       </td>
                     </tr>
                   ))}
@@ -1071,11 +1119,11 @@ const SwitchgearReport: React.FC = () => {
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.temperatureCorrectedTests.map((test, index) => (
                     <tr key={index}>
-                      <td className="px-3 py-2"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></td>
+                      <td className="px-3 py-2"><div className="print:hidden"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{test.busSection}</div></td>
                       {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
-                        <td key={key} className="px-3 py-2"><input type="text" value={formData.insulationResistanceTests[index]?.values[key] ? (parseFloat(formData.insulationResistanceTests[index].values[key]) * formData.temperature.tcf).toFixed(2) : ''} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></td>
+                        <td key={key} className="px-3 py-2"><div className="print:hidden"><input type="text" value={formData.insulationResistanceTests[index]?.values[key] ? (parseFloat(formData.insulationResistanceTests[index].values[key]) * formData.temperature.tcf).toFixed(2) : ''} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{formData.insulationResistanceTests[index]?.values[key] ? (parseFloat(formData.insulationResistanceTests[index].values[key]) * formData.temperature.tcf).toFixed(2) : ''}</div></td>
                       ))}
-                      <td className="px-3 py-2"><input type="text" value={test.unit} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></td>
+                      <td className="px-3 py-2"><div className="print:hidden"><input type="text" value={test.unit} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{test.unit}</div></td>
                     </tr>
                   ))}
                 </tbody>
@@ -1133,11 +1181,21 @@ const SwitchgearReport: React.FC = () => {
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.contactResistanceTests.map((test, index) => (
                     <tr key={index}>
-                      <td className="px-3 py-2"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></td>
+                      <td className="px-3 py-2"><div className="print:hidden"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{test.busSection}</div></td>
                       {['aPhase', 'bPhase', 'cPhase', 'neutral', 'ground'].map((key) => (
-                        <td key={key} className="px-3 py-2"><input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.contactResistanceTests]; if (!newTests[index]) { newTests[index] = { busSection: '', values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' }, testVoltage: newTests[0]?.testVoltage || '', unit: 'µΩ' }; } newTests[index].values[key] = e.target.value; setFormData({ ...formData, contactResistanceTests: newTests }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                        <td key={key} className="px-3 py-2">
+                          <div className="print:hidden">
+                            <input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.contactResistanceTests]; if (!newTests[index]) { newTests[index] = { busSection: '', values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' }, testVoltage: newTests[0]?.testVoltage || '', unit: 'µΩ' }; } newTests[index].values[key] = e.target.value; setFormData({ ...formData, contactResistanceTests: newTests }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                          </div>
+                          <div className="hidden print:block text-center">{test.values[key]}</div>
+                        </td>
                       ))}
-                      <td className="px-3 py-2"><select value={test.unit} onChange={(e) => { const newTests = [...formData.contactResistanceTests]; newTests[index].unit = e.target.value; setFormData(prev => ({ ...prev, contactResistanceTests: newTests })); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}><option value="µΩ">µΩ</option><option value="mΩ">mΩ</option><option value="Ω">Ω</option></select></td>
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <select value={test.unit} onChange={(e) => { const newTests = [...formData.contactResistanceTests]; newTests[index].unit = e.target.value; setFormData(prev => ({ ...prev, contactResistanceTests: newTests })); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}><option value="µΩ">µΩ</option><option value="mΩ">mΩ</option><option value="Ω">Ω</option></select>
+                        </div>
+                        <div className="hidden print:block text-center">{test.unit}</div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1166,7 +1224,9 @@ const SwitchgearReport: React.FC = () => {
               <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
                 <colgroup>
                   <col style={{ width: '10%' }} />
-                  <col span={3} />
+                  <col style={{ width: '30%' }} />
+                  <col style={{ width: '30%' }} />
+                  <col style={{ width: '30%' }} />
                   <col style={{ width: '10%' }} />
                 </colgroup>
                 <thead>
@@ -1186,11 +1246,16 @@ const SwitchgearReport: React.FC = () => {
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.dielectricWithstandTests.map((test, index) => (
                     <tr key={index}>
-                      <td className="px-3 py-2"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></td>
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" />
+                        </div>
+                        <div className="hidden print:block text-center">{test.busSection}</div>
+                      </td>
                       {['ag', 'bg', 'cg'].map((key) => (
-                        <td key={key} className="px-3 py-2"><input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.dielectricWithstandTests]; if (!newTests[index]) { newTests[index] = { busSection: '', values: { ag: '', bg: '', cg: '' }, testVoltage: newTests[0]?.testVoltage || '', unit: 'µA' }; } newTests[index].values[key] = e.target.value; setFormData({ ...formData, dielectricWithstandTests: newTests }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></td>
+                        <td key={key} className="px-3 py-2"><div className="print:hidden"><input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.dielectricWithstandTests]; if (!newTests[index]) { newTests[index] = { busSection: '', values: { ag: '', bg: '', cg: '' }, testVoltage: newTests[0]?.testVoltage || '', unit: 'µA' }; } newTests[index].values[key] = e.target.value; setFormData({ ...formData, dielectricWithstandTests: newTests }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div><div className="hidden print:block text-center">{test.values[key]}</div></td>
                       ))}
-                      <td className="px-3 py-2"><select value={test.unit} onChange={(e) => { const newTests = [...formData.dielectricWithstandTests]; if (!newTests[index]) { newTests[index] = { busSection: '', values: { ag: '', bg: '', cg: '' }, testVoltage: newTests[0]?.testVoltage || '', unit: e.target.value }; } newTests[index].unit = e.target.value; setFormData({ ...formData, dielectricWithstandTests: newTests }); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}><option value="µA">µA</option><option value="mA">mA</option></select></td>
+                      <td className="px-3 py-2"><div className="print:hidden"><select value={test.unit} onChange={(e) => { const newTests = [...formData.dielectricWithstandTests]; if (!newTests[index]) { newTests[index] = { busSection: '', values: { ag: '', bg: '', cg: '' }, testVoltage: newTests[0]?.testVoltage || '', unit: e.target.value }; } newTests[index].unit = e.target.value; setFormData({ ...formData, dielectricWithstandTests: newTests }); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}><option value="µA">µA</option><option value="mA">mA</option></select></div><div className="hidden print:block text-center">{test.unit}</div></td>
                     </tr>
                   ))}
                 </tbody>
@@ -1202,7 +1267,7 @@ const SwitchgearReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-6 test-eqpt-onscreen print:hidden">
               <div className="grid grid-cols-3 gap-4">
                 <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label><input type="text" value={formData.testEquipment.megohmmeter.name} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, megohmmeter: { ...prev.testEquipment.megohmmeter, name: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                 <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label><input type="text" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, megohmmeter: { ...prev.testEquipment.megohmmeter, serialNumber: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -1220,12 +1285,51 @@ const SwitchgearReport: React.FC = () => {
               </div>
             </div>
           </div>
+          {/* Print-only compact Test Equipment table (3 cols per row, 2 rows) */}
+          <div className="hidden print:block">
+            <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+              <colgroup>
+                <col style={{ width: '33.33%' }} />
+                <col style={{ width: '33.33%' }} />
+                <col style={{ width: '33.33%' }} />
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Megohmmeter:</div><div>{formData.testEquipment.megohmmeter.name}</div></td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Serial Number:</div><div>{formData.testEquipment.megohmmeter.serialNumber}</div></td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">AMP ID:</div><div>{formData.testEquipment.megohmmeter.ampId}</div></td>
+                </tr>
+                <tr>
+                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Low Resistance:</div><div>{formData.testEquipment.lowResistance.name}</div></td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Serial Number:</div><div>{formData.testEquipment.lowResistance.serialNumber}</div></td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">AMP ID:</div><div>{formData.testEquipment.lowResistance.ampId}</div></td>
+                </tr>
+                <tr>
+                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Hipot:</div><div>{formData.testEquipment.hipot.name}</div></td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Serial Number:</div><div>{formData.testEquipment.hipot.serialNumber}</div></td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">AMP ID:</div><div>{formData.testEquipment.hipot.ampId}</div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
           {/* Comments */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
-            <textarea value={formData.comments} onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))} readOnly={!isEditing} rows={4} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+            <textarea value={formData.comments} onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))} readOnly={!isEditing} rows={4} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''} print:hidden`} />
+            <div className="hidden print:block">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                      <div className="font-semibold">Comments</div>
+                      <div className="mt-0">{formData.comments || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -1240,7 +1344,8 @@ if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
     @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif !important; }
+      html, body { font-size: 9px !important; color: black !important; background: white !important; line-height: 1 !important; }
       
       /* Hide all navigation and header elements */
       header, nav, .navigation, [class*="nav"], [class*="header"], 
@@ -1266,8 +1371,13 @@ if (typeof document !== 'undefined') {
       .print\\:font-bold { font-weight: bold !important; }
       .print\\:text-center { text-align: center !important; }
       
-      table { border-collapse: collapse; width: 100%; }
-      th, td { border: 1px solid black !important; padding: 4px !important; }
+      /* Remove non-table borders to avoid conflicts and ensure crisp table lines */
+      * { border: none !important; box-shadow: none !important; outline: none !important; }
+      table { border-collapse: collapse !important; width: 100% !important; margin: 1px 0 !important; font-size: 8px !important; }
+      thead { display: table-header-group !important; }
+      tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+      table, th, td, thead, tbody, tr { border: 1px solid black !important; }
+      th, td { padding: 2px 3px !important; text-align: center !important; font-size: 8px !important; height: 12px !important; line-height: 1 !important; }
       th { background-color: #f0f0f0 !important; font-weight: bold !important; }
       
       input, select, textarea { 
@@ -1342,6 +1452,12 @@ if (typeof document !== 'undefined') {
         box-sizing: border-box !important;
         padding-right: 2px !important;
       }
+
+      /* Force-hide on-screen grids in print to avoid duplication */
+      .job-info-onscreen, .job-info-onscreen * { display: none !important; }
+      .nameplate-onscreen, .nameplate-onscreen * { display: none !important; }
+      .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
+      .hidden.print\:block { display: block !important; }
     }
   `;
   document.head.appendChild(style);

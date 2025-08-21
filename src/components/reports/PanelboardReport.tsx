@@ -6,6 +6,8 @@ import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
+import NameplatePrintTable from './common/NameplatePrintTable';
 import { ArrowLeft } from 'lucide-react';
 
 // Temperature conversion and correction factor lookup tables
@@ -53,7 +55,13 @@ const visualInspectionOptions = [
   "Unsatisfactory",
   "Cleaned",
   "See Comments",
-  "Not Applicable"
+  "Not Applicable",
+  // Legacy/result variants to ensure existing data renders
+  "Y",
+  "N",
+  "N/A",
+  "Yes",
+  "No",
 ];
 
 const insulationResistanceUnits = [
@@ -198,6 +206,12 @@ const PanelboardReport: React.FC = () => {
       }
 
       @media print {
+        /* Hide on-screen job info grid entirely in print */
+        .job-info-onscreen, .job-info-onscreen * { display: none !important; }
+        /* Hide on-screen nameplate grid in print */
+        .nameplate-onscreen, .nameplate-onscreen * { display: none !important; }
+        /* Hide on-screen test equipment grid in print */
+        .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
         /* Spread IR/Corrected tables and push Units far right */
         .ir-table th, .ir-table td, .ir-corrected-table th, .ir-corrected-table td { padding: 2px 3px !important; font-size: 8px !important; }
         .ir-table colgroup col:last-child, .ir-corrected-table colgroup col:last-child { width: 7.75% !important; }
@@ -382,13 +396,13 @@ const PanelboardReport: React.FC = () => {
           outline: none !important;
         }
         
-        /* Specifically target and remove print borders */
+        /* Enforce print utility borders */
         .print\\:border {
-          border: none !important;
+          border: 1px solid black !important;
         }
         
         .print\\:border-black {
-          border: none !important;
+          border: 1px solid black !important;
         }
         
         /* Remove borders from divs with these specific classes */
@@ -400,7 +414,7 @@ const PanelboardReport: React.FC = () => {
         
         /* Only allow borders on table elements */
         table, th, td, thead, tbody, tr {
-          border: 0.5px solid black !important;
+          border: 1px solid black !important;
         }
         
         /* Allow borders on inputs */
@@ -806,9 +820,47 @@ const PanelboardReport: React.FC = () => {
           customerName: data.report_info?.customer || prev.customerName,
           customerLocation: data.report_info?.address || prev.customerLocation,
           identifier: data.report_info?.identifier || '',
-          userName: data.report_info?.userName || '',
+          userName: data.report_info?.userName || data.report_info?.user || prev.userName,
           testEquipmentLocation: data.report_info?.testEquipmentLocation || '',
-          visualInspectionItems: data.visual_mechanical?.items || prev.visualInspectionItems,
+          // Normalize visual/mechanical inspection results into our array shape by id
+          visualInspectionItems: (() => {
+            const vm = data.visual_mechanical;
+            const vmi = (data as any).visual_mechanical_inspection;
+            const vi = (data as any).visualInspection;
+            const itemsSource =
+              (Array.isArray(vm?.items) && vm.items) ||
+              (Array.isArray(vmi?.items) && vmi.items) ||
+              (Array.isArray(vmi) && vmi) ||
+              (Array.isArray(vm) && vm) ||
+              prev.visualInspectionItems;
+
+            // Some legacy saves might store a map keyed by id and/or use different field names
+            const legacyMap =
+              (vm && (vm.results || vm.map)) ||
+              (vmi && ((vmi as any).results || (vmi as any).map)) ||
+              vi ||
+              undefined;
+            if (legacyMap && !Array.isArray(legacyMap)) {
+              return prev.visualInspectionItems.map(item => ({
+                ...item,
+                result: legacyMap[item.id]?.result ?? legacyMap[item.id] ?? item.result,
+                comments: legacyMap[item.id]?.comments ?? item.comments,
+              }));
+            }
+            // If items array exists, ensure we merge by id keeping descriptions
+            if (Array.isArray(itemsSource)) {
+              const byId: Record<string, any> = {};
+              itemsSource.forEach((it: any) => {
+                if (it && typeof it.id === 'string') byId[it.id] = it;
+              });
+              return prev.visualInspectionItems.map(item => ({
+                ...item,
+                result: byId[item.id]?.result ?? item.result ?? 'Select One',
+                comments: byId[item.id]?.comments ?? item.comments ?? '',
+              }));
+            }
+            return prev.visualInspectionItems;
+          })(),
           insulationResistanceTests: data.insulation_resistance?.tests || prev.insulationResistanceTests,
           temperatureCorrectedTests: data.insulation_resistance?.correctedTests || prev.temperatureCorrectedTests,
           contactResistanceTests: data.contact_resistance?.tests || prev.contactResistanceTests,
@@ -1155,7 +1207,7 @@ const PanelboardReport: React.FC = () => {
         
 
         
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-8 print:hidden job-info-onscreen">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #</label>
@@ -1184,10 +1236,6 @@ const PanelboardReport: React.FC = () => {
                   rows={3}
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
                 />
-              </div>
-              <div className="hidden print:flex print:items-baseline">
-                <label style={{ fontSize: '8px', marginRight: '4px', display: 'inline-block', width: '50px' }}>Address</label>
-                <span style={{ fontSize: '8px', borderBottom: '1px solid black', display: 'inline-block', minWidth: '150px', paddingBottom: '1px' }}>{formData.customerLocation}</span>
               </div>
             </div>
             <div>
@@ -1289,12 +1337,26 @@ const PanelboardReport: React.FC = () => {
 
           </div>
         </div>
+        <JobInfoPrintTable
+          data={{
+            customer: formData.customerName,
+            address: formData.customerLocation,
+            jobNumber: formData.jobNumber,
+            technicians: formData.technicians,
+            date: formData.date,
+            identifier: formData.identifier,
+            user: formData.userName,
+            substation: formData.substation,
+            eqptLocation: formData.eqptLocation,
+            temperature: { ...formData.temperature }
+          }}
+        />
       </div>
 
       {/* Nameplate Data */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 print:hidden nameplate-onscreen">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
@@ -1380,6 +1442,18 @@ const PanelboardReport: React.FC = () => {
             </div>
           </div>
         </div>
+        <NameplatePrintTable
+          data={{
+            manufacturer: formData.manufacturer,
+            catalogNumber: formData.catalogNumber,
+            serialNumber: formData.serialNumber,
+            type: formData.type,
+            systemVoltage: formData.systemVoltage,
+            ratedVoltage: formData.ratedVoltage,
+            ratedCurrent: formData.ratedCurrent,
+            phaseConfiguration: formData.phaseConfiguration,
+          }}
+        />
       </div>
 
       {/* Visual and Mechanical Inspection */}
@@ -1407,33 +1481,39 @@ const PanelboardReport: React.FC = () => {
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{item.description}</td>
                   <td className="px-3 py-2 whitespace-nowrap">
-                    <select
-                      value={item.result}
-                      onChange={(e) => {
-                        const newItems = [...formData.visualInspectionItems];
-                        newItems[index].result = e.target.value;
-                        setFormData({ ...formData, visualInspectionItems: newItems });
-                      }}
-                      disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    >
-                      {visualInspectionOptions.map(option => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </select>
+                    <div className="print:hidden">
+                      <select
+                        value={item.result ?? ''}
+                        onChange={(e) => {
+                          const newItems = [...formData.visualInspectionItems];
+                          newItems[index].result = e.target.value;
+                          setFormData({ ...formData, visualInspectionItems: newItems });
+                        }}
+                        disabled={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      >
+                        {visualInspectionOptions.map(option => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="hidden print:block text-center">{item.result ?? ''}</div>
                   </td>
                   <td className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={item.comments}
-                      onChange={(e) => {
-                        const newItems = [...formData.visualInspectionItems];
-                        newItems[index].comments = e.target.value;
-                        setFormData({ ...formData, visualInspectionItems: newItems });
-                      }}
-                      readOnly={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
+                    <div className="print:hidden">
+                      <input
+                        type="text"
+                        value={item.comments ?? ''}
+                        onChange={(e) => {
+                          const newItems = [...formData.visualInspectionItems];
+                          newItems[index].comments = e.target.value;
+                          setFormData({ ...formData, visualInspectionItems: newItems });
+                        }}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      />
+                    </div>
+                    <div className="hidden print:block">{item.comments ?? ''}</div>
                   </td>
                 </tr>
               ))}
@@ -1505,34 +1585,40 @@ const PanelboardReport: React.FC = () => {
               <tr>
                 {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
                   <td key={key} className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={formData.insulationResistanceTests[0]?.values[key] || ''}
-                      onChange={(e) => {
-                        const newTests = [...formData.insulationResistanceTests];
-                        newTests[0].values[key] = e.target.value;
-                        setFormData({ ...formData, insulationResistanceTests: newTests });
-                      }}
-                      readOnly={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    />
+                    <div className="print:hidden">
+                      <input
+                        type="text"
+                        value={formData.insulationResistanceTests[0]?.values[key] || ''}
+                        onChange={(e) => {
+                          const newTests = [...formData.insulationResistanceTests];
+                          newTests[0].values[key] = e.target.value;
+                          setFormData({ ...formData, insulationResistanceTests: newTests });
+                        }}
+                        readOnly={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      />
+                    </div>
+                    <div className="hidden print:block text-center">{formData.insulationResistanceTests[0]?.values[key] || ''}</div>
                   </td>
                 ))}
                 <td className="px-3 py-2">
-                  <select
-                    value={formData.insulationResistanceTests[0]?.unit || 'MΩ'}
-                    onChange={(e) => {
-                      const newTests = [...formData.insulationResistanceTests];
-                      newTests[0].unit = e.target.value;
-                      setFormData({ ...formData, insulationResistanceTests: newTests });
-                    }}
-                    disabled={!isEditing}
-                    className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                  >
-                    {insulationResistanceUnits.map(unit => (
-                      <option key={unit.symbol} value={unit.symbol}>{unit.symbol}</option>
-                    ))}
-                  </select>
+                  <div className="print:hidden">
+                    <select
+                      value={formData.insulationResistanceTests[0]?.unit || 'MΩ'}
+                      onChange={(e) => {
+                        const newTests = [...formData.insulationResistanceTests];
+                        newTests[0].unit = e.target.value;
+                        setFormData({ ...formData, insulationResistanceTests: newTests });
+                      }}
+                      disabled={!isEditing}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    >
+                      {insulationResistanceUnits.map(unit => (
+                        <option key={unit.symbol} value={unit.symbol}>{unit.symbol}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="hidden print:block text-center">{formData.insulationResistanceTests[0]?.unit || 'MΩ'}</div>
                 </td>
               </tr>
             </tbody>
@@ -1579,22 +1665,29 @@ const PanelboardReport: React.FC = () => {
               <tr>
                 {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
                   <td key={key} className="px-3 py-2">
-                    <input
-                      type="text"
-                      value={formData.insulationResistanceTests[0]?.values[key] ? 
-                        (parseFloat(formData.insulationResistanceTests[0].values[key]) * formData.temperature.tcf).toFixed(2) : ''}
-                      readOnly
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                    />
+                    <div className="print:hidden">
+                      <input
+                        type="text"
+                        value={formData.insulationResistanceTests[0]?.values[key] ? 
+                          (parseFloat(formData.insulationResistanceTests[0].values[key]) * formData.temperature.tcf).toFixed(2) : ''}
+                        readOnly
+                        className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
+                      />
+                    </div>
+                    <div className="hidden print:block text-center">{formData.insulationResistanceTests[0]?.values[key] ? 
+                          (parseFloat(formData.insulationResistanceTests[0].values[key]) * formData.temperature.tcf).toFixed(2) : ''}</div>
                   </td>
                 ))}
                 <td className="px-3 py-2">
-                  <input
-                    type="text"
-                    value={formData.insulationResistanceTests[0]?.unit || 'MΩ'}
-                    readOnly
-                    className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
-                  />
+                  <div className="print:hidden">
+                    <input
+                      type="text"
+                      value={formData.insulationResistanceTests[0]?.unit || 'MΩ'}
+                      readOnly
+                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
+                    />
+                  </div>
+                  <div className="hidden print:block text-center">{formData.insulationResistanceTests[0]?.unit || 'MΩ'}</div>
                 </td>
               </tr>
             </tbody>
@@ -1658,34 +1751,40 @@ const PanelboardReport: React.FC = () => {
                   </td>
                   {['aPhase', 'bPhase', 'cPhase', 'neutral', 'ground'].map((key) => (
                     <td key={key} className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={test.values[key]}
-                        onChange={(e) => {
-                          const newTests = [...formData.contactResistanceTests];
-                          newTests[index].values[key] = e.target.value;
-                          setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
-                        }}
-                        readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                      />
+                      <div className="print:hidden">
+                        <input
+                          type="text"
+                          value={test.values[key]}
+                          onChange={(e) => {
+                            const newTests = [...formData.contactResistanceTests];
+                            newTests[index].values[key] = e.target.value;
+                            setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
+                          }}
+                          readOnly={!isEditing}
+                          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        />
+                      </div>
+                      <div className="hidden print:block text-center">{test.values[key]}</div>
                     </td>
                   ))}
                   <td className="px-3 py-2">
-                    <select
-                      value={test.unit}
-                      onChange={(e) => {
-                        const newTests = [...formData.contactResistanceTests];
-                        newTests[index].unit = e.target.value;
-                        setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
-                      }}
-                      disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-                    >
-                      {contactResistanceUnits.map(unit => (
-                        <option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>
-                      ))}
-                    </select>
+                    <div className="print:hidden">
+                      <select
+                        value={test.unit}
+                        onChange={(e) => {
+                          const newTests = [...formData.contactResistanceTests];
+                          newTests[index].unit = e.target.value;
+                          setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
+                        }}
+                        disabled={!isEditing}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      >
+                        {contactResistanceUnits.map(unit => (
+                          <option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="hidden print:block text-center">{test.unit}</div>
                   </td>
                 </tr>
               ))}
@@ -1698,7 +1797,7 @@ const PanelboardReport: React.FC = () => {
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden test-eqpt-onscreen">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Megohmmeter</label>
               <input
@@ -1733,6 +1832,32 @@ const PanelboardReport: React.FC = () => {
               />
             </div>
           </div>
+          {/* Print-only compact Test Equipment table (3 boxes wide, 1 row) */}
+          <div className="hidden print:block">
+            <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+              <colgroup>
+                <col style={{ width: '33.33%' }} />
+                <col style={{ width: '33.33%' }} />
+                <col style={{ width: '33.33%' }} />
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <div className="font-semibold">Megohmmeter:</div>
+                    <div className="mt-0">{formData.testEquipment.megohmmeter.name || ''}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <div className="font-semibold">Serial Number:</div>
+                    <div className="mt-0">{formData.testEquipment.megohmmeter.serialNumber || ''}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                    <div className="font-semibold">AMP ID:</div>
+                    <div className="mt-0">{formData.testEquipment.megohmmeter.ampId || ''}</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -1746,8 +1871,21 @@ const PanelboardReport: React.FC = () => {
           readOnly={!isEditing}
             rows={10}
             placeholder="Enter any additional comments, observations, or notes about the inspection..."
-            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white resize-vertical min-h-[250px] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white resize-vertical min-h-[250px] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''} print:hidden`}
         />
+        {/* Print-only comments box */}
+        <div className="hidden print:block">
+          <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+            <tbody>
+              <tr>
+                <td className="p-2 align-top border border-gray-300 print:border-black">
+                  <div className="font-semibold">Comments</div>
+                  <div className="mt-0">{formData.comments || ''}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         </div>
       </div>
     </ReportWrapper>

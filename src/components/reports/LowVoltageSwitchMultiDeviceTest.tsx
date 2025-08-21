@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { getReportName, getAssetName } from './reportMappings';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
@@ -504,7 +505,9 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
           <section className="mb-6 job-info-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Job Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2">
+            
+            {/* On-screen form - hidden in print */}
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
               <div><label className="form-label">Customer:</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.customer} onChange={e=>setField('customer', e.target.value)} readOnly={!isEditing} /></div>
               <div><label className="form-label">Job #:</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.jobNumber} onChange={e=>setField('jobNumber', e.target.value)} readOnly={!isEditing} /></div>
               <div><label className="form-label">Technicians:</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.technicians} onChange={e=>setField('technicians', e.target.value)} readOnly={!isEditing} /></div>
@@ -527,6 +530,29 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
               <div><label className="form-label">Substation:</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.substation} onChange={e=>setField('substation', e.target.value)} readOnly={!isEditing} /></div>
               <div><label className="form-label">Eqpt. Location:</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.eqptLocation} onChange={e=>setField('eqptLocation', e.target.value)} readOnly={!isEditing} /></div>
               <div className="md:col-span-2"><label className="form-label">User:</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.user} onChange={e=>setField('user', e.target.value)} readOnly={!isEditing} /></div>
+            </div>
+
+            {/* Print-only JobInfoPrintTable */}
+            <div className="hidden print:block">
+              <JobInfoPrintTable
+                data={{
+                  customer: formData.customer,
+                  address: '',
+                  jobNumber: formData.jobNumber,
+                  technicians: formData.technicians,
+                  date: formData.date,
+                  identifier: formData.identifier,
+                  user: formData.user,
+                  substation: formData.substation,
+                  eqptLocation: formData.eqptLocation,
+                  temperature: {
+                    fahrenheit: formData.temperature.fahrenheit,
+                    celsius: formData.temperature.celsius,
+                    tcf: formData.temperature.tcf,
+                    humidity: typeof formData.temperature.humidity === 'string' ? parseFloat(formData.temperature.humidity) || 0 : formData.temperature.humidity,
+                  },
+                }}
+              />
             </div>
           </section>
 
@@ -562,41 +588,28 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                         <tr key={`visual-${rowIndex}`}>
                           <td className="border border-gray-300 dark:border-gray-700 p-2 w-[25%]">
                             {rowIndex === 4 ? (
-                              <>
-                                <span className="print-only">P1-</span>
-                                <span className="screen-only">P1-</span>
-                              </>
+                              <span>P1-</span>
                             ) : (
-                              <>
-                                <input
-                                  type="text"
-                                  value={formData.visualInspection.items[rowIndex]?.identifier || ''}
-                                  onChange={(e) => handleVisualInspectionChange(rowIndex, 'identifier', e.target.value)}
-                                  readOnly={!isEditing}
-                                  className={`w-full bg-transparent border-none focus:ring-0 screen-only ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                />
-                                <span className="print-only">
-                                  {formData.visualInspection.items[rowIndex]?.identifier || ''}
-                                </span>
-                              </>
+                              <input
+                                type="text"
+                                value={formData.visualInspection.items[rowIndex]?.identifier || ''}
+                                onChange={(e) => handleVisualInspectionChange(rowIndex, 'identifier', e.target.value)}
+                                readOnly={!isEditing}
+                                className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                              />
                             )}
                           </td>
                           {Array.from({ length: 12 }).map((_, colIndex) => (
                             <td key={`visual-${rowIndex}-${colIndex}`} className="border border-gray-300 dark:border-gray-700 p-2 w-[6.25%]">
-                              <>
-                                <select
-                                  value={formData.visualInspection.items[rowIndex]?.values[`${colIndex + 1}`] || ''}
-                                  onChange={(e) => handleVisualInspectionChange(rowIndex, `${colIndex + 1}`, e.target.value)}
-                                  disabled={!isEditing}
-                                  className={`w-full bg-transparent border-none focus:ring-0 text-center screen-only ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                >
-                                  <option value=""></option>
-                                  {['Y','N','N/A'].map(opt => (<option key={opt} value={opt}>{opt}</option>))}
-                                </select>
-                                <span className="print-only block text-center">
-                                  {formData.visualInspection.items[rowIndex]?.values[`${colIndex + 1}`] || ''}
-                                </span>
-                              </>
+                              <select
+                                value={formData.visualInspection.items[rowIndex]?.values[`${colIndex + 1}`] || ''}
+                                onChange={(e) => handleVisualInspectionChange(rowIndex, `${colIndex + 1}`, e.target.value)}
+                                disabled={!isEditing}
+                                className={`w-full bg-transparent border-none focus:ring-0 text-center ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                              >
+                                <option value=""></option>
+                                {['Y','N','N/A'].map(opt => (<option key={opt} value={opt}>{opt}</option>))}
+                              </select>
                             </td>
                           ))}
                         </tr>
@@ -637,7 +650,9 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
           <section className="mb-6 enclosure-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Enclosure Data</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
+            
+            {/* On-screen form - hidden in print */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3 print:hidden enclosure-onscreen">
               <div><label className="form-label">Manufacturer</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.enclosure.manufacturer} onChange={e=>setField('enclosure.manufacturer', e.target.value)} readOnly={!isEditing} /></div>
               <div><label className="form-label">System Voltage (V)</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.enclosure.systemVoltage} onChange={e=>setField('enclosure.systemVoltage', e.target.value)} readOnly={!isEditing} /></div>
               <div><label className="form-label">Catalog No.</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.enclosure.catalogNo} onChange={e=>setField('enclosure.catalogNo', e.target.value)} readOnly={!isEditing} /></div>
@@ -648,6 +663,66 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
               <div><label className="form-label">AIC Rating (kA)</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.enclosure.aicRating} onChange={e=>setField('enclosure.aicRating', e.target.value)} readOnly={!isEditing} /></div>
               <div><label className="form-label">Type</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.enclosure.type} onChange={e=>setField('enclosure.type', e.target.value)} readOnly={!isEditing} /></div>
               <div className="md:col-span-3"><label className="form-label">Phase Configuration</label><input className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} value={formData.enclosure.phaseConfiguration} onChange={e=>setField('enclosure.phaseConfiguration', e.target.value)} readOnly={!isEditing} /></div>
+            </div>
+
+            {/* Print-only Enclosure Data table */}
+            <div className="hidden print:block">
+              <table className="min-w-full border border-gray-300 print:border-black">
+                <colgroup>
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Manufacturer:</div>
+                      <div className="mt-1">{formData.enclosure.manufacturer || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">System Voltage (V):</div>
+                      <div className="mt-1">{formData.enclosure.systemVoltage || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Catalog No.:</div>
+                      <div className="mt-1">{formData.enclosure.catalogNo || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Rated Voltage (V):</div>
+                      <div className="mt-1">{formData.enclosure.ratedVoltage || ''}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Serial Number:</div>
+                      <div className="mt-1">{formData.enclosure.serialNumber || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Rated Current (A):</div>
+                      <div className="mt-1">{formData.enclosure.ratedCurrent || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Series:</div>
+                      <div className="mt-1">{formData.enclosure.series || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">AIC Rating (kA):</div>
+                      <div className="mt-1">{formData.enclosure.aicRating || ''}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Type:</div>
+                      <div className="mt-1">{formData.enclosure.type || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black" colSpan={3}>
+                      <div className="font-semibold">Phase Configuration:</div>
+                      <div className="mt-1">{formData.enclosure.phaseConfiguration || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </section>
 
@@ -938,7 +1013,9 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
           <section className="mb-6 test-equipment-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* On-screen form - hidden in print */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden test-eqpt-onscreen">
               <div><label className="form-label">Megohmmeter</label><input value={formData.equipment.megger} onChange={e=>setField('equipment.megger', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></div>
               <div><label className="form-label">Serial Number</label><input value={formData.equipment.meggerSerial} onChange={e=>setField('equipment.meggerSerial', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></div>
               <div><label className="form-label">AMP ID</label><input value={formData.equipment.meggerAmpId} onChange={e=>setField('equipment.meggerAmpId', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></div>
@@ -946,13 +1023,76 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
               <div><label className="form-label">Serial Number</label><input value={formData.equipment.lowResSerial} onChange={e=>setField('equipment.lowResSerial', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></div>
               <div><label className="form-label">AMP ID</label><input value={formData.equipment.lowResAmpId} onChange={e=>setField('equipment.lowResAmpId', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></div>
             </div>
+
+            {/* Print-only Test Equipment table */}
+            <div className="hidden print:block">
+              <table className="min-w-full border border-gray-300 print:border-black">
+                <colgroup>
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Megohmmeter</div>
+                      <div className="mt-1">{formData.equipment.megger || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Serial Number</div>
+                      <div className="mt-1">{formData.equipment.meggerSerial || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">AMP ID</div>
+                      <div className="mt-1">{formData.equipment.meggerAmpId || ''}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Low Resistance</div>
+                      <div className="mt-1">{formData.equipment.lowRes || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">Serial Number</div>
+                      <div className="mt-1">{formData.equipment.lowResSerial || ''}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold">AMP ID</div>
+                      <div className="mt-1">{formData.equipment.lowResAmpId || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
 
           {/* Comments */}
           <section className="mb-6 comments-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
-            <textarea value={formData.comments} onChange={e=>setField('comments', e.target.value)} readOnly={!isEditing} rows={4} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} />
+            
+            {/* On-screen form - hidden in print */}
+            <textarea 
+              value={formData.comments} 
+              onChange={e=>setField('comments', e.target.value)} 
+              readOnly={!isEditing} 
+              rows={4} 
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''} print:hidden comments-onscreen`} 
+            />
+
+            {/* Print-only Comments table */}
+            <div className="hidden print:block">
+              <table className="min-w-full border border-gray-300 print:border-black">
+                <tbody>
+                  <tr>
+                    <td className="p-4 border border-gray-300 print:border-black">
+                      <div className="font-semibold mb-2">Comments:</div>
+                      <div className="whitespace-pre-wrap">{formData.comments || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
         </div>
       </div>
@@ -995,23 +1135,46 @@ if (typeof document !== 'undefined') {
       }
       .visual-mechanical-section .visual-inspection-table td:first-child,
       .visual-mechanical-section .visual-inspection-table th:first-child { text-align: left !important; }
-      .visual-mechanical-section select { width: 100% !important; background: transparent !important; border: none !important; padding: 0 !important; font-size: 8px !important; height: 12px !important; }
-      .visual-mechanical-section input[type="text"] { width: 100% !important; background: transparent !important; border: none !important; padding: 0 !important; font-size: 8px !important; height: 12px !important; }
-
+      
       /* Keep legend tight and aligned to the right of the table */
       .visual-mechanical-section .satisfactory-table { width: auto !important; }
       .visual-mechanical-section .satisfactory-table th,
       .visual-mechanical-section .satisfactory-table td { font-size: 8px !important; padding: 2px 3px !important; line-height: 1 !important; }
+      
       /* Remove internal vertical dividing line artifacts in print */
       .visual-mechanical-section .visual-inspection-table td,
       .visual-mechanical-section .visual-inspection-table th { border-color: black !important; }
+      
       /* Hide form controls in V&M cells during print to avoid duplicate letters */
-      .visual-mechanical-section select,
-      .visual-mechanical-section input[type="text"] { display: none !important; }
-      .visual-mechanical-section .print-only { display: inline !important; }
-      /* Ensure only one value shows: hide any stray text in value cells */
-      .visual-mechanical-section .visual-inspection-table tbody td:nth-child(n+2) { color: transparent !important; }
-      .visual-mechanical-section .visual-inspection-table tbody td:nth-child(n+2) .print-only { color: black !important; }
+      .visual-mechanical-section select { display: none !important; }
+      
+      /* Show the selected values in print by making them visible */
+      .visual-mechanical-section .visual-inspection-table tbody td:nth-child(n+2) { 
+        color: black !important; 
+        text-align: center !important;
+        font-size: 8px !important;
+        font-weight: bold !important;
+      }
+
+      /* Show Position/Identifier values in print */
+      .visual-mechanical-section .visual-inspection-table tbody td:first-child { 
+        color: black !important; 
+        text-align: left !important;
+        font-size: 8px !important;
+        font-weight: bold !important;
+      }
+
+      /* Make input values visible in print by overriding the display:none */
+      .visual-mechanical-section .visual-inspection-table tbody td:first-child input[type="text"] { 
+        display: block !important; 
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        font-size: 8px !important;
+        font-weight: bold !important;
+        color: black !important;
+        width: 100% !important;
+      }
 
       /* Insulation tables: exact column widths */
       /* Make Position/Identifier smaller to spread readings */
@@ -1093,6 +1256,36 @@ if (typeof document !== 'undefined') {
 
       .insulation-measured-section table input,
       .insulation-corrected-section table input { width: 100% !important; font-size: 9px !important; padding: 1px !important; }
+
+      /* Hide on-screen elements in print */
+      .job-info-onscreen, .job-info-onscreen * { display: none !important; }
+      .enclosure-onscreen, .enclosure-onscreen * { display: none !important; }
+      .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
+      .comments-onscreen, .comments-onscreen * { display: none !important; }
+
+      /* Enclosure Data print table styling */
+      .enclosure-section table { table-layout: fixed !important; }
+      .enclosure-section table th, .enclosure-section table td {
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+        padding: 4px 6px !important;
+      }
+
+      /* Test Equipment print table styling */
+      .test-equipment-section table { table-layout: fixed !important; }
+      .test-equipment-section table th, .test-equipment-section table td {
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+        padding: 4px 6px !important;
+      }
+
+      /* Comments print table styling */
+      .comments-section table { table-layout: fixed !important; }
+      .comments-section table th, .comments-section table td {
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+        padding: 4px 6px !important;
+      }
 
       section { break-inside: avoid !important; margin-bottom: 20px !important; page-break-inside: avoid !important; }
       .grid { display: grid !important; }

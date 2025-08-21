@@ -63,6 +63,7 @@ const TanDeltaChart: React.FC = () => {
   const [editingData, setEditingData] = useState<boolean>(false);
   const [testDate, setTestDate] = useState<string>('');
   const [cableType, setCableType] = useState<string>('');
+  const [comments, setComments] = useState<string>('');
   const [equipment, setEquipment] = useState<TestEquipment>({
     megohmeterSerial: '',
     megohmmeterAmpId: '',
@@ -139,6 +140,7 @@ const TanDeltaChart: React.FC = () => {
         setData(reportData.test_data?.points || initialData);
         setTestDate(reportData.report_info?.date || '');
         setCableType(reportData.report_info?.cableType || '');
+        setComments((reportData as any).comments || reportData.report_info?.comments || '');
         setEquipment(reportData.report_info?.testEquipment || {
           megohmeterSerial: '',
           megohmmeterAmpId: '',
@@ -172,6 +174,7 @@ const TanDeltaChart: React.FC = () => {
           testEquipment: equipment,
           status: status
         },
+        comments: comments,
         test_data: {
           points: data
         }
@@ -363,6 +366,61 @@ const TanDeltaChart: React.FC = () => {
           {/* Header with title and buttons */}
           <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
             {renderHeader()}
+          </div>
+          
+          {/* Test Parameters */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Parameters</h2>
+            {/* On-screen form - hidden in print */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden test-params-onscreen">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Test Date</label>
+                <input
+                  type="date"
+                  value={testDate}
+                  onChange={(e) => setTestDate(e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cable Type</label>
+                <input
+                  type="text"
+                  value={cableType}
+                  onChange={(e) => setCableType(e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                <input
+                  type="text"
+                  value={status}
+                  readOnly
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white"
+                />
+              </div>
+            </div>
+            {/* Print-only Test Parameters table */}
+            <div className="hidden print:block">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                <colgroup>
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Test Date:</div><div className="mt-0">{testDate || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Cable Type:</div><div className="mt-0">{cableType || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Status:</div><div className="mt-0">{status}</div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           
           {/* Edit Data Button */}
@@ -576,7 +634,7 @@ const TanDeltaChart: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-6 print:hidden test-eqpt-onscreen">
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label>
@@ -635,6 +693,57 @@ const TanDeltaChart: React.FC = () => {
                   />
                 </div>
               </div>
+            </div>
+            {/* Print-only compact Test Equipment table (3 boxes wide, 2 rows) */}
+            <div className="hidden print:block">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                <colgroup>
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Megohmmeter:</div><div className="mt-0">{equipment.megohmeterSerial || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Serial Number:</div><div className="mt-0">{equipment.megohmeterAmpId || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">AMP ID:</div><div className="mt-0">{equipment.megohmmeterAmpId || ''}</div></td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">VLF Hipot:</div><div className="mt-0">{equipment.vlfHipotSerial || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Serial Number:</div><div className="mt-0">{equipment.vlfHipotSerial || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">AMP ID:</div><div className="mt-0">{equipment.vlfHipotAmpId || ''}</div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          {/* Comments */}
+          <div className="mb-6">
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+            <div className="print:hidden comments-onscreen">
+              <textarea
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+                readOnly={!isEditing}
+                rows={8}
+                placeholder="Enter any additional comments..."
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white resize-vertical min-h-[150px] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              />
+            </div>
+            {/* Print-only Comments table */}
+            <div className="hidden print:block">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black">
+                      <div className="font-semibold">Comments</div>
+                      <div className="mt-0">{comments || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -707,6 +816,11 @@ if (typeof document !== 'undefined') {
         -moz-appearance: textfield !important;
       }
       
+      /* Hide on-screen forms in print */
+      .test-params-onscreen, .test-params-onscreen * { display: none !important; }
+      .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
+      .comments-onscreen, .comments-onscreen * { display: none !important; }
+
       /* Table styling - Force all tables to have proper layout */
       table { 
         border-collapse: collapse !important; 

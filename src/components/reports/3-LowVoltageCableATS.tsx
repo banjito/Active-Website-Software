@@ -4,6 +4,7 @@ import { useAuth } from '../../lib/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Types
 interface CableTestData {
@@ -987,7 +988,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
               {status || 'PASS'}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-2 gap-4 mb-8 print:hidden">
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job #</label>
@@ -1118,6 +1119,25 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
               </div>
             </div>
           </div>
+          <JobInfoPrintTable
+            data={{
+              customer: formData.customer,
+              address: formData.address,
+              jobNumber: formData.jobNumber,
+              technicians: formData.technicians,
+              date: formData.date,
+              identifier: formData.identifier,
+              user: formData.user,
+              substation: formData.substation,
+              eqptLocation: formData.eqptLocation,
+              temperature: {
+                fahrenheit: formData.temperature,
+                celsius: celsiusTemperature,
+                tcf: tcf,
+                humidity: formData.humidity,
+              },
+            }}
+          />
         </div>
 
         {/* Placeholder for additional sections - to be completed */}

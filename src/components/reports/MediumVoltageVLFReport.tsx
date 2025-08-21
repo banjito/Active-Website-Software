@@ -16,6 +16,7 @@ import { Textarea } from '../ui/Textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/Select';
 import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/Card';
 import { getReportName, getAssetName } from './reportMappings';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Types
 enum TestStatus {
@@ -97,6 +98,7 @@ interface MediumVoltageVLFReportForm {
     size: string;
     length: string;
     voltageRating: string;
+    operatingVoltage?: string;
     insulation: string;
     yearInstalled: string;
     testedFrom?: string;  // Keep testedFrom
@@ -542,6 +544,7 @@ const MediumVoltageVLFReport: React.FC = () => {
       size: "",
       length: "",
       voltageRating: "",
+      operatingVoltage: "",
       insulation: "",
       yearInstalled: "",
       testedFrom: "",  // Changed from testedFrom
@@ -1211,7 +1214,7 @@ const MediumVoltageVLFReport: React.FC = () => {
         console.log('Testing table access permission...');
         const { data: permTest, error: permError } = await supabase
           .schema('neta_ops')
-          .from('medium_voltage_vlf_reports')
+          .from('medium_voltage_vlf_mts_reports')
           .select('id')
           .limit(1);
           
@@ -1230,30 +1233,31 @@ const MediumVoltageVLFReport: React.FC = () => {
       const reportData = {
         job_id: effectiveJobId,
         user_id: user.id,
-        report_info: {
-          title: formData.reportInfo.title,
-          date: formData.reportInfo.date,
-          location: formData.reportInfo.location,
-          technicians: formData.reportInfo.technicians,
-          reportNumber: formData.reportInfo.reportNumber,
-          customerName: formData.reportInfo.customerName,
-          customerContactName: formData.reportInfo.customerContactName,
-          customerContactEmail: formData.reportInfo.customerContactEmail,
-          customerContactPhone: formData.reportInfo.customerContactPhone,
-          jobNumber: formData.jobNumber,
+        data: {
+          // Top-level fields that match the database columns
+          customer_name: formData.customerName,
+          site_address: formData.siteAddress,
+          contact_person: formData.contactPerson,
+          job_number: formData.jobNumber,
           identifier: formData.identifier,
+          tested_by: formData.testedBy,
+          test_date: formData.testDate,
+          location: formData.location,
+          equipment_location: formData.equipmentLocation,
+          cable_type: formData.cableType,
+          cable_length: formData.cableLength,
+          // Structured sections
+          cable_info: formData.cableInfo,
+          termination_data: formData.terminationData,
+          visual_inspection: formData.visualInspection,
+          shield_continuity: formData.shieldContinuity,
+          insulation_test: formData.insulationTest,
+          equipment: formData.equipment,
+          temperature: formData.temperature,
+          withstand_test: formData.withstandTest,
+          comments: formData.comments,
           status: formData.status
-        },
-        cable_info: formData.cableInfo,
-        termination_data: formData.terminationData,
-        visual_inspection: formData.visualInspection,
-        shield_continuity: formData.shieldContinuity,
-        insulation_test: formData.insulationTest,
-        equipment: formData.equipment,
-        temperature: formData.temperature,
-        withstand_test: formData.withstandTest,
-        comments: formData.comments,
-        status: formData.status
+        }
       };
       
       let result;
@@ -1262,53 +1266,22 @@ const MediumVoltageVLFReport: React.FC = () => {
         console.log('Updating existing report with ID:', reportId);
         result = await supabase
           .schema('neta_ops')
-          .from('medium_voltage_vlf_reports')
+          .from('medium_voltage_vlf_mts_reports')
           .update(reportData)
           .eq('id', reportId)
           .select()
           .single();
-        // Fallback: If update failed due to table/column mismatch or RLS, try legacy table using JSONB 'data'
-        if (result.error) {
-          console.warn('Primary update failed, attempting fallback to medium_voltage_cable_vlf_test:', result.error);
-          const { data: fbData, error: fbError } = await supabase
-            .schema('neta_ops')
-            .from('medium_voltage_cable_vlf_test')
-            .update({ data: formData, updated_at: new Date().toISOString() })
-            .eq('id', reportId)
-            .select('id')
-            .single();
-          if (fbError) {
-            console.error('Fallback update failed as well:', fbError);
-            throw fbError;
-          }
-          result = { data: fbData, error: null } as any;
-        }
       } else {
         // Create new report
         console.log('Creating new report...');
         result = await supabase
           .schema('neta_ops')
-          .from('medium_voltage_vlf_reports')
+          .from('medium_voltage_vlf_mts_reports')
           .insert(reportData)
           .select()
           .single();
         
         console.log('Report creation result:', result);
-        // If primary insert failed, fallback to legacy table using JSONB 'data'
-        if (result.error) {
-          console.warn('Primary insert failed, attempting fallback to medium_voltage_cable_vlf_test:', result.error);
-          const { data: fbData, error: fbError } = await supabase
-            .schema('neta_ops')
-            .from('medium_voltage_cable_vlf_test')
-            .insert({ job_id: effectiveJobId, user_id: user.id, data: formData, created_at: new Date().toISOString() })
-            .select('id')
-            .single();
-          if (fbError) {
-            console.error('Fallback insert failed as well:', fbError);
-            throw fbError;
-          }
-          result = { data: fbData, error: null } as any;
-        }
 
         // Create asset entry
         if (result.data) {
@@ -1419,10 +1392,10 @@ const MediumVoltageVLFReport: React.FC = () => {
     setLoading(true);
 
     try {
-      console.log(`Attempting to load report from 'neta_ops.medium_voltage_vlf_reports' table`);
+      console.log(`Attempting to load report from 'neta_ops.medium_voltage_vlf_mts_reports' table`);
       const { data, error } = await supabase
         .schema('neta_ops')
-        .from('medium_voltage_vlf_reports')
+        .from('medium_voltage_vlf_mts_reports')
         .select('*')
         .eq('id', reportId)
         .single();
@@ -1431,31 +1404,30 @@ const MediumVoltageVLFReport: React.FC = () => {
         console.log('loadReport: Found report in new table, applying mappings.');
         setFormData(prev => ({
           ...prev,
-          // High-level info
-          ...(data.report_info || {}),
-          customerName: data.report_info?.customerName || prev.customerName,
-          siteAddress: data.report_info?.siteAddress || prev.siteAddress,
-          jobNumber: data.report_info?.jobNumber || prev.jobNumber,
-          location: data.report_info?.location || prev.location,
-          equipmentLocation: data.report_info?.equipmentLocation || prev.equipmentLocation,
-          contactPerson: data.report_info?.contactPerson || prev.contactPerson,
-          identifier: data.report_info?.identifier || prev.identifier,
+          // Load from top-level columns that match the database
+          customerName: data.data.customer_name || prev.customerName,
+          siteAddress: data.data.site_address || prev.siteAddress,
+          jobNumber: data.data.job_number || prev.jobNumber,
+          location: data.data.location || prev.location,
+          equipmentLocation: data.data.equipment_location || prev.equipmentLocation,
+          contactPerson: data.data.contact_person || prev.contactPerson,
+          identifier: data.data.identifier || prev.identifier,
+          testedBy: data.data.tested_by || prev.testedBy,
+          testDate: data.data.test_date || prev.testDate,
           // Structured sections from top-level columns
-          cableInfo: data.cable_info || prev.cableInfo,
-          terminationData: data.termination_data || prev.terminationData,
-          visualInspection: data.visual_inspection || prev.visualInspection,
-          shieldContinuity: data.shield_continuity || prev.shieldContinuity,
-          insulationTest: data.insulation_test || prev.insulationTest,
-          equipment: data.equipment || prev.equipment,
-          temperature: data.temperature || prev.temperature,
-          withstandTest: data.withstand_test || prev.withstandTest,
-          comments: data.comments ?? prev.comments,
-          status: data.status || prev.status,
-          // Nested reportInfo
-          reportInfo: {
-            ...prev.reportInfo,
-            ...(data.report_info?.reportInfo || {})
-          }
+          cableInfo: data.data.cable_info || prev.cableInfo,
+          terminationData: data.data.termination_data || prev.terminationData,
+          visualInspection: data.data.visual_inspection || prev.visualInspection,
+          shieldContinuity: data.data.shield_continuity || prev.shieldContinuity,
+          insulationTest: data.data.insulation_test || prev.insulationTest,
+          equipment: data.data.equipment || prev.equipment,
+          temperature: data.data.temperature || prev.temperature,
+          withstandTest: data.data.withstand_test || prev.withstandTest,
+          comments: data.data.comments ?? prev.comments,
+          status: data.data.status || prev.status,
+          // Top-level cable fields
+          cableType: data.data.cable_type || prev.cableType,
+          cableLength: data.data.cable_length || prev.cableLength
         }));
         setIsEditMode(false);
         return;
@@ -1679,7 +1651,7 @@ const MediumVoltageVLFReport: React.FC = () => {
       <section className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
           {/* Left Column */}
             <div className="md:col-span-2 space-y-2">
             <div className="mb-4 flex">
@@ -1851,13 +1823,34 @@ const MediumVoltageVLFReport: React.FC = () => {
             </div>
           </div>
         </div>
+        <div className="hidden print:block">
+          <JobInfoPrintTable
+            data={{
+              customer: formData.customerName,
+              address: formData.siteAddress,
+              jobNumber: formData.jobNumber,
+              technicians: formData.testedBy,
+              date: formData.testDate,
+              identifier: formData.identifier,
+              user: formData.contactPerson,
+              substation: formData.location,
+              eqptLocation: formData.equipmentLocation,
+              temperature: {
+                fahrenheit: formData.temperature?.fahrenheit,
+                celsius: formData.temperature?.celsius,
+                tcf: formData.temperature?.tcf,
+                humidity: formData.temperature?.humidity,
+              },
+            }}
+          />
+        </div>
       </section>
       
       {/* Cable Information */}
       <section className="mb-6 cable-termination-section">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Cable & Termination Data</h2>
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-6 print:hidden cable-termination-onscreen">
           <div className="grid grid-cols-2 gap-x-6 gap-y-3">
             <div className="flex items-center">
               <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">Tested From</label>
@@ -1878,6 +1871,16 @@ const MediumVoltageVLFReport: React.FC = () => {
                   type="text"
                   value={formData.cableInfo?.manufacturer || ''}
                   onChange={(e) => handleChange('cableInfo', {...formData.cableInfo, manufacturer: e.target.value})}
+                  readOnly={!isEditMode}
+                className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+            <div className="flex items-center">
+              <label className="w-1/2 text-sm font-medium text-gray-700 dark:text-gray-300">Cable Operating Voltage (kV)</label>
+                <input
+                  type="text"
+                value={formData.cableInfo?.operatingVoltage || ''}
+                onChange={(e) => handleChange('cableInfo', {...formData.cableInfo, operatingVoltage: e.target.value})}
                   readOnly={!isEditMode}
                 className={`w-1/2 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
@@ -2016,6 +2019,91 @@ const MediumVoltageVLFReport: React.FC = () => {
                 />
             </div>
           </div>
+        </div>
+        
+        {/* Print-only table */}
+        <div className="hidden print:block">
+          <table className="w-full border border-gray-300 print:border-black">
+            <colgroup>
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Tested From:</div>
+                  <div className="mt-1">{formData.cableInfo?.testedFrom || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Manufacturer:</div>
+                  <div className="mt-1">{formData.cableInfo?.manufacturer || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Cable Operating Voltage (kV):</div>
+                  <div className="mt-1">{formData.cableInfo?.operatingVoltage || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Cable Rated Voltage (kV):</div>
+                  <div className="mt-1">{formData.cableInfo?.voltageRating || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Cable Type:</div>
+                  <div className="mt-1">{formData.cableType || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Length (ft):</div>
+                  <div className="mt-1">{formData.cableLength || ''}</div>
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Conductor Size:</div>
+                  <div className="mt-1">{formData.cableInfo?.size || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Insulation Type:</div>
+                  <div className="mt-1">{formData.cableInfo?.insulation || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Conductor Material:</div>
+                  <div className="mt-1">{formData.cableInfo?.conductorMaterial || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Insulation Thickness:</div>
+                  <div className="mt-1">{formData.cableInfo?.insulationThickness || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">From:</div>
+                  <div className="mt-1">{formData.cableInfo?.from || ''}</div>
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">To:</div>
+                  <div className="mt-1">{formData.cableInfo?.to || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Termination Data:</div>
+                  <div className="mt-1">{formData.terminationData?.terminationData || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Termination Data 2:</div>
+                  <div className="mt-1">{formData.terminationData?.terminationData2 || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Rated Voltage (kV):</div>
+                  <div className="mt-1">{formData.terminationData?.ratedVoltage || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black text-center">
+                  <div className="font-semibold">Rated Voltage 2 (kV):</div>
+                  <div className="mt-1">{formData.terminationData?.ratedVoltage2 || ''}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -2598,7 +2686,8 @@ const MediumVoltageVLFReport: React.FC = () => {
       <section className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* On-screen form - hidden in print */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden test-eqpt-onscreen">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ohmmeter</label>
             <input
@@ -2690,13 +2779,48 @@ const MediumVoltageVLFReport: React.FC = () => {
             />
           </div>
         </div>
+        
+        {/* Print-only table */}
+        <div className="hidden print:block">
+          <table className="w-full border border-gray-300 print:border-black">
+            <thead>
+              <tr>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Equipment</th>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Make/Model</th>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Serial Number</th>
+                <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">AMP ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black font-semibold">Ohmmeter</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmmeter || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmSerialNumber || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ampId || ''}</td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black font-semibold">Megohmmeter</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmmeter || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmSerialNumber || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ampId || ''}</td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black font-semibold">VLF Hipot</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfHipot || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfSerialNumber || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ampId || ''}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
       
       {/* Comments */}
       <section className="mb-6 comments-section">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
-        <div>
+        {/* On-screen form - hidden in print */}
+        <div className="print:hidden comments-onscreen">
           <textarea
             value={formData.comments || ''}
             onChange={(e) => handleChange('comments', e.target.value)}
@@ -2704,6 +2828,19 @@ const MediumVoltageVLFReport: React.FC = () => {
             rows={6}
             className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white resize-vertical ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
           />
+        </div>
+        
+        {/* Print-only table */}
+        <div className="hidden print:block">
+          <table className="w-full border border-gray-300 print:border-black">
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
+                  {formData.comments || 'No comments'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
         </div>
@@ -2784,6 +2921,12 @@ if (typeof document !== 'undefined') {
       
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }
+      
+      /* Hide on-screen elements in print */
+      .cable-termination-onscreen, .cable-termination-onscreen * { display: none !important; }
+      .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
+      .comments-onscreen, .comments-onscreen * { display: none !important; }
+      
       /* Comments section wider, not taller */
       .comments-section textarea { width: 100% !important; max-width: 100% !important; min-width: 100% !important; height: 90px !important; }
 
@@ -2798,8 +2941,14 @@ if (typeof document !== 'undefined') {
       .visual-mechanical-inspection table td:nth-child(4) { width: 22% !important; min-width: 120px !important; }
 
       /* Cable & Termination (acts as Nameplate Data): ensure full visibility */
-      .cable-termination-section .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; column-gap: 12px !important; row-gap: 6px !important; }
-      .cable-termination-section label { width: 35% !important; display: inline-block !important; font-size: 10px !important; }
+      /* Hide on-screen cable/termination inputs in print to avoid duplication */
+      .cable-termination-onscreen, .cable-termination-onscreen * { display: none !important; }
+      /* Safety: ensure any lingering inputs/labels in this section don't print */
+      .cable-termination-section input,
+      .cable-termination-section select,
+      .cable-termination-section textarea,
+      .cable-termination-section label,
+      .cable-termination-section .flex { display: none !important; }
       .cable-termination-section input { width: 65% !important; font-size: 10px !important; padding: 0 !important; margin: 0 !important; background: transparent !important; border: none !important; border-bottom: 1px solid black !important; height: 14px !important; box-shadow: none !important; }
       .cable-termination-section .flex.items-center { align-items: baseline !important; }
 

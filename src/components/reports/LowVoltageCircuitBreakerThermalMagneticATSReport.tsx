@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -899,6 +900,29 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
         </div>
       </div>
       {/* End Print Header */}
+
+      {/* Print-only Job Information header and table at top */}
+      <div className="hidden print:block w-full h-1 bg-[#f26722] mb-2"></div>
+      <h2 className="hidden print:block text-xl font-semibold mb-2 text-black border-b border-black pb-1">Job Information</h2>
+      <JobInfoPrintTable
+        data={{
+          customer: formData.customer,
+          address: formData.address,
+          jobNumber: formData.jobNumber,
+          technicians: formData.technicians,
+          date: formData.date,
+          identifier: formData.identifier,
+          user: formData.user,
+          substation: formData.substation,
+          eqptLocation: formData.eqptLocation,
+          temperature: {
+            fahrenheit: formData.temperature?.fahrenheit,
+            celsius: formData.temperature?.celsius,
+            tcf: formData.temperature?.tcf,
+            humidity: formData.temperature?.humidity,
+          },
+        }}
+      />
       
       <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-200">
         <div className="max-w-7xl w-full space-y-6">
@@ -957,7 +981,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden">
               {/* Column 1 */}
               <div>
                 <div className="mb-4 flex items-center">
@@ -1016,13 +1040,14 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                 </div>
               </div>
             </div>
+            {/* removed duplicate job info print table */}
           </div>
 
           {/* --- Nameplate Data Section --- */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4 print:hidden nameplate-onscreen">
               {/* Column 1 */}
               <div>
                 <div className="mb-4 flex items-center">
@@ -1074,6 +1099,37 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                 </div>
               </div>
             </div>
+            {/* Print-only Nameplate Table (Thermal Magnetic specific) */}
+            <div className="hidden print:block mt-2">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                <colgroup>
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Manufacturer:</div><div className="mt-0">{formData.manufacturer || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Catalog No.:</div><div className="mt-0">{formData.catalogNumber || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Serial Number:</div><div className="mt-0">{formData.serialNumber || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Type:</div><div className="mt-0">{formData.type || ''}</div></td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Frame Size (A):</div><div className="mt-0">{formData.frameSize || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Rating Plug (A):</div><div className="mt-0">{formData.ratingPlug || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Curve No.:</div><div className="mt-0">{formData.curveNo || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">IC Rating (kA):</div><div className="mt-0">{formData.icRating || ''}</div></td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Operation:</div><div className="mt-0">{formData.operation || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Mounting:</div><div className="mt-0">{formData.mounting || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Thermal Memory:</div><div className="mt-0">{formData.thermalMemory || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">&nbsp;</div><div className="mt-0">&nbsp;</div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* --- Visual and Mechanical Inspection Section --- */}
@@ -1081,12 +1137,17 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 table-fixed">
+                <colgroup>
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '65%' }} />
+                  <col style={{ width: '20%' }} />
+                </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/3">NETA Section</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/2">Description</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-1/6">Results</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Results</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -1207,7 +1268,13 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Contact/Pole Resistance</h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 table-fixed">
+                <colgroup>
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '25%' }} />
+                </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
                     <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Contact Resistance</th>
@@ -1602,10 +1669,10 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
            </div>
 
           {/* --- Comments Section --- */}
-          <div className="mb-6">
+          <div className="mb-6 comments-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
-            <div className="mb-4">
+            <div className="mb-4 print:hidden">
               <textarea
                 value={formData.comments}
                 onChange={(e) => handleChange('comments', e.target.value)}
@@ -1613,6 +1680,18 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                 className={`w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 rows={4}
               />
+            </div>
+            {/* Print-only comments box */}
+            <div className="hidden print:block mt-2">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border">
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border" style={{ minHeight: '140px' }}>
+                      <div className="mt-0">{formData.comments || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1628,6 +1707,16 @@ if (typeof document !== 'undefined') {
     @media print {
       body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
       * { color: black !important; }
+      /* Ensure print:hidden and on-screen nameplate grid are hidden */
+      .print\:hidden { display: none !important; }
+      .grid.print\:hidden, .flex.print\:hidden { display: none !important; }
+      .nameplate-onscreen { display: none !important; }
+
+      /* Keep Comments header and box together and prevent clipping */
+      .comments-section { page-break-inside: avoid !important; break-inside: avoid !important; }
+      .comments-section h2 { page-break-after: avoid !important; }
+      .comments-section table { page-break-inside: avoid !important; break-inside: avoid !important; }
+      .comments-section td { height: 140px !important; vertical-align: top !important; }
       
       /* Form elements - hide interactive indicators */
       input, select, textarea { 

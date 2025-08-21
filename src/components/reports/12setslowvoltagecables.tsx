@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Types
 interface CableTestData {
@@ -922,6 +923,24 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
         input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none !important; margin: 0 !important; }
         input[type="number"] { -moz-appearance: textfield !important; appearance: textfield !important; }
 
+        /* Hide on-screen elements in print */
+        .cable-data-onscreen, .cable-data-onscreen * { display: none !important; }
+        .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
+        .job-info-onscreen, .job-info-onscreen * { display: none !important; }
+        
+        /* Job info: ensure Temp/TCF area doesn't overlap; render values inline with clear spacing */
+        .job-info-grid { grid-template-columns: repeat(6, minmax(0,1fr)) !important; gap: 6px 8px !important; }
+        .job-info-grid input[type="number"],
+        .job-info-grid input[type="text"] { height: 14px !important; font-size: 9px !important; padding: 0 2px !important; }
+        .job-info-grid .tcf-value { display: inline-block !important; min-width: 32px !important; text-align: left !important; font-size: 9px !important; }
+        .job-info-grid .tcf-label { margin-right: 4px !important; font-size: 9px !important; }
+        /* Shorten temperature inputs and remove spinners */
+        .job-info-grid .temp-input-f,
+        .job-info-grid .temp-input-c { display: inline-block !important; width: 60px !important; min-width: 60px !important; text-align: center !important; }
+        .job-info-grid input[type="number"]::-webkit-outer-spin-button,
+        .job-info-grid input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none !important; margin: 0 !important; }
+        .job-info-grid input[type="number"] { -moz-appearance: textfield !important; appearance: textfield !important; }
+
         /* Electrical tests table alignment identical to 3-LowVoltageCableMTS */
         table.electrical-tests-table { border-collapse: collapse !important; border: none !important; outline: none !important; box-shadow: none !important; table-layout: fixed !important; border-spacing: 0 !important; }
         table.electrical-tests-table th, table.electrical-tests-table td { border-width: 1.5px !important; border-style: solid !important; border-color: black !important; box-sizing: border-box !important; padding: 0 !important; height: 14px !important; vertical-align: middle !important; text-align: center !important; font-size: 9px !important; line-height: 1.1 !important; }
@@ -976,6 +995,50 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
         table.electrical-tests-table colgroup col:nth-child(16) { width: 5.2% !important; }
         table.electrical-tests-table colgroup col:nth-child(17) { width: 7.7% !important; }
         table.electrical-tests-table td:nth-child(15) input { margin-right: 1px !important; }
+
+        /* Standardized Visual & Mechanical print table (match MTS) */
+        table.visual-mechanical-table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
+        table.visual-mechanical-table th, table.visual-mechanical-table td { 
+          white-space: normal !important; 
+          word-break: break-word !important; 
+          font-size: 8px !important; 
+          line-height: 1.15 !important; 
+          padding: 2px 3px !important; 
+          vertical-align: middle !important;
+          border: 0.5px solid black !important;
+        }
+        table.visual-mechanical-table thead th:first-child,
+        table.visual-mechanical-table tbody td:first-child { width: 12% !important; text-align: left !important; }
+        table.visual-mechanical-table thead th:nth-child(2),
+        table.visual-mechanical-table tbody td:nth-child(2) { width: 58% !important; text-align: left !important; }
+        table.visual-mechanical-table thead th:nth-child(3),
+        table.visual-mechanical-table tbody td:nth-child(3) { width: 15% !important; text-align: center !important; }
+        table.visual-mechanical-table thead th:nth-child(4),
+        table.visual-mechanical-table tbody td:nth-child(4) { width: 15% !important; text-align: center !important; }
+        
+        /* Stronger borders for Visual and Mechanical Inspection table */
+        table.visual-mechanical-table,
+        table.visual-mechanical-table th,
+        table.visual-mechanical-table td {
+          border-width: 1.5px !important;
+          border-style: solid !important;
+          border-color: black !important;
+          border-collapse: collapse !important;
+        }
+        table.visual-mechanical-table {
+          border-collapse: collapse !important;
+        }
+        table.visual-mechanical-table th,
+        table.visual-mechanical-table td {
+          border-left: 1.5px solid black !important;
+          border-right: 1.5px solid black !important;
+        }
+        table.visual-mechanical-table th {
+          border-top: 1.5px solid black !important;
+        }
+        table.visual-mechanical-table td {
+          border-bottom: 1.5px solid black !important;
+        }
       }
     `;
     document.head.appendChild(style);
@@ -2022,7 +2085,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
           {/* Job Information Section */}
           <div className="mb-6">
             <h2 className="section-job-info text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden job-info-onscreen">
               {/* Column 1 */}
                 <div>
                 <div className="mb-4">
@@ -2092,12 +2155,31 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                 </div>
               </div>
             </div>
+            <JobInfoPrintTable
+              data={{
+                customer: formData.customer,
+                address: formData.address,
+                jobNumber: formData.jobNumber,
+                technicians: formData.technicians,
+                date: formData.date,
+                identifier: formData.identifier,
+                user: formData.user,
+                substation: formData.substation,
+                eqptLocation: formData.eqptLocation,
+                temperature: {
+                  fahrenheit: formData.temperature,
+                  celsius: Number.isFinite(celsiusTemperature) ? Number(celsiusTemperature.toFixed(0)) : undefined,
+                  tcf: getTCF(convertFahrenheitToCelsius(formData.temperature)),
+                  humidity: formData.humidity,
+                },
+              }}
+            />
           </div>
           
           {/* Cable Data Section */}
           <div className="mb-6">
             <h2 className="section-cable-data text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Cable Data</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden cable-data-onscreen">
               {/* Column 1 */}
               <div>
                 <div className="mb-4">
@@ -2133,44 +2215,89 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                 </div>
               </div>
             </div>
+            {/* Print-only Cable Data table */}
+            <div className="hidden print:block">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                <colgroup>
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Tested From:</div><div className="mt-0">{formData.testedFrom || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Manufacturer:</div><div className="mt-0">{formData.manufacturer || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Conductor Material:</div><div className="mt-0">{formData.conductorMaterial || ''}</div></td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Insulation Type:</div><div className="mt-0">{formData.insulationType || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">System Voltage:</div><div className="mt-0">{formData.systemVoltage || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Rated Voltage:</div><div className="mt-0">{formData.ratedVoltage || ''}</div></td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border" colSpan={3}><div className="font-semibold">Length:</div><div className="mt-0">{formData.length || ''}</div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           
           {/* Visual and Mechanical Inspection Section */}
           <div className="mb-6">
             <h2 className="section-visual-mechanical text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[600px] visual-mechanical-table">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+                <colgroup>
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '58%' }} />
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '15%' }} />
+                </colgroup>
                 <thead>
-                  <tr className="bg-gray-50 dark:bg-dark-200">
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">NETA Section</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700">Description</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b dark:border-gray-700 w-48">Results</th>
+                  <tr>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Result</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Comments</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {Object.entries({
-                    "7.3.1.A.1": "Compare cable data with drawings and specifications.",
-                    "7.3.1.A.2": "Inspect exposed sections of cables for physical damage.",
-                    "7.3.1.A.3.1": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
-                    "7.3.1.A.4": "Inspect compression-applied connectors for correct cable match and indentation.",
-                    "7.3.1.A.5": "Inspect for correct identification and arrangements.",
-                    "7.3.1.A.6": "Inspect cable jacket insulation and condition."
+                    "7.3.1.A.1": "Inspect exposed sections of cables and connectors for physical damage and evidence of degradation.",
+                    "7.3.1.A.2.1": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
+                    "7.3.1.A.3": "Inspect cable tray and cable supports.",
+                    "7.3.1.A.4": "If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed for operation of protective devices.",
+                    "7.3.1.A.5*": "Compare cable data with drawings and cable schedule. *Optional"
                   }).map(([section, description]) => (
                     <tr key={section} className="hover:bg-gray-50 dark:hover:bg-dark-200">
-                      <td className="px-4 py-2 text-sm font-mono text-gray-900 dark:text-white">{section}</td>
-                      <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{description}</td>
-                      <td className="px-4 py-2">
-                        <select
-                          id={`inspection-${section}`}
-                          value={formData.inspectionResults[section]}
-                          onChange={(e) => handleInspectionChange(section, e.target.value)}
-                          className="form-select w-full text-sm"
-                          disabled={!isEditMode}
-                        >
-                          {INSPECTION_RESULTS_OPTIONS.map(option => (
-                            <option key={option} value={option}>{option}</option>
-                          ))}
-                        </select>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{section}</td>
+                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{description}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="print:hidden">
+                          <select
+                            id={`inspection-${section}`}
+                            value={formData.inspectionResults[section]}
+                            onChange={(e) => handleInspectionChange(section, e.target.value)}
+                            disabled={!isEditMode}
+                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          >
+                            {INSPECTION_RESULTS_OPTIONS.map(option => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="hidden print:block text-center">{formData.inspectionResults[section] ?? ''}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <input
+                            type="text"
+                            value=""
+                            readOnly={!isEditMode}
+                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          />
+                        </div>
+                        <div className="hidden print:block"></div>
                       </td>
                     </tr>
                   ))}
@@ -2329,8 +2456,8 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                         </td>
                         
                         {/* RDG indicator column */}
-                        <td className="px-1 py-0.5 text-center border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-200">
-                          <span className="text-xs font-medium">RDG</span>
+                        <td className="px-1 py-0.5 text-center border border-gray-300 dark:border-gray-600">
+                          RDG
                         </td>
                         
                         {/* Insulation readings for RDG */}
@@ -2414,8 +2541,8 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                         </td>
                         
                         {/* 20°C indicator column */}
-                        <td className="px-1 py-0.5 text-center border border-gray-300 dark:border-gray-600 bg-blue-50 dark:bg-blue-900">
-                          <span className="text-xs font-medium">20°C</span>
+                        <td className="px-1 py-0.5 text-center border border-gray-300 dark:border-gray-600">
+                          20°C
                         </td>
                         
                         {/* Temperature corrected readings */}
@@ -2437,7 +2564,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
           {/* Test Equipment Used */}
           <div className="mb-6 page-break-before">
             <h2 className="section-test-equipment text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 print:hidden test-eqpt-onscreen">
               <div>
                 <label htmlFor="megohmmeter" className="form-label inline-block w-32">Megohmmeter:</label>
                 <input
@@ -2493,6 +2620,32 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                 />
               </div>
             </div>
+            {/* Print-only compact Test Equipment table (3 boxes wide, 1 row) */}
+            <div className="hidden print:block">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                <colgroup>
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: '33.33%' }} />
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Megohmmeter:</div>
+                      <div className="mt-0">{formData.testEquipment.megohmmeter || ''}</div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Serial Number:</div>
+                      <div className="mt-0">{formData.testEquipment.serialNumber || ''}</div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">AMP ID:</div>
+                      <div className="mt-0">{formData.testEquipment.ampId || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Comments Section */}
@@ -2510,10 +2663,23 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                 }
               }))}
               rows={10}
-              className="w-full form-textarea resize-vertical min-h-[250px]"
+              className={`w-full form-textarea resize-vertical min-h-[250px] print:hidden`}
               placeholder="Enter any additional comments..."
               readOnly={!isEditMode}
             />
+            {/* Print-only Comments table */}
+            <div className="hidden print:block">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                <tbody>
+                  <tr>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Comments</div>
+                      <div className="mt-1 whitespace-pre-wrap">{formData.testEquipment.comments || ''}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </ReportWrapper>

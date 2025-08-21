@@ -820,6 +820,7 @@ export default function JobDetail() {
       setError(null);
       
       const { error: updateError } = await supabase
+        .schema('neta_ops')
         .from('jobs')
         .update({
           title: editFormData.title,

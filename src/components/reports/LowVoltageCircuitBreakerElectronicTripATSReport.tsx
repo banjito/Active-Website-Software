@@ -1233,7 +1233,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+              <div className="hidden">
               <div><label htmlFor="manufacturer" className="form-label">Manufacturer:</label><input id="manufacturer" type="text" value={formData.manufacturer} onChange={(e) => handleChange('manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div><label htmlFor="catalogNumber" className="form-label">Catalog Number:</label><input id="catalogNumber" type="text" value={formData.catalogNumber} onChange={(e) => handleChange('catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div><label htmlFor="serialNumber" className="form-label">Serial Number:</label><input id="serialNumber" type="text" value={formData.serialNumber} onChange={(e) => handleChange('serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -1248,28 +1248,68 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
               <div><label htmlFor="mounting" className="form-label">Mounting:</label><input id="mounting" type="text" value={formData.mounting} onChange={(e) => handleChange('mounting', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div><label htmlFor="zoneInterlock" className="form-label">Zone Interlock:</label><input id="zoneInterlock" type="text" value={formData.zoneInterlock} onChange={(e) => handleChange('zoneInterlock', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
               <div><label htmlFor="thermalMemory" className="form-label">Thermal Memory:</label><input id="thermalMemory" type="text" value={formData.thermalMemory} onChange={(e) => handleChange('thermalMemory', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
-                       </div>
-                       </div>
+              </div>
+
+              {/* Nameplate table (visible on screen and print) */}
+              <div>
+                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+                  <colgroup>
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                    <col style={{ width: '14.2857%' }} />
+                  </colgroup>
+                  <tbody>
+                    <tr>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Manufacturer:</div><div className="mt-0">{formData.manufacturer}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Catalog No.:</div><div className="mt-0">{formData.catalogNumber}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Serial Number:</div><div className="mt-0">{formData.serialNumber}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Type:</div><div className="mt-0">{formData.type}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Frame Size (A):</div><div className="mt-0">{formData.frameSize}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">I.C. Rating (kA):</div><div className="mt-0">{formData.icRating}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Trip Unit Type:</div><div className="mt-0">{formData.tripUnitType}</div></td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Rating Plug (A):</div><div className="mt-0">{formData.ratingPlug}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Curve No.:</div><div className="mt-0">{formData.curveNo}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Charge Motor V:</div><div className="mt-0">{formData.chargeMotorVoltage}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Operation:</div><div className="mt-0">{formData.operation}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Mounting:</div><div className="mt-0">{formData.mounting}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Zone Interlock:</div><div className="mt-0">{formData.zoneInterlock}</div></td>
+                      <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Thermal Memory:</div><div className="mt-0">{formData.thermalMemory}</div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
           {/* --- Visual and Mechanical Inspection Section */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
+                <colgroup>
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '65%' }} />
+                  <col style={{ width: '20%' }} />
+                </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-1/6">NETA Section</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white w-4/6">Description</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white w-1/6">Results</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">NETA Section</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Description</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Results</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={item.id}>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">{item.id}</td>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white">{item.description}</td>
-                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                      <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">{item.id}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">{item.description}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
                         <select
                           value={item.result}
                           onChange={(e) => handleChange(`visualInspectionItems[${index}].result`, e.target.value)}
@@ -2190,7 +2230,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           </div>
 
           {/* --- Test Equipment Used Section --- */}
-          <div className="mb-6">
+          <div className="mb-6 print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -2206,8 +2246,39 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
               </div>
               </div>
 
+          {/* Print-Only Test Equipment Used Table */}
+          <div className="hidden print:block">
+            <h2 className="text-xl font-semibold mb-4 text-black border-b border-black pb-2 font-bold">Test Equipment Used</h2>
+            <table className="w-full border-collapse border border-black mb-6">
+              <thead>
+                <tr>
+                  <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-gray-100">Equipment</th>
+                  <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-gray-100">Serial Number</th>
+                  <th className="border border-black px-2 py-1 text-left text-sm font-bold bg-gray-100">AMP ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.megohmmeter.name || 'Megohmmeter'}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.megohmmeter.serialNumber}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.megohmmeter.ampId}</td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.lowResistanceOhmmeter.name || 'Low-Res Ohmmeter'}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.lowResistanceOhmmeter.serialNumber}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.lowResistanceOhmmeter.ampId}</td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.primaryInjectionTestSet.name || 'Primary Inj Test Set'}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.primaryInjectionTestSet.serialNumber}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.primaryInjectionTestSet.ampId}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           {/* --- Comments Section --- */}
-          <div className="mb-6">
+          <div className="mb-6 print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <div className="mb-4">
@@ -2219,6 +2290,20 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 rows={4}
               />
             </div>
+          </div>
+
+          {/* Print-Only Comments Table */}
+          <div className="hidden print:block">
+            <h2 className="text-xl font-semibold mb-4 text-black border-b border-black pb-2 font-bold">Comments</h2>
+            <table className="w-full border-collapse border border-black mb-6">
+              <tbody>
+                <tr>
+                  <td className="border border-black px-4 py-8 text-sm align-top" style={{minHeight: '150px', height: '150px'}}>
+                    {formData.comments}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

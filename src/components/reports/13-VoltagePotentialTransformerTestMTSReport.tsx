@@ -6,6 +6,7 @@ import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Temperature conversion and correction factor lookup tables
 const tcfData: Array<{ celsius: number; multiplier: number }> = [
@@ -613,9 +614,8 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       <div className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">Job Information</h2>
-        
 
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden">
             <div><label className="form-label">Customer:</label><input type="text" value={formData.customerName} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
             <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
             <div><label htmlFor="technicians" className="form-label">Technicians:</label><input id="technicians" type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -640,13 +640,28 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
             <div className="md:col-span-2"><label htmlFor="user" className="form-label">User:</label><input id="user" type="text" value={formData.userName} onChange={(e) => handleChange('userName', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
 
         </div>
+
+        <JobInfoPrintTable
+          data={{
+            customer: formData.customerName,
+            address: formData.customerAddress,
+            jobNumber: formData.jobNumber,
+            technicians: formData.technicians,
+            date: formData.date,
+            identifier: formData.identifier,
+            user: formData.userName,
+            substation: formData.substation,
+            eqptLocation: formData.eqptLocation,
+            temperature: { ...formData.temperature }
+          }}
+        />
       </div>
 
       {/* Device Data */}
       <div className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-device-data">Device Data</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-x-4 gap-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-x-4 gap-y-2 print:hidden device-onscreen">
             <div><label htmlFor="deviceData.manufacturer" className="form-label">Manufacturer:</label><input id="deviceData.manufacturer" type="text" value={formData.deviceData.manufacturer} onChange={(e) => handleChange('deviceData.manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="deviceData.catalogNumber" className="form-label">Catalog Number:</label><input id="deviceData.catalogNumber" type="text" value={formData.deviceData.catalogNumber} onChange={(e) => handleChange('deviceData.catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="deviceData.serialNumber" className="form-label">Serial Number:</label><input id="deviceData.serialNumber" type="text" value={formData.deviceData.serialNumber} onChange={(e) => handleChange('deviceData.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -656,6 +671,49 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
             <div><label htmlFor="deviceData.insulationClass" className="form-label">Insulation Class:</label><input id="deviceData.insulationClass" type="text" value={formData.deviceData.insulationClass} onChange={(e) => handleChange('deviceData.insulationClass', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="deviceData.frequency" className="form-label">Frequency:</label><input id="deviceData.frequency" type="text" value={formData.deviceData.frequency} onChange={(e) => handleChange('deviceData.frequency', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
         </div>
+        {/* Print-only compact table for device data */}
+        <div className="hidden print:block">
+          <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <colgroup>
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Manufacturer</th>
+                <th>Catalog Number</th>
+                <th>Serial Number</th>
+                <th>Accuracy Class</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{formData.deviceData.manufacturer}</td>
+                <td>{formData.deviceData.catalogNumber}</td>
+                <td>{formData.deviceData.serialNumber}</td>
+                <td>{formData.deviceData.accuracyClass}</td>
+              </tr>
+            </tbody>
+            <thead>
+              <tr>
+                <th>Manufactured Year</th>
+                <th>Voltage Rating</th>
+                <th>Insulation Class</th>
+                <th>Frequency</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{formData.deviceData.manufacturedYear}</td>
+                <td>{formData.deviceData.voltageRating}</td>
+                <td>{formData.deviceData.insulationClass}</td>
+                <td>{formData.deviceData.frequency}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Visual and Mechanical Inspection */}
@@ -663,22 +721,34 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-dark-200">
+          <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <colgroup>
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '65%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Results</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border border-gray-200 dark:border-gray-700">NETA</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border border-gray-200 dark:border-gray-700">Description</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border border-gray-200 dark:border-gray-700">Result</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-white dark:bg-dark-150">
               {formData.visualMechanicalInspection.map((item, index) => (
                 <tr key={item.netaSection}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{item.netaSection}</td>
-                  <td className="px-6 py-4 text-sm">{item.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <select value={item.result} onChange={(e) => handleVisualInspectionChange(index, 'result', e.target.value)} disabled={!isEditing} className={`form-select w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
-                      {visualInspectionResultOptions.map(option => <option key={option} value={option}>{option}</option>)}
+                  <td className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 align-top">{item.netaSection}</td>
+                  <td className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 align-top">{item.description}</td>
+                  <td className="px-3 py-2 border border-gray-200 dark:border-gray-700 align-top">
+                    <select
+                      value={item.result}
+                      onChange={(e) => handleVisualInspectionChange(index, 'result', e.target.value)}
+                      disabled={!isEditing}
+                      className={`form-select w-full text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    >
+                      {visualInspectionResultOptions.map(option => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
                     </select>
                   </td>
                 </tr>
@@ -692,13 +762,38 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       <div className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-fuse-data">Fuse Data</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 print:hidden fuse-onscreen">
             <div><label htmlFor="fuseData.manufacturer" className="form-label">Manufacturer:</label><input id="fuseData.manufacturer" type="text" value={formData.fuseData.manufacturer} onChange={(e) => handleChange('fuseData.manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="fuseData.catalogNumber" className="form-label">Catalog Number:</label><input id="fuseData.catalogNumber" type="text" value={formData.fuseData.catalogNumber} onChange={(e) => handleChange('fuseData.catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="fuseData.class" className="form-label">Class:</label><input id="fuseData.class" type="text" value={formData.fuseData.class} onChange={(e) => handleChange('fuseData.class', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="fuseData.voltageRatingKv" className="form-label">Voltage Rating (kV):</label><input id="fuseData.voltageRatingKv" type="text" value={formData.fuseData.voltageRatingKv} onChange={(e) => handleChange('fuseData.voltageRatingKv', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="fuseData.ampacityA" className="form-label">Ampacity (A):</label><input id="fuseData.ampacityA" type="text" value={formData.fuseData.ampacityA} onChange={(e) => handleChange('fuseData.ampacityA', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="fuseData.icRatingKa" className="form-label">I.C. Rating (kA):</label><input id="fuseData.icRatingKa" type="text" value={formData.fuseData.icRatingKa} onChange={(e) => handleChange('fuseData.icRatingKa', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
+        </div>
+        {/* Print-only compact table for fuse data */}
+        <div className="hidden print:block">
+          <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <thead>
+              <tr>
+                <th>Manufacturer</th>
+                <th>Catalog Number</th>
+                <th>Class</th>
+                <th>Voltage Rating (kV)</th>
+                <th>Ampacity (A)</th>
+                <th>I.C. Rating (kA)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{formData.fuseData.manufacturer}</td>
+                <td>{formData.fuseData.catalogNumber}</td>
+                <td>{formData.fuseData.class}</td>
+                <td>{formData.fuseData.voltageRatingKv}</td>
+                <td>{formData.fuseData.ampacityA}</td>
+                <td>{formData.fuseData.icRatingKa}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
       
@@ -842,7 +937,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       <div className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">Test Equipment Used</h2>
-        <div className="space-y-4">
+        <div className="space-y-4 print:hidden">
             {(Object.keys(formData.testEquipmentUsed) as Array<keyof FormData['testEquipmentUsed']>).map(equipmentKey => {
                 const equipment = formData.testEquipmentUsed[equipmentKey];
                 const label = equipmentKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
@@ -859,6 +954,35 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 );
             })}
         </div>
+        {/* Print-only table */}
+        <div className="hidden print:block">
+          <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <thead>
+              <tr>
+                <th>Equipment</th>
+                <th>Serial Number</th>
+                <th>AMP ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{formData.testEquipmentUsed.megohmmeter.name || 'Megohmmeter'}</td>
+                <td>{formData.testEquipmentUsed.megohmmeter.serialNumber}</td>
+                <td>{formData.testEquipmentUsed.megohmmeter.ampId}</td>
+              </tr>
+              <tr>
+                <td>{formData.testEquipmentUsed.lowResistanceOhmmeter.name || 'Low Resistance Ohmmeter'}</td>
+                <td>{formData.testEquipmentUsed.lowResistanceOhmmeter.serialNumber}</td>
+                <td>{formData.testEquipmentUsed.lowResistanceOhmmeter.ampId}</td>
+              </tr>
+              <tr>
+                <td>{formData.testEquipmentUsed.ttrTestSet.name || 'TTR Test Set'}</td>
+                <td>{formData.testEquipmentUsed.ttrTestSet.serialNumber}</td>
+                <td>{formData.testEquipmentUsed.ttrTestSet.ampId}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Comments */}
@@ -870,9 +994,24 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
           onChange={(e) => handleChange('comments', e.target.value)}
           readOnly={!isEditing}
           rows={1}
-          className={`form-textarea w-full resize-none ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+          className={`form-textarea w-full resize-none print:hidden ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
           placeholder="Enter comments here..."
         />
+        {/* Print-only comments table */}
+        <div className="hidden print:block">
+          <table className="w-full border-collapse table-fixed">
+            <thead>
+              <tr>
+                <th>Comments</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="whitespace-pre-wrap align-top" style={{ minHeight: '100px' }}>{formData.comments}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
       </div>
     </ReportWrapper>
@@ -919,6 +1058,7 @@ if (typeof document !== 'undefined') {
       
       /* Hide all non-print elements */
       .print\\:hidden { display: none !important; }
+      .hidden.print\:block { display: block !important; }
       
       /* Hide second title and back button in print only */
       .flex.justify-between.items-center.mb-6 { display: none !important; }
@@ -1546,7 +1686,13 @@ if (typeof document !== 'undefined') {
         print-color-adjust: exact !important;
       }
       
-
+      /* FINAL HIDES (must be last): prevent duplication of on-screen forms */
+      .device-onscreen, .device-onscreen *,
+      .fuse-onscreen, .fuse-onscreen * {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      .device-onscreen, .fuse-onscreen { height: 0 !important; margin: 0 !important; padding: 0 !important; }
     }
   `;
   document.head.appendChild(style);

@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Types for form data and measurements
 interface InsulationResistance {
@@ -1111,7 +1112,7 @@ export default function MediumVoltageSwitchOilReport() {
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Job Information
           </h2>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4 print:hidden job-info-onscreen">
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Customer
@@ -1256,6 +1257,25 @@ export default function MediumVoltageSwitchOilReport() {
             </div>
           </div>
         </section>
+        <JobInfoPrintTable
+          data={{
+            customer: formData.customer,
+            address: formData.address,
+            jobNumber: formData.jobNumber,
+            technicians: formData.technicians,
+            date: formData.date,
+            identifier: formData.identifier,
+            user: undefined,
+            substation: formData.substation,
+            eqptLocation: formData.eqptLocation,
+            temperature: {
+              fahrenheit: formData.temperature,
+              celsius: fahrenheitToCelsius(formData.temperature),
+              tcf: getTCF(fahrenheitToCelsius(formData.temperature)),
+              humidity: formData.humidity,
+            },
+          }}
+        />
 
         {/* Nameplate Data Section */}
         <section className="mb-6">
@@ -1263,7 +1283,7 @@ export default function MediumVoltageSwitchOilReport() {
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Nameplate Data
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden nameplate-onscreen">
             <div>
               <label className="form-label">Manufacturer</label>
               <input type="text" value={formData.nameplate_manufacturer} onChange={(e) => handleChange('nameplate_manufacturer', e.target.value)} readOnly={!isEditMode} className="form-input" />
@@ -1305,6 +1325,68 @@ export default function MediumVoltageSwitchOilReport() {
               <input type="text" value={formData.nameplate_impulseLevelBIL} onChange={(e) => handleChange('nameplate_impulseLevelBIL', e.target.value)} readOnly={!isEditMode} className="form-input" />
             </div>
           </div>
+          
+          {/* Print-only Nameplate Data Table */}
+          <div className="hidden print:block">
+            <table className="w-full border-collapse border border-gray-300 print:border-black">
+              <colgroup>
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '25%' }} />
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Manufacturer:</div>
+                    <div className="text-xs">{formData.nameplate_manufacturer || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">System Voltage:</div>
+                    <div className="text-xs">{formData.nameplate_systemVoltage || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Catalog No.:</div>
+                    <div className="text-xs">{formData.nameplate_catalogNo || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Rated Voltage:</div>
+                    <div className="text-xs">{formData.nameplate_ratedVoltage || ''}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Serial Number:</div>
+                    <div className="text-xs">{formData.nameplate_serialNumber || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Rated Current:</div>
+                    <div className="text-xs">{formData.nameplate_ratedCurrent || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Date of Mfg.:</div>
+                    <div className="text-xs">{formData.nameplate_dateOfMfg || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">AIC Rating:</div>
+                    <div className="text-xs">{formData.nameplate_aicRating || ''}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Type:</div>
+                    <div className="text-xs">{formData.nameplate_type || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Impulse Level (BIL):</div>
+                    <div className="text-xs">{formData.nameplate_impulseLevelBIL || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black"></td>
+                  <td className="p-2 border border-gray-300 print:border-black"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
         {/* VFI Data Section */}
@@ -1313,7 +1395,7 @@ export default function MediumVoltageSwitchOilReport() {
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             VFI Data
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden vfi-data-onscreen">
             <div>
               <label className="form-label">Manufacturer</label>
               <input type="text" value={formData.vfiData.manufacturer} onChange={(e) => handleChange('vfiData', { ...formData.vfiData, manufacturer: e.target.value })} readOnly={!isEditMode} className="form-input" />
@@ -1338,6 +1420,47 @@ export default function MediumVoltageSwitchOilReport() {
               <label className="form-label">AIC Rating (kA)</label>
               <input type="text" value={formData.vfiData.aicRating} onChange={(e) => handleChange('vfiData', { ...formData.vfiData, aicRating: e.target.value })} readOnly={!isEditMode} className="form-input" />
             </div>
+          </div>
+          
+          {/* Print-only VFI Data Table */}
+          <div className="hidden print:block">
+            <table className="w-full border-collapse border border-gray-300 print:border-black">
+              <colgroup>
+                <col style={{ width: '33.33%' }} />
+                <col style={{ width: '33.33%' }} />
+                <col style={{ width: '33.33%' }} />
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Manufacturer:</div>
+                    <div className="text-xs">{formData.vfiData.manufacturer || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Rated Voltage:</div>
+                    <div className="text-xs">{formData.vfiData.ratedVoltage || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Catalog No.:</div>
+                    <div className="text-xs">{formData.vfiData.catalogNo || ''}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Rated Current:</div>
+                    <div className="text-xs">{formData.vfiData.ratedCurrent || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Type:</div>
+                    <div className="text-xs">{formData.vfiData.type || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">AIC Rating:</div>
+                    <div className="text-xs">{formData.vfiData.aicRating || ''}</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
@@ -1863,7 +1986,7 @@ export default function MediumVoltageSwitchOilReport() {
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
             Test Equipment Used
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4 print:hidden test-eqpt-onscreen">
             <div>
               <label className="form-label">Megohmmeter - Megger</label>
               <input type="text" value={formData.testEquipment_megohmmeter_megger} onChange={(e) => handleChange('testEquipment_megohmmeter_megger', e.target.value)} readOnly={!isEditMode} className="form-input" />
@@ -1877,7 +2000,7 @@ export default function MediumVoltageSwitchOilReport() {
               <input type="text" value={formData.testEquipment_megohmmeter_ampId} onChange={(e) => handleChange('testEquipment_megohmmeter_ampId', e.target.value)} readOnly={!isEditMode} className="form-input" />
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4 print:hidden test-eqpt-onscreen">
             <div>
               <label className="form-label">Low Resistance - Model</label>
               <input type="text" value={formData.testEquipment_lowResistance_model} onChange={(e) => handleChange('testEquipment_lowResistance_model', e.target.value)} readOnly={!isEditMode} className="form-input" />
@@ -1891,7 +2014,7 @@ export default function MediumVoltageSwitchOilReport() {
               <input type="text" value={formData.testEquipment_lowResistance_ampId} onChange={(e) => handleChange('testEquipment_lowResistance_ampId', e.target.value)} readOnly={!isEditMode} className="form-input" />
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 print:hidden test-eqpt-onscreen">
             <div>
               <label className="form-label">Hipot - Model</label>
               <input type="text" value={formData.testEquipment_hipot_model} onChange={(e) => handleChange('testEquipment_hipot_model', e.target.value)} readOnly={!isEditMode} className="form-input" />
@@ -1904,6 +2027,61 @@ export default function MediumVoltageSwitchOilReport() {
               <label className="form-label">AMP ID</label>
               <input type="text" value={formData.testEquipment_hipot_ampId} onChange={(e) => handleChange('testEquipment_hipot_ampId', e.target.value)} readOnly={!isEditMode} className="form-input" />
             </div>
+          </div>
+          
+          {/* Print-only Test Equipment Table */}
+          <div className="hidden print:block">
+            <table className="w-full border-collapse border border-gray-300 print:border-black">
+              <colgroup>
+                <col style={{ width: '33.33%' }} />
+                <col style={{ width: '33.33%' }} />
+                <col style={{ width: '33.33%' }} />
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Megohmmeter - Megger:</div>
+                    <div className="text-xs">{formData.testEquipment_megohmmeter_megger || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Serial Number:</div>
+                    <div className="text-xs">{formData.testEquipment_megohmmeter_serialNo || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">AMP ID:</div>
+                    <div className="text-xs">{formData.testEquipment_megohmmeter_ampId || ''}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Low Resistance - Model:</div>
+                    <div className="text-xs">{formData.testEquipment_lowResistance_model || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Serial Number:</div>
+                    <div className="text-xs">{formData.testEquipment_lowResistance_serialNo || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">AMP ID:</div>
+                    <div className="text-xs">{formData.testEquipment_lowResistance_ampId || ''}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Hipot - Model:</div>
+                    <div className="text-xs">{formData.testEquipment_hipot_model || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">Serial Number:</div>
+                    <div className="text-xs">{formData.testEquipment_hipot_serialNo || ''}</div>
+                  </td>
+                  <td className="p-2 border border-gray-300 print:border-black">
+                    <div className="font-semibold text-xs">AMP ID:</div>
+                    <div className="text-xs">{formData.testEquipment_hipot_ampId || ''}</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
@@ -1918,9 +2096,22 @@ export default function MediumVoltageSwitchOilReport() {
             onChange={(e) => handleChange('comments', e.target.value)}
             readOnly={!isEditMode}
             rows={4}
-            className="form-input w-full"
+            className="form-input w-full print:hidden comments-onscreen"
             placeholder="Enter any comments here..."
           />
+          
+          {/* Print-only Comments Table */}
+          <div className="hidden print:block">
+            <table className="w-full border-collapse border border-gray-300 print:border-black">
+              <tbody>
+                <tr>
+                  <td className="p-3 border border-gray-300 print:border-black">
+                    <div className="whitespace-pre-wrap text-xs">{formData.comments || ''}</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
         </div>
       </div>
@@ -2029,6 +2220,15 @@ if (typeof document !== 'undefined') {
       * { color: black !important; }
       /* Enlarge comments box vertically for print */
       .comments-section textarea { height: 170px !important; width: 100% !important; }
+      
+      /* Hide on-screen elements in print */
+      .job-info-onscreen, .job-info-onscreen *,
+      .nameplate-onscreen, .nameplate-onscreen *,
+      .vfi-data-onscreen, .vfi-data-onscreen *,
+      .test-eqpt-onscreen, .test-eqpt-onscreen *,
+      .comments-onscreen, .comments-onscreen * { 
+        display: none !important; 
+      }
     }
   `;
   document.head.appendChild(style);

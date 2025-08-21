@@ -8,6 +8,7 @@ interface AuthContextType {
   setUser: (user: User | null) => void;
   loading: boolean;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,8 +39,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      // Attempt to fetch the latest user from Supabase Auth
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error('Error refreshing user:', error);
+        return;
+      }
+      setUser(data.user ?? null);
+    } catch (err) {
+      console.error('Unexpected error refreshing user:', err);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
+    let roleChangeChannel: ReturnType<typeof supabase.channel> | null = null;
 
     supabase.auth.getSession().then(({ data: { session }, error: sessionError }) => {
       if (!mounted) return;
@@ -67,9 +83,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
+    // Subscribe to role change logs to auto-refresh current user's permissions
+    (async () => {
+      // Wait until initial user is set
+      const current = (await supabase.auth.getUser()).data.user;
+      if (current) {
+        roleChangeChannel = supabase
+          .channel('role-changes')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'common',
+              table: 'role_change_logs',
+              filter: `user_id=eq.${current.id}`,
+            },
+            async () => {
+              // When a role change is detected for this user, refresh the user object
+              await refreshUser();
+            }
+          )
+          .subscribe();
+      }
+    })();
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      if (roleChangeChannel) {
+        supabase.removeChannel(roleChangeChannel);
+      }
     };
   }, []);
 
@@ -86,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, signOut }}>
+    <AuthContext.Provider value={{ user, setUser, loading, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

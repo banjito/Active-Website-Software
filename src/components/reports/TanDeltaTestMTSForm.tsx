@@ -72,6 +72,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
     vlfHipotSerial: '',
     vlfHipotAmpId: ''
   });
+  const [comments, setComments] = useState<string>('');
 
   useEffect(() => {
     if (jobId) {
@@ -166,6 +167,9 @@ const TanDeltaTestMTSForm: React.FC = () => {
         // Set status with fallback
         setStatus(reportData.status || 'PASS');
         
+        // Set comments with fallback
+        setComments(reportData.comments || '');
+        
         setIsEditing(false);
       }
     } catch (error) {
@@ -191,7 +195,8 @@ const TanDeltaTestMTSForm: React.FC = () => {
           systemVoltage,
           testEquipment: equipment,
           status,
-          points: data
+          points: data,
+          comments
         }
       };
 
@@ -419,9 +424,22 @@ const TanDeltaTestMTSForm: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Parameters</h2>
-            <div className="flex items-center gap-4">
+            {/* On-screen form - hidden in print */}
+            <div className="flex items-center gap-4 print:hidden test-params-onscreen">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">System Voltage Line to Ground (kV RMS):</label>
               <input type="number" step="0.001" value={systemVoltage} onChange={(e) => setSystemVoltage(e.target.value)} disabled={!isEditing} className="mt-1 block w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white" />
+            </div>
+            
+            {/* Print-only table */}
+            <div className="hidden print:block">
+              <table className="w-full border border-gray-300 print:border-black">
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black font-semibold w-1/3">System Voltage Line to Ground (kV RMS):</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{systemVoltage}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -503,7 +521,8 @@ const TanDeltaTestMTSForm: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* On-screen form - hidden in print */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:hidden test-eqpt-onscreen">
               <div>
                 <label htmlFor="megohmmeterMakeModel" className="form-label">Megohmmeter Make/Model</label>
                 <input id="megohmmeterMakeModel" type="text" value={equipment.megohmmeterMakeModel} onChange={(e) => handleEquipmentChange('megohmmeterMakeModel', e.target.value)} disabled={!isEditing} className="form-input mt-1" />
@@ -529,13 +548,64 @@ const TanDeltaTestMTSForm: React.FC = () => {
                 <input id="vlfHipotAmpId" type="text" value={equipment.vlfHipotAmpId} onChange={(e) => handleEquipmentChange('vlfHipotAmpId', e.target.value)} disabled={!isEditing} className="form-input mt-1" />
               </div>
             </div>
+            
+            {/* Print-only table */}
+            <div className="hidden print:block">
+              <table className="w-full border border-gray-300 print:border-black">
+                <thead>
+                  <tr>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Equipment</th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Make/Model</th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Serial Number</th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">AMP ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black font-semibold">Megohmmeter</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{equipment.megohmmeterMakeModel || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{equipment.megohmeterSerial || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{equipment.megohmmeterAmpId || ''}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black font-semibold">VLF Hipot</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{equipment.vlfHipotMakeModel || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{equipment.vlfHipotSerial || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black">{equipment.vlfHipotAmpId || ''}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
  
           {/* Comments Section */}
           <div className="mb-6 comments-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
-            <textarea rows={8} className="form-input resize-vertical" disabled={!isEditing} />
+            {/* On-screen form - hidden in print */}
+            <div className="print:hidden comments-onscreen">
+              <textarea 
+                rows={8} 
+                className="form-input resize-vertical" 
+                disabled={!isEditing}
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+                placeholder="Enter any additional comments or notes..."
+              />
+            </div>
+            
+            {/* Print-only table */}
+            <div className="hidden print:block">
+              <table className="w-full border border-gray-300 print:border-black">
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
+                      {comments || 'No comments'}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -554,6 +624,11 @@ if (typeof document !== 'undefined') {
 
       /* Hide navigation and non-print elements */
       header, nav, .navigation, [class*="nav"], [class*="header"], .sticky, [class*="sticky"], .print\\:hidden { display: none !important; }
+      
+      /* Hide on-screen elements in print */
+      .test-params-onscreen, .test-params-onscreen * { display: none !important; }
+      .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
+      .comments-onscreen, .comments-onscreen * { display: none !important; }
 
       /* Inputs/selects */
       input, select, textarea { background-color: white !important; border: 1px solid black !important; color: black !important; padding: 2px !important; font-size: 9px !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; width: 100% !important; min-width: 0 !important; }
@@ -583,6 +658,10 @@ if (typeof document !== 'undefined') {
       /* Comments section: wider, not taller */
       .comments-section { width: 100% !important; }
       .comments-section textarea { width: 100% !important; max-width: 100% !important; min-width: 100% !important; height: 90px !important; }
+      
+      /* Form label styling */
+      .form-label { display: block !important; text-sm !important; font-medium !important; text-gray-700 !important; margin-bottom: 0.25rem !important; }
+      .form-input { display: block !important; width: 100% !important; padding: 0.5rem !important; border: 1px solid #d1d5db !important; border-radius: 0.375rem !important; background-color: white !important; color: black !important; font-size: 12px !important; }
     }
   `;
   document.head.appendChild(style);

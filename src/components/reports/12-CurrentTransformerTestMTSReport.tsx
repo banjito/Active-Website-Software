@@ -6,6 +6,7 @@ import _ from 'lodash';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -461,7 +462,13 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
             font-size: 12px !important;
             page-break-before: always !important;
           }
+          /* FINAL HIDES: ensure on-screen Job Info grid never prints */
+          .job-info-onscreen, .job-info-onscreen * { display: none !important; visibility: hidden !important; }
+          .job-info-onscreen { height: 0 !important; margin: 0 !important; padding: 0 !important; }
         }
+        .hidden.print\\:block { display: block !important; }
+        /* Hard-hide on-screen grids in print */
+        .device-onscreen, .ct-ident-onscreen, .te-onscreen { display: none !important; visibility: hidden !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
       }
     `;
     document.head.appendChild(style);
@@ -737,7 +744,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
 
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-8 print:hidden job-info-onscreen">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer</label>
@@ -804,12 +811,26 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
             </div>
           </div>
         </div>
+        <JobInfoPrintTable
+          data={{
+            customer: formData.customerName,
+            address: formData.customerAddress,
+            jobNumber: formData.jobNumber,
+            technicians: formData.technicians,
+            date: formData.date,
+            identifier: formData.identifier,
+            user: formData.userName,
+            substation: formData.substation,
+            eqptLocation: formData.eqptLocation,
+            temperature: { ...formData.temperature }
+          }}
+        />
       </div>
 
       {/* Device Data Section */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Device Data</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden device-onscreen">
           {/* Left Column */}
           <div className="space-y-3">
             <div><label htmlFor="deviceData.manufacturer" className="form-label inline-block w-32">Manufacturer:</label><input id="deviceData.manufacturer" type="text" value={formData.deviceData.manufacturer} onChange={(e) => handleChange('deviceData.manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -825,27 +846,80 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
             <div><label htmlFor="deviceData.frequency" className="form-label inline-block w-32">Frequency:</label><input id="deviceData.frequency" type="text" value={formData.deviceData.frequency} onChange={(e) => handleChange('deviceData.frequency', e.target.value)} readOnly={!isEditing} className={`form-input w-[calc(100%-8rem)] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
           </div>
         </div>
+        {/* Print-only Device Data table */}
+        <div className="hidden print:block">
+          <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <colgroup>
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Manufacturer</th>
+                <th>Class</th>
+                <th>CT Ratio</th>
+                <th>Catalog Number</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{formData.deviceData.manufacturer}</td>
+                <td>{formData.deviceData.class}</td>
+                <td>{formData.deviceData.ctRatio}</td>
+                <td>{formData.deviceData.catalogNumber}</td>
+              </tr>
+            </tbody>
+            <thead>
+              <tr>
+                <th>Voltage Rating (V)</th>
+                <th>Polarity Facing</th>
+                <th>Type</th>
+                <th>Frequency</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{formData.deviceData.voltageRating}</td>
+                <td>{formData.deviceData.polarityFacing}</td>
+                <td>{formData.deviceData.type}</td>
+                <td>{formData.deviceData.frequency}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Visual and Mechanical Inspection Section */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-dark-200">
+          <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700 visual-mechanical-table">
+            <colgroup>
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '65%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Results</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border border-gray-200 dark:border-gray-700">NETA</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border border-gray-200 dark:border-gray-700">Description</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border border-gray-200 dark:border-gray-700">Result</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-white dark:bg-dark-150">
               {formData.visualMechanicalInspection.map((item, index) => (
                 <tr key={item.netaSection}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{item.netaSection}</td>
-                  <td className="px-6 py-4 text-sm">{item.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <select value={item.result} onChange={(e) => handleVisualInspectionChange(index, 'result', e.target.value)} disabled={!isEditing} className={`form-select ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
+                  <td className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 align-top">{item.netaSection}</td>
+                  <td className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 align-top">{item.description}</td>
+                  <td className="px-3 py-2 border border-gray-200 dark:border-gray-700 align-top">
+                    <select 
+                      value={item.result} 
+                      onChange={(e) => handleVisualInspectionChange(index, 'result', e.target.value)} 
+                      disabled={!isEditing} 
+                      className={`form-select w-full text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    >
                       {visualInspectionResultOptions.map(option => <option key={option} value={option}>{option}</option>)}
                     </select>
                     <span className="hidden print:inline-block text-xs" style={{ fontSize: '8px', color: 'black' }}>
@@ -862,7 +936,24 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
       {/* CT Identification Section */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">CT Identification</h2>
-        {renderCtIdentification()}
+        <div className="print:hidden ct-ident-onscreen">{renderCtIdentification()}</div>
+        {/* Print-only CT Identification table (exactly two rows: phases, serials) */}
+        <div className="hidden print:block">
+          <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <tbody>
+              <tr>
+                <td>{`Phase 1: ${formData.ctIdentification.phase1 || ''}`}</td>
+                <td>{`Phase 2: ${formData.ctIdentification.phase2 || ''}`}</td>
+                <td>{`Phase 3: ${formData.ctIdentification.phase3 || ''}`}</td>
+              </tr>
+              <tr>
+                <td>{`Serial #1: ${formData.ctIdentification.phase1Serial || ''}`}</td>
+                <td>{`Serial #2: ${formData.ctIdentification.phase2Serial || ''}`}</td>
+                <td>{`Serial #3: ${formData.ctIdentification.phase3Serial || ''}`}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Electrical Tests Section */}
@@ -1114,7 +1205,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
       {/* Test Equipment Used Section */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-        <div className="space-y-4">
+        <div className="space-y-4 print:hidden te-onscreen">
           <div className="grid grid-cols-3 gap-4">
             <div><label htmlFor="testEquipmentUsed.megohmmeterName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label><input id="testEquipmentUsed.megohmmeterName" type="text" value={formData.testEquipmentUsed.megohmmeterName} onChange={(e) => handleChange('testEquipmentUsed.megohmmeterName', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="testEquipmentUsed.megohmmeterSerial" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label><input id="testEquipmentUsed.megohmmeterSerial" type="text" value={formData.testEquipmentUsed.megohmmeterSerial} onChange={(e) => handleChange('testEquipmentUsed.megohmmeterSerial', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
@@ -1125,6 +1216,30 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
             <div><label htmlFor="testEquipmentUsed.ctRatioTestSetSerial" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label><input id="testEquipmentUsed.ctRatioTestSetSerial" type="text" value={formData.testEquipmentUsed.ctRatioTestSetSerial} onChange={(e) => handleChange('testEquipmentUsed.ctRatioTestSetSerial', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div><label htmlFor="testEquipmentUsed.ctRatioTestSetAmpId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label><input id="testEquipmentUsed.ctRatioTestSetAmpId" type="text" value={formData.testEquipmentUsed.ctRatioTestSetAmpId} onChange={(e) => handleChange('testEquipmentUsed.ctRatioTestSetAmpId', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
           </div>
+        </div>
+        {/* Print-only Test Equipment table */}
+        <div className="hidden print:block">
+          <table className="w-full table-fixed border-collapse border border-gray-200 dark:border-gray-700">
+            <thead>
+              <tr>
+                <th>Equipment</th>
+                <th>Serial Number</th>
+                <th>AMP ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{formData.testEquipmentUsed.megohmmeterName || 'Megohmmeter'}</td>
+                <td>{formData.testEquipmentUsed.megohmmeterSerial}</td>
+                <td>{formData.testEquipmentUsed.megohmmeterAmpId}</td>
+              </tr>
+              <tr>
+                <td>{formData.testEquipmentUsed.ctRatioTestSetName || 'CT Ratio Test Set'}</td>
+                <td>{formData.testEquipmentUsed.ctRatioTestSetSerial}</td>
+                <td>{formData.testEquipmentUsed.ctRatioTestSetAmpId}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 

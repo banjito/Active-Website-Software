@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
+import JobInfoPrintTable from './common/JobInfoPrintTable';
 
 // Temperature conversion and correction factor lookup tables (copied from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -715,7 +716,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
       {/* End Print Header */}
       
       <div className="p-6 flex justify-center">
-        <div className="max-w-7xl w-full space-y-6">
+        <div id="mvcb-mts-root" className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
           <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
             {renderHeader()}
@@ -725,7 +726,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 print:hidden job-info-onscreen">
               {/* Column 1 */}
               <div>
                 <div className="mb-4 flex items-center">
@@ -788,13 +789,34 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
                 </div>
               </div>
             </div>
+            <div className="hidden print:block">
+            <JobInfoPrintTable
+              data={{
+                customer: formData.customer,
+                address: formData.address,
+                jobNumber: formData.jobNumber,
+                technicians: formData.technicians,
+                date: formData.date,
+                identifier: formData.identifier,
+                user: formData.user,
+                substation: formData.substation,
+                eqptLocation: formData.eqptLocation,
+                temperature: {
+                  fahrenheit: formData.temperature.fahrenheit,
+                  celsius: formData.temperature.celsius,
+                  tcf: formData.temperature.tcf,
+                  humidity: formData.humidity,
+                },
+              }}
+            />
+            </div>
           </section>
 
       {/* Nameplate Data */}
       <section className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print:hidden nameplate-onscreen">
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer:</label>{renderInput("manufacturer")}</div>
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">I.C. Rating (kA):</label>{renderInput("icRating")}</div>
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog Number:</label>{renderInput("catalogNumber")}</div>
@@ -806,6 +828,68 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturing Date:</label>{renderInput("manufacturingDate")}</div>
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">MVA Rating:</label>{renderInput("mvaRating")}</div>
         </div>
+        
+        {/* Print-only Nameplate Data Table */}
+        <div className="hidden print:block">
+          <table className="w-full border-collapse border border-gray-300 print:border-black">
+            <colgroup>
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+            </colgroup>
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Manufacturer:</div>
+                  <div className="text-xs">{formData.manufacturer || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">I.C. Rating (kA):</div>
+                  <div className="text-xs">{formData.icRating || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Catalog Number:</div>
+                  <div className="text-xs">{formData.catalogNumber || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Rated Voltage (kV):</div>
+                  <div className="text-xs">{formData.ratedVoltage || ''}</div>
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Serial Number:</div>
+                  <div className="text-xs">{formData.serialNumber || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Operating Voltage (kV):</div>
+                  <div className="text-xs">{formData.operatingVoltage || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Type:</div>
+                  <div className="text-xs">{formData.type || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Ampacity (A):</div>
+                  <div className="text-xs">{formData.ampacity || ''}</div>
+                </td>
+              </tr>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Manufacturing Date:</div>
+                  <div className="text-xs">{formData.manufacturingDate || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">MVA Rating:</div>
+                  <div className="text-xs">{formData.mvaRating || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black"></td>
+                <td className="p-2 border border-gray-300 print:border-black"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       {/* Visual and Mechanical Inspection */}
@@ -813,7 +897,12 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+            <colgroup>
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '70%' }} />
+              <col style={{ width: '18%' }} />
+            </colgroup>
             <thead className="bg-gray-50 dark:bg-dark-200">
               <tr>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NETA Section</th>
@@ -825,9 +914,12 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
               {visualInspectionItemsList.map(item => (
                 <tr key={item.id}>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
-                  <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{item.description}</td>
+                  <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{item.description}</td>
                   <td className="px-3 py-2 whitespace-nowrap">
-                    {renderSelect(`visualMechanicalInspection.${item.id}`, visualInspectionOptions)}
+                    <div className="print:hidden">
+                      {renderSelect(`visualMechanicalInspection.${item.id}`, visualInspectionOptions)}
+                    </div>
+                    <div className="hidden print:block text-center">{formData.visualMechanicalInspection[item.id] || ''}</div>
                   </td>
                 </tr>
               ))}
@@ -991,7 +1083,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance</h2>
         <div className="overflow-x-auto">
-          <div className="flex items-center mb-4">
+          <div className="flex items-center mb-4 print:hidden">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Test Voltage:</span>
             {renderSelect("insulationResistanceMeasured.testVoltage", insulationTestVoltages, false, "w-32")}
           </div>
@@ -1165,7 +1257,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           {/* Dielectric Withstand - Breaker in Closed Position */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {/* Test Parameters */}
-            <div className="space-y-4">
+            <div className="space-y-4 print:hidden">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Test Voltage</label>
                 {renderInput("dielectricWithstand.closed.testVoltage", "", "text", false, "w-full")}
@@ -1229,7 +1321,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           {/* Vacuum Bottle Integrity - Breaker in Open Position */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {/* Test Parameters */}
-            <div className="space-y-4">
+            <div className="space-y-4 print:hidden">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Test Voltage</label>
                 {renderInput("dielectricWithstand.open.testVoltage", "", "text", false, "w-full")}
@@ -1296,7 +1388,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
       <section className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-        <div className="space-y-4">
+        <div className="space-y-4 print:hidden test-eqpt-onscreen">
           {/* Megohmmeter */}
           <div className="flex items-center space-x-4">
             <label className="text-sm font-medium text-gray-900 dark:text-white w-32">Megohmmeter:</label>
@@ -1327,21 +1419,70 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
             {renderInput("testEquipment.hipot.ampId", "", "text", false, "w-32")}
           </div>
         </div>
+        
+        {/* Print-only Test Equipment Table */}
+        <div className="hidden print:block">
+          <table className="w-full border-collapse border border-gray-300 print:border-black">
+            <colgroup>
+              <col style={{ width: '33.33%' }} />
+              <col style={{ width: '33.33%' }} />
+              <col style={{ width: '33.33%' }} />
+            </colgroup>
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Megohmmeter:</div>
+                  <div className="text-xs">{formData.testEquipment.megohmmeter.model || ''}</div>
+                  <div className="text-xs">S/N: {formData.testEquipment.megohmmeter.serialNumber || ''}</div>
+                  <div className="text-xs">AMP ID: {formData.testEquipment.megohmmeter.ampId || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Low-Resistance Ohmmeter:</div>
+                  <div className="text-xs">{formData.testEquipment.lowResistanceOhmmeter.model || ''}</div>
+                  <div className="text-xs">S/N: {formData.testEquipment.lowResistanceOhmmeter.serialNumber || ''}</div>
+                  <div className="text-xs">AMP ID: {formData.testEquipment.lowResistanceOhmmeter.ampId || ''}</div>
+                </td>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Hipot:</div>
+                  <div className="text-xs">{formData.testEquipment.hipot.model || ''}</div>
+                  <div className="text-xs">S/N: {formData.testEquipment.hipot.serialNumber || ''}</div>
+                  <div className="text-xs">AMP ID: {formData.testEquipment.hipot.ampId || ''}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       {/* Comments */}
       <section className="mb-6">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
-        <textarea
-          name="comments"
-          value={formData.comments}
-          onChange={handleInputChange}
-          placeholder="Enter any comments or notes here..."
-          readOnly={!isEditing}
-          rows={4}
-          className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-        />
+        <div className="print:hidden comments-onscreen">
+          <textarea
+            name="comments"
+            value={formData.comments}
+            onChange={handleInputChange}
+            placeholder="Enter any comments or notes here..."
+            readOnly={!isEditing}
+            rows={4}
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+          />
+        </div>
+        
+        {/* Print-only Comments Table */}
+        <div className="hidden print:block">
+          <table className="w-full border-collapse border border-gray-300 print:border-black">
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-300 print:border-black">
+                  <div className="font-semibold text-xs">Comments</div>
+                  <div className="text-xs">{formData.comments || ''}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
         </div>
       </div>
@@ -1383,6 +1524,50 @@ if (typeof document !== 'undefined') {
       table { border-collapse: collapse; width: 100%; }
       th, td { border: 1px solid black !important; padding: 4px !important; }
       th { background-color: #f0f0f0 !important; font-weight: bold !important; }
+
+      /* Hard reset: strip borders/backgrounds from everything, then re-apply for tables */
+      * { box-shadow: none !important; background: transparent !important; }
+      /* Preserve table borders only */
+      *:not(table):not(thead):not(tbody):not(tr):not(th):not(td) { border: none !important; }
+      table, thead, tbody, tr, th, td { border: 1px solid black !important; background: white !important; }
+      table { width: 100% !important; border-collapse: collapse !important; }
+      /* Do not hide images; keep AMP logo visible */
+      button:not(.print-visible) { display: none !important; }
+      .print\:flex img { display: inline-block !important; }
+      /* Hide labels globally in print */
+      #mvcb-mts-root label { display: none !important; }
+      /* Show table controls as plain text in print */
+      #mvcb-mts-root table input,
+      #mvcb-mts-root table select,
+      #mvcb-mts-root table textarea {
+        display: block !important;
+        width: 100% !important;
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        text-align: center !important;
+        font-size: 9px !important;
+        color: black !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+      }
+
+      /* Hide all non-table containers in print to avoid old styling */
+      .max-w-7xl > div:not(:has(table)) { display: none !important; }
+      /* Strip card/background/border/padding from non-table elements */
+      .bg-white, .dark\:bg-dark-150, .rounded-lg, .shadow, .border, .p-6, .space-y-6 {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      section { background: transparent !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; }
+      div[class*="border"], div[class*="shadow"], div[class*="rounded"] { border: none !important; box-shadow: none !important; }
+      div[class*="p-"], div[class*="px-"], div[class*="py-"], div[class*="pt-"], div[class*="pb-"], div[class*="pl-"], div[class*="pr-"] { padding: 0 !important; }
+      .space-y-6 > * + * { margin-top: 2px !important; }
       
       input, select, textarea { 
         background-color: white !important; 
@@ -1396,10 +1581,7 @@ if (typeof document !== 'undefined') {
       }
       
       /* Hide dropdown arrows and form control indicators */
-      select {
-        background-image: none !important;
-        padding-right: 8px !important;
-      }
+      select { background-image: none !important; padding-right: 8px !important; display: none !important; }
       
       /* Hide spin buttons on number inputs */
       input[type="number"]::-webkit-outer-spin-button,
@@ -1521,6 +1703,9 @@ if (typeof document !== 'undefined') {
       .section-insulation-resistance td:nth-child(7) { width: 12.5% !important; }
       .section-insulation-resistance th:last-child,
       .section-insulation-resistance td:last-child { width: 9% !important; }
+      /* Hide Units select value cells entirely in print if they render as empty or controls */
+      .section-insulation-resistance td:last-child > div.print\:hidden { display: none !important; }
+      .section-insulation-resistance td:last-child select { display: none !important; }
       
       /* Dielectric withstand table styling for print */
       .section-dielectric-withstand table {
@@ -1558,9 +1743,44 @@ if (typeof document !== 'undefined') {
       .section-dielectric-withstand td:nth-child(3) { width: 25% !important; }
       .section-dielectric-withstand th:nth-child(4),
       .section-dielectric-withstand td:nth-child(4) { width: 25% !important; }
+      .section-dielectric-withstand select { display: none !important; }
       
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }
+      
+      /* Section headers - show in print, compact and clean */
+      h2 {
+        display: block !important;
+        font-size: 10px !important;
+        font-weight: bold !important;
+        color: black !important;
+        margin: 6px 0 4px !important;
+        padding: 0 0 2px 0 !important;
+        border-bottom: 1px solid black !important;
+        background: transparent !important;
+      }
+      /* Hide orange divider bars */
+      .w-full.h-1 { display: none !important; }
+
+      /* Hide on-screen elements in print */
+      .nameplate-onscreen, .nameplate-onscreen *,
+      .test-eqpt-onscreen, .test-eqpt-onscreen *,
+      .comments-onscreen, .comments-onscreen * { 
+        display: none !important; 
+      }
+      /* Hide floating unit symbols from Job Info grid in print */
+      .job-info-onscreen span { display: none !important; }
+      .job-info-onscreen input { display: none !important; }
+      
+      /* Visual & Mechanical table widths for readability (3 columns: 12/70/18) */
+      table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
+      table.visual-mechanical-table thead { display: table-header-group !important; }
+      table.visual-mechanical-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+      table.visual-mechanical-table th, table.visual-mechanical-table td { font-size: 8px !important; padding: 2px 3px !important; vertical-align: middle !important; }
+      table.visual-mechanical-table colgroup col:nth-child(1) { width: 12% !important; }
+      table.visual-mechanical-table colgroup col:nth-child(2) { width: 70% !important; }
+      table.visual-mechanical-table colgroup col:nth-child(3) { width: 18% !important; }
+      table.visual-mechanical-table td:nth-child(2) { white-space: normal !important; word-break: break-word !important; }
     }
   `;
   document.head.appendChild(style);

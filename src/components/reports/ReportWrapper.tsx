@@ -13,6 +13,40 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
       style.id = 'vm-standard-print-css';
       style.textContent = `
         @media print {
+          /* Global: make inputs/selects look like plain text in print */
+          #report-container input,
+          #report-container select,
+          #report-container textarea {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            color: black !important;
+          }
+          /* Hide select dropdown arrow */
+          #report-container select::-ms-expand { display: none !important; }
+          /* Remove number input spinners */
+          #report-container input[type="number"]::-webkit-outer-spin-button,
+          #report-container input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none !important; margin: 0 !important; }
+          #report-container input[type="number"] { -moz-appearance: textfield !important; }
+
+          /* Enforce crisp table borders across all reports */
+          #report-container table,
+          #report-container th,
+          #report-container td,
+          #report-container thead,
+          #report-container tbody,
+          #report-container tr {
+            border: 1px solid black !important;
+          }
+          #report-container table { border-collapse: collapse !important; width: 100% !important; }
+          #report-container th, #report-container td { padding: 2px 3px !important; }
+
           /* Standardize Visual/Mechanical tables that include a Results column */
           #report-container .vm-standard { width: 100% !important; table-layout: fixed !important; }
           #report-container .vm-standard th, 

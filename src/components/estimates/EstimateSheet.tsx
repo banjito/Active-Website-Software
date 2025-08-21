@@ -143,6 +143,7 @@ interface EstimateSheetProps {
 
 interface OpportunityData {
   description: string;
+  quote_number?: string;
   customer: {
     id: string;
     name: string;
@@ -419,7 +420,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
     async function fetchOpportunityData() {
       try {
         // 1. Fetch Opportunity from business schema
-        const opportunityColumns = 'id, description, customer_id';
+        const opportunityColumns = 'id, description, customer_id, quote_number';
         const { data: oppData, error: oppError } = await supabase
           .schema('business')
           .from('opportunities')
@@ -470,6 +471,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
         // 3. Combine data and set state
         const transformedData = {
           description: oppData.description || '',
+          quote_number: (oppData as any).quote_number || '',
           customer: customerInfo || {
             id: '',
             name: '',
@@ -874,6 +876,25 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
     }).format(num);
   };
   
+  // Calculate total travel cost from the current travelData state
+  const getTotalTravelCost = () => {
+    try {
+      const td: any = travelData as any;
+      const sum =
+        (td?.travelExpense?.[0]?.vehicleTravelCost ?? 0) +
+        (td?.travelTime?.[0]?.totalTravelLabor ?? 0) +
+        (td?.perDiem?.[0]?.totalPerDiem ?? 0) +
+        (td?.lodging?.[0]?.totalAmount ?? 0) +
+        (td?.localMiles?.[0]?.totalLocalMilesCost ?? 0) +
+        (td?.flights?.[0]?.totalFlightAmount ?? 0) +
+        (td?.airTravelTime?.[0]?.totalTravelLabor ?? 0) +
+        (td?.rentalCar?.[0]?.totalAmount ?? 0);
+      return Number.isFinite(sum) ? sum : 0;
+    } catch {
+      return 0;
+    }
+  };
+  
   // Helper function to get the exact FINAL value (G54) as shown in UI
   const getFinalValue = () => {
     return Math.ceil((
@@ -884,7 +905,9 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       // Labor Calculation Total (D52)
       (data.hoursSummary.straightTimeHours * 240) +
       (data.hoursSummary.overtimeHours * 360) +
-      (data.hoursSummary.doubleTimeHours * 480)
+      (data.hoursSummary.doubleTimeHours * 480) +
+      // Include total travel cost in subtotal before markup
+      getTotalTravelCost()
     ) / 0.96);
   };
 
@@ -1525,8 +1548,29 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
         maximumFractionDigits: 2
       }).format(amount);
     }
-    const finalValue = getFinalValueFromParsed(parsedData);
-    const mobilization = formatCurrency(Math.ceil(finalValue * 0.10));
+    // Include travel cost from parsed travel_data when computing final for letter
+    const parsedTravel = (() => {
+      const t = parsedData?.travel_data ? (typeof parsedData.travel_data === 'string' ? (() => { try { return JSON.parse(parsedData.travel_data); } catch { return null; } })() : parsedData.travel_data) : null;
+      return t || {};
+    })();
+    const getParsedTotalTravelCost = () => {
+      const td: any = parsedTravel as any;
+      return (
+        (td?.travelExpense?.[0]?.vehicleTravelCost ?? 0) +
+        (td?.travelTime?.[0]?.totalTravelLabor ?? 0) +
+        (td?.perDiem?.[0]?.totalPerDiem ?? 0) +
+        (td?.lodging?.[0]?.totalAmount ?? 0) +
+        (td?.localMiles?.[0]?.totalLocalMilesCost ?? 0) +
+        (td?.flights?.[0]?.totalFlightAmount ?? 0) +
+        (td?.airTravelTime?.[0]?.totalTravelLabor ?? 0) +
+        (td?.rentalCar?.[0]?.totalAmount ?? 0)
+      );
+    };
+    const finalValue = Math.ceil((getFinalValueFromParsed(parsedData) + getParsedTotalTravelCost()) );
+    const mobilization = (() => {
+      const factor = getMobilizationFactor(finalValue);
+      return formatCurrency(Math.ceil(finalValue * factor));
+    })();
     const option1 = formatCurrency(finalValue * 1);
     const option2 = formatCurrency(Math.ceil(finalValue * 1.06));
     const option3 = formatCurrency(Math.ceil(finalValue * 1.09));
@@ -1539,6 +1583,8 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       : `<tr><td style='padding:4px 12px;border:1px solid #ccc;'>24-hour Power Study</td><td style='padding:4px 12px;border:1px solid #ccc;text-align:center;'>1</td></tr>`;
 
     const contactName = contactData ? `${contactData.first_name} ${contactData.last_name}`.trim() : (customer.name || 'Contact Name');
+    // Prefer opportunity's quote_number for the letter number
+    const letterQuoteNumber = (opportunityData as any)?.quote_number || quote.id?.slice(0,6) || (index + 1);
 
     setLetterHtml(`
       <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; min-height: 1100px;">
@@ -1547,7 +1593,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
           <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
         </div>
         <div>Date: ${dateStr}</div>
-        <div style="margin-bottom: 12px;"><b>Letter #Quote ${quote.quote_number || quote.id?.slice(0,6) || (index + 1)}</b></div>
+        <div style="margin-bottom: 12px;"><b>Letter # ${letterQuoteNumber}</b></div>
         <div>
           ${contactName}<br/>
           ${customer.company_name || 'Company'}<br/>
@@ -1842,7 +1888,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                           loadQuoteData(quote);
                         }}
                       >
-                        Quote {quote.quote_number || quote.id?.slice(0,6) || index + 1}
+                        Quote {(opportunityData as any)?.quote_number || quote.id?.slice(0,6) || index + 1}
                       </Tab>
                     ))}
                   </Tab.List>
@@ -3028,7 +3074,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                             <tr>
                               <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>$100,000.00</td>
                               <td style={{...styles.tableCell, padding: '12px 8px'}}>0.10</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * 0.10))}</td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{(() => { const f = getFinalValue(); const factor = getMobilizationFactor(f); return formatCurrency(Math.ceil(f * factor)); })()}</td>
                             </tr>
                             <tr>
                               <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>$500,000.00</td>
@@ -3063,7 +3109,9 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   // Labor Calculation Total (D52)
                                   (data.hoursSummary.straightTimeHours * 240) +
                                   (data.hoursSummary.overtimeHours * 360) +
-                                  (data.hoursSummary.doubleTimeHours * 480)
+                                  (data.hoursSummary.doubleTimeHours * 480) +
+                                  // Travel costs included in subtotal before markup
+                                  getTotalTravelCost()
                                 ))}
                               </div>
                               <div style={{fontSize: '12px', color: 'var(--text-color)', opacity: 0.8}}>(before final mark-up)</div>
@@ -3079,7 +3127,9 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                                   // Labor Calculation Total (D52)
                                   (data.hoursSummary.straightTimeHours * 240) +
                                   (data.hoursSummary.overtimeHours * 360) +
-                                  (data.hoursSummary.doubleTimeHours * 480)
+                                  (data.hoursSummary.doubleTimeHours * 480) +
+                                  // Travel costs included in subtotal before markup
+                                  getTotalTravelCost()
                                 ) / 0.96))}
                               </div>
                               <div style={{marginBottom: '5px'}}>
@@ -3120,7 +3170,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                         <div style={{fontWeight: 'bold', marginBottom: '10px'}}>(Copy paste below into quote)</div>
                         <div style={{fontSize: '14px', lineHeight: '1.5'}}>
                           <div style={{marginBottom: '10px'}}>
-                            Mobilization costs of <b>${formatCurrency(Math.ceil(getFinalValue() * 0.10))}</b> shall be paid before the first day of work in addition to:
+                            Mobilization costs of <b>${(() => { const f = getFinalValue(); const factor = getMobilizationFactor(f); return formatCurrency(Math.ceil(f * factor)); })()}</b> shall be paid before the first day of work in addition to:
                           </div>
                           <div style={{marginBottom: '5px'}}>
                             Option 1: Where NET 30 Terms are applicable and agreed upon: {formatCurrency(Math.ceil(getFinalValue() * 1))}
@@ -3167,7 +3217,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
             <ul>
               {quotes.map((q, idx) => (
                 <li key={q.id} className="mb-2 flex items-center justify-between">
-                  <span>Quote {q.quote_number || q.id?.slice(0,6) || (idx + 1)} - {q.created_at?.slice(0,10)}</span>
+                  <span>Quote {(opportunityData as any)?.quote_number || q.id?.slice(0,6) || (idx + 1)} - {q.created_at?.slice(0,10)}</span>
                   <Button onClick={() => handleSelectQuoteForLetter(idx)} className="bg-[#f26722] text-white ml-2">Select</Button>
                 </li>
               ))}

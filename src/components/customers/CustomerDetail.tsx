@@ -30,15 +30,6 @@ interface Job {
   priority: string;
 }
 
-interface Opportunity {
-  id: string;
-  title: string;
-  status: string;
-  expected_value: number | null;
-  expected_close_date: string | null;
-  quote_number?: string | null;
-}
-
 interface CustomerFormData {
   // Define the structure of your customer form data
 }
@@ -75,25 +66,12 @@ export default function CustomerDetail() {
   const [categories, setCategories] = useState<CustomerCategory[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [isContactFormOpen, setIsContactFormOpen] = useState(false);
   const [contactFormData, setContactFormData] = useState<ContactFormData>(initialContactFormData);
-  const [isContactEditOpen, setIsContactEditOpen] = useState(false);
-  const [contactEditFormData, setContactEditFormData] = useState<{
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-    position: string;
-    is_primary: boolean;
-  }>({ id: '', first_name: '', last_name: '', email: '', phone: '', position: '', is_primary: false });
-  const [isContactViewOpen, setIsContactViewOpen] = useState(false);
-  const [contactViewData, setContactViewData] = useState<Contact | null>(null);
   const [isCategorySelectOpen, setIsCategorySelectOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -139,26 +117,6 @@ export default function CustomerDetail() {
 
       if (jobsError) throw jobsError;
       setJobs(jobsData || []);
-
-      // Fetch related opportunities
-      const { data: oppsData, error: oppsError } = await supabase
-        .schema('business')
-        .from('opportunities')
-        .select('id, title, status, expected_value, expected_close_date, quote_number, customer_id')
-        .eq('customer_id', id)
-        .order('created_at', { ascending: false });
-
-      if (oppsError) throw oppsError;
-      setOpportunities(
-        (oppsData || []).map(o => ({
-          id: o.id,
-          title: o.title,
-          status: o.status,
-          expected_value: (o as any).expected_value ?? null,
-          expected_close_date: (o as any).expected_close_date ?? null,
-          quote_number: (o as any).quote_number ?? null,
-        }))
-      );
     } catch (error) {
       console.error('Error fetching customer data:', error);
       toast({
@@ -216,50 +174,15 @@ export default function CustomerDetail() {
   }
 
   function handleContactClick(contact: Contact) {
-    setContactViewData(contact);
-    setIsContactViewOpen(true);
-  }
-
-  function handleEditContact(contact: Contact) {
-    setContactEditFormData({
-      id: contact.id,
-      first_name: contact.first_name,
-      last_name: contact.last_name,
-      email: contact.email,
-      phone: contact.phone,
-      position: contact.position,
-      is_primary: contact.is_primary
-    });
-    setIsContactEditOpen(true);
-  }
-
-  async function handleContactEditSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!user || !customer || !contactEditFormData.id) return;
-
-    try {
-      const { error } = await supabase
-        .schema('common')
-        .from('contacts')
-        .update({
-          first_name: contactEditFormData.first_name,
-          last_name: contactEditFormData.last_name,
-          email: contactEditFormData.email,
-          phone: contactEditFormData.phone,
-          position: contactEditFormData.position,
-          is_primary: contactEditFormData.is_primary
-        })
-        .eq('id', contactEditFormData.id);
-
-      if (error) throw error;
-
-      setIsContactEditOpen(false);
-      await fetchCustomerData();
-      toast({ title: 'Success', description: 'Contact updated successfully', variant: 'success' });
-    } catch (err) {
-      console.error('Error updating contact:', err);
-      toast({ title: 'Error', description: 'Failed to update contact', variant: 'destructive' });
-    }
+    // In a real implementation, this would navigate to the contact details page or open a modal
+    // For now, we'll just show an alert with the contact details
+    alert(`Contact Details:
+Name: ${contact.first_name} ${contact.last_name}
+Email: ${contact.email}
+Phone: ${contact.phone || 'Not provided'}
+Position: ${contact.position || 'Not provided'}
+${contact.is_primary ? '(Primary Contact)' : ''}
+    `);
   }
 
   async function handleCategoryChange(categoryId: string | null) {
@@ -412,14 +335,15 @@ export default function CustomerDetail() {
               {contacts.map((contact) => (
                 <div 
                   key={contact.id} 
-                  className="flex items-start hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg"
+                  className="flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg"
+                  onClick={() => handleContactClick(contact)}
                 >
                   <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
                     <span className="text-gray-500 dark:text-gray-400 text-lg font-medium">
                       {contact.first_name?.charAt(0) || 'C'}
                     </span>
                   </div>
-                  <div className="ml-3 flex-1">
+                      <div className="ml-3">
                     <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
                           {contact.first_name} {contact.last_name}
                           {contact.is_primary && (
@@ -430,22 +354,8 @@ export default function CustomerDetail() {
                         </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{contact.position || ''}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{contact.email}</p>
-                  </div>
-                  <div className="ml-2 flex items-start gap-2">
-                    <button
-                      onClick={() => handleContactClick(contact)}
-                      className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleEditContact(contact); }}
-                      className="text-xs text-[#f26722] hover:text-[#f26722]/90"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                </div>
+                      </div>
+                    </div>
               ))}
               {contacts.length === 0 && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
@@ -541,124 +451,67 @@ export default function CustomerDetail() {
         <div className="mt-6">
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Jobs and Opportunities side-by-side */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Jobs section */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Jobs</h2>
-                      <Link
-                        to="#jobs"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveTab('jobs');
-                        }}
-                        className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
-                      >
-                        View all jobs
-                      </Link>
-                    </div>
-                  </div>
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {jobs.slice(0, 2).map((job) => (
-                      <Link 
-                        key={job.id} 
-                        to={`/jobs/${job.id}`}
-                        className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <Briefcase className="h-5 w-5 text-[#f26722]" />
-                            <div className="ml-3">
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">{job.title}</p>
-                              <div className="flex items-center mt-1 space-x-2">
-                                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                  job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                  job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                }`}>
-                                  {job.status}
-                                </span>
-                                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                  job.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                  job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                                  'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                }`}>
-                                  {job.priority}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            ${job.budget?.toLocaleString() || '-'}
-                          </div>
-                        </div>
-                        <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          Due: {job.due_date ? format(new Date(job.due_date), 'MMM d, yyyy') : 'Not set'}
-                        </div>
-                      </Link>
-                    ))}
-                    {jobs.length === 0 && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
-                        No jobs found
-                      </p>
-                    )}
-                  </div>
+              {/* Jobs section */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Jobs</h2>
+                    <Link
+                      to="#jobs"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setActiveTab('jobs');
+                      }}
+                      className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                    >
+                      View all jobs
+                    </Link>
+            </div>
                 </div>
-
-                {/* Opportunities section */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Opportunities</h2>
-                      <Link
-                        to="/sales-dashboard/opportunities"
-                        className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
-                      >
-                        View all opportunities
-                      </Link>
-                    </div>
-                  </div>
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {opportunities.slice(0, 2).map((opp) => (
-                      <Link
-                        key={opp.id}
-                        to={`/sales-dashboard/opportunities/${opp.id}`}
-                        className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              {opp.quote_number ? `${opp.quote_number}: ` : ''}{opp.title}
-                            </p>
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {jobs.slice(0, 2).map((job) => (
+                    <Link 
+                      key={job.id} 
+                      to={`/jobs/${job.id}`}
+                      className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Briefcase className="h-5 w-5 text-[#f26722]" />
+                          <div className="ml-3">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">{job.title}</p>
                             <div className="flex items-center mt-1 space-x-2">
                               <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                opp.status === 'awarded' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                opp.status === 'lost' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                               }`}>
-                                {opp.status}
+                                {job.status}
+                              </span>
+                              <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                job.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              }`}>
+                                {job.priority}
                               </span>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {opp.expected_value ? `$${opp.expected_value.toLocaleString()}` : '-'}
-                            </div>
-                            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                              {opp.expected_close_date ? `Close: ${format(new Date(opp.expected_close_date), 'MMM d, yyyy')}` : 'No close date'}
-                            </div>
-                          </div>
                         </div>
-                      </Link>
-                    ))}
-                    {opportunities.length === 0 && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
-                        No opportunities found
-                      </p>
-                    )}
-                  </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          ${job.budget?.toLocaleString() || '-'}
+                        </div>
+                      </div>
+                      <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        Due: {job.due_date ? format(new Date(job.due_date), 'MMM d, yyyy') : 'Not set'}
+                      </div>
+                    </Link>
+                  ))}
+                  {jobs.length === 0 && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
+                      No jobs found
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -682,14 +535,15 @@ export default function CustomerDetail() {
                     {contacts.slice(0, 2).map((contact) => (
                       <div 
                         key={contact.id} 
-                        className="flex items-start hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg"
+                        className="flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg"
+                        onClick={() => handleContactClick(contact)}
                       >
                         <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
                           <span className="text-gray-500 dark:text-gray-400 text-lg font-medium">
                             {contact.first_name?.charAt(0) || 'C'}
                           </span>
                         </div>
-                        <div className="ml-3 flex-1">
+                        <div className="ml-3">
                           <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
                             {contact.first_name} {contact.last_name}
                             {contact.is_primary && (
@@ -700,20 +554,6 @@ export default function CustomerDetail() {
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">{contact.position || 'No position'}</p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">{contact.email}</p>
-                        </div>
-                        <div className="ml-2 flex items-start gap-2">
-                          <button
-                            onClick={() => handleContactClick(contact)}
-                            className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
-                          >
-                            View
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleEditContact(contact); }}
-                            className="text-xs text-[#f26722] hover:text-[#f26722]/90"
-                          >
-                            Edit
-                          </button>
                         </div>
                       </div>
                     ))}
@@ -1425,175 +1265,6 @@ export default function CustomerDetail() {
                 </button>
               </div>
             </form>
-          </Dialog.Panel>
-        </div>
-      </Dialog>
-
-      {/* Edit Contact Form Dialog */}
-      <Dialog open={isContactEditOpen} onClose={() => setIsContactEditOpen(false)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="mx-auto max-w-lg rounded bg-white dark:bg-dark-150 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
-                Edit Contact
-              </Dialog.Title>
-              <button onClick={() => setIsContactEditOpen(false)} className="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-white">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <form onSubmit={handleContactEditSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="edit_first_name" className="block text-sm font-medium text-gray-700 dark:text-white">First Name *</label>
-                  <input
-                    id="edit_first_name"
-                    type="text"
-                    value={contactEditFormData.first_name}
-                    onChange={(e) => setContactEditFormData(prev => ({ ...prev, first_name: e.target.value }))}
-                    required
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="edit_last_name" className="block text-sm font-medium text-gray-700 dark:text-white">Last Name *</label>
-                  <input
-                    id="edit_last_name"
-                    type="text"
-                    value={contactEditFormData.last_name}
-                    onChange={(e) => setContactEditFormData(prev => ({ ...prev, last_name: e.target.value }))}
-                    required
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="edit_email" className="block text-sm font-medium text-gray-700 dark:text-white">Email</label>
-                <input
-                  id="edit_email"
-                  type="email"
-                  value={contactEditFormData.email}
-                  onChange={(e) => setContactEditFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
-                />
-              </div>
-              <div>
-                <label htmlFor="edit_phone" className="block text-sm font-medium text-gray-700 dark:text-white">Phone</label>
-                <input
-                  id="edit_phone"
-                  type="tel"
-                  value={contactEditFormData.phone}
-                  onChange={(e) => setContactEditFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
-                />
-              </div>
-              <div>
-                <label htmlFor="edit_position" className="block text-sm font-medium text-gray-700 dark:text-white">Position</label>
-                <input
-                  id="edit_position"
-                  type="text"
-                  value={contactEditFormData.position}
-                  onChange={(e) => setContactEditFormData(prev => ({ ...prev, position: e.target.value }))}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
-                />
-              </div>
-              <div className="flex items-center">
-                <input
-                  id="edit_is_primary"
-                  type="checkbox"
-                  checked={contactEditFormData.is_primary}
-                  onChange={(e) => setContactEditFormData(prev => ({ ...prev, is_primary: e.target.checked }))}
-                  className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 dark:border-gray-600 rounded"
-                />
-                <label htmlFor="edit_is_primary" className="ml-2 block text-sm text-gray-700 dark:text-white">Primary Contact</label>
-              </div>
-              <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                <button
-                  type="submit"
-                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm"
-                >
-                  Save Changes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsContactEditOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 px-4 py-2 text-base font-medium text-gray-700 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </Dialog.Panel>
-        </div>
-      </Dialog>
-
-      {/* View Contact Dialog */}
-      <Dialog open={isContactViewOpen} onClose={() => setIsContactViewOpen(false)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="mx-auto max-w-md w-full rounded bg-white dark:bg-dark-150 p-6 shadow-xl border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
-                Contact Details
-              </Dialog.Title>
-              <button onClick={() => setIsContactViewOpen(false)} className="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-white">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            {contactViewData ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                    <span className="text-gray-600 dark:text-gray-300 text-lg font-medium">
-                      {contactViewData.first_name?.charAt(0) || 'C'}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="text-base font-medium text-gray-900 dark:text-white">
-                      {contactViewData.first_name} {contactViewData.last_name}
-                    </div>
-                    {contactViewData.is_primary && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                        Primary
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 gap-3">
-                  <div>
-                    <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Email</div>
-                    <div className="text-sm text-gray-900 dark:text-white">{contactViewData.email || '-'}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Phone</div>
-                    <div className="text-sm text-gray-900 dark:text-white">{contactViewData.phone || '-'}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Position</div>
-                    <div className="text-sm text-gray-900 dark:text-white">{contactViewData.position || '-'}</div>
-                  </div>
-                </div>
-                <div className="pt-2 flex justify-end gap-2">
-                  <button
-                    onClick={() => {
-                      setIsContactViewOpen(false);
-                      handleEditContact(contactViewData);
-                    }}
-                    className="px-3 py-1.5 text-sm rounded bg-[#f26722] text-white hover:bg-[#f26722]/90"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => setIsContactViewOpen(false)}
-                    className="px-3 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-200"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="text-sm text-gray-500 dark:text-gray-400">No contact selected</div>
-            )}
           </Dialog.Panel>
         </div>
       </Dialog>

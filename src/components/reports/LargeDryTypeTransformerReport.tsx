@@ -1792,6 +1792,42 @@ const LargeDryTypeTransformerReport: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
               Test Equipment Used
             </h2>
+            {/* On-screen editable form (hidden in print) */}
+            <div className="space-y-4 test-eqpt-onscreen print:hidden">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter</label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.megohmmeter.name}
+                    onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, name: e.target.value })}
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.megohmmeter.serialNumber}
+                    onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, serialNumber: e.target.value })}
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.megohmmeter.ampId}
+                    onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, ampId: e.target.value })}
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Print-only compact Test Equipment table (3 boxes wide, 1 row) */}
             <div className="print:block">
               <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">

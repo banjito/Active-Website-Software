@@ -178,6 +178,11 @@ interface MediumVoltageVLFReportForm {
     megohmSerialNumber: string;
     vlfHipot: string;
     vlfSerialNumber: string;
+    // Individual AMP IDs per equipment
+    ohmmeterAmpId: string;
+    megohmmeterAmpId: string;
+    vlfAmpId: string;
+    // Legacy single AMP ID (fallback)
     ampId: string;
     vlfTestSet?: string; // Keep for backward compatibility
   };
@@ -621,7 +626,10 @@ const MediumVoltageVLFReport: React.FC = () => {
       megohmSerialNumber: "",
       vlfHipot: "",
       vlfSerialNumber: "",
-      ampId: "",
+      ohmmeterAmpId: "",
+      megohmmeterAmpId: "",
+      vlfAmpId: "",
+      ampId: "", // legacy fallback
       vlfTestSet: "", // Add this field to maintain compatibility with existing code
     },
     
@@ -2712,8 +2720,8 @@ const MediumVoltageVLFReport: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
             <input
               type="text"
-              value={formData.equipment?.ampId || ''}
-              onChange={(e) => handleChange('equipment', {...formData.equipment, ampId: e.target.value})}
+              value={formData.equipment?.ohmmeterAmpId || formData.equipment?.ampId || ''}
+              onChange={(e) => handleChange('equipment', {...formData.equipment, ohmmeterAmpId: e.target.value})}
               readOnly={!isEditMode}
               className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
@@ -2742,8 +2750,8 @@ const MediumVoltageVLFReport: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
             <input
               type="text"
-              value={formData.equipment?.ampId || ''}
-              onChange={(e) => handleChange('equipment', {...formData.equipment, ampId: e.target.value})}
+              value={formData.equipment?.megohmmeterAmpId || formData.equipment?.ampId || ''}
+              onChange={(e) => handleChange('equipment', {...formData.equipment, megohmmeterAmpId: e.target.value})}
               readOnly={!isEditMode}
               className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
@@ -2772,8 +2780,8 @@ const MediumVoltageVLFReport: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID</label>
             <input
               type="text"
-              value={formData.equipment?.ampId || ''}
-              onChange={(e) => handleChange('equipment', {...formData.equipment, ampId: e.target.value})}
+              value={formData.equipment?.vlfAmpId || formData.equipment?.ampId || ''}
+              onChange={(e) => handleChange('equipment', {...formData.equipment, vlfAmpId: e.target.value})}
               readOnly={!isEditMode}
               className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
@@ -2796,19 +2804,19 @@ const MediumVoltageVLFReport: React.FC = () => {
                 <td className="p-2 border border-gray-300 print:border-black font-semibold">Ohmmeter</td>
                 <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmmeter || ''}</td>
                 <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmSerialNumber || ''}</td>
-                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ampId || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ohmmeterAmpId || formData.equipment?.ampId || ''}</td>
               </tr>
               <tr>
                 <td className="p-2 border border-gray-300 print:border-black font-semibold">Megohmmeter</td>
                 <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmmeter || ''}</td>
                 <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmSerialNumber || ''}</td>
-                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ampId || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.megohmmeterAmpId || formData.equipment?.ampId || ''}</td>
               </tr>
               <tr>
                 <td className="p-2 border border-gray-300 print:border-black font-semibold">VLF Hipot</td>
                 <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfHipot || ''}</td>
                 <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfSerialNumber || ''}</td>
-                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.ampId || ''}</td>
+                <td className="p-2 border border-gray-300 print:border-black">{formData.equipment?.vlfAmpId || formData.equipment?.ampId || ''}</td>
               </tr>
             </tbody>
           </table>

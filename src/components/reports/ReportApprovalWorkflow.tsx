@@ -248,16 +248,17 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
       let statusFilter: ReportStatus | undefined = jobId ? 'submitted' : undefined;
       switch (activeTab) {
         case 'pending':
+          // Only show ready to approve
           statusFilter = 'submitted';
           break;
         case 'approved':
-          statusFilter = jobId ? 'submitted' : 'approved';
+          statusFilter = 'approved';
           break;
         case 'rejected':
-          statusFilter = jobId ? 'submitted' : 'rejected';
+          statusFilter = 'rejected';
           break;
         case 'archived':
-          statusFilter = jobId ? 'submitted' : 'archived';
+          statusFilter = 'archived';
           break;
         default:
           statusFilter = jobId ? 'submitted' : undefined;
@@ -300,7 +301,14 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
         }
 
         // Work only with linked reports
-        let merged = byLinked;
+        // Filter by status for each tab explicitly
+        let merged = byLinked.filter(r => {
+          if (activeTab === 'pending') return r.status === 'submitted';
+          if (activeTab === 'approved') return r.status === 'approved';
+          if (activeTab === 'rejected') return r.status === 'rejected' || r.status === 'issue';
+          if (activeTab === 'archived') return r.status === 'archived';
+          return true;
+        });
         console.log('[ReportApproval] fetched linked reports:', merged.length);
 
         // Client-side filters

@@ -70,7 +70,7 @@ const initialFormData: FormData = {
   title: '',
   description: '',
   status: 'awareness',
-  expected_value: '',
+  expected_value: '0',
   probability: '0',
   expected_close_date: '',
   proposal_due_date: '',
@@ -551,7 +551,7 @@ export default function OpportunityList() {
         title: formData.title || '',
         description: formData.description || '',
         status: formData.status || 'awareness',
-        expected_value: formData.expected_value ? parseFloat(formData.expected_value) : null,
+        expected_value: formData.expected_value ? parseFloat(formData.expected_value) : 0,
         probability: formData.probability ? parseInt(formData.probability) : 0, // Parse probability
         expected_close_date: formData.expected_close_date || null,
         notes: formData.notes || '',
@@ -1198,7 +1198,7 @@ export default function OpportunityList() {
                     value={formData.expected_value}
                     onChange={handleChange}
                     className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
-                    required
+                    min="0"
                   />
                 </div>
 

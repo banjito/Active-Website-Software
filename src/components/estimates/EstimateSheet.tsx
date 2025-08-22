@@ -414,6 +414,33 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       doubleTimeHours: 0
     }
   });
+  const [itemColWidth, setItemColWidth] = useState<number>(240);
+  const itemHeaderRef = useRef<HTMLTableCellElement>(null);
+  const isResizingItemRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+
+  const onItemMouseDown = (e: React.MouseEvent) => {
+    if (!itemHeaderRef.current) return;
+    isResizingItemRef.current = true;
+    startXRef.current = e.clientX;
+    startWidthRef.current = itemColWidth;
+    e.preventDefault();
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isResizingItemRef.current) return;
+    const delta = e.clientX - startXRef.current;
+    const next = Math.max(120, Math.min(600, startWidthRef.current + delta));
+    setItemColWidth(next);
+    e.preventDefault();
+  };
+
+  const onMouseUp = () => {
+    if (isResizingItemRef.current) {
+      isResizingItemRef.current = false;
+    }
+  };
   
   // Fetch opportunity data
   useEffect(() => {
@@ -2138,11 +2165,17 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                   
                   {/* SOV Quote Items */}
                   <div style={styles.sectionHeader}>SOV QUOTE ITEMS</div>
-                  <div style={styles.tableContainer}>
+                  <div style={styles.tableContainer} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}>
                     <table style={styles.table}>
                       <thead>
                         <tr>
-                          <th style={styles.tableHeader}>ITEM</th>
+                          <th ref={itemHeaderRef} style={{...styles.tableHeader, width: itemColWidth, position: 'relative'}}>
+                            ITEM
+                            <span
+                              onMouseDown={onItemMouseDown}
+                              style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: 6, cursor: 'col-resize', userSelect: 'none' }}
+                            />
+                          </th>
                           <th style={styles.tableHeader}>QUANTITY</th>
                           <th style={styles.tableHeader}>MATERIAL PRICE</th>
                           <th style={styles.tableHeader}>EXPENSE PRICE</th>
@@ -2180,7 +2213,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                           
                           return (
                             <tr key={index}>
-                              <td style={styles.tableCell}>
+                              <td style={{...styles.tableCell, width: itemColWidth}}>
                                 <input 
                                   type="text" 
                                   style={styles.tableInput}

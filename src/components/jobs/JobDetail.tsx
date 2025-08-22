@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, ClipboardCheck, Calendar, DollarSign, Building, User, Phone, Mail, MapPin, Clock, AlertTriangle, CheckCircle, Image, Maximize2, Minimize2, Save, Edit3, Download, Eye } from 'lucide-react';
+import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, ClipboardCheck, Calendar, DollarSign, Building, User, Phone, Mail, MapPin, Clock, AlertTriangle, CheckCircle, Image, Maximize2, Minimize2, Save, Edit3, Download, Eye, Star, StarOff } from 'lucide-react';
 import { supabase, isConnectionError } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import { useJobDetails } from '../../lib/hooks';
 import { format } from 'date-fns';
 import { Button } from '../ui/Button';
 import { reportImportService } from '../../services/reportImport';
+import { ShortcutService } from '../../services/ShortcutService';
 import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/Table";
 import { Input } from "../ui/Input";
@@ -135,7 +136,7 @@ export default function JobDetail() {
   const [editFormData, setEditFormData] = useState<Job | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tempDueDate, setTempDueDate] = useState<string>('');
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('assets');
   const [currentTab, setCurrentTab] = useState('details');
   const [selectedAssetType, setSelectedAssetType] = useState<string>('document');
   const [showUploadDialog, setShowUploadDialog] = useState(false);
@@ -149,6 +150,9 @@ export default function JobDetail() {
   const [selectedReportForTracker, setSelectedReportForTracker] = useState<string>('');
   const saveTimerRef = React.useRef<number | null>(null);
   const [selectedBatchFiles, setSelectedBatchFiles] = useState<File[]>([]);
+  const [isShortcut, setIsShortcut] = useState<boolean>(false);
+  const [shortcutId, setShortcutId] = useState<string | null>(null);
+  const [shortcutBusy, setShortcutBusy] = useState<boolean>(false);
 
   // Initialize manual tracker from loaded job (support both old/new shapes)
   useEffect(() => {
@@ -645,6 +649,55 @@ export default function JobDetail() {
       fetchRelatedOpportunity();
     }
   }, [user, id, jobDetails]); // Depend on jobDetails from the hook
+
+  // Detect if this job is already in shortcuts
+  useEffect(() => {
+    const loadShortcutState = async () => {
+      if (!user?.id || !id) return;
+      try {
+        const list = await ShortcutService.getUserShortcuts(user.id);
+        const currentPath = `/jobs/${id}`;
+        const found = list.find(s => s.url.endsWith(currentPath) || s.url === currentPath);
+        if (found) {
+          setIsShortcut(true);
+          setShortcutId(found.id || null);
+        } else {
+          setIsShortcut(false);
+          setShortcutId(null);
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    loadShortcutState();
+  }, [user?.id, id]);
+
+  const toggleShortcut = async () => {
+    if (!user?.id || !id || shortcutBusy) return;
+    setShortcutBusy(true);
+    try {
+      if (isShortcut && shortcutId) {
+        await ShortcutService.deleteShortcut(shortcutId);
+        setIsShortcut(false);
+        setShortcutId(null);
+        toast({ title: 'Removed from Shortcuts', description: 'This job was removed from your shortcuts.' });
+      } else {
+        const title = job?.title ? `Job: ${job.title}` : `Job ${id}`;
+        const created = await ShortcutService.createShortcut({
+          user_id: user.id,
+          title,
+          url: `/jobs/${id}`
+        });
+        setIsShortcut(true);
+        setShortcutId(created.id || null);
+        toast({ title: 'Added to Shortcuts', description: 'Quick link created under My Shortcuts.' });
+      }
+    } catch (e) {
+      toast({ title: 'Error', description: 'Failed to update shortcut', variant: 'destructive' });
+    } finally {
+      setShortcutBusy(false);
+    }
+  };
 
   useEffect(() => {
     if (job && !editFormData) {
@@ -1206,16 +1259,16 @@ export default function JobDetail() {
           fetchJobAssets();
           
           // Show results
-          if (batchResult.failedCount === 0) {
+          if (batchResult.failed.length === 0) {
             toast({ 
               title: 'Success', 
-              description: `All ${batchResult.successfulCount} reports imported successfully!`, 
+              description: `All ${batchResult.successful.length} reports imported successfully!`, 
               variant: 'success' 
             });
           } else {
             toast({ 
               title: 'Partial Success', 
-              description: `${batchResult.successfulCount} reports imported, ${batchResult.failedCount} failed. Check console for details.`, 
+              description: `${batchResult.successful.length} reports imported, ${batchResult.failed.length} failed. Check console for details.`, 
               variant: 'default' 
             });
           }
@@ -1783,6 +1836,18 @@ export default function JobDetail() {
           {/* Add JobNotifications component */}
           {id && <JobNotifications jobId={id} />}
           
+          {/* Shortcut toggle */}
+          <Button 
+            variant="outline"
+            onClick={toggleShortcut}
+            disabled={shortcutBusy}
+            className={`flex items-center gap-2 ${isShortcut ? 'border-yellow-400 text-yellow-600 dark:text-yellow-400' : ''}`}
+            title={isShortcut ? 'Remove from My Shortcuts' : 'Add to My Shortcuts'}
+          >
+            {isShortcut ? <Star className="h-5 w-5" /> : <StarOff className="h-5 w-5" />}
+            {isShortcut ? 'In Shortcuts' : 'Add to Shortcuts'}
+          </Button>
+
           <Button 
             variant="outline"
             onClick={() => {
@@ -2054,16 +2119,6 @@ export default function JobDetail() {
             <div className="border-t border-gray-200 dark:border-gray-700">
               <div className="px-6">
                 <div className="flex border-b border-gray-200 dark:border-gray-700">
-                    <button 
-                    onClick={() => handleTabChange('overview')}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === 'overview'
-                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
-                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    Overview
-                    </button>
                   <button
                     onClick={() => handleTabChange('assets')}
                     className={`py-4 px-6 text-sm font-medium ${
@@ -2072,7 +2127,7 @@ export default function JobDetail() {
                         : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                     }`}
                   >
-                    Assets
+                    Reports
                   </button>
                   <button
                     onClick={() => handleTabChange('reports')}
@@ -2084,17 +2139,7 @@ export default function JobDetail() {
                     disabled={user?.user_metadata?.role !== 'Admin'}
                   >
                     <ClipboardCheck className="h-5 w-5 min-w-[20px] flex-shrink-0 inline-block mr-1" />
-                    Reports
-                  </button>
-                  <button
-                    onClick={() => handleTabChange('surveys')}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === 'surveys'
-                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
-                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    Surveys
+                    Report Approvals
                   </button>
                   <button
                     onClick={() => handleTabChange('tracking')}
@@ -2105,6 +2150,26 @@ export default function JobDetail() {
                     }`}
                   >
                     Tracking
+                  </button>
+                  <button 
+                    onClick={() => handleTabChange('overview')}
+                    className={`py-4 px-6 text-sm font-medium ${
+                      activeTab === 'overview'
+                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Overview
+                  </button>
+                  <button
+                    onClick={() => handleTabChange('surveys')}
+                    className={`py-4 px-6 text-sm font-medium ${
+                      activeTab === 'surveys'
+                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Surveys
                   </button>
                 </div>
               </div>
@@ -2439,7 +2504,7 @@ export default function JobDetail() {
                 {activeTab === 'assets' && (
                   <div className="space-y-6">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium">Job Assets & Reports</h3>
+                      <h3 className="text-lg font-medium">Reports & Linked Reports</h3>
                       <div className="flex space-x-2 relative" ref={dropdownRef}>
                         <Button 
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -2594,9 +2659,9 @@ export default function JobDetail() {
                       <CardHeader>
                         <div className="flex justify-between">
                           <div>
-                            <CardTitle>Linked Assets</CardTitle>
+                            <CardTitle>Linked Reports</CardTitle>
                             <CardDescription>
-                              Assets and documents that have been linked to this job
+                              Reports and documents that have been linked to this job
                             </CardDescription>
                           </div>
                           <div className="w-1/3">

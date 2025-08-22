@@ -41,15 +41,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      // Attempt to fetch the latest user from Supabase Auth
-      const { data, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error('Error refreshing user:', error);
+      // Force a session refresh to pull updated JWT claims (e.g., updated role)
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        console.error('Error refreshing session:', refreshError);
+      }
+
+      // Fallback to getUser if refresh didn't return a session
+      if (!refreshData?.session) {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error('Error fetching user after refresh attempt:', error);
+          return;
+        }
+        setUser(data.user ?? null);
         return;
       }
-      setUser(data.user ?? null);
+
+      setUser(refreshData.session.user ?? null);
     } catch (err) {
-      console.error('Unexpected error refreshing user:', err);
+      console.error('Unexpected error refreshing user/session:', err);
     }
   };
 
@@ -66,6 +77,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
       }
       setLoading(false);
+      // Ensure latest role/user claims are loaded on initial mount without requiring re-login
+      if (session?.user) {
+        void refreshUser();
+      }
     }).catch(err => {
       if (mounted) {
         console.error("Initial session promise error:", err);
@@ -107,12 +122,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     })();
 
+    // Refresh on window focus/visibility to pick up any role changes made while tab was inactive
+    const handleFocus = () => {
+      if (mounted) {
+        void refreshUser();
+      }
+    };
+    const handleVisibility = () => {
+      if (mounted && document.visibilityState === 'visible') {
+        void refreshUser();
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
       if (roleChangeChannel) {
         supabase.removeChannel(roleChangeChannel);
       }
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
 

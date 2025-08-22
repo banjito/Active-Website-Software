@@ -30,6 +30,15 @@ interface Job {
   priority: string;
 }
 
+interface Opportunity {
+  id: string;
+  title: string;
+  status: string;
+  expected_value: number | null;
+  expected_close_date: string | null;
+  quote_number?: string | null;
+}
+
 interface CustomerFormData {
   // Define the structure of your customer form data
 }
@@ -66,6 +75,7 @@ export default function CustomerDetail() {
   const [categories, setCategories] = useState<CustomerCategory[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
@@ -117,6 +127,26 @@ export default function CustomerDetail() {
 
       if (jobsError) throw jobsError;
       setJobs(jobsData || []);
+
+      // Fetch related opportunities
+      const { data: oppsData, error: oppsError } = await supabase
+        .schema('business')
+        .from('opportunities')
+        .select('id, title, status, expected_value, expected_close_date, quote_number, customer_id')
+        .eq('customer_id', id)
+        .order('created_at', { ascending: false });
+
+      if (oppsError) throw oppsError;
+      setOpportunities(
+        (oppsData || []).map(o => ({
+          id: o.id,
+          title: o.title,
+          status: o.status,
+          expected_value: (o as any).expected_value ?? null,
+          expected_close_date: (o as any).expected_close_date ?? null,
+          quote_number: (o as any).quote_number ?? null,
+        }))
+      );
     } catch (error) {
       console.error('Error fetching customer data:', error);
       toast({
@@ -451,67 +481,124 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
         <div className="mt-6">
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Jobs section */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Jobs</h2>
-                    <Link
-                      to="#jobs"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setActiveTab('jobs');
-                      }}
-                      className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
-                    >
-                      View all jobs
-                    </Link>
-            </div>
+              {/* Jobs and Opportunities side-by-side */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Jobs section */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Jobs</h2>
+                      <Link
+                        to="#jobs"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setActiveTab('jobs');
+                        }}
+                        className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                      >
+                        View all jobs
+                      </Link>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {jobs.slice(0, 2).map((job) => (
+                      <Link 
+                        key={job.id} 
+                        to={`/jobs/${job.id}`}
+                        className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <Briefcase className="h-5 w-5 text-[#f26722]" />
+                            <div className="ml-3">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">{job.title}</p>
+                              <div className="flex items-center mt-1 space-x-2">
+                                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                  job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                  job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                }`}>
+                                  {job.status}
+                                </span>
+                                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                  job.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                  job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                  'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                }`}>
+                                  {job.priority}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            ${job.budget?.toLocaleString() || '-'}
+                          </div>
+                        </div>
+                        <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                          Due: {job.due_date ? format(new Date(job.due_date), 'MMM d, yyyy') : 'Not set'}
+                        </div>
+                      </Link>
+                    ))}
+                    {jobs.length === 0 && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
+                        No jobs found
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {jobs.slice(0, 2).map((job) => (
-                    <Link 
-                      key={job.id} 
-                      to={`/jobs/${job.id}`}
-                      className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <Briefcase className="h-5 w-5 text-[#f26722]" />
-                          <div className="ml-3">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{job.title}</p>
+
+                {/* Opportunities section */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Opportunities</h2>
+                      <Link
+                        to="/sales-dashboard/opportunities"
+                        className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                      >
+                        View all opportunities
+                      </Link>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {opportunities.slice(0, 2).map((opp) => (
+                      <Link
+                        key={opp.id}
+                        to={`/sales-dashboard/opportunities/${opp.id}`}
+                        className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {opp.quote_number ? `${opp.quote_number}: ` : ''}{opp.title}
+                            </p>
                             <div className="flex items-center mt-1 space-x-2">
                               <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                opp.status === 'awarded' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                opp.status === 'lost' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                               }`}>
-                                {job.status}
-                              </span>
-                              <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                job.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                              }`}>
-                                {job.priority}
+                                {opp.status}
                               </span>
                             </div>
                           </div>
+                          <div className="text-right">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {opp.expected_value ? `$${opp.expected_value.toLocaleString()}` : '-'}
+                            </div>
+                            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                              {opp.expected_close_date ? `Close: ${format(new Date(opp.expected_close_date), 'MMM d, yyyy')}` : 'No close date'}
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          ${job.budget?.toLocaleString() || '-'}
-                        </div>
-                      </div>
-                      <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        Due: {job.due_date ? format(new Date(job.due_date), 'MMM d, yyyy') : 'Not set'}
-                      </div>
-                    </Link>
-                  ))}
-                  {jobs.length === 0 && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
-                      No jobs found
-                    </p>
-                  )}
+                      </Link>
+                    ))}
+                    {opportunities.length === 0 && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
+                        No opportunities found
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 

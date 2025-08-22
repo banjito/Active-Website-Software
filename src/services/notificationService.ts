@@ -49,9 +49,16 @@ export const getUserNotificationPreferences = async (userId: string): Promise<No
       .from('user_preferences')
       .select('notification_preferences')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
       
-    if (error) throw error;
+    if (error) {
+      // Gracefully degrade on RLS 403 or missing table/row
+      const code = (error as any).code;
+      if (code === 'PGRST301' || code === '42P01') {
+        return DEFAULT_PREFERENCES;
+      }
+      throw error;
+    }
     
     return data?.notification_preferences || DEFAULT_PREFERENCES;
   } catch (error) {

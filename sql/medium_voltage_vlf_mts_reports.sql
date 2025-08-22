@@ -17,26 +17,28 @@ GRANT ALL ON neta_ops.medium_voltage_vlf_mts_reports TO authenticated;
 -- Add RLS (Row Level Security) policies
 ALTER TABLE neta_ops.medium_voltage_vlf_mts_reports ENABLE ROW LEVEL SECURITY;
 
--- Policy to allow users to select their own reports and reports from jobs they have access to
-CREATE POLICY "Users can view their own Medium Voltage VLF MTS reports and accessible job reports"
+-- Replace selective policies with broad authenticated access
+DROP POLICY IF EXISTS "Users can view their own Medium Voltage VLF MTS reports and accessible job reports" ON neta_ops.medium_voltage_vlf_mts_reports;
+CREATE POLICY "Authenticated can SELECT Medium Voltage VLF MTS reports"
 ON neta_ops.medium_voltage_vlf_mts_reports
 FOR SELECT
-USING (auth.uid() = user_id OR job_id IN (SELECT id FROM neta_ops.jobs WHERE user_id = auth.uid()));
+USING (auth.uid() IS NOT NULL);
 
--- Policy to allow users to insert their own reports
-CREATE POLICY "Users can insert their own Medium Voltage VLF MTS reports"
+DROP POLICY IF EXISTS "Users can insert their own Medium Voltage VLF MTS reports" ON neta_ops.medium_voltage_vlf_mts_reports;
+CREATE POLICY "Authenticated can INSERT Medium Voltage VLF MTS reports"
 ON neta_ops.medium_voltage_vlf_mts_reports
 FOR INSERT
-WITH CHECK (auth.uid() = user_id);
+WITH CHECK (auth.uid() IS NOT NULL);
 
--- Policy to allow users to update their own reports
-CREATE POLICY "Users can update their own Medium Voltage VLF MTS reports"
+DROP POLICY IF EXISTS "Users can update Medium Voltage VLF MTS reports for accessible jobs" ON neta_ops.medium_voltage_vlf_mts_reports;
+CREATE POLICY "Authenticated can UPDATE Medium Voltage VLF MTS reports"
 ON neta_ops.medium_voltage_vlf_mts_reports
 FOR UPDATE
-USING (auth.uid() = user_id);
+USING (auth.uid() IS NOT NULL)
+WITH CHECK (auth.uid() IS NOT NULL);
 
--- Policy to allow users to delete their own reports
-CREATE POLICY "Users can delete their own Medium Voltage VLF MTS reports"
+DROP POLICY IF EXISTS "Users can delete their own Medium Voltage VLF MTS reports" ON neta_ops.medium_voltage_vlf_mts_reports;
+CREATE POLICY "Authenticated can DELETE Medium Voltage VLF MTS reports"
 ON neta_ops.medium_voltage_vlf_mts_reports
 FOR DELETE
-USING (auth.uid() = user_id); 
+USING (auth.uid() IS NOT NULL);

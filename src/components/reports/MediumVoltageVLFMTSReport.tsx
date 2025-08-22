@@ -613,14 +613,14 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
           .from('medium_voltage_vlf_mts_reports')
           .update(reportData)
           .eq('id', reportId)
-          .select()
-          .single();
+          .select('id');
       } else {
         result = await supabase
           .schema('neta_ops')
           .from('medium_voltage_vlf_mts_reports')
           .insert(reportData)
-          .select()
+          // Only need the id back to create the asset
+          .select('id')
           .single();
         
         if (result.data) {
@@ -648,6 +648,28 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
             });
         }
       }
+      // If update returned zero rows, attempt a migration/upsert for legacy records
+      if (reportId && !result.error && Array.isArray(result.data) && result.data.length === 0) {
+        try {
+          const upsertPayload = {
+            id: reportId,
+            job_id: effectiveJobId,
+            user_id: user.id,
+            data: formData
+          } as any;
+
+          const { error: upsertError } = await supabase
+            .schema('neta_ops')
+            .from('medium_voltage_vlf_mts_reports')
+            .upsert(upsertPayload, { onConflict: 'id', ignoreDuplicates: false });
+
+          if (upsertError) throw upsertError;
+        } catch (migrateErr) {
+          console.error('MTS migration/upsert failed:', migrateErr);
+          throw migrateErr as any;
+        }
+      }
+
       if (result.error) throw result.error;
       setIsEditMode(false);
       toast.success(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
@@ -672,7 +694,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
         .from('medium_voltage_vlf_mts_reports')
         .select('*')
         .eq('id', reportId)
-        .single();
+        .maybeSingle();
         
       if (error) throw error;
       

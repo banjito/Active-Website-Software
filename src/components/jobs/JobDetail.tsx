@@ -1590,7 +1590,15 @@ export default function JobDetail() {
         .eq('job_id', id)
         .order('uploaded_date', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        // Gracefully handle missing relation in environments where migrations haven't run yet
+        if ((error as any).code === '42P01') {
+          console.warn('job_contracts table not found; treating as empty.');
+          setContracts([]);
+          return;
+        }
+        throw error;
+      }
       setContracts(data || []);
     } catch (error) {
       console.error('Error fetching contracts:', error);
@@ -1674,7 +1682,14 @@ export default function JobDetail() {
         .eq('job_id', id)
         .order('last_modified', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        if ((error as any).code === '42P01') {
+          console.warn('job_drawings table not found; treating as empty.');
+          setOneLineDrawings([]);
+          return;
+        }
+        throw error;
+      }
       setOneLineDrawings(data || []);
     } catch (error) {
       console.error('Error fetching drawings:', error);

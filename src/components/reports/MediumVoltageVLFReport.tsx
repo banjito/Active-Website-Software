@@ -1277,8 +1277,8 @@ const MediumVoltageVLFReport: React.FC = () => {
           .from('medium_voltage_vlf_mts_reports')
           .update(reportData)
           .eq('id', reportId)
-          .select()
-          .single();
+          // Request only id to verify a row was updated without using .single()
+          .select('id');
       } else {
         // Create new report
         console.log('Creating new report...');
@@ -1286,7 +1286,8 @@ const MediumVoltageVLFReport: React.FC = () => {
           .schema('neta_ops')
           .from('medium_voltage_vlf_mts_reports')
           .insert(reportData)
-          .select()
+          // We need the new id to create an asset; request only the id
+          .select('id')
           .single();
         
         console.log('Report creation result:', result);
@@ -1344,6 +1345,37 @@ const MediumVoltageVLFReport: React.FC = () => {
             }
           }
           console.log('Asset linked to job successfully');
+        }
+      }
+
+      // If update returned zero rows, try migrating legacy record (same id) into new table and upsert current data
+      if (reportId && !result.error && Array.isArray(result.data) && result.data.length === 0) {
+        console.warn('No rows updated; attempting legacy migration and upsert to new table.');
+        try {
+          const { data: legacyData } = await supabase
+            .schema('neta_ops')
+            .from('medium_voltage_cable_vlf_test')
+            .select('id, data')
+            .eq('id', reportId)
+            .maybeSingle();
+
+          const upsertPayload = {
+            id: reportId,
+            job_id: effectiveJobId,
+            user_id: user.id,
+            data: reportData.data
+          } as any;
+
+          const { error: upsertError } = await supabase
+            .schema('neta_ops')
+            .from('medium_voltage_vlf_mts_reports')
+            .upsert(upsertPayload, { onConflict: 'id', ignoreDuplicates: false });
+
+          if (upsertError) throw upsertError;
+        } catch (migrateErr) {
+          console.error('Migration/upsert failed:', migrateErr);
+          toast.error('Could not save changes to this older report.');
+          return;
         }
       }
 
@@ -1406,7 +1438,7 @@ const MediumVoltageVLFReport: React.FC = () => {
         .from('medium_voltage_vlf_mts_reports')
         .select('*')
         .eq('id', reportId)
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
         console.log('loadReport: Found report in new table, applying mappings.');
@@ -1448,7 +1480,7 @@ const MediumVoltageVLFReport: React.FC = () => {
         .from('medium_voltage_cable_vlf_test')
         .select('id, data')
         .eq('id', reportId)
-        .single();
+        .maybeSingle();
 
       if (legacyError) {
         console.error('Legacy table load failed:', legacyError);

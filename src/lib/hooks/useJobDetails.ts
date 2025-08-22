@@ -82,10 +82,10 @@ export function useJobDetails(jobId: string | undefined) {
             division
           `)
           .eq('id', jobId)
-          .single();
+          .maybeSingle();
 
-        // If not found in lab_jobs, try neta_ops.jobs
-        if (labJobError) {
+        // If not found (no data) or there was an error in lab_jobs, try neta_ops.jobs
+        if (labJobError || !jobData) {
           console.log('Job not found in lab_ops.lab_jobs, trying neta_ops.jobs');
           const { data: netaJobData, error: netaJobError } = await supabase
             .schema('neta_ops')
@@ -105,11 +105,11 @@ export function useJobDetails(jobId: string | undefined) {
               tracking_plan
             `)
             .eq('id', jobId)
-            .single();
+            .maybeSingle();
 
-          if (netaJobError) {
+          if (netaJobError || !netaJobData) {
             console.error(`useJobDetails: Error fetching job data from both schemas:`, { labJobError, netaJobError });
-            throw netaJobError;
+            throw netaJobError || new Error('No job data found');
           }
           jobData = netaJobData;
         }

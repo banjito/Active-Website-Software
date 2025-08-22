@@ -117,6 +117,30 @@ export default function OpportunityList() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const [sortField, setSortField] = useState<'quote_number' | 'expected_close_date'>('quote_number');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isHeaderDraggingRef = useRef<boolean>(false);
+  const dragStartXRef = useRef<number>(0);
+  const dragStartScrollLeftRef = useRef<number>(0);
+  const [isHeaderGrabbing, setIsHeaderGrabbing] = useState<boolean>(false);
+  const [showNewCustomer, setShowNewCustomer] = useState(false);
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
+  const [newCustomer, setNewCustomer] = useState<{ company_name: string; name: string; email: string; phone: string; address: string }>({
+    company_name: '',
+    name: '',
+    email: '',
+    phone: '',
+    address: ''
+  });
+  const [showNewContact, setShowNewContact] = useState(false);
+  const [creatingContact, setCreatingContact] = useState(false);
+  const [newContact, setNewContact] = useState<{ first_name: string; last_name: string; email: string; phone: string }>({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: ''
+  });
 
   useEffect(() => {
     if (user) {
@@ -190,8 +214,30 @@ export default function OpportunityList() {
 
       setHasMore((opportunityData || []).length === pageSize);
 
-      // 2. Fetch customer data for each opportunity from the 'common' schema
-      const opportunitiesWithCustomers = await Promise.all(opportunityData.map(async (opportunity) => {
+      // 2a. Try to load proposal_due_date explicitly to ensure availability across environments
+      try {
+        const ids = opportunityData.map((o: any) => o.id);
+        if (ids.length > 0) {
+          const { data: pdList } = await supabase
+            .schema('business')
+            .from('opportunities')
+            .select('id, proposal_due_date')
+            .in('id', ids);
+          const idToPd: Record<string, any> = {};
+          (pdList || []).forEach((row: any) => {
+            idToPd[String(row.id)] = row.proposal_due_date;
+          });
+          opportunityData = opportunityData.map((o: any) => ({
+            ...o,
+            proposal_due_date: o.proposal_due_date ?? idToPd[String(o.id)] ?? null,
+          }));
+        }
+      } catch (_e) {
+        // Best-effort; ignore
+      }
+
+      // 2b. Fetch customer data for each opportunity from the 'common' schema
+      const opportunitiesWithCustomers = await Promise.all(opportunityData.map(async (opportunity: any) => {
         if (!opportunity.customer_id) {
           return { ...opportunity, customers: null }; // Keep 'customers' key for consistency
         }
@@ -216,7 +262,24 @@ export default function OpportunityList() {
         }
       }));
 
-      setOpportunities(opportunitiesWithCustomers);
+      const sortOpportunities = (list: any[]) => {
+        const copy = [...list];
+        copy.sort((a, b) => {
+          const dir = sortDirection === 'asc' ? 1 : -1;
+          if (sortField === 'quote_number') {
+            const an = parseInt(String(a.quote_number ?? '0'), 10) || 0;
+            const bn = parseInt(String(b.quote_number ?? '0'), 10) || 0;
+            return (an - bn) * dir;
+          } else {
+            const ad = a.expected_close_date ? new Date(a.expected_close_date).getTime() : 0;
+            const bd = b.expected_close_date ? new Date(b.expected_close_date).getTime() : 0;
+            return (ad - bd) * dir;
+          }
+        });
+        return copy;
+      };
+
+      setOpportunities(sortOpportunities(opportunitiesWithCustomers));
 
     } catch (error) {
       console.error('Error in fetchOpportunities function:', error);
@@ -226,6 +289,125 @@ export default function OpportunityList() {
       } else {
         setLoading(false);
       }
+    }
+  }
+
+  // Re-sort when sort controls change without refetching
+  useEffect(() => {
+    setOpportunities(prev => {
+      const list = Array.isArray(prev) ? prev : [] as any[];
+      const copy = [...list];
+      copy.sort((a, b) => {
+        const dir = sortDirection === 'asc' ? 1 : -1;
+        if (sortField === 'quote_number') {
+          const an = parseInt(String(a.quote_number ?? '0'), 10) || 0;
+          const bn = parseInt(String(b.quote_number ?? '0'), 10) || 0;
+          return (an - bn) * dir;
+        } else {
+          const ad = a.expected_close_date ? new Date(a.expected_close_date).getTime() : 0;
+          const bd = b.expected_close_date ? new Date(b.expected_close_date).getTime() : 0;
+          return (ad - bd) * dir;
+        }
+      });
+      return copy;
+    });
+  }, [sortField, sortDirection]);
+
+  // Header drag-to-scroll handlers
+  const handleHeaderMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    isHeaderDraggingRef.current = true;
+    setIsHeaderGrabbing(true);
+    dragStartXRef.current = e.clientX;
+    dragStartScrollLeftRef.current = scrollContainerRef.current.scrollLeft;
+    e.preventDefault();
+  };
+
+  const handleHeaderMouseMove = (e: React.MouseEvent) => {
+    if (!isHeaderDraggingRef.current || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const delta = e.clientX - dragStartXRef.current;
+    scrollContainerRef.current.scrollLeft = dragStartScrollLeftRef.current - delta;
+  };
+
+  const handleHeaderMouseUp = () => {
+    if (!isHeaderDraggingRef.current) return;
+    isHeaderDraggingRef.current = false;
+    setIsHeaderGrabbing(false);
+  };
+
+  async function handleCreateCustomer() {
+    if (!user) return;
+    if (!newCustomer.company_name && !newCustomer.name) {
+      alert('Please enter a Company name or Customer name');
+      return;
+    }
+    setCreatingCustomer(true);
+    try {
+      const payload: any = {
+        company_name: newCustomer.company_name || newCustomer.name,
+        name: newCustomer.name || newCustomer.company_name,
+        email: newCustomer.email || null,
+        phone: newCustomer.phone || null,
+        address: newCustomer.address || null,
+        status: 'active',
+        user_id: user.id
+      };
+      const { data, error } = await supabase
+        .schema('common')
+        .from('customers')
+        .insert([payload])
+        .select('id, name, company_name')
+        .single();
+      if (error) throw error;
+      // Refresh customers and set selected
+      await fetchCustomers();
+      setFormData(prev => ({ ...prev, customer_id: data.id }));
+      setShowNewCustomer(false);
+      setNewCustomer({ company_name: '', name: '', email: '', phone: '', address: '' });
+    } catch (err: any) {
+      console.error('Error creating customer:', err);
+      alert(err.message || 'Failed to create customer');
+    } finally {
+      setCreatingCustomer(false);
+    }
+  }
+
+  async function handleCreateContact() {
+    if (!user) return;
+    if (!formData.customer_id) {
+      alert('Please select or create a customer first');
+      return;
+    }
+    if (!newContact.first_name || !newContact.last_name) {
+      alert('Please enter first and last name');
+      return;
+    }
+    setCreatingContact(true);
+    try {
+      const contactPayload: any = {
+        first_name: newContact.first_name,
+        last_name: newContact.last_name,
+        email: newContact.email || null,
+        phone: newContact.phone || null,
+        customer_id: formData.customer_id,
+        user_id: user.id,
+        is_primary: false
+      };
+      const { error } = await supabase
+        .schema('common')
+        .from('contacts')
+        .insert([contactPayload]);
+      if (error) throw error;
+      // Refresh contacts for selected customer and close form
+      await fetchContacts(formData.customer_id);
+      setShowNewContact(false);
+      setNewContact({ first_name: '', last_name: '', email: '', phone: '' });
+    } catch (err: any) {
+      console.error('Error creating contact:', err);
+      alert(err.message || 'Failed to create contact');
+    } finally {
+      setCreatingContact(false);
     }
   }
 
@@ -362,20 +544,6 @@ export default function OpportunityList() {
 
       let nextQuoteNumber = await computeNextQuoteNumber();
 
-      // Detect if proposal_due_date column exists
-      let includeProposalDueDate = false;
-      try {
-        const { data: columnInfo, error: columnError } = await supabase
-          .schema('business')
-          .rpc('get_columns_info', { table_name: 'opportunities' });
-        if (!columnError && columnInfo) {
-          includeProposalDueDate = columnInfo.some((col: any) => col.column_name === 'proposal_due_date');
-        }
-      } catch (err) {
-        // If RPC not available, skip including optional column
-        includeProposalDueDate = false;
-      }
-
       // Create a new object with processed data
       const opportunityDataBase: any = {
         customer_id: formData.customer_id,
@@ -390,12 +558,9 @@ export default function OpportunityList() {
         amp_division: formData.amp_division,
         sales_person: user.email, // Automatically set to the user's email
         user_id: user.id,
-        quote_number: String(nextQuoteNumber)
+        quote_number: String(nextQuoteNumber),
+        proposal_due_date: formData.proposal_due_date || null
       };
-
-      if (includeProposalDueDate) {
-        opportunityDataBase.proposal_due_date = formData.proposal_due_date || null;
-      }
       
       console.log('Sending to Supabase:', opportunityDataBase);
 
@@ -411,6 +576,11 @@ export default function OpportunityList() {
           .single());
 
         if (!error) break;
+        // If proposal_due_date column doesn't exist, drop it and retry once
+        if (error?.code === '42703' && 'proposal_due_date' in opportunityDataBase) {
+          delete opportunityDataBase.proposal_due_date;
+          continue;
+        }
         if (error?.code === '23505') {
           // Unique violation on quote_number: increment and retry
           nextQuoteNumber += 1;
@@ -524,6 +694,25 @@ export default function OpportunityList() {
                 </div>
               )}
             </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600 dark:text-dark-400">Sort by</label>
+              <select
+                value={sortField}
+                onChange={(e) => setSortField(e.target.value as 'quote_number' | 'expected_close_date')}
+                className="rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              >
+                <option value="quote_number">Letter Number</option>
+                <option value="expected_close_date">Due Date</option>
+              </select>
+              <select
+                value={sortDirection}
+                onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
+                className="rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              >
+                <option value="asc">Asc</option>
+                <option value="desc">Desc</option>
+              </select>
+            </div>
             <button
               type="button"
               onClick={() => {
@@ -539,12 +728,27 @@ export default function OpportunityList() {
         </div>
 
         <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-dark-200 overflow-hidden">
-          <div className="overflow-x-auto">
+          <div
+            ref={scrollContainerRef}
+            className="overflow-x-auto"
+            onMouseMove={handleHeaderMouseMove}
+            onMouseUp={handleHeaderMouseUp}
+            onMouseLeave={handleHeaderMouseUp}
+          >
             <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-200">
-              <thead className="bg-gray-50 dark:bg-dark-100">
+              <thead
+                className={`bg-gray-50 dark:bg-dark-100 select-none ${isHeaderGrabbing ? 'cursor-grabbing' : 'cursor-grab'}`}
+                onMouseDown={handleHeaderMouseDown}
+              >
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
                     Quote #
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
+                    Proposal Due
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
+                    Due Date
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
                     Customer
@@ -565,9 +769,6 @@ export default function OpportunityList() {
                     Value
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
-                    Close Date
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
                     Probability
                   </th>
                   <th scope="col" className="relative px-6 py-3">
@@ -578,7 +779,7 @@ export default function OpportunityList() {
               <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-dark-200">
                 {opportunities.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-4 text-center text-gray-500 dark:text-dark-400">
+                    <td colSpan={11} className="px-6 py-4 text-center text-gray-500 dark:text-dark-400">
                       No opportunities found. Click "Add Opportunity" to create one.
                     </td>
                   </tr>
@@ -593,6 +794,12 @@ export default function OpportunityList() {
                         <div className="text-sm font-medium text-gray-900 dark:text-dark-900">
                           {opportunity.quote_number}
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-dark-400">
+                        {opportunity.proposal_due_date ? formatDateSafe(opportunity.proposal_due_date) : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-dark-400">
+                        {formatDateSafe(opportunity.expected_close_date)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900 dark:text-dark-900">
@@ -661,9 +868,6 @@ export default function OpportunityList() {
                               })}`
                             : '-'}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-dark-400">
-                        {formatDateSafe(opportunity.expected_close_date)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900 dark:text-dark-900">
@@ -752,6 +956,46 @@ export default function OpportunityList() {
             </Dialog.Title>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {showNewCustomer && (
+                <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-medium text-gray-800 dark:text-white">New Customer</div>
+                    <button type="button" className="text-xs text-gray-600" onClick={() => setShowNewCustomer(false)}>Cancel</button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <input placeholder="Company name" className="border rounded px-2 py-1 text-sm dark:bg-dark-100 dark:text-white" value={newCustomer.company_name} onChange={e => setNewCustomer(prev => ({ ...prev, company_name: e.target.value }))} />
+                    <input placeholder="Customer name" className="border rounded px-2 py-1 text-sm dark:bg-dark-100 dark:text-white" value={newCustomer.name} onChange={e => setNewCustomer(prev => ({ ...prev, name: e.target.value }))} />
+                    <input placeholder="Email" className="border rounded px-2 py-1 text-sm dark:bg-dark-100 dark:text-white" value={newCustomer.email} onChange={e => setNewCustomer(prev => ({ ...prev, email: e.target.value }))} />
+                    <input placeholder="Phone" className="border rounded px-2 py-1 text-sm dark:bg-dark-100 dark:text-white" value={newCustomer.phone} onChange={e => setNewCustomer(prev => ({ ...prev, phone: e.target.value }))} />
+                    <input placeholder="Address" className="border rounded px-2 py-1 text-sm dark:bg-dark-100 dark:text-white" value={newCustomer.address} onChange={e => setNewCustomer(prev => ({ ...prev, address: e.target.value }))} />
+                  </div>
+                  <div className="mt-2 flex justify-end">
+                    <button type="button" onClick={handleCreateCustomer} disabled={creatingCustomer} className="px-3 py-1 text-sm rounded bg-[#f26722] text-white hover:bg-[#f26722]/90">
+                      {creatingCustomer ? 'Creating...' : 'Create customer'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {showNewContact && (
+                <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-medium text-gray-800 dark:text-white">New Contact</div>
+                    <button type="button" className="text-xs text-gray-600" onClick={() => setShowNewContact(false)}>Cancel</button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input placeholder="First name" className="border rounded px-2 py-1 text-sm col-span-1 dark:bg-dark-100 dark:text-white" value={newContact.first_name} onChange={e => setNewContact(prev => ({ ...prev, first_name: e.target.value }))} />
+                    <input placeholder="Last name" className="border rounded px-2 py-1 text-sm col-span-1 dark:bg-dark-100 dark:text-white" value={newContact.last_name} onChange={e => setNewContact(prev => ({ ...prev, last_name: e.target.value }))} />
+                    <input placeholder="Email" className="border rounded px-2 py-1 text-sm col-span-2 dark:bg-dark-100 dark:text-white" value={newContact.email} onChange={e => setNewContact(prev => ({ ...prev, email: e.target.value }))} />
+                    <input placeholder="Phone" className="border rounded px-2 py-1 text-sm col-span-2 dark:bg-dark-100 dark:text-white" value={newContact.phone} onChange={e => setNewContact(prev => ({ ...prev, phone: e.target.value }))} />
+                  </div>
+                  <div className="mt-2 flex justify-end">
+                    <button type="button" onClick={handleCreateContact} disabled={creatingContact} className="px-3 py-1 text-sm rounded bg-[#f26722] text-white hover:bg-[#f26722]/90">
+                      {creatingContact ? 'Creating...' : 'Create contact'}
+                    </button>
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-white">
                   Sales Person
@@ -792,20 +1036,59 @@ export default function OpportunityList() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-white">
                   Customer
                 </label>
-                <select
-                  name="customer_id"
-                  value={formData.customer_id}
-                  onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
-                  required
-                >
-                  <option value="" className="dark:bg-dark-100 dark:text-white">Select a customer</option>
-                  {customers.map((customer) => (
-                    <option key={customer.id} value={customer.id} className="dark:bg-dark-100 dark:text-white">
-                      {customer.company_name || customer.name}
-                    </option>
-                  ))}
-                </select>
+                <input
+                  type="text"
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  placeholder="Search customers (name or company)"
+                  className="mt-1 mb-2 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                />
+                {formData.customer_id && (
+                  <div className="text-xs text-gray-600 dark:text-gray-300 mb-1">
+                    Selected: {(customers.find(c => c.id === formData.customer_id)?.company_name) || (customers.find(c => c.id === formData.customer_id)?.name) || 'Unknown'}
+                    <button
+                      type="button"
+                      className="ml-2 underline text-[#f26722] hover:text-[#f26722]/90"
+                      onClick={() => setFormData(prev => ({ ...prev, customer_id: '' }))}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+                <div className="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md">
+                  {filteredCustomers.slice(0, 20).map((customer) => {
+                    const isSelected = formData.customer_id === customer.id;
+                    return (
+                      <button
+                        type="button"
+                        key={customer.id}
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, customer_id: customer.id }));
+                          fetchContacts(customer.id);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-sm ${
+                          isSelected
+                            ? 'bg-orange-50 text-gray-900 dark:bg-orange-900/20 dark:text-white'
+                            : 'hover:bg-gray-50 dark:hover:bg-dark-200 text-gray-700 dark:text-gray-200'
+                        }`}
+                      >
+                        {customer.company_name || customer.name}
+                      </button>
+                    );
+                  })}
+                  {filteredCustomers.length === 0 && (
+                    <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No matches</div>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCustomer(true)}
+                    className="text-sm text-[#f26722] hover:text-[#f26722]/90"
+                  >
+                    + Add new customer
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -817,16 +1100,25 @@ export default function OpportunityList() {
                   value={formData.contact_id}
                   onChange={handleChange}
                   className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
-                  required
                   disabled={!formData.customer_id}
                 >
-                  <option value="" className="dark:bg-dark-100 dark:text-white">Select a contact</option>
+                  <option value="" className="dark:bg-dark-100 dark:text-white">No Contact</option>
                   {contacts.map((contact) => (
                     <option key={contact.id} value={contact.id} className="dark:bg-dark-100 dark:text-white">
                       {contact.first_name} {contact.last_name}
                     </option>
                   ))}
                 </select>
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewContact(true)}
+                    className="text-sm text-[#f26722] hover:text-[#f26722]/90"
+                    disabled={!formData.customer_id}
+                  >
+                    + Add new contact
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -852,6 +1144,24 @@ export default function OpportunityList() {
                   value={formData.description}
                   onChange={handleChange}
                   onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.shiftKey) {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      const target = e.currentTarget;
+                      const start = target.selectionStart ?? 0;
+                      const end = target.selectionEnd ?? 0;
+                      const current = formData.description || '';
+                      const nextVal = current.slice(0, start) + '\n' + current.slice(end);
+                      setFormData(prev => ({ ...prev, description: nextVal }));
+                      setTimeout(() => {
+                        if (descriptionRef.current) {
+                          const pos = start + 1;
+                          descriptionRef.current.selectionStart = pos;
+                          descriptionRef.current.selectionEnd = pos;
+                        }
+                      }, 0);
+                      return;
+                    }
                     if (e.key === 'Tab' && e.shiftKey) {
                       e.preventDefault();
                       const target = e.currentTarget;

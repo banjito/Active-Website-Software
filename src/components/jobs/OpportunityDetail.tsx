@@ -276,11 +276,37 @@ export default function OpportunityDetail() {
         }
       }
       
+      // Optionally fetch the linked contact
+      let contactInfo: Contact | null = null;
+      if (opportunityData.contact_id) {
+        const { data: cData, error: cErr } = await supabase
+          .schema('common')
+          .from('contacts')
+          .select('id, first_name, last_name, email, phone, customer_id')
+          .eq('id', opportunityData.contact_id)
+          .maybeSingle();
+        if (!cErr && cData) {
+          contactInfo = {
+            id: cData.id,
+            name: `${cData.first_name} ${cData.last_name}`,
+            email: cData.email || '',
+            phone: cData.phone,
+            customer_id: cData.customer_id
+          };
+        }
+      }
+
       // Combine the data
       setOpportunity({
         ...opportunityData,
         customers: customerInfo
       });
+      if (contactInfo) {
+        setContacts(prev => {
+          const exists = prev.some(c => c.id === contactInfo!.id);
+          return exists ? prev : [contactInfo!, ...prev];
+        });
+      }
 
       // Safely try to fetch optional proposal_due_date without breaking if it doesn't exist
       try {
@@ -1082,6 +1108,17 @@ export default function OpportunityDetail() {
                     <div className="mb-4">
                       <p className="text-sm text-gray-500 dark:text-dark-400">Customer</p>
                       <p className="text-gray-900 dark:text-dark-900">{customer?.company_name || customer?.name}</p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Contact</p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {(() => {
+                          const c = contacts.find(c => c.id === (opportunity as any).contact_id);
+                          return c ? (
+                            <span>{c.name} {c.email ? `• ${c.email}` : ''}</span>
+                          ) : 'No contact linked';
+                        })()}
+                      </p>
                     </div>
                     <div className="mb-4">
                       <p className="text-sm text-gray-500 dark:text-dark-400">Title</p>

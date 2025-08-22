@@ -650,7 +650,7 @@ export default function PortalLanding() {
                 <CardFooter className="px-6 pb-6 pt-0">
                   <Button 
                     className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm"
-                    onClick={() => handleDivisionClick('calibration')}
+                    onClick={() => handlePortalClick('Calibration Division', 'https://ampcalos.io')}
                   >
                     Access Portal <span className="ml-1">›</span>
                   </Button>
@@ -1100,7 +1100,7 @@ export default function PortalLanding() {
                 <CardFooter className="px-6 pb-6 pt-0">
                   <Button 
                     className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm"
-                    onClick={() => handleDivisionClick('calibration')}
+                    onClick={() => handlePortalClick('Calibration Division', 'https://ampcalos.io')}
                   >
                     Access Portal <span className="ml-1">›</span>
                   </Button>

@@ -194,11 +194,14 @@ export default function PortalLanding() {
       const savedDivision = localStorage.getItem('selectedDivision');
       console.log('Verified division in localStorage:', savedDivision);
       
-      // Construct the target path
+      // Calibration division should route to external AMP Cal site
+      if (division === 'calibration') {
+        window.location.href = 'https://ampcalos.io';
+        return;
+      }
+
       const targetPath = `/${division}/dashboard`;
       console.log('Navigating to:', targetPath);
-      
-      // Navigate to the dashboard
       navigate(targetPath);
     } catch (error) {
       console.error('Error in handleDivisionClick:', error);

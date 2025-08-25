@@ -193,6 +193,19 @@ export default function OpportunityDetail() {
   const [showDivisionAnalytics, setShowDivisionAnalytics] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
   const [showEstimate, setShowEstimate] = useState<'new' | 'view' | 'letter' | false>(false);
+  // Clear any persisted estimate mode/draft when leaving the page
+  useEffect(() => {
+    return () => {
+      try {
+        if (id) {
+          localStorage.removeItem(`estimate-last-mode-${id}`);
+          localStorage.removeItem(`estimate-draft-${id}`);
+        }
+        localStorage.removeItem('AMP_SUSPEND_REFRESH');
+      } catch {}
+    };
+  }, [id]);
+  const [estimateOpenSignal, setEstimateOpenSignal] = useState(0);
   const [subcontractorAgreements, setSubcontractorAgreements] = useState<SubcontractorAgreement[]>([]);
   const [showSubcontractorDialog, setShowSubcontractorDialog] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -1403,6 +1416,7 @@ export default function OpportunityDetail() {
                     <button
                       onClick={() => {
                         setShowEstimate('new');
+                        setEstimateOpenSignal((s) => s + 1);
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
@@ -1411,6 +1425,7 @@ export default function OpportunityDetail() {
                     <button
                       onClick={() => {
                         setShowEstimate('view');
+                        setEstimateOpenSignal((s) => s + 1);
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
@@ -1418,7 +1433,12 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        setShowEstimate('letters');
+                        if (showEstimate === 'letters') {
+                          setShowEstimate(false);
+                          setTimeout(() => setShowEstimate('letters'), 0);
+                        } else {
+                          setShowEstimate('letters');
+                        }
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
@@ -1426,17 +1446,22 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        setShowEstimate('letter');
+                        if (showEstimate === 'letter') {
+                          setShowEstimate(false);
+                          setTimeout(() => setShowEstimate('letter'), 0);
+                        } else {
+                          setShowEstimate('letter');
+                        }
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
                       Generate Letter Proposal
                     </button>
                   </div>
-                  {/* Keep EstimateSheet mounted to preserve state; hide when not active */}
-                  <div style={{ display: showEstimate ? 'block' : 'none' }}>
-                    <EstimateSheet opportunityId={id || ''} mode={showEstimate || undefined} />
-                  </div>
+                  {/* Show EstimateSheet only if an action is selected */}
+                  {showEstimate !== false && (
+                    <EstimateSheet opportunityId={id || ''} mode={showEstimate} openSignal={estimateOpenSignal} />
+                  )}
                 </div>
               </div>
             </div>

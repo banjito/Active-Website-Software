@@ -124,11 +124,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Refresh on window focus/visibility to pick up any role changes made while tab was inactive
     const handleFocus = () => {
+      try {
+        const suspend = localStorage.getItem('AMP_SUSPEND_REFRESH');
+        if (suspend === 'true') return;
+      } catch {}
       if (mounted) {
         void refreshUser();
       }
     };
     const handleVisibility = () => {
+      try {
+        const suspend = localStorage.getItem('AMP_SUSPEND_REFRESH');
+        if (suspend === 'true') return;
+      } catch {}
       if (mounted && document.visibilityState === 'visible') {
         void refreshUser();
       }

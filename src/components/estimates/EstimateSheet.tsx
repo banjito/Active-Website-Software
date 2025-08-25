@@ -139,6 +139,7 @@ const styles = {
 interface EstimateSheetProps {
   opportunityId: string;
   mode?: 'new' | 'view' | 'letter' | 'letters';
+  openSignal?: number;
 }
 
 interface OpportunityData {
@@ -298,7 +299,7 @@ interface QuoteData {
   travel_data: any;
 }
 
-export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProps) {
+export default function EstimateSheet({ opportunityId, mode, openSignal }: EstimateSheetProps) {
   const theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   const [isOpen, setIsOpen] = useState(true);
   const [quotes, setQuotes] = useState<QuoteData[]>([]);
@@ -307,102 +308,76 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
   const [hasQuote, setHasQuote] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
-  const [showTravel, setShowTravel] = useState<boolean>(() => {
-    try {
-      const raw = localStorage.getItem(`estimate_draft_${opportunityId}`);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (typeof parsed?.showTravel === 'boolean') return parsed.showTravel;
-      }
-    } catch {}
-    return false;
-  });
+  const [showTravel, setShowTravel] = useState(false);
   const [isGettingData, setIsGettingData] = useState(true);
   const [opportunityData, setOpportunityData] = useState<OpportunityData | null>(null);
   const { user } = useAuth(); // Get user at component level
-  const hasRestoredDraftRef = useRef(false);
 
   // State for the travel data object
-  const [travelData, setTravelData] = useState(() => {
-    try {
-      const raw = localStorage.getItem(`estimate_draft_${opportunityId}`);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.travelData) return parsed.travelData;
-      }
-    } catch {}
-    return {
-      travelExpense: [{ ...EMPTY_TRAVEL_ITEM }],
-      travelTime: [{
-        trips: 1,
-        oneWayHours: 0,
-        roundTripHours: 0,
-        totalTravelHours: 0,
-        numMen: 2,
-        grandTotalTravelHours: 0,
-        rate: 240.00,
-        totalTravelLabor: 0
-      }],
-      perDiem: [{
-        numDays: 0,
-        firstDayRate: 65.00,
-        lastDayRate: 65.00,
-        dailyRate: 65.00,
-        additionalDays: -2,
-        totalPerDiemPerMan: 0,
-        numMen: 2,
-        totalPerDiem: 0
-      }],
-      lodging: [{
-        numNights: 0,
-        numMen: 2,
-        manNights: 0,
-        rate: 210.00,
-        totalAmount: 0
-      }],
-      localMiles: [{
-        numDays: 0,
-        numVehicles: 1,
-        milesPerDay: 50,
-        totalMiles: 0,
-        rate: 3.00,
-        totalLocalMilesCost: 0
-      }],
-      flights: [{
-        numFlights: 0,
-        numMen: 2,
-        rate: 600.00,
-        luggageFees: 50.00,
-        totalFlightAmount: 0
-      }],
-      airTravelTime: [{
-        trips: 0,
-        oneWayHoursInAir: 0,
-        roundTripTerminalTime: 0,
-        totalTravelHours: 0,
-        numMen: 0,
-        grandTotalTravelHours: 0,
-        rate: 240.00,
-        totalTravelLabor: 0
-      }],
-      rentalCar: [{
-        numCars: 0,
-        rate: 750.00,
-        totalAmount: 0
-      }]
-    };
+  const [travelData, setTravelData] = useState({
+    travelExpense: [{ ...EMPTY_TRAVEL_ITEM }],
+    travelTime: [{
+      trips: 1,
+      oneWayHours: 0,
+      roundTripHours: 0,
+      totalTravelHours: 0,
+      numMen: 2,
+      grandTotalTravelHours: 0,
+      rate: 240.00,
+      totalTravelLabor: 0
+    }],
+    perDiem: [{
+      numDays: 0,
+      firstDayRate: 65.00,
+      lastDayRate: 65.00,
+      dailyRate: 65.00,
+      additionalDays: -2,
+      totalPerDiemPerMan: 0,
+      numMen: 2,
+      totalPerDiem: 0
+    }],
+    lodging: [{
+      numNights: 0,
+      numMen: 2,
+      manNights: 0,
+      rate: 210.00,
+      totalAmount: 0
+    }],
+    localMiles: [{
+      numDays: 0,
+      numVehicles: 1,
+      milesPerDay: 50,
+      totalMiles: 0,
+      rate: 3.00,
+      totalLocalMilesCost: 0
+    }],
+    flights: [{
+      numFlights: 0,
+      numMen: 2,
+      rate: 600.00,
+      luggageFees: 50.00,
+      totalFlightAmount: 0
+    }],
+    airTravelTime: [{
+      trips: 0,
+      oneWayHoursInAir: 0,
+      roundTripTerminalTime: 0,
+      totalTravelHours: 0,
+      numMen: 0,
+      grandTotalTravelHours: 0,
+      rate: 240.00,
+      totalTravelLabor: 0
+    }],
+    rentalCar: [{
+      numCars: 0,
+      rate: 750.00,
+      totalAmount: 0
+    }]
   });
 
   // State for the main data object
   const [data, setData] = useState<EstimateData>(() => {
-    try {
-      const raw = localStorage.getItem(`estimate_draft_${opportunityId}`);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.data) return parsed.data as EstimateData;
-      }
-    } catch {}
-    return {
+    const defaults: EstimateData = {
       client: '',
       jobDescription: '',
       dateDue: '',
@@ -440,8 +415,21 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
         overtimeHours: 0,
         doubleTimeHours: 0
       }
-    } as EstimateData;
+    };
+    try {
+      const raw = localStorage.getItem(`estimate-draft-${opportunityId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          return { ...defaults, ...parsed } as EstimateData;
+        }
+      }
+    } catch {}
+    return defaults;
   });
+  const draftKey = `estimate-draft-${opportunityId}`;
+  const [isDirty, setIsDirty] = useState<boolean>(false);
+  const [draftRestored, setDraftRestored] = useState<boolean>(false);
   const [itemColWidth, setItemColWidth] = useState<number>(240);
   const itemHeaderRef = useRef<HTMLTableCellElement>(null);
   const isResizingItemRef = useRef(false);
@@ -469,56 +457,6 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       isResizingItemRef.current = false;
     }
   };
-  
-  // --- Autosave/Restore: persist estimate draft per opportunity ---
-  const draftKey = `estimate_draft_${opportunityId}`;
-  
-  // Restore on mount/opportunity change
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(draftKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.data) {
-          setData(parsed.data);
-        }
-        if (parsed && parsed.travelData) {
-          setTravelData(parsed.travelData);
-        }
-        if (typeof parsed.showTravel === 'boolean') {
-          setShowTravel(parsed.showTravel);
-        }
-        hasRestoredDraftRef.current = true;
-      }
-    } catch {}
-  }, [draftKey]);
-  
-  // Save on changes (debounced via microtask bucket)
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        draftKey,
-        JSON.stringify({ data, travelData, showTravel })
-      );
-    } catch {}
-  }, [draftKey, data, travelData, showTravel]);
-
-  // Save on visibility change/unload to avoid losing rapid edits
-  useEffect(() => {
-    const handler = () => {
-      try {
-        localStorage.setItem(draftKey, JSON.stringify({ data, travelData, showTravel }));
-      } catch {}
-    };
-    window.addEventListener('visibilitychange', handler);
-    window.addEventListener('pagehide', handler);
-    window.addEventListener('beforeunload', handler);
-    return () => {
-      window.removeEventListener('visibilitychange', handler);
-      window.removeEventListener('pagehide', handler);
-      window.removeEventListener('beforeunload', handler);
-    };
-  }, [draftKey, data, travelData, showTravel]);
   
   // Fetch opportunity data
   useEffect(() => {
@@ -601,9 +539,41 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
     }
   }, [opportunityId]);
 
+  // Only fetch existing estimates automatically when not actively editing a new quote
   useEffect(() => {
-    fetchEstimateData();
-  }, [opportunityId]);
+    if (!isOpen || !isNewQuote) {
+      fetchEstimateData();
+    }
+  }, [opportunityId, isOpen, isNewQuote]);
+
+  // Restore draft from localStorage when opening 'new' estimate for this opportunity
+  useEffect(() => {
+    if (!opportunityId) return;
+    if (isOpen && isNewQuote) {
+      try {
+        const raw = localStorage.getItem(draftKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            setData((prev) => ({ ...prev, ...parsed }));
+            setDraftRestored(true);
+          }
+        }
+      } catch {}
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, isNewQuote, opportunityId]);
+
+  // Persist draft on changes while editing a new quote
+  useEffect(() => {
+    if (!opportunityId) return;
+    if (isOpen && isNewQuote) {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify(data));
+      } catch {}
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, isOpen, isNewQuote, opportunityId]);
 
   async function fetchEstimateData() {
     try {
@@ -856,6 +826,10 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                 prev.map((q, index) => index === selectedQuoteIndex ? updatedQuote : q)
             );
             alert('Quote updated successfully!');
+            // Clear any local draft after a successful save of an existing quote
+            try { localStorage.removeItem(draftKey); } catch {}
+            setIsDirty(false);
+            setDraftRestored(false);
         } else {
              console.warn('Update operation did not return data.');
              // Refetch to be sure state is correct
@@ -879,6 +853,10 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
             setIsNewQuote(false); // It's no longer a new quote conceptually
             setHasQuote(true);
             alert('New quote saved successfully!');
+            // Clear local draft after successful creation
+            try { localStorage.removeItem(draftKey); } catch {}
+            setIsDirty(false);
+            setDraftRestored(false);
         } else {
             console.error('Insert operation did not return data.');
             alert('Quote saved, but failed to retrieve confirmation. Please refresh.');
@@ -894,6 +872,36 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       alert(`Error saving quote: ${error.message}`);
     } finally {
       setIsSaving(false);
+      // Allow global refreshes again after save/close
+      try { localStorage.removeItem('AMP_SUSPEND_REFRESH'); } catch {}
+    }
+  }
+
+  async function deleteQuoteById(quoteId: string) {
+    if (!quoteId) return;
+    if (!confirm('Delete this estimate? This cannot be undone.')) return;
+    try {
+      const { error } = await supabase
+        .schema('business')
+        .from('estimates')
+        .delete()
+        .eq('id', quoteId);
+      if (error) throw error;
+      // Update local state
+      setQuotes(prev => prev.filter(q => q.id !== quoteId));
+      // Adjust selected index if needed
+      setSelectedQuoteIndex((prevIdx) => {
+        const nextLen = quotes.length - 1;
+        if (nextLen <= 0) {
+          setIsNewQuote(true);
+          return -1;
+        }
+        return Math.max(0, Math.min(prevIdx, nextLen - 1));
+      });
+      alert('Estimate deleted');
+    } catch (e) {
+      console.error('Error deleting estimate:', e);
+      alert('Failed to delete estimate');
     }
   }
 
@@ -1055,6 +1063,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       ...prev,
       [itemsKey]: newItems
     }));
+    setIsDirty(true);
   };
 
   const handleGeneralChange = (field: string, value: string) => {
@@ -1062,6 +1071,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       ...prev,
       [field]: value
     }));
+    setIsDirty(true);
   };
 
 
@@ -1074,6 +1084,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
         [field]: Number(value)
       }
     }));
+    setIsDirty(true);
   };
 
   // Recalculate all values when data changes
@@ -1464,6 +1475,7 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       
       return newData;
     });
+    setIsDirty(true);
   };
 
   // Function to update theme variables
@@ -1863,52 +1875,58 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       setIsNewQuote(true);
       setIsViewMode(false);
       setShowTravel(false);
-      // Only initialize defaults if no restored draft exists
-      if (!hasRestoredDraftRef.current) {
-        setData({
-          client: opportunityData?.customer.company_name || opportunityData?.customer.name || '',
-          jobDescription: opportunityData?.description || '',
-          dateDue: '',
-          location: opportunityData?.customer.address || '',
-          periodOfPerformance: '',
-          estimatedStartDate: '',
-          poNumber: '',
-          notes: '',
-          sovItems: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({...EMPTY_LINE_ITEM})),
-          nonSovItems: [...DEFAULT_NON_SOV_ITEMS],
-          calculatedValues: {
-            subtotalMaterial: 0,
-            subtotalExpense: 0,
-            subtotalLabor: 0,
-            totalMaterial: 0,
-            totalExpense: 0,
-            totalLabor: 0,
-            grandTotal: 0,
-            nonSovMaterial: 0,
-            nonSovExpense: 0,
-            nonSovLabor: 0,
-            sovLaborHours: 0,
-            nonSovLaborHours: 0,
-            totalLaborHours: 0
-          },
-          hoursSummary: {
-            men: 2,
-            hoursPerDay: 8,
-            daysOnsite: 0,
-            workHours: 0,
-            nonSovHours: 0,
-            travelHours: 0,
-            totalHours: 0,
-            straightTimeHours: 0,
-            overtimeHours: 0,
-            doubleTimeHours: 0
-          }
-        });
-      }
+      try { localStorage.setItem('AMP_SUSPEND_REFRESH', 'true'); } catch {}
+      // Initialize only if no draft to restore and not already dirty
+      try {
+        const raw = localStorage.getItem(draftKey);
+        const hasDraft = !!raw;
+        if (!hasDraft && !isDirty) {
+          setData({
+            client: opportunityData?.customer.company_name || opportunityData?.customer.name || '',
+            jobDescription: opportunityData?.description || '',
+            dateDue: '',
+            location: opportunityData?.customer.address || '',
+            periodOfPerformance: '',
+            estimatedStartDate: '',
+            poNumber: '',
+            notes: '',
+            sovItems: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({...EMPTY_LINE_ITEM})),
+            nonSovItems: [...DEFAULT_NON_SOV_ITEMS],
+            calculatedValues: {
+              subtotalMaterial: 0,
+              subtotalExpense: 0,
+              subtotalLabor: 0,
+              totalMaterial: 0,
+              totalExpense: 0,
+              totalLabor: 0,
+              grandTotal: 0,
+              nonSovMaterial: 0,
+              nonSovExpense: 0,
+              nonSovLabor: 0,
+              sovLaborHours: 0,
+              nonSovLaborHours: 0,
+              totalLaborHours: 0
+            },
+            hoursSummary: {
+              men: 2,
+              hoursPerDay: 8,
+              daysOnsite: 0,
+              workHours: 0,
+              nonSovHours: 0,
+              travelHours: 0,
+              totalHours: 0,
+              straightTimeHours: 0,
+              overtimeHours: 0,
+              doubleTimeHours: 0
+            }
+          });
+        }
+      } catch {}
     } else if (mode === 'view') {
       setIsNewQuote(false);
       setIsOpen(true);
       setIsViewMode(true);
+      try { localStorage.setItem('AMP_SUSPEND_REFRESH', 'true'); } catch {}
     } else if (mode === 'letter') {
       setIsOpen(false); // Ensure saved estimates modal is closed
       handleGenerateLetterProposal();
@@ -1936,6 +1954,23 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
     }
     // If mode is undefined, do nothing (default behavior)
   }, [mode]);
+
+  // If the estimate modal closes, re-enable global refreshes
+  useEffect(() => {
+    if (!isOpen) {
+      try { localStorage.removeItem('AMP_SUSPEND_REFRESH'); } catch {}
+    }
+  }, [isOpen]);
+
+  // When the parent triggers an openSignal change for the same mode, just bring modal to front without resetting state
+  useEffect(() => {
+    if (!openSignal) return;
+    if (mode === 'new' || mode === 'view') {
+      setIsOpen(true);
+      try { localStorage.setItem('AMP_SUSPEND_REFRESH', 'true'); } catch {}
+      // Do not touch isNewQuote/isViewMode/data here to preserve the form state
+    }
+  }, [openSignal]);
 
   // If opportunityData loads after modal is open and mode is 'new', reset the form with the new data
   useEffect(() => {
@@ -2060,22 +2095,33 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
                 <Tab.Group>
                   <Tab.List className="flex space-x-2 border-b border-gray-200 mb-4">
                     {quotes.map((quote, index) => (
-                      <Tab
-                        key={quote.id}
-                        className={({ selected }) =>
-                          `px-4 py-2 text-sm font-medium rounded-t-lg focus:outline-none ${
-                            selected
-                              ? 'bg-[#f26722] text-white'
-                              : 'bg-gray-100 dark:bg-dark-200 text-gray-500 dark:text-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300'
-                          }`
-                        }
-                        onClick={() => {
-                          setSelectedQuoteIndex(index);
-                          loadQuoteData(quote);
-                        }}
-                      >
-                        Quote {(opportunityData as any)?.quote_number || quote.id?.slice(0,6) || index + 1}
-                      </Tab>
+                      <div key={quote.id} className="flex items-center">
+                        <Tab
+                          className={({ selected }) =>
+                            `px-4 py-2 text-sm font-medium rounded-t-lg focus:outline-none ${
+                              selected
+                                ? 'bg-[#f26722] text-white'
+                                : 'bg-gray-100 dark:bg-dark-200 text-gray-500 dark:text-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300'
+                            }`
+                          }
+                          onClick={() => {
+                            setSelectedQuoteIndex(index);
+                            loadQuoteData(quote);
+                          }}
+                        >
+                          Quote {(opportunityData as any)?.quote_number || quote.id?.slice(0,6) || index + 1}
+                        </Tab>
+                        <button
+                          className="ml-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteQuoteById(quote.id);
+                          }}
+                          title="Delete estimate"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     ))}
                   </Tab.List>
                 </Tab.Group>

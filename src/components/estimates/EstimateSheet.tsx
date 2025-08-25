@@ -1670,7 +1670,14 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     }
     let sovItems: any[] = [];
     if (Array.isArray(parsedData.sovItems) && parsedData.sovItems.length > 0) {
-      sovItems = parsedData.sovItems;
+      // Filter out placeholder/empty rows so only real items appear in the letter
+      sovItems = parsedData.sovItems.filter((it: any) => {
+        const name = (it?.item ?? '').toString().trim();
+        const hasQty = Number(it?.quantity) > 0;
+        const hasAnyCost = [it?.materialPrice, it?.expensePrice, it?.laborMen, it?.laborHours]
+          .some((v: any) => Number(v) > 0);
+        return name.length > 0 || hasQty || hasAnyCost;
+      });
     }
     // --- Get customer total cost for options ---
     function getFinalValueFromParsed(parsed: any) {
@@ -1722,8 +1729,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     const option3 = formatCurrency(Math.ceil(finalValue * 1.09));
     const sovTableRows = sovItems && sovItems.length > 0
       ? sovItems.map((item: any) => {
-          const name = item.item || '';
-          const qty = item.quantity ?? item.qty ?? '';
+          const name = (item.item || '').toString();
+          const qty = item.quantity ?? item.qty ?? 1;
           return `<tr><td style='padding:4px 12px;border:1px solid #ccc;'>${name}</td><td style='padding:4px 12px;border:1px solid #ccc;text-align:center;'>${qty}</td></tr>`;
         }).join('')
       : `<tr><td style='padding:4px 12px;border:1px solid #ccc;'>24-hour Power Study</td><td style='padding:4px 12px;border:1px solid #ccc;text-align:center;'>1</td></tr>`;

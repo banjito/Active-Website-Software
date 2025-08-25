@@ -1402,12 +1402,7 @@ export default function OpportunityDetail() {
                   <div className="flex flex-row justify-center gap-4 mb-4">
                     <button
                       onClick={() => {
-                        if (showEstimate === 'new') {
-                          setShowEstimate(false);
-                          setTimeout(() => setShowEstimate('new'), 0);
-                        } else {
-                          setShowEstimate('new');
-                        }
+                        setShowEstimate('new');
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
@@ -1415,12 +1410,7 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        if (showEstimate === 'view') {
-                          setShowEstimate(false);
-                          setTimeout(() => setShowEstimate('view'), 0);
-                        } else {
-                          setShowEstimate('view');
-                        }
+                        setShowEstimate('view');
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
@@ -1428,12 +1418,7 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        if (showEstimate === 'letters') {
-                          setShowEstimate(false);
-                          setTimeout(() => setShowEstimate('letters'), 0);
-                        } else {
-                          setShowEstimate('letters');
-                        }
+                        setShowEstimate('letters');
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
@@ -1441,22 +1426,17 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        if (showEstimate === 'letter') {
-                          setShowEstimate(false);
-                          setTimeout(() => setShowEstimate('letter'), 0);
-                        } else {
-                          setShowEstimate('letter');
-                        }
+                        setShowEstimate('letter');
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
                       Generate Letter Proposal
                     </button>
                   </div>
-                  {/* Show EstimateSheet only if an action is selected */}
-                  {showEstimate !== false && (
-                    <EstimateSheet opportunityId={id || ''} mode={showEstimate} />
-                  )}
+                  {/* Keep EstimateSheet mounted to preserve state; hide when not active */}
+                  <div style={{ display: showEstimate ? 'block' : 'none' }}>
+                    <EstimateSheet opportunityId={id || ''} mode={showEstimate || undefined} />
+                  </div>
                 </div>
               </div>
             </div>

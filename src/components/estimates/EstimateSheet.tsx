@@ -307,112 +307,140 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
   const [hasQuote, setHasQuote] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
-  const [showTravel, setShowTravel] = useState(false);
+  const [showTravel, setShowTravel] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem(`estimate_draft_${opportunityId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed?.showTravel === 'boolean') return parsed.showTravel;
+      }
+    } catch {}
+    return false;
+  });
   const [isGettingData, setIsGettingData] = useState(true);
   const [opportunityData, setOpportunityData] = useState<OpportunityData | null>(null);
   const { user } = useAuth(); // Get user at component level
+  const hasRestoredDraftRef = useRef(false);
 
   // State for the travel data object
-  const [travelData, setTravelData] = useState({
-    travelExpense: [{ ...EMPTY_TRAVEL_ITEM }],
-    travelTime: [{
-      trips: 1,
-      oneWayHours: 0,
-      roundTripHours: 0,
-      totalTravelHours: 0,
-      numMen: 2,
-      grandTotalTravelHours: 0,
-      rate: 240.00,
-      totalTravelLabor: 0
-    }],
-    perDiem: [{
-      numDays: 0,
-      firstDayRate: 65.00,
-      lastDayRate: 65.00,
-      dailyRate: 65.00,
-      additionalDays: -2,
-      totalPerDiemPerMan: 0,
-      numMen: 2,
-      totalPerDiem: 0
-    }],
-    lodging: [{
-      numNights: 0,
-      numMen: 2,
-      manNights: 0,
-      rate: 210.00,
-      totalAmount: 0
-    }],
-    localMiles: [{
-      numDays: 0,
-      numVehicles: 1,
-      milesPerDay: 50,
-      totalMiles: 0,
-      rate: 3.00,
-      totalLocalMilesCost: 0
-    }],
-    flights: [{
-      numFlights: 0,
-      numMen: 2,
-      rate: 600.00,
-      luggageFees: 50.00,
-      totalFlightAmount: 0
-    }],
-    airTravelTime: [{
-      trips: 0,
-      oneWayHoursInAir: 0,
-      roundTripTerminalTime: 0,
-      totalTravelHours: 0,
-      numMen: 0,
-      grandTotalTravelHours: 0,
-      rate: 240.00,
-      totalTravelLabor: 0
-    }],
-    rentalCar: [{
-      numCars: 0,
-      rate: 750.00,
-      totalAmount: 0
-    }]
+  const [travelData, setTravelData] = useState(() => {
+    try {
+      const raw = localStorage.getItem(`estimate_draft_${opportunityId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.travelData) return parsed.travelData;
+      }
+    } catch {}
+    return {
+      travelExpense: [{ ...EMPTY_TRAVEL_ITEM }],
+      travelTime: [{
+        trips: 1,
+        oneWayHours: 0,
+        roundTripHours: 0,
+        totalTravelHours: 0,
+        numMen: 2,
+        grandTotalTravelHours: 0,
+        rate: 240.00,
+        totalTravelLabor: 0
+      }],
+      perDiem: [{
+        numDays: 0,
+        firstDayRate: 65.00,
+        lastDayRate: 65.00,
+        dailyRate: 65.00,
+        additionalDays: -2,
+        totalPerDiemPerMan: 0,
+        numMen: 2,
+        totalPerDiem: 0
+      }],
+      lodging: [{
+        numNights: 0,
+        numMen: 2,
+        manNights: 0,
+        rate: 210.00,
+        totalAmount: 0
+      }],
+      localMiles: [{
+        numDays: 0,
+        numVehicles: 1,
+        milesPerDay: 50,
+        totalMiles: 0,
+        rate: 3.00,
+        totalLocalMilesCost: 0
+      }],
+      flights: [{
+        numFlights: 0,
+        numMen: 2,
+        rate: 600.00,
+        luggageFees: 50.00,
+        totalFlightAmount: 0
+      }],
+      airTravelTime: [{
+        trips: 0,
+        oneWayHoursInAir: 0,
+        roundTripTerminalTime: 0,
+        totalTravelHours: 0,
+        numMen: 0,
+        grandTotalTravelHours: 0,
+        rate: 240.00,
+        totalTravelLabor: 0
+      }],
+      rentalCar: [{
+        numCars: 0,
+        rate: 750.00,
+        totalAmount: 0
+      }]
+    };
   });
 
   // State for the main data object
-  const [data, setData] = useState<EstimateData>({
-    client: '',
-    jobDescription: '',
-    dateDue: '',
-    location: '',
-    periodOfPerformance: '',
-    estimatedStartDate: '',
-    poNumber: '',
-    notes: '',
-    sovItems: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({ ...EMPTY_LINE_ITEM })),
-    nonSovItems: [...DEFAULT_NON_SOV_ITEMS],
-    calculatedValues: {
-      subtotalMaterial: 0,
-      subtotalExpense: 0,
-      subtotalLabor: 0,
-      totalMaterial: 0,
-      totalExpense: 0,
-      totalLabor: 0,
-      grandTotal: 0,
-      nonSovMaterial: 0,
-      nonSovExpense: 0,
-      nonSovLabor: 0,
-      sovLaborHours: 0,
-      nonSovLaborHours: 0,
-      totalLaborHours: 0
-    },
-    hoursSummary: {
-      men: 2,
-      hoursPerDay: 8,
-      daysOnsite: 0,
-      workHours: 0,
-      nonSovHours: 0,
-      travelHours: 0,
-      totalHours: 0,
-      straightTimeHours: 0,
-      overtimeHours: 0,
-      doubleTimeHours: 0
-    }
+  const [data, setData] = useState<EstimateData>(() => {
+    try {
+      const raw = localStorage.getItem(`estimate_draft_${opportunityId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.data) return parsed.data as EstimateData;
+      }
+    } catch {}
+    return {
+      client: '',
+      jobDescription: '',
+      dateDue: '',
+      location: '',
+      periodOfPerformance: '',
+      estimatedStartDate: '',
+      poNumber: '',
+      notes: '',
+      sovItems: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({ ...EMPTY_LINE_ITEM })),
+      nonSovItems: [...DEFAULT_NON_SOV_ITEMS],
+      calculatedValues: {
+        subtotalMaterial: 0,
+        subtotalExpense: 0,
+        subtotalLabor: 0,
+        totalMaterial: 0,
+        totalExpense: 0,
+        totalLabor: 0,
+        grandTotal: 0,
+        nonSovMaterial: 0,
+        nonSovExpense: 0,
+        nonSovLabor: 0,
+        sovLaborHours: 0,
+        nonSovLaborHours: 0,
+        totalLaborHours: 0
+      },
+      hoursSummary: {
+        men: 2,
+        hoursPerDay: 8,
+        daysOnsite: 0,
+        workHours: 0,
+        nonSovHours: 0,
+        travelHours: 0,
+        totalHours: 0,
+        straightTimeHours: 0,
+        overtimeHours: 0,
+        doubleTimeHours: 0
+      }
+    } as EstimateData;
   });
   const [itemColWidth, setItemColWidth] = useState<number>(240);
   const itemHeaderRef = useRef<HTMLTableCellElement>(null);
@@ -441,6 +469,56 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       isResizingItemRef.current = false;
     }
   };
+  
+  // --- Autosave/Restore: persist estimate draft per opportunity ---
+  const draftKey = `estimate_draft_${opportunityId}`;
+  
+  // Restore on mount/opportunity change
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.data) {
+          setData(parsed.data);
+        }
+        if (parsed && parsed.travelData) {
+          setTravelData(parsed.travelData);
+        }
+        if (typeof parsed.showTravel === 'boolean') {
+          setShowTravel(parsed.showTravel);
+        }
+        hasRestoredDraftRef.current = true;
+      }
+    } catch {}
+  }, [draftKey]);
+  
+  // Save on changes (debounced via microtask bucket)
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        draftKey,
+        JSON.stringify({ data, travelData, showTravel })
+      );
+    } catch {}
+  }, [draftKey, data, travelData, showTravel]);
+
+  // Save on visibility change/unload to avoid losing rapid edits
+  useEffect(() => {
+    const handler = () => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({ data, travelData, showTravel }));
+      } catch {}
+    };
+    window.addEventListener('visibilitychange', handler);
+    window.addEventListener('pagehide', handler);
+    window.addEventListener('beforeunload', handler);
+    return () => {
+      window.removeEventListener('visibilitychange', handler);
+      window.removeEventListener('pagehide', handler);
+      window.removeEventListener('beforeunload', handler);
+    };
+  }, [draftKey, data, travelData, showTravel]);
   
   // Fetch opportunity data
   useEffect(() => {
@@ -1785,46 +1863,48 @@ export default function EstimateSheet({ opportunityId, mode }: EstimateSheetProp
       setIsNewQuote(true);
       setIsViewMode(false);
       setShowTravel(false);
-      // Use whatever opportunityData is available now
-      setData({
-        client: opportunityData?.customer.company_name || opportunityData?.customer.name || '',
-        jobDescription: opportunityData?.description || '',
-        dateDue: '',
-        location: opportunityData?.customer.address || '',
-        periodOfPerformance: '',
-        estimatedStartDate: '',
-        poNumber: '',
-        notes: '',
-        sovItems: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({...EMPTY_LINE_ITEM})),
-        nonSovItems: [...DEFAULT_NON_SOV_ITEMS],
-        calculatedValues: {
-          subtotalMaterial: 0,
-          subtotalExpense: 0,
-          subtotalLabor: 0,
-          totalMaterial: 0,
-          totalExpense: 0,
-          totalLabor: 0,
-          grandTotal: 0,
-          nonSovMaterial: 0,
-          nonSovExpense: 0,
-          nonSovLabor: 0,
-          sovLaborHours: 0,
-          nonSovLaborHours: 0,
-          totalLaborHours: 0
-        },
-        hoursSummary: {
-          men: 2,
-          hoursPerDay: 8,
-          daysOnsite: 0,
-          workHours: 0,
-          nonSovHours: 0,
-          travelHours: 0,
-          totalHours: 0,
-          straightTimeHours: 0,
-          overtimeHours: 0,
-          doubleTimeHours: 0
-        }
-      });
+      // Only initialize defaults if no restored draft exists
+      if (!hasRestoredDraftRef.current) {
+        setData({
+          client: opportunityData?.customer.company_name || opportunityData?.customer.name || '',
+          jobDescription: opportunityData?.description || '',
+          dateDue: '',
+          location: opportunityData?.customer.address || '',
+          periodOfPerformance: '',
+          estimatedStartDate: '',
+          poNumber: '',
+          notes: '',
+          sovItems: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({...EMPTY_LINE_ITEM})),
+          nonSovItems: [...DEFAULT_NON_SOV_ITEMS],
+          calculatedValues: {
+            subtotalMaterial: 0,
+            subtotalExpense: 0,
+            subtotalLabor: 0,
+            totalMaterial: 0,
+            totalExpense: 0,
+            totalLabor: 0,
+            grandTotal: 0,
+            nonSovMaterial: 0,
+            nonSovExpense: 0,
+            nonSovLabor: 0,
+            sovLaborHours: 0,
+            nonSovLaborHours: 0,
+            totalLaborHours: 0
+          },
+          hoursSummary: {
+            men: 2,
+            hoursPerDay: 8,
+            daysOnsite: 0,
+            workHours: 0,
+            nonSovHours: 0,
+            travelHours: 0,
+            totalHours: 0,
+            straightTimeHours: 0,
+            overtimeHours: 0,
+            doubleTimeHours: 0
+          }
+        });
+      }
     } else if (mode === 'view') {
       setIsNewQuote(false);
       setIsOpen(true);

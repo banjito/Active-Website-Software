@@ -122,12 +122,9 @@ export class MediumVoltageCircuitBreakerImporter extends BaseImporter implements
       }
     }
 
-    const dielectricWithstand = {
-      p1Ground: f.dielectricClosed?.p1Ground || '',
-      p2Ground: f.dielectricClosed?.p2Ground || '',
-      p3Ground: f.dielectricClosed?.p3Ground || '',
-      units: f.dielectricClosed?.units || 'μA',
-    };
+    // Dielectric Withstand (Closed) + Vacuum Bottle Integrity (Open)
+    const dwc = f.dielectricWithstandClosed || f.dielectricClosed || {};
+    const dvo = f.vacuumBottleIntegrity || f.dielectricOpen || {};
 
     const testEquipment = {
       megohmmeter: f.megohmmeter || '',
@@ -185,22 +182,22 @@ export class MediumVoltageCircuitBreakerImporter extends BaseImporter implements
         lineToLoadOpenP3: '',
       },
       dielectricWithstandClosed: {
-        p1Ground: f.dielectricClosed?.p1Ground || '',
-        p2Ground: f.dielectricClosed?.p2Ground || '',
-        p3Ground: f.dielectricClosed?.p3Ground || '',
-        units: f.dielectricClosed?.units || 'μA',
+        p1Ground: dwc.p1Ground || '',
+        p2Ground: dwc.p2Ground || '',
+        p3Ground: dwc.p3Ground || '',
+        units: dwc.units || 'μA',
         result: '',
-        testVoltage: '',
-        testDuration: '1 Min.'
+        testVoltage: dwc.testVoltage || '',
+        testDuration: dwc.testDuration || '1 Min.'
       },
       vacuumIntegrityOpen: {
-        p1: f.dielectricOpen?.p1 || '',
-        p2: f.dielectricOpen?.p2 || '',
-        p3: f.dielectricOpen?.p3 || '',
-        units: f.dielectricOpen?.units || 'μA',
+        p1: dvo.p1 || '',
+        p2: dvo.p2 || '',
+        p3: dvo.p3 || '',
+        units: dvo.units || 'μA',
         result: '',
-        testVoltage: '',
-        testDuration: '1 Min.'
+        testVoltage: dvo.testVoltage || '',
+        testDuration: dvo.testDuration || '1 Min.'
       },
       testEquipment: {
         insulationResistanceTester: {

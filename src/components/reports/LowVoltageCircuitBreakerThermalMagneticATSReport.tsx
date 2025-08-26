@@ -470,7 +470,19 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
             },
             results: {
               thermal: { ...prev.primaryInjection.results.thermal, ...(d.primaryInjection.results?.thermal || {}) },
-              magnetic: { ...prev.primaryInjection.results.magnetic, ...(d.primaryInjection.results?.magnetic || {}) },
+              magnetic: (() => {
+                const mPrev = prev.primaryInjection.results.magnetic;
+                const m = { ...mPrev, ...(d.primaryInjection.results?.magnetic || {}) } as typeof mPrev;
+                // Map pole readings: prefer 'a'; if only 'sec' provided in JSON, copy it into 'a' for magnetic row
+                const srcMag = d.primaryInjection.results?.magnetic || {};
+                const p1 = srcMag.pole1 || {};
+                const p2 = srcMag.pole2 || {};
+                const p3 = srcMag.pole3 || {};
+                if (p1.a !== undefined) m.pole1.a = p1.a; else if (p1.sec !== undefined) m.pole1.a = p1.sec;
+                if (p2.a !== undefined) m.pole2.a = p2.a; else if (p2.sec !== undefined) m.pole2.a = p2.sec;
+                if (p3.a !== undefined) m.pole3.a = p3.a; else if (p3.sec !== undefined) m.pole3.a = p3.sec;
+                return m;
+              })(),
             }
           } : prev.primaryInjection,
 

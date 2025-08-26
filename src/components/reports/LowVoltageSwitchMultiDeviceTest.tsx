@@ -58,7 +58,16 @@ interface IRRow {
   // Line to Load (switch closed)
   p1_line: string; p2_line: string; p3_line: string;
 }
-interface ContactRow { position: string; switchOnly: string; fuseOnly: string; switchPlusFuse: string; units: string; }
+interface ContactRow {
+  position: string;
+  // Switch
+  sw_p1: string; sw_p2: string; sw_p3: string;
+  // Fuse
+  fu_p1: string; fu_p2: string; fu_p3: string;
+  // Switch + Fuse
+  sf_p1: string; sf_p2: string; sf_p3: string;
+  units: string;
+}
 interface VisualInspectionItem { identifier: string; values: Record<string, string>; }
 
 interface FormData {
@@ -107,7 +116,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
     fuses: makeArray<FuseRow>(6, () => ({ position: '', manufacturer: '', catalogNo: '', fuseClass: '', amperage: '', aic: '', voltage: '' })),
     irMeasured: makeArray<IRRow>(6, () => ({ position: '', p1p2: '', p2p3: '', p3p1: '', p1_frame: '', p2_frame: '', p3_frame: '', p1_line: '', p2_line: '', p3_line: '' })),
     irCorrected: makeArray<IRRow>(6, () => ({ position: '', p1p2: '', p2p3: '', p3p1: '', p1_frame: '', p2_frame: '', p3_frame: '', p1_line: '', p2_line: '', p3_line: '' })),
-    contact: makeArray<ContactRow>(6, () => ({ position: '', switchOnly: '', fuseOnly: '', switchPlusFuse: '', units: 'µΩ' })),
+    contact: makeArray<ContactRow>(6, () => ({ position: '', sw_p1: '', sw_p2: '', sw_p3: '', fu_p1: '', fu_p2: '', fu_p3: '', sf_p1: '', sf_p2: '', sf_p3: '', units: 'µΩ' })),
     visualInspection: { items: makeArray<VisualInspectionItem>(5, () => ({ identifier: '', values: {} })) },
     irTestVoltage: '1000V',
     irUnits: 'MΩ',
@@ -285,13 +294,29 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             irUnits: d.irTests?.units ?? prev.irUnits,
             irTestVoltage: d.irTests?.testVoltage ?? prev.irTestVoltage,
             contact: Array.isArray(d.contactResistance?.rows) && d.contactResistance.rows.length > 0
-              ? d.contactResistance.rows.map((r: any) => ({
-                  position: r.position || '',
-                  switchOnly: r.switchOnly || '',
-                  fuseOnly: r.fuseOnly || '',
-                  switchPlusFuse: r.switchPlusFuse || '',
-                  units: r.units || 'µΩ',
-                }))
+              ? d.contactResistance.rows.map((r: any) => {
+                  const split3 = (val: any): [string,string,string] => {
+                    if (typeof val !== 'string') return ['', '', ''];
+                    const parts = val.split('/').map((p: string) => p.trim()).filter(Boolean);
+                    return [parts[0] || '', parts[1] || '', parts[2] || ''] as [string,string,string];
+                  };
+                  const [sw1, sw2, sw3] = r.sw_p1 !== undefined || r.sw_p2 !== undefined || r.sw_p3 !== undefined
+                    ? [r.sw_p1 || '', r.sw_p2 || '', r.sw_p3 || '']
+                    : split3(r.switchOnly);
+                  const [fu1, fu2, fu3] = r.fu_p1 !== undefined || r.fu_p2 !== undefined || r.fu_p3 !== undefined
+                    ? [r.fu_p1 || '', r.fu_p2 || '', r.fu_p3 || '']
+                    : split3(r.fuseOnly);
+                  const [sf1, sf2, sf3] = r.sf_p1 !== undefined || r.sf_p2 !== undefined || r.sf_p3 !== undefined
+                    ? [r.sf_p1 || '', r.sf_p2 || '', r.sf_p3 || '']
+                    : split3(r.switchPlusFuse);
+                  return {
+                    position: r.position || '',
+                    sw_p1: sw1, sw_p2: sw2, sw_p3: sw3,
+                    fu_p1: fu1, fu_p2: fu2, fu_p3: fu3,
+                    sf_p1: sf1, sf_p2: sf2, sf_p3: sf3,
+                    units: r.units || 'µΩ',
+                  } as ContactRow;
+                })
               : prev.contact,
             equipment: {
               megger: d.equipment?.megger ?? prev.equipment.megger,
@@ -949,22 +974,52 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests - Contact Resistance</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full border border-gray-300 dark:border-gray-700">
+                <colgroup>
+                  <col style={{ width: '6%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '4%' }} />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th className="border px-2 py-2">Position / Identifier</th>
-                    <th className="border px-2 py-2">Switch</th>
-                    <th className="border px-2 py-2">Fuse</th>
-                    <th className="border px-2 py-2">Switch + Fuse</th>
-                    <th className="border px-2 py-2">Units</th>
+                    <th className="border px-2 py-2" rowSpan={2}>Position / Identifier</th>
+                    <th className="border px-2 py-2 text-center" colSpan={3}>Switch</th>
+                    <th className="border px-2 py-2 text-center" colSpan={3}>Fuse</th>
+                    <th className="border px-2 py-2 text-center" colSpan={3}>Switch + Fuse</th>
+                    <th className="border px-2 py-2" rowSpan={2}>Units</th>
+                  </tr>
+                  <tr className="bg-gray-50 dark:bg-dark-200">
+                    <th className="border px-2 py-2 text-center">P1</th>
+                    <th className="border px-2 py-2 text-center">P2</th>
+                    <th className="border px-2 py-2 text-center">P3</th>
+                    <th className="border px-2 py-2 text-center">P1</th>
+                    <th className="border px-2 py-2 text-center">P2</th>
+                    <th className="border px-2 py-2 text-center">P3</th>
+                    <th className="border px-2 py-2 text-center">P1</th>
+                    <th className="border px-2 py-2 text-center">P2</th>
+                    <th className="border px-2 py-2 text-center">P3</th>
                   </tr>
                 </thead>
                 <tbody>
                   {formData.contact.map((row, idx) => (
                     <tr key={idx}>
                       <td className="border px-2 py-1"><input type="text" value={row.position} onChange={e=>{ const next=[...formData.contact]; next[idx].position=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
-                      <td className="border px-2 py-1"><input type="text" value={row.switchOnly} onChange={e=>{ const next=[...formData.contact]; next[idx].switchOnly=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
-                      <td className="border px-2 py-1"><input type="text" value={row.fuseOnly} onChange={e=>{ const next=[...formData.contact]; next[idx].fuseOnly=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
-                      <td className="border px-2 py-1"><input type="text" value={row.switchPlusFuse} onChange={e=>{ const next=[...formData.contact]; next[idx].switchPlusFuse=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
+                      <td className="border px-2 py-1"><input type="text" value={row.sw_p1} onChange={e=>{ const next=[...formData.contact]; next[idx].sw_p1=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
+                      <td className="border px-2 py-1"><input type="text" value={row.sw_p2} onChange={e=>{ const next=[...formData.contact]; next[idx].sw_p2=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
+                      <td className="border px-2 py-1"><input type="text" value={row.sw_p3} onChange={e=>{ const next=[...formData.contact]; next[idx].sw_p3=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
+                      <td className="border px-2 py-1"><input type="text" value={row.fu_p1} onChange={e=>{ const next=[...formData.contact]; next[idx].fu_p1=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
+                      <td className="border px-2 py-1"><input type="text" value={row.fu_p2} onChange={e=>{ const next=[...formData.contact]; next[idx].fu_p2=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
+                      <td className="border px-2 py-1"><input type="text" value={row.fu_p3} onChange={e=>{ const next=[...formData.contact]; next[idx].fu_p3=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
+                      <td className="border px-2 py-1"><input type="text" value={row.sf_p1} onChange={e=>{ const next=[...formData.contact]; next[idx].sf_p1=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
+                      <td className="border px-2 py-1"><input type="text" value={row.sf_p2} onChange={e=>{ const next=[...formData.contact]; next[idx].sf_p2=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
+                      <td className="border px-2 py-1"><input type="text" value={row.sf_p3} onChange={e=>{ const next=[...formData.contact]; next[idx].sf_p3=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
                       <td className="border px-2 py-1"><input type="text" value={row.units} onChange={e=>{ const next=[...formData.contact]; next[idx].units=e.target.value; setField('contact', next); }} readOnly={!isEditing} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200':''}`} /></td>
                     </tr>
                   ))}
@@ -1209,14 +1264,25 @@ if (typeof document !== 'undefined') {
       .fuse-data-section table th:nth-child(6), .fuse-data-section table td:nth-child(6) { width: 18% !important; }
       .fuse-data-section table th:nth-child(7), .fuse-data-section table td:nth-child(7) { width: 18% !important; }
 
-      /* Contact Resistance: shrink first col */
-      .contact-resistance-section table { table-layout: fixed !important; }
+      /* Contact Resistance (11 columns: Pos + 9 readings + Units) */
+      .contact-resistance-section table { table-layout: fixed !important; width: 100% !important; }
       .contact-resistance-section table th:first-child,
-      .contact-resistance-section table td:first-child { width: 12% !important; text-align: left !important; }
-      .contact-resistance-section table th:nth-child(2), .contact-resistance-section table td:nth-child(2) { width: 26% !important; }
-      .contact-resistance-section table th:nth-child(3), .contact-resistance-section table td:nth-child(3) { width: 26% !important; }
-      .contact-resistance-section table th:nth-child(4), .contact-resistance-section table td:nth-child(4) { width: 26% !important; }
-      .contact-resistance-section table th:nth-child(5), .contact-resistance-section table td:nth-child(5) { width: 10% !important; }
+      .contact-resistance-section table td:first-child { width: 6% !important; text-align: left !important; }
+      /* Reading columns (2..10) expanded further */
+      .contact-resistance-section table th:nth-child(2), .contact-resistance-section table td:nth-child(2) { width: 9.89% !important; }
+      .contact-resistance-section table th:nth-child(3), .contact-resistance-section table td:nth-child(3) { width: 9.89% !important; }
+      .contact-resistance-section table th:nth-child(4), .contact-resistance-section table td:nth-child(4) { width: 9.89% !important; }
+      .contact-resistance-section table th:nth-child(5), .contact-resistance-section table td:nth-child(5) { width: 9.89% !important; }
+      .contact-resistance-section table th:nth-child(6), .contact-resistance-section table td:nth-child(6) { width: 9.89% !important; }
+      .contact-resistance-section table th:nth-child(7), .contact-resistance-section table td:nth-child(7) { width: 9.89% !important; }
+      .contact-resistance-section table th:nth-child(8), .contact-resistance-section table td:nth-child(8) { width: 9.89% !important; }
+      .contact-resistance-section table th:nth-child(9), .contact-resistance-section table td:nth-child(9) { width: 9.89% !important; }
+      .contact-resistance-section table th:nth-child(10), .contact-resistance-section table td:nth-child(10) { width: 9.89% !important; }
+      /* Units column pinned far right and narrower */
+      .contact-resistance-section table th:nth-child(11), .contact-resistance-section table td:nth-child(11) { width: 5% !important; }
+      /* Center readings */
+      .contact-resistance-section table th:nth-child(n+2):nth-child(-n+10),
+      .contact-resistance-section table td:nth-child(n+2):nth-child(-n+10) { text-align: center !important; }
 
       /* NETA Reference: larger font, section on far left, description spans */
       .neta-reference-section table { table-layout: fixed !important; width: 100% !important; }

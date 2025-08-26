@@ -1,0 +1,779 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36EM6CVJANS75SJEM81HP9Q",
+  "reportType": "LowVoltageSwitchMultiDeviceTest.tsx",
+  "createdAt": "2025-08-21T13:53:31.971Z",
+  "updatedAt": "2025-08-21T13:55:49.380Z",
+  "version": 423,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "0987"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "89087"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "980"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "0006-08-07"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "980"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "7"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": "098"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "978098"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "7"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "908"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Tests for NETA ATS Section 7.5.1.1.A",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "identifier": "7",
+                "values": {
+                  "1": "Y",
+                  "2": "Y",
+                  "3": "Y",
+                  "4": "Y",
+                  "5": "Y",
+                  "6": "Y",
+                  "7": "Y",
+                  "8": "Y",
+                  "9": "Y",
+                  "10": "Y",
+                  "11": "Y",
+                  "12": "Y"
+                }
+              },
+              {
+                "identifier": "234532",
+                "values": {
+                  "1": "Y",
+                  "2": "Y",
+                  "3": "Y",
+                  "4": "Y",
+                  "5": "Y",
+                  "6": "Y",
+                  "7": "Y",
+                  "8": "Y",
+                  "9": "Y",
+                  "10": "Y",
+                  "11": "Y",
+                  "12": "Y"
+                }
+              },
+              {
+                "identifier": "523452",
+                "values": {
+                  "1": "Y",
+                  "2": "Y",
+                  "3": "Y",
+                  "4": "Y",
+                  "5": "Y",
+                  "6": "Y",
+                  "7": "Y",
+                  "8": "Y",
+                  "9": "Y",
+                  "10": "Y",
+                  "11": "Y",
+                  "12": "Y"
+                }
+              },
+              {
+                "identifier": "345234",
+                "values": {
+                  "1": "Y",
+                  "2": "Y",
+                  "3": "Y",
+                  "4": "Y",
+                  "5": "Y",
+                  "6": "Y",
+                  "7": "Y",
+                  "8": "Y",
+                  "9": "Y",
+                  "10": "Y",
+                  "11": "Y",
+                  "12": "Y"
+                }
+              },
+              {
+                "identifier": "",
+                "values": {
+                  "1": "Y",
+                  "2": "Y",
+                  "3": "Y",
+                  "4": "Y",
+                  "5": "Y",
+                  "6": "Y",
+                  "7": "Y",
+                  "8": "Y",
+                  "9": "Y",
+                  "10": "Y",
+                  "11": "Y",
+                  "12": "Y"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Enclosure Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "3245234"
+        },
+        {
+          "label": "System Voltage (V)",
+          "type": "text",
+          "value": "52345"
+        },
+        {
+          "label": "Catalog No.",
+          "type": "text",
+          "value": "234523"
+        },
+        {
+          "label": "Rated Voltage (V)",
+          "type": "text",
+          "value": "425"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "42534"
+        },
+        {
+          "label": "Rated Current (A)",
+          "type": "text",
+          "value": "52345"
+        },
+        {
+          "label": "Series",
+          "type": "text",
+          "value": "2345"
+        },
+        {
+          "label": "AIC Rating (kA)",
+          "type": "text",
+          "value": "2345234"
+        },
+        {
+          "label": "Type",
+          "type": "text",
+          "value": "52345"
+        },
+        {
+          "label": "Phase Configuration",
+          "type": "text",
+          "value": "3245"
+        }
+      ]
+    },
+    {
+      "title": "Switch Data",
+      "fields": [
+        {
+          "label": "Switch Rows",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "position": "4325",
+                "manufacturer": "342534",
+                "catalogNo": "5234",
+                "serialNo": "5234",
+                "type": "5234",
+                "ratedAmperage": "52",
+                "ratedVoltage": "34523"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Fuse Data",
+      "fields": [
+        {
+          "label": "Fuse Rows",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "voltage": "2345",
+                "aic": "3245",
+                "amperage": "3425",
+                "fuseClass": "2345",
+                "catalogNo": "2345",
+                "manufacturer": "2345",
+                "position": "23452"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance",
+          "type": "table",
+          "value": {
+            "testVoltage": "1000V",
+            "rows": [
+              {
+                "units": "MΩ",
+                "position": "3425",
+                "p1p2": "4235",
+                "p2p3": "2435324",
+                "p3p1": "523",
+                "p1_frame": "52344",
+                "p2_frame": "4325234",
+                "p1_line": "45",
+                "p3_frame": "4325243",
+                "p2_line": "234",
+                "p3_line": "432534"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Contact Resistance",
+      "fields": [
+        {
+          "label": "Contact Resistance",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "units": "µΩ",
+                "position": "0986",
+                "sw_p1": "97876",
+                "sw_p2": "789",
+                "sw_p3": "7",
+                "fu_p1": "9807",
+                "fu_p2": "890",
+                "fu_p3": "7",
+                "sf_p1": "890",
+                "sf_p2": "7",
+                "sf_p3": "987"
+              },
+              {
+                "units": "µΩ",
+                "position": "9007",
+                "sw_p1": "098",
+                "sw_p2": "870098",
+                "sw_p3": "87",
+                "fu_p1": "980",
+                "fu_p2": "78",
+                "fu_p3": "9800978",
+                "sf_p1": "79",
+                "sf_p2": "78",
+                "sf_p3": "708"
+              },
+              {
+                "units": "µΩ",
+                "position": "978",
+                "sw_p1": "9077",
+                "sw_p2": "0989",
+                "sw_p3": "877",
+                "fu_p1": "8997",
+                "fu_p2": "8007",
+                "fu_p3": "7",
+                "sf_p1": "789",
+                "sf_p2": "7",
+                "sf_p3": "7988"
+              },
+              {
+                "units": "µΩ",
+                "position": "0789",
+                "sw_p1": "7897",
+                "sw_p2": "890789",
+                "sw_p3": "7098",
+                "fu_p1": "798",
+                "fu_p2": "7089",
+                "fu_p3": "879",
+                "sf_p1": "7908790",
+                "sf_p2": "8997",
+                "sf_p3": "807098"
+              },
+              {
+                "units": "µΩ",
+                "position": "897",
+                "sw_p1": "80",
+                "sw_p2": "7",
+                "sw_p3": "787",
+                "fu_p1": "70",
+                "fu_p2": "78",
+                "fu_p3": "879",
+                "sf_p2": "098",
+                "sf_p3": "7987890",
+                "sf_p1": "3465234"
+              },
+              {
+                "units": "µΩ",
+                "position": "7890",
+                "sw_p1": "789097",
+                "sw_p2": "87",
+                "sw_p3": "798",
+                "fu_p1": "079",
+                "fu_p2": "7",
+                "fu_p3": "79",
+                "sf_p1": "7098",
+                "sf_p2": "0798079",
+                "sf_p3": "8708"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "NETA Reference",
+      "fields": [
+        {
+          "label": "NETA Reference",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.5.11.A.1",
+                "description": "Compare equipment data with drawings & specifications"
+              },
+              {
+                "id": "7.5.11.A.3",
+                "description": "Inspect physical & mechanical condition"
+              },
+              {
+                "id": "7.5.11.A.4",
+                "description": "Verify the unit is clean"
+              },
+              {
+                "id": "7.5.11.A.5",
+                "description": "Verify correct blade alignment, blade penetration, travel stops, & mechanical operation"
+              },
+              {
+                "id": "7.5.11.A.6",
+                "description": "Verify fusing sizes & types are in accordance with drawings, short circuit, & coordination study"
+              },
+              {
+                "id": "7.5.11.A.7",
+                "description": "Verify each fuse has adequate mechanical support & contact integrity"
+              },
+              {
+                "id": "7.5.11.A.8.1",
+                "description": "Inspect bolted electrical connections for resistance utilizing a low resistance ohmmeter"
+              },
+              {
+                "id": "7.5.11.A.9",
+                "description": "Verify operation & sequencing of interlocking systems"
+              },
+              {
+                "id": "7.5.11.A.10",
+                "description": "Verify correct phase barrier installation"
+              },
+              {
+                "id": "7.5.11.A.11",
+                "description": "Verify correct operation of all indicating & control devices"
+              },
+              {
+                "id": "7.5.11.A.12",
+                "description": "Verify appropriate lubrication on moving current carrying parts & on moving and sliding surfaces"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "234523"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "2345234"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "5234523"
+        },
+        {
+          "label": "Low Resistance Ohmmeter",
+          "type": "text",
+          "value": "34245"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "234523"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "4523452"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "4245"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "980",
+    "reportType": "LowVoltageSwitchMultiDeviceTest",
+    "fields": {
+      "customer": "0987",
+      "jobNumber": "89087",
+      "technicians": "980",
+      "date": "0006-08-07",
+      "identifier": "980",
+      "temperatureF": "7",
+      "humidity": "098",
+      "substation": "978098",
+      "eqptLocation": "7",
+      "user": "908",
+      "vm-matrix": {
+        "rows": [
+          {
+            "identifier": "7",
+            "values": {
+              "1": "Y",
+              "2": "Y",
+              "3": "Y",
+              "4": "Y",
+              "5": "Y",
+              "6": "Y",
+              "7": "Y",
+              "8": "Y",
+              "9": "Y",
+              "10": "Y",
+              "11": "Y",
+              "12": "Y"
+            }
+          },
+          {
+            "identifier": "234532",
+            "values": {
+              "1": "Y",
+              "2": "Y",
+              "3": "Y",
+              "4": "Y",
+              "5": "Y",
+              "6": "Y",
+              "7": "Y",
+              "8": "Y",
+              "9": "Y",
+              "10": "Y",
+              "11": "Y",
+              "12": "Y"
+            }
+          },
+          {
+            "identifier": "523452",
+            "values": {
+              "1": "Y",
+              "2": "Y",
+              "3": "Y",
+              "4": "Y",
+              "5": "Y",
+              "6": "Y",
+              "7": "Y",
+              "8": "Y",
+              "9": "Y",
+              "10": "Y",
+              "11": "Y",
+              "12": "Y"
+            }
+          },
+          {
+            "identifier": "345234",
+            "values": {
+              "1": "Y",
+              "2": "Y",
+              "3": "Y",
+              "4": "Y",
+              "5": "Y",
+              "6": "Y",
+              "7": "Y",
+              "8": "Y",
+              "9": "Y",
+              "10": "Y",
+              "11": "Y",
+              "12": "Y"
+            }
+          },
+          {
+            "identifier": "",
+            "values": {
+              "1": "Y",
+              "2": "Y",
+              "3": "Y",
+              "4": "Y",
+              "5": "Y",
+              "6": "Y",
+              "7": "Y",
+              "8": "Y",
+              "9": "Y",
+              "10": "Y",
+              "11": "Y",
+              "12": "Y"
+            }
+          }
+        ]
+      },
+      "manufacturer": "3245234",
+      "systemVoltage": "52345",
+      "catalogNo": "234523",
+      "ratedVoltage": "425",
+      "serialNumber": "42534",
+      "ratedCurrent": "52345",
+      "series": "2345",
+      "aicRating": "2345234",
+      "type": "52345",
+      "phaseConfiguration": "3245",
+      "switchRows": {
+        "rows": [
+          {
+            "position": "4325",
+            "manufacturer": "342534",
+            "catalogNo": "5234",
+            "serialNo": "5234",
+            "type": "5234",
+            "ratedAmperage": "52",
+            "ratedVoltage": "34523"
+          }
+        ]
+      },
+      "fuseRows": {
+        "rows": [
+          {
+            "voltage": "2345",
+            "aic": "3245",
+            "amperage": "3425",
+            "fuseClass": "2345",
+            "catalogNo": "2345",
+            "manufacturer": "2345",
+            "position": "23452"
+          }
+        ]
+      },
+      "switchIrTables": {
+        "testVoltage": "1000V",
+        "rows": [
+          {
+            "units": "MΩ",
+            "position": "3425",
+            "p1p2": "4235",
+            "p2p3": "2435324",
+            "p3p1": "523",
+            "p1_frame": "52344",
+            "p2_frame": "4325234",
+            "p1_line": "45",
+            "p3_frame": "4325243",
+            "p2_line": "234",
+            "p3_line": "432534"
+          }
+        ]
+      },
+      "switchContactLVMulti": {
+        "rows": [
+          {
+            "units": "µΩ",
+            "position": "0986",
+            "sw_p1": "97876",
+            "sw_p2": "789",
+            "sw_p3": "7",
+            "fu_p1": "9807",
+            "fu_p2": "890",
+            "fu_p3": "7",
+            "sf_p1": "890",
+            "sf_p2": "7",
+            "sf_p3": "987"
+          },
+          {
+            "units": "µΩ",
+            "position": "9007",
+            "sw_p1": "098",
+            "sw_p2": "870098",
+            "sw_p3": "87",
+            "fu_p1": "980",
+            "fu_p2": "78",
+            "fu_p3": "9800978",
+            "sf_p1": "79",
+            "sf_p2": "78",
+            "sf_p3": "708"
+          },
+          {
+            "units": "µΩ",
+            "position": "978",
+            "sw_p1": "9077",
+            "sw_p2": "0989",
+            "sw_p3": "877",
+            "fu_p1": "8997",
+            "fu_p2": "8007",
+            "fu_p3": "7",
+            "sf_p1": "789",
+            "sf_p2": "7",
+            "sf_p3": "7988"
+          },
+          {
+            "units": "µΩ",
+            "position": "0789",
+            "sw_p1": "7897",
+            "sw_p2": "890789",
+            "sw_p3": "7098",
+            "fu_p1": "798",
+            "fu_p2": "7089",
+            "fu_p3": "879",
+            "sf_p1": "7908790",
+            "sf_p2": "8997",
+            "sf_p3": "807098"
+          },
+          {
+            "units": "µΩ",
+            "position": "897",
+            "sw_p1": "80",
+            "sw_p2": "7",
+            "sw_p3": "787",
+            "fu_p1": "70",
+            "fu_p2": "78",
+            "fu_p3": "879",
+            "sf_p2": "098",
+            "sf_p3": "7987890",
+            "sf_p1": "3465234"
+          },
+          {
+            "units": "µΩ",
+            "position": "7890",
+            "sw_p1": "789097",
+            "sw_p2": "87",
+            "sw_p3": "798",
+            "fu_p1": "079",
+            "fu_p2": "7",
+            "fu_p3": "79",
+            "sf_p1": "7098",
+            "sf_p2": "0798079",
+            "sf_p3": "8708"
+          }
+        ]
+      },
+      "netaReference": {
+        "rows": [
+          {
+            "id": "7.5.11.A.1",
+            "description": "Compare equipment data with drawings & specifications"
+          },
+          {
+            "id": "7.5.11.A.3",
+            "description": "Inspect physical & mechanical condition"
+          },
+          {
+            "id": "7.5.11.A.4",
+            "description": "Verify the unit is clean"
+          },
+          {
+            "id": "7.5.11.A.5",
+            "description": "Verify correct blade alignment, blade penetration, travel stops, & mechanical operation"
+          },
+          {
+            "id": "7.5.11.A.6",
+            "description": "Verify fusing sizes & types are in accordance with drawings, short circuit, & coordination study"
+          },
+          {
+            "id": "7.5.11.A.7",
+            "description": "Verify each fuse has adequate mechanical support & contact integrity"
+          },
+          {
+            "id": "7.5.11.A.8.1",
+            "description": "Inspect bolted electrical connections for resistance utilizing a low resistance ohmmeter"
+          },
+          {
+            "id": "7.5.11.A.9",
+            "description": "Verify operation & sequencing of interlocking systems"
+          },
+          {
+            "id": "7.5.11.A.10",
+            "description": "Verify correct phase barrier installation"
+          },
+          {
+            "id": "7.5.11.A.11",
+            "description": "Verify correct operation of all indicating & control devices"
+          },
+          {
+            "id": "7.5.11.A.12",
+            "description": "Verify appropriate lubrication on moving current carrying parts & on moving and sliding surfaces"
+          }
+        ]
+      },
+      "megohmmeter": "234523",
+      "megohmmeterSerial": "2345234",
+      "megohmmeterAmpId": "5234523",
+      "lro": "34245",
+      "lroSerial": "234523",
+      "lroAmpId": "4523452",
+      "comments": "4245"
+    }
+  }
+}

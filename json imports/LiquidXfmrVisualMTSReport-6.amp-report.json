@@ -1,0 +1,494 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36DN21BRSDGM9AFH7DCCMET",
+  "reportType": "LiquidXfmrVisualMTSReport.tsx",
+  "createdAt": "2025-08-21T13:37:28.972Z",
+  "updatedAt": "2025-08-21T13:38:44.344Z",
+  "version": 152,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "9086986"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "8906"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "890"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "80690-06-09"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "6"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "90806"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "90869"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "8886"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "980"
+        },
+        {
+          "label": "Address",
+          "type": "textarea",
+          "value": "86"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Nameplate",
+          "type": "table",
+          "value": {
+            "manufacturer": "89",
+            "catalogNumber": "698068",
+            "serialNumber": "96",
+            "kva": "98",
+            "kvaSecondary": "6",
+            "tempRise": "98",
+            "impedance": "698906",
+            "primary": {
+              "volts": "980",
+              "voltsSecondary": "6",
+              "connection": "Delta",
+              "material": "Aluminum"
+            },
+            "secondary": {
+              "volts": "6",
+              "voltsSecondary": "9806",
+              "connection": "Wye",
+              "material": "Aluminum"
+            },
+            "tapVoltages": [
+              "806",
+              "98",
+              "6",
+              "089986",
+              "86906",
+              "98698",
+              "686"
+            ],
+            "tapPositionCurrent": "896",
+            "tapPositionSecondary": "896",
+            "tapSpecificVolts": "98",
+            "tapSpecificPercent": "698"
+          }
+        },
+        {
+          "label": "Fluid Type",
+          "type": "text",
+          "value": "69"
+        },
+        {
+          "label": "Fluid Volume (gal)",
+          "type": "text",
+          "value": "8698"
+        }
+      ]
+    },
+    {
+      "title": "Indicator Gauge Values",
+      "fields": [
+        {
+          "label": "Oil Level",
+          "type": "text",
+          "value": "6"
+        },
+        {
+          "label": "Tank Pressure",
+          "type": "text",
+          "value": "89"
+        },
+        {
+          "label": "Oil Temperature (°C)",
+          "type": "text",
+          "value": "6"
+        },
+        {
+          "label": "Winding Temperature (°C)",
+          "type": "text",
+          "value": "89689"
+        },
+        {
+          "label": "Oil Temp Range",
+          "type": "text",
+          "value": "0666"
+        },
+        {
+          "label": "Winding Temp Range",
+          "type": "text",
+          "value": "9680"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.2.2.A.1",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.2.A.2",
+                "description": "Inspect anchorage, alignment, and grounding.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.2.A.3",
+                "description": "Verify the presence of PCB labeling.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.2.2.A.4*",
+                "description": "Prior to cleaning the unit, perform as-found tests. *Optional",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.2.A.5",
+                "description": "Clean bushings and control cabinets.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.2.A.6",
+                "description": "Verify operation of alarm, control, and trip circuits from temperature and level indicators, pressure-relief device, gas accumulator, and fault-pressure relay.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.2.A.7",
+                "description": "Verify that cooling fans and pumps operate correctly.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.2.A.8.1",
+                "description": "Inspect bolted connections for high resistance using a low-resistance ohmmeter in accordance with Section 7.2.2.B.1.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.2.2.A.9",
+                "description": "Verify correct liquid level in tanks and bushings.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.2.A.10",
+                "description": "Verify that positive pressure is maintained on gas-blanketed transformers.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.2.2.A.11",
+                "description": "Perform inspections and mechanical tests as recommended by the manufacturer.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.2.A.12",
+                "description": "Test load tap-changer in accordance with Section 7.12.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.2.2.A.13",
+                "description": "Verify the presence of transformer surge arresters.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.2.A.15",
+                "description": "Verify de-energized tap-changer position is left as specified.",
+                "result": "Satisfactory"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance + Temp Corrected + DA/PI",
+          "type": "table",
+          "value": {
+            "testVoltage": "1000V",
+            "unit": "MΩ",
+            "rows": [
+              {
+                "id": "dielectricAbsorption",
+                "primary": "0.06",
+                "secondary": "",
+                "primaryToSecondary": "",
+                "acceptable": "No"
+              },
+              {
+                "id": "polarizationIndex",
+                "primary": "163449.67",
+                "secondary": "",
+                "primaryToSecondary": "",
+                "acceptable": "No"
+              }
+            ],
+            "primaryToGround": {
+              "testVoltage": "5000",
+              "units": "MΩ",
+              "r05": "098-698",
+              "r1": "6",
+              "r10": "980698"
+            },
+            "secondaryToGround": {
+              "testVoltage": "1000",
+              "units": "MΩ",
+              "r05": "6",
+              "r1": "896",
+              "r10": "89"
+            },
+            "primaryToSecondary": {
+              "testVoltage": "5000",
+              "units": "MΩ",
+              "r05": "6",
+              "r1": "89689",
+              "r10": "6"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "0986896"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "89068"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "8906"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "8906980"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "6",
+    "reportType": "LiquidXfmrVisualMTSReport",
+    "fields": {
+      "customer": "9086986",
+      "jobNumber": "8906",
+      "technicians": "890",
+      "date": "80690-06-09",
+      "identifier": "6",
+      "temperatureF": "90806",
+      "substation": "90869",
+      "eqptLocation": "8886",
+      "user": "980",
+      "address": "86",
+      "dry-nameplate": {
+        "manufacturer": "89",
+        "catalogNumber": "698068",
+        "serialNumber": "96",
+        "kva": "98",
+        "kvaSecondary": "6",
+        "tempRise": "98",
+        "impedance": "698906",
+        "primary": {
+          "volts": "980",
+          "voltsSecondary": "6",
+          "connection": "Delta",
+          "material": "Aluminum"
+        },
+        "secondary": {
+          "volts": "6",
+          "voltsSecondary": "9806",
+          "connection": "Wye",
+          "material": "Aluminum"
+        },
+        "tapVoltages": [
+          "806",
+          "98",
+          "6",
+          "089986",
+          "86906",
+          "98698",
+          "686"
+        ],
+        "tapPositionCurrent": "896",
+        "tapPositionSecondary": "896",
+        "tapSpecificVolts": "98",
+        "tapSpecificPercent": "698"
+      },
+      "fluidType": "69",
+      "fluidVolume": "8698",
+      "oilLevel": "6",
+      "tankPressure": "89",
+      "oilTemperature": "6",
+      "windingTemperature": "89689",
+      "oilTempRange": "0666",
+      "windingTempRange": "9680",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.2.2.A.1",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.2.A.2",
+            "description": "Inspect anchorage, alignment, and grounding.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.2.A.3",
+            "description": "Verify the presence of PCB labeling.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.2.2.A.4*",
+            "description": "Prior to cleaning the unit, perform as-found tests. *Optional",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.2.A.5",
+            "description": "Clean bushings and control cabinets.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.2.A.6",
+            "description": "Verify operation of alarm, control, and trip circuits from temperature and level indicators, pressure-relief device, gas accumulator, and fault-pressure relay.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.2.A.7",
+            "description": "Verify that cooling fans and pumps operate correctly.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.2.A.8.1",
+            "description": "Inspect bolted connections for high resistance using a low-resistance ohmmeter in accordance with Section 7.2.2.B.1.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.2.2.A.9",
+            "description": "Verify correct liquid level in tanks and bushings.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.2.A.10",
+            "description": "Verify that positive pressure is maintained on gas-blanketed transformers.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.2.2.A.11",
+            "description": "Perform inspections and mechanical tests as recommended by the manufacturer.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.2.A.12",
+            "description": "Test load tap-changer in accordance with Section 7.12.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.2.2.A.13",
+            "description": "Verify the presence of transformer surge arresters.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.2.A.15",
+            "description": "Verify de-energized tap-changer position is left as specified.",
+            "result": "Satisfactory"
+          }
+        ]
+      },
+      "dryTypeIr": {
+        "testVoltage": "1000V",
+        "unit": "MΩ",
+        "rows": [
+          {
+            "id": "dielectricAbsorption",
+            "primary": "0.06",
+            "secondary": "",
+            "primaryToSecondary": "",
+            "acceptable": "No"
+          },
+          {
+            "id": "polarizationIndex",
+            "primary": "163449.67",
+            "secondary": "",
+            "primaryToSecondary": "",
+            "acceptable": "No"
+          }
+        ],
+        "primaryToGround": {
+          "testVoltage": "5000",
+          "units": "MΩ",
+          "r05": "098-698",
+          "r1": "6",
+          "r10": "980698"
+        },
+        "secondaryToGround": {
+          "testVoltage": "1000",
+          "units": "MΩ",
+          "r05": "6",
+          "r1": "896",
+          "r10": "89"
+        },
+        "primaryToSecondary": {
+          "testVoltage": "5000",
+          "units": "MΩ",
+          "r05": "6",
+          "r1": "89689",
+          "r10": "6"
+        }
+      },
+      "megohmmeter": "0986896",
+      "serialNumber": "89068",
+      "ampId": "8906",
+      "comments": "8906980"
+    }
+  }
+}

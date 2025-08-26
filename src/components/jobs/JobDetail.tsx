@@ -1502,6 +1502,7 @@ export default function JobDetail() {
     // Keys should match the slug in defaultAssets.file_url (e.g., 'panelboard-report')
     // Values should be the route segment used in App.tsx (usually the same)
     const reportPathMap: { [key: string]: string } = {
+      'panelboard': 'panelboard-report',
       'panelboard-report': 'panelboard-report',
       'low-voltage-switch-multi-device-test': 'low-voltage-switch-multi-device-test',
       'low-voltage-circuit-breaker-electronic-trip-ats-report': 'low-voltage-circuit-breaker-electronic-trip-ats-report',

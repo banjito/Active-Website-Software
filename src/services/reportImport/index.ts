@@ -39,6 +39,7 @@ import { TanDeltaImporter } from './TanDeltaImporter';
 import { ReportData, ReportImportResult, ReportImporter } from './types';
 import { LowVoltageCircuitBreakerElectronicTripATSSecondaryImporter } from './LowVoltageCircuitBreakerElectronicTripATSSecondaryImporter';
 import { LowVoltageCircuitBreakerElectronicTripMTSImporter } from './LowVoltageCircuitBreakerElectronicTripMTSImporter';
+import { LowVoltageCircuitBreakerThermalMagneticMTSImporter } from './LowVoltageCircuitBreakerThermalMagneticMTSImporter';
 
 export class ReportImportService {
   private importers = [
@@ -78,6 +79,7 @@ export class ReportImportService {
     new LowVoltageCircuitBreakerElectronicTripImporter(), // ATS Primary Injection (visual)
     new LowVoltageCircuitBreakerElectronicTripATSSecondaryImporter(), // ATS Secondary Injection
     new LowVoltageCircuitBreakerElectronicTripMTSImporter(), // MTS Primary Injection
+    new LowVoltageCircuitBreakerThermalMagneticMTSImporter(), // MTS Thermal Magnetic
     new LowVoltageCable12SetsImporter(),
     new LowVoltageCable20SetsImporter(),
   ];
@@ -314,9 +316,12 @@ export class ReportImportService {
         // Fallback for any other switchgear importers
         reportTypeMap['SwitchgearReport'] = importer;
         reportTypeMap['SwitchgearReport.tsx'] = importer;
-      } else if (importer.constructor.name.includes('Panelboard')) {
+      } else if (importer.constructor.name === 'PanelboardImporter') {
+        // Route core Panelboard reports only to the Panelboard importer
         reportTypeMap['PanelboardReport'] = importer;
         reportTypeMap['PanelboardReport.tsx'] = importer;
+      } else if (importer.constructor.name === 'LowVoltagePanelboardSmallBreakerImporter') {
+        // Route Small Breaker tests only to the Small Breaker importer
         reportTypeMap['LowVoltagePanelboardSmallBreakerTestATSReport'] = importer;
         reportTypeMap['LowVoltagePanelboardSmallBreakerTestATSReport.tsx'] = importer;
       } else if (importer.constructor.name.includes('LowVoltageCable')) {
@@ -387,6 +392,9 @@ export class ReportImportService {
       } else if (importer.constructor.name === 'LowVoltageCircuitBreakerElectronicTripMTSImporter') {
         reportTypeMap['LowVoltageCircuitBreakerElectronicTripMTSReport'] = importer;
         reportTypeMap['LowVoltageCircuitBreakerElectronicTripMTSReport.tsx'] = importer;
+      } else if (importer.constructor.name === 'LowVoltageCircuitBreakerThermalMagneticMTSImporter') {
+        reportTypeMap['LowVoltageCircuitBreakerThermalMagneticMTSReport'] = importer;
+        reportTypeMap['LowVoltageCircuitBreakerThermalMagneticMTSReport.tsx'] = importer;
       } else if (importer.constructor.name === 'LowVoltageCircuitBreakerElectronicTripImporter') {
         reportTypeMap['LowVoltageCircuitBreakerElectronicTripATSReport'] = importer;
         reportTypeMap['LowVoltageCircuitBreakerElectronicTripATSReport.tsx'] = importer;

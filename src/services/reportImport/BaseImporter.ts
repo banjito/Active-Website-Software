@@ -122,6 +122,13 @@ export abstract class BaseImporter {
         jsonbColumns: ['report_info', 'transformer_data', 'visual_inspection', 'electrical_tests', 'test_equipment']
       };
     } else if (this.tableName.includes('switchgear') || this.tableName.includes('panelboard')) {
+      if (this.tableName === 'panelboard_reports') {
+        // Known-good structure for Panelboard reports
+        return {
+          columns: ['id', 'job_id', 'user_id', 'created_at', 'updated_at', 'report_info', 'visual_mechanical', 'insulation_resistance', 'contact_resistance', 'comments'],
+          jsonbColumns: ['report_info', 'visual_mechanical', 'insulation_resistance', 'contact_resistance']
+        };
+      }
       if (this.tableName === 'switchgear_panelboard_mts_reports') {
         // Use the actual table structure we know exists
         return {
@@ -251,9 +258,10 @@ export abstract class BaseImporter {
         jsonbColumns: ['report_info', 'tan_delta_data', 'test_results', 'test_equipment']
       };
     } else if (this.tableName.includes('liquid_xfmr_visual')) {
+      // Prefer a single JSONB payload for flexibility across environments
       return {
-        columns: ['id', 'job_id', 'user_id', 'created_at', 'updated_at', 'report_info', 'transformer_data', 'visual_inspection', 'test_equipment', 'comments'],
-        jsonbColumns: ['report_info', 'transformer_data', 'visual_inspection', 'test_equipment']
+        columns: ['id', 'job_id', 'user_id', 'created_at', 'updated_at', 'report_data'],
+        jsonbColumns: ['report_data']
       };
     } else {
       // Default fallback

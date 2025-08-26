@@ -165,14 +165,16 @@ export class VoltagePotentialTransformerImporter extends BaseImporter implements
             } else if (field.label === 'Secondary Voltage at as-found tap (V)') {
               reportData.secondaryVoltageAsFoundTap = field.value;
             } else if (field.label === 'Turns Ratio Test' && field.value) {
+              // Support both object and table rows formats
+              const src = (field.type === 'table' && field.value.rows && field.value.rows[0]) ? field.value.rows[0] : field.value;
               reportData.turnsRatioTest = [{
                 id: 'tr-0',
-                tap: field.value.tap || '',
-                primaryVoltage: field.value.primaryVoltage || '',
-                calculatedRatio: field.value.calculatedRatio || '',
-                measuredH1H2: field.value.measuredH1H2 || '',
-                percentDeviation: field.value.percentDeviation || '',
-                passFail: field.value.passFail || ''
+                tap: src.tap || '',
+                primaryVoltage: src.primaryVoltage || '',
+                calculatedRatio: src.calculatedRatio || '',
+                measuredH1H2: src.measuredH1H2 || '',
+                percentDeviation: src.percentDeviation || src.deviation || '',
+                passFail: src.passFail || ''
               }];
             }
           });
@@ -274,16 +276,29 @@ export class VoltagePotentialTransformerImporter extends BaseImporter implements
           }));
         }
         if (!reportData.secondaryVoltageAsFoundTap && fields.secondaryVoltageTap) reportData.secondaryVoltageAsFoundTap = fields.secondaryVoltageTap;
-        if (reportData.turnsRatioTest[0] && !reportData.turnsRatioTest[0].tap && fields.turnsRatio) {
-          reportData.turnsRatioTest = [{
-            id: 'tr-0',
-            tap: fields.turnsRatio.tap || '',
-            primaryVoltage: fields.turnsRatio.primaryVoltage || '',
-            calculatedRatio: fields.turnsRatio.calculatedRatio || '',
-            measuredH1H2: fields.turnsRatio.measuredH1H2 || '',
-            percentDeviation: fields.turnsRatio.percentDeviation || '',
-            passFail: fields.turnsRatio.passFail || ''
-          }];
+        if (reportData.turnsRatioTest[0] && !reportData.turnsRatioTest[0].tap) {
+          if (fields.turnsRatio) {
+            reportData.turnsRatioTest = [{
+              id: 'tr-0',
+              tap: fields.turnsRatio.tap || '',
+              primaryVoltage: fields.turnsRatio.primaryVoltage || '',
+              calculatedRatio: fields.turnsRatio.calculatedRatio || '',
+              measuredH1H2: fields.turnsRatio.measuredH1H2 || '',
+              percentDeviation: fields.turnsRatio.percentDeviation || fields.turnsRatio.deviation || '',
+              passFail: fields.turnsRatio.passFail || ''
+            }];
+          } else if (fields.vtTurnsRatio?.rows && fields.vtTurnsRatio.rows[0]) {
+            const r = fields.vtTurnsRatio.rows[0];
+            reportData.turnsRatioTest = [{
+              id: 'tr-0',
+              tap: r.tap || '',
+              primaryVoltage: r.primaryVoltage || '',
+              calculatedRatio: r.calculatedRatio || '',
+              measuredH1H2: r.measuredH1H2 || '',
+              percentDeviation: r.percentDeviation || r.deviation || '',
+              passFail: r.passFail || ''
+            }];
+          }
         }
         // Test equipment
         if (fields.megohmmeter) reportData.testEquipmentUsed.megohmmeter.name = fields.megohmmeter;

@@ -368,6 +368,15 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
         setFormData(prev => ({
           ...prev,
           ...data.report_info,
+          // Map inspectionResults hash to visualInspectionItems array (id/result)
+          visualInspectionItems: prev.visualInspectionItems.map(item => ({
+            ...item,
+            result: (data.report_info?.inspectionResults && data.report_info.inspectionResults[item.id]) ? data.report_info.inspectionResults[item.id] : item.result
+          })),
+          // Ensure insulationResistance shape if present
+          insulationResistance: data.report_info?.insulationResistance || prev.insulationResistance,
+          // Ensure primaryInjection shape if present
+          primaryInjection: data.report_info?.primaryInjection || prev.primaryInjection,
           status: data.status || 'PASS'
         }));
         setIsEditing(false);
@@ -1084,7 +1093,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
               <label htmlFor="insulationTestVoltage" className="form-label mr-2">Test Voltage:</label>
             <select
                 id="insulationTestVoltage"
-              value={formData.insulationResistance.testVoltage}
+              value={formData.insulationResistance?.testVoltage || ''}
               onChange={(e) => handleChange('insulationResistance.testVoltage', e.target.value)}
               disabled={!isEditing}
                 className="form-select w-32"
@@ -1126,23 +1135,23 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">Pole to Pole (Closed)</td>
                     {/* Measured Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.insulationResistance.measured.poleToPole.p1p2} onChange={(e) => handleChange('insulationResistance.measured.poleToPole.p1p2', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      <input type="text" value={formData.insulationResistance?.measured?.poleToPole?.p1p2 || ''} onChange={(e) => handleChange('insulationResistance.measured.poleToPole.p1p2', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.insulationResistance.measured.poleToPole.p2p3} onChange={(e) => handleChange('insulationResistance.measured.poleToPole.p2p3', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      <input type="text" value={formData.insulationResistance?.measured?.poleToPole?.p2p3 || ''} onChange={(e) => handleChange('insulationResistance.measured.poleToPole.p2p3', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.insulationResistance.measured.poleToPole.p3p1} onChange={(e) => handleChange('insulationResistance.measured.poleToPole.p3p1', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      <input type="text" value={formData.insulationResistance?.measured?.poleToPole?.p3p1 || ''} onChange={(e) => handleChange('insulationResistance.measured.poleToPole.p3p1', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </td>
                     {/* Corrected Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance.measured.poleToPole.p1p2)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance?.measured?.poleToPole?.p1p2 || '')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance.measured.poleToPole.p2p3)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance?.measured?.poleToPole?.p2p3 || '')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance.measured.poleToPole.p3p1)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance?.measured?.poleToPole?.p3p1 || '')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
                 </td>
                     {/* Units */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
@@ -1156,23 +1165,23 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">Pole to Frame (Closed)</td>
                     {/* Measured Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.insulationResistance.measured.poleToFrame.p1} onChange={(e) => handleChange('insulationResistance.measured.poleToFrame.p1', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      <input type="text" value={formData.insulationResistance?.measured?.poleToFrame?.p1 || ''} onChange={(e) => handleChange('insulationResistance.measured.poleToFrame.p1', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.insulationResistance.measured.poleToFrame.p2} onChange={(e) => handleChange('insulationResistance.measured.poleToFrame.p2', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      <input type="text" value={formData.insulationResistance?.measured?.poleToFrame?.p2 || ''} onChange={(e) => handleChange('insulationResistance.measured.poleToFrame.p2', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.insulationResistance.measured.poleToFrame.p3} onChange={(e) => handleChange('insulationResistance.measured.poleToFrame.p3', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      <input type="text" value={formData.insulationResistance?.measured?.poleToFrame?.p3 || ''} onChange={(e) => handleChange('insulationResistance.measured.poleToFrame.p3', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </td>
                     {/* Corrected Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance.measured.poleToFrame.p1)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance?.measured?.poleToFrame?.p1 || '')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance.measured.poleToFrame.p2)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance?.measured?.poleToFrame?.p2 || '')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance.measured.poleToFrame.p3)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance?.measured?.poleToFrame?.p3 || '')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
                 </td>
                     {/* Units */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
@@ -1186,23 +1195,23 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">Line to Load (Open)</td>
                     {/* Measured Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.insulationResistance.measured.lineToLoad.p1} onChange={(e) => handleChange('insulationResistance.measured.lineToLoad.p1', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      <input type="text" value={formData.insulationResistance?.measured?.lineToLoad?.p1 || ''} onChange={(e) => handleChange('insulationResistance.measured.lineToLoad.p1', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.insulationResistance.measured.lineToLoad.p2} onChange={(e) => handleChange('insulationResistance.measured.lineToLoad.p2', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      <input type="text" value={formData.insulationResistance?.measured?.lineToLoad?.p2 || ''} onChange={(e) => handleChange('insulationResistance.measured.lineToLoad.p2', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={formData.insulationResistance.measured.lineToLoad.p3} onChange={(e) => handleChange('insulationResistance.measured.lineToLoad.p3', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                      <input type="text" value={formData.insulationResistance?.measured?.lineToLoad?.p3 || ''} onChange={(e) => handleChange('insulationResistance.measured.lineToLoad.p3', e.target.value)} readOnly={!isEditing} className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </td>
                     {/* Corrected Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance.measured.lineToLoad.p1)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance?.measured?.lineToLoad?.p1 || '')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance.measured.lineToLoad.p2)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance?.measured?.lineToLoad?.p2 || '')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
                 </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance.measured.lineToLoad.p3)} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
+                      <input type="text" value={calculateCorrectedValue(formData.insulationResistance?.measured?.lineToLoad?.p3 || '')} readOnly className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 text-center" />
                 </td>
                     {/* Units */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
@@ -1457,6 +1466,90 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+            {/* Screen-visible layout */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden te-section-screen">
+              <div className="card p-4">
+                <div className="font-semibold mb-2">Megohmmeter</div>
+                <label className="form-label">Name</label>
+                <input
+                  type="text"
+                  value={formData.testEquipment.megohmmeter.name}
+                  onChange={(e) => handleChange('testEquipment.megohmmeter.name', e.target.value)}
+                  readOnly={!isEditing}
+                  className="form-input"
+                />
+                <label className="form-label mt-2">Serial Number</label>
+                <input
+                  type="text"
+                  value={formData.testEquipment.megohmmeter.serialNumber}
+                  onChange={(e) => handleChange('testEquipment.megohmmeter.serialNumber', e.target.value)}
+                  readOnly={!isEditing}
+                  className="form-input"
+                />
+                <label className="form-label mt-2">AMP ID</label>
+                <input
+                  type="text"
+                  value={formData.testEquipment.megohmmeter.ampId}
+                  onChange={(e) => handleChange('testEquipment.megohmmeter.ampId', e.target.value)}
+                  readOnly={!isEditing}
+                  className="form-input"
+                />
+              </div>
+              <div className="card p-4">
+                <div className="font-semibold mb-2">Low-Resistance Ohmmeter</div>
+                <label className="form-label">Name</label>
+                <input
+                  type="text"
+                  value={formData.testEquipment.lowResistanceOhmmeter.name}
+                  onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.name', e.target.value)}
+                  readOnly={!isEditing}
+                  className="form-input"
+                />
+                <label className="form-label mt-2">Serial Number</label>
+                <input
+                  type="text"
+                  value={formData.testEquipment.lowResistanceOhmmeter.serialNumber}
+                  onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.serialNumber', e.target.value)}
+                  readOnly={!isEditing}
+                  className="form-input"
+                />
+                <label className="form-label mt-2">AMP ID</label>
+                <input
+                  type="text"
+                  value={formData.testEquipment.lowResistanceOhmmeter.ampId}
+                  onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.ampId', e.target.value)}
+                  readOnly={!isEditing}
+                  className="form-input"
+                />
+              </div>
+              <div className="card p-4">
+                <div className="font-semibold mb-2">Primary Injection Test Set</div>
+                <label className="form-label">Name</label>
+                <input
+                  type="text"
+                  value={formData.testEquipment.primaryInjectionTestSet.name}
+                  onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.name', e.target.value)}
+                  readOnly={!isEditing}
+                  className="form-input"
+                />
+                <label className="form-label mt-2">Serial Number</label>
+                <input
+                  type="text"
+                  value={formData.testEquipment.primaryInjectionTestSet.serialNumber}
+                  onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.serialNumber', e.target.value)}
+                  readOnly={!isEditing}
+                  className="form-input"
+                />
+                <label className="form-label mt-2">AMP ID</label>
+                <input
+                  type="text"
+                  value={formData.testEquipment.primaryInjectionTestSet.ampId}
+                  onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.ampId', e.target.value)}
+                  readOnly={!isEditing}
+                  className="form-input"
+                />
+              </div>
+            </div>
             {/* Print-only 3-column table for all test equipment */}
             <div className="hidden print:block mt-2">
               <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
@@ -1541,6 +1634,8 @@ if (typeof document !== 'undefined') {
       }
       
       /* Hide Back to Job button and division headers specifically */
+      /* Hide screen-only Test Equipment section explicitly */
+      .te-section-screen, .te-section-screen * { display: none !important; }
       button[class*="Back"], 
       *[class*="Back to Job"], 
       h2[class*="Division"],

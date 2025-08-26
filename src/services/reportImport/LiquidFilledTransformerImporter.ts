@@ -2,7 +2,7 @@ import { BaseImporter } from './BaseImporter';
 import { DatabaseSchema, ReportData, ReportImportResult, ReportImporter } from './types';
 
 export class LiquidFilledTransformerImporter extends BaseImporter implements ReportImporter {
-  protected tableName = 'low_voltage_cable_test_3sets';
+  protected tableName = 'liquid_filled_transformer_reports';
   protected requiredColumns = ['job_id', 'user_id'];
 
   canImport(data: ReportData): boolean {
@@ -119,7 +119,7 @@ export class LiquidFilledTransformerImporter extends BaseImporter implements Rep
               insulationResistance.temperature = reportInfo.temperature?.fahrenheit?.toString() || '';
               insulationResistance.primaryToGround = {
                 testVoltage: irData.primaryToGround?.testVoltage || '',
-                unit: irData.primaryToGround?.unit || '',
+                unit: irData.primaryToGround?.units || irData.primaryToGround?.unit || irData.unit || 'MΩ',
                 readings: {
                   halfMinute: irData.primaryToGround?.r05 || '',
                   oneMinute: irData.primaryToGround?.r1 || '',
@@ -135,7 +135,7 @@ export class LiquidFilledTransformerImporter extends BaseImporter implements Rep
               };
               insulationResistance.secondaryToGround = {
                 testVoltage: irData.secondaryToGround?.testVoltage || '',
-                unit: irData.secondaryToGround?.unit || '',
+                unit: irData.secondaryToGround?.units || irData.secondaryToGround?.unit || irData.unit || 'MΩ',
                 readings: {
                   halfMinute: irData.secondaryToGround?.r05 || '',
                   oneMinute: irData.secondaryToGround?.r1 || '',
@@ -151,7 +151,7 @@ export class LiquidFilledTransformerImporter extends BaseImporter implements Rep
               };
               insulationResistance.primaryToSecondary = {
                 testVoltage: irData.primaryToSecondary?.testVoltage || '',
-                unit: irData.primaryToSecondary?.unit || '',
+                unit: irData.primaryToSecondary?.units || irData.primaryToSecondary?.unit || irData.unit || 'MΩ',
                 readings: {
                   halfMinute: irData.primaryToSecondary?.r05 || '',
                   oneMinute: irData.primaryToSecondary?.r1 || '',
@@ -165,8 +165,18 @@ export class LiquidFilledTransformerImporter extends BaseImporter implements Rep
                 dielectricAbsorption: '',
                 polarizationIndex: ''
               };
-              insulationResistance.dielectricAbsorptionAcceptable = '';
-              insulationResistance.polarizationIndexAcceptable = '';
+              // Map DA/PI rows to values and acceptance flags when provided
+              if (Array.isArray(irData.rows)) {
+                const daRow = irData.rows.find((r: any) => (r.id || '').toLowerCase().includes('dielectric')) || {};
+                const piRow = irData.rows.find((r: any) => (r.id || '').toLowerCase().includes('polarization')) || {};
+                insulationResistance.primaryToGround.dielectricAbsorption = daRow.primary || insulationResistance.primaryToGround.dielectricAbsorption || '';
+                insulationResistance.primaryToGround.polarizationIndex = piRow.primary || insulationResistance.primaryToGround.polarizationIndex || '';
+                insulationResistance.dielectricAbsorptionAcceptable = (daRow.acceptable || '').toString();
+                insulationResistance.polarizationIndexAcceptable = (piRow.acceptable || '').toString();
+              } else {
+                insulationResistance.dielectricAbsorptionAcceptable = insulationResistance.dielectricAbsorptionAcceptable || '';
+                insulationResistance.polarizationIndexAcceptable = insulationResistance.polarizationIndexAcceptable || '';
+              }
             }
           });
         } else if (section.title.toLowerCase().includes('test equipment')) {
@@ -252,7 +262,7 @@ export class LiquidFilledTransformerImporter extends BaseImporter implements Rep
       if (!reportInfo.oilLevel) reportInfo.oilLevel = fields.oilLevel || '';
       if (!reportInfo.tankPressure) reportInfo.tankPressure = fields.tankPressure || '';
       if (!reportInfo.oilTemperature) reportInfo.oilTemperature = fields.oilTemperature || '';
-      if (!reportInfo.windingTemperature) reportInfo.windingTemperature || '';
+      if (!reportInfo.windingTemperature) reportInfo.windingTemperature = fields.windingTemperature || '';
       if (!reportInfo.oilTempRange) reportInfo.oilTempRange = fields.oilTempRange || '';
       if (!reportInfo.windingTempRange) reportInfo.windingTempRange = fields.windingTempRange || '';
 
@@ -271,7 +281,7 @@ export class LiquidFilledTransformerImporter extends BaseImporter implements Rep
         insulationResistance.temperature = reportInfo.temperature?.fahrenheit?.toString() || '';
         insulationResistance.primaryToGround = {
           testVoltage: irData.primaryToGround?.testVoltage || '',
-          unit: irData.primaryToGround?.unit || '',
+          unit: irData.primaryToGround?.units || irData.primaryToGround?.unit || irData.unit || 'MΩ',
           readings: {
             halfMinute: irData.primaryToGround?.r05 || '',
             oneMinute: irData.primaryToGround?.r1 || '',
@@ -287,7 +297,7 @@ export class LiquidFilledTransformerImporter extends BaseImporter implements Rep
         };
         insulationResistance.secondaryToGround = {
           testVoltage: irData.secondaryToGround?.testVoltage || '',
-          unit: irData.secondaryToGround?.unit || '',
+          unit: irData.secondaryToGround?.units || irData.secondaryToGround?.unit || irData.unit || 'MΩ',
           readings: {
             halfMinute: irData.secondaryToGround?.r05 || '',
             oneMinute: irData.secondaryToGround?.r1 || '',
@@ -303,7 +313,7 @@ export class LiquidFilledTransformerImporter extends BaseImporter implements Rep
         };
         insulationResistance.primaryToSecondary = {
           testVoltage: irData.primaryToSecondary?.testVoltage || '',
-          unit: irData.primaryToSecondary?.unit || '',
+          unit: irData.primaryToSecondary?.units || irData.primaryToSecondary?.unit || irData.unit || 'MΩ',
           readings: {
             halfMinute: irData.primaryToSecondary?.r05 || '',
             oneMinute: irData.primaryToSecondary?.r1 || '',
@@ -317,8 +327,17 @@ export class LiquidFilledTransformerImporter extends BaseImporter implements Rep
           dielectricAbsorption: '',
           polarizationIndex: ''
         };
-        insulationResistance.dielectricAbsorptionAcceptable = '';
-        insulationResistance.polarizationIndexAcceptable = '';
+        if (Array.isArray(irData.rows)) {
+          const daRow = irData.rows.find((r: any) => (r.id || '').toLowerCase().includes('dielectric')) || {};
+          const piRow = irData.rows.find((r: any) => (r.id || '').toLowerCase().includes('polarization')) || {};
+          insulationResistance.primaryToGround.dielectricAbsorption = daRow.primary || insulationResistance.primaryToGround.dielectricAbsorption || '';
+          insulationResistance.primaryToGround.polarizationIndex = piRow.primary || insulationResistance.primaryToGround.polarizationIndex || '';
+          insulationResistance.dielectricAbsorptionAcceptable = (daRow.acceptable || '').toString();
+          insulationResistance.polarizationIndexAcceptable = (piRow.acceptable || '').toString();
+        } else {
+          insulationResistance.dielectricAbsorptionAcceptable = insulationResistance.dielectricAbsorptionAcceptable || '';
+          insulationResistance.polarizationIndexAcceptable = insulationResistance.polarizationIndexAcceptable || '';
+        }
       }
 
       // Test equipment
@@ -338,24 +357,42 @@ export class LiquidFilledTransformerImporter extends BaseImporter implements Rep
       comments
     });
 
-    const dataToInsert: any = {
-      job_id: jobId,
-      user_id: userId,
-      data: {
-        reportInfo,
-        visualInspection,
-        insulationResistance,
-        testEquipment,
-        comments,
-        status: 'PASS',
-        isLiquidType: true,
-        reportType: 'liquid_filled_transformer_ats'
-      }
+    // Build a flexible payload based on available columns
+    const baseData = {
+      reportInfo,
+      visualInspection,
+      insulationResistance,
+      testEquipment,
+      comments,
+      status: 'PASS',
+      isLiquidType: true,
+      reportType: 'liquid_filled_transformer_ats'
     };
 
-    console.log('💾 Data being inserted into database:', JSON.stringify(dataToInsert, null, 2));
+    // Prefer a JSONB blob if available; otherwise fall back to split columns
+    const hasData = (schema.jsonbColumns || []).includes('data');
+    const hasReportData = (schema.jsonbColumns || []).includes('report_data');
 
-    return dataToInsert;
+    let payload: any = { job_id: jobId, user_id: userId };
+    if (hasData) {
+      payload.data = baseData;
+    } else if (hasReportData) {
+      payload.report_data = baseData;
+    } else {
+      payload = {
+        job_id: jobId,
+        user_id: userId,
+        report_info: reportInfo,
+        visual_inspection: visualInspection,
+        insulation_resistance: insulationResistance,
+        test_equipment: testEquipment,
+        comments
+      };
+    }
+
+    console.log('💾 Data being inserted into database:', JSON.stringify(payload, null, 2));
+
+    return payload;
   }
 
   protected getReportType(): string {

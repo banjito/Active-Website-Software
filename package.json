@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "regression": "npx tsx scripts/importer-regression.ts",
     "migrate": "node migrations/apply-migrations.js",
     "job-number-migration": "node migrations/run_job_number_migration.js",
     "import-apptivo": "node scripts/import-apptivo.mjs",

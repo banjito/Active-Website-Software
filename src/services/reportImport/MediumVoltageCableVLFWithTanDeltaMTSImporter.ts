@@ -105,11 +105,13 @@ export class MediumVoltageCableVLFWithTanDeltaMTSImporter extends BaseImporter i
       return {
         ohmmeter: te.lowResistanceOhmmeter?.name || (te.lowResistanceOhmmeter?.serialNumber ? 'Low Resistance Ohmmeter' : ''),
         ohmSerialNumber: te.lowResistanceOhmmeter?.serialNumber || '',
+        ohmAmpId: te.lowResistanceOhmmeter?.ampId || '',
         megohmmeter: te.megohmmeter?.name || (te.megohmmeter?.serialNumber ? 'Megohmmeter' : ''),
         megohmSerialNumber: te.megohmmeter?.serialNumber || '',
+        megohmAmpId: te.megohmmeter?.ampId || '',
         vlfHipot: te.primaryInjectionTestSet?.name || (te.primaryInjectionTestSet?.serialNumber ? 'VLF Hipot' : ''),
         vlfSerialNumber: te.primaryInjectionTestSet?.serialNumber || '',
-        ampId: te.primaryInjectionTestSet?.ampId || '',
+        vlfAmpId: te.primaryInjectionTestSet?.ampId || '',
         vlfTestSet: te.primaryInjectionTestSet?.name || ''
       };
     })();
@@ -205,6 +207,8 @@ export class MediumVoltageCableVLFWithTanDeltaMTSImporter extends BaseImporter i
       temperature,
       withstandTest,
       comments: f.comments || '',
+      conclusion: f.conclusion || '',
+      recommendations: f.recommendations || '',
       ...(tanDeltaTest ? { tanDeltaTest } : {})
     };
 

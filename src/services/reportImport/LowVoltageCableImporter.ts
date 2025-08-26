@@ -8,10 +8,13 @@ export class LowVoltageCableImporter extends BaseImporter implements ReportImpor
   canImport(data: ReportData): boolean {
     console.log(`MTS Cable Importer checking: ${data.reportType}`);
     // Check if this is a low voltage cable report (MTS version)
-    const canImport = data.reportType?.toLowerCase().includes('lowvoltagecable') || 
-           data.reportType?.toLowerCase().includes('low-voltage-cable') ||
-           data.reportType?.toLowerCase().includes('3sets') ||
-           data.reportType?.toLowerCase().includes('mts');
+    const t = (data.reportType || data.data?.reportType || '').toLowerCase();
+    const canImport = t.includes('3-lowvoltagecablemts') ||
+           t.includes('3-lowvoltagecablemts.tsx') ||
+           t === '3-lowvoltagecablemts' ||
+           t === '3-lowvoltagecablemts.tsx' ||
+           t.includes('lowvoltagecablemts') ||
+           t.includes('low-voltage-cable-mts');
     console.log(`MTS Cable Importer canImport result: ${canImport}`);
     return canImport;
   }
@@ -23,6 +26,15 @@ export class LowVoltageCableImporter extends BaseImporter implements ReportImpor
   protected prepareData(data: ReportData, jobId: string, userId: string, schema: DatabaseSchema): any {
     // Process the data - check both sections and data.fields
     const reportData: any = {};
+    const normalizeCableSize = (raw: string): string => {
+      if (!raw) return '';
+      const s = String(raw).trim();
+      const awg = s.match(/^(\d{1,2})\s*AWG$/i);
+      if (awg) return `#${awg[1]}`;
+      const kcmil = s.match(/^(\d{2,4})\s*kcmil$/i);
+      if (kcmil) return kcmil[1];
+      return s;
+    };
     
     // First, check if there's a data.fields object (this is the flattened structure)
     if (data.data && data.data.fields) {
@@ -81,34 +93,34 @@ export class LowVoltageCableImporter extends BaseImporter implements ReportImpor
           id: index + 1,
           from: row.from || '',
           to: row.to || '',
-          size: row.size || '',
+          size: normalizeCableSize(row.size || ''),
           config: row.config || '',
           result: row.result || '',
           readings: {
             aToGround: row.aG || '',
             bToGround: row.bG || '',
             cToGround: row.cG || '',
-            nToGround: '',
+            nToGround: row.nG || '',
             aToB: row.aB || '',
-            bToC: '',
-            cToA: '',
-            aToN: '',
-            bToN: '',
-            cToN: '',
+            bToC: row.bC || '',
+            cToA: row.cA || '',
+            aToN: row.aN || '',
+            bToN: row.bN || '',
+            cToN: row.cN || '',
             continuity: row.cont || ''
           },
           correctedReadings: {
             aToGround: row.c_aG || '',
             bToGround: row.c_bG || '',
             cToGround: row.c_cG || '',
-            nToGround: '',
+            nToGround: row.c_nG || '',
             aToB: row.c_aB || '',
-            bToC: '',
-            cToA: '',
-            aToN: '',
-            bToN: '',
-            cToN: '',
-            continuity: row.cont || ''
+            bToC: row.c_bC || '',
+            cToA: row.c_cA || '',
+            aToN: row.c_aN || '',
+            bToN: row.c_bN || '',
+            cToN: row.c_cN || '',
+            continuity: (row.c_cont || row.cont || '')
           }
         }));
       }

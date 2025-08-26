@@ -185,18 +185,18 @@ export class SwitchgearPanelboardMTSImporter extends BaseImporter implements Rep
             reportData.testEquipment = {
               megohmmeter: { 
                 name: te.megohmmeter?.name || '', 
-                serialNumber: '', 
-                ampId: '' 
+                serialNumber: te.megohmmeter?.serialNumber || '', 
+                ampId: te.megohmmeter?.ampId || '' 
               },
               lowResistanceOhmmeter: { 
                 name: te.lowResistanceOhmmeter?.name || '', 
-                serialNumber: '', 
-                ampId: '' 
+                serialNumber: te.lowResistanceOhmmeter?.serialNumber || '', 
+                ampId: te.lowResistanceOhmmeter?.ampId || '' 
               },
               hipot: { 
                 name: te.primaryInjectionTestSet?.name || '', 
-                serialNumber: '', 
-                ampId: '' 
+                serialNumber: te.primaryInjectionTestSet?.serialNumber || '', 
+                ampId: te.primaryInjectionTestSet?.ampId || '' 
               }
             };
           }
@@ -328,18 +328,18 @@ export class SwitchgearPanelboardMTSImporter extends BaseImporter implements Rep
         reportData.testEquipment = {
           megohmmeter: { 
             name: fields.testEquipment3.megohmmeter?.name || '', 
-            serialNumber: '', 
-            ampId: '' 
+            serialNumber: fields.testEquipment3.megohmmeter?.serialNumber || '', 
+            ampId: fields.testEquipment3.megohmmeter?.ampId || '' 
           },
           lowResistanceOhmmeter: { 
             name: fields.testEquipment3.lowResistanceOhmmeter?.name || '', 
-            serialNumber: '', 
-            ampId: '' 
+            serialNumber: fields.testEquipment3.lowResistanceOhmmeter?.serialNumber || '', 
+            ampId: fields.testEquipment3.lowResistanceOhmmeter?.ampId || '' 
           },
           hipot: { 
             name: fields.testEquipment3.primaryInjectionTestSet?.name || '', 
-            serialNumber: '', 
-            ampId: '' 
+            serialNumber: fields.testEquipment3.primaryInjectionTestSet?.serialNumber || '', 
+            ampId: fields.testEquipment3.primaryInjectionTestSet?.ampId || '' 
           }
         };
       }

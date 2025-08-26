@@ -59,6 +59,18 @@ const i2tOptions = ["", "Yes", "No", "N/A"];
 const tripUnitTypeOptions = ["", "On", "Off", "In", "Out", "N/A"];
 const tripTestingUnitsOptions = ["sec.", "cycles", "ms"]; // Example options
 
+// Normalize imported trip unit type to one of the allowed options (case-insensitive match)
+const normalizeTripUnitType = (value: any): string => {
+  if (!value || typeof value !== 'string') return '';
+  const v = value.trim();
+  if (!v) return '';
+  // Handle common variants of N/A
+  const lower = v.toLowerCase();
+  if (lower === 'na' || lower === 'n/a' || lower === 'n\u2044a') return 'N/A';
+  const match = tripUnitTypeOptions.find(opt => opt && opt.toLowerCase() === lower);
+  return match || '';
+};
+
 interface FormData {
   // Job Information
   customer: string;
@@ -510,7 +522,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           type: d.nameplateData?.type ?? prev.type,
           frameSize: d.nameplateData?.frameSize ?? prev.frameSize,
           icRating: d.nameplateData?.icRating ?? prev.icRating,
-          tripUnitType: d.nameplateData?.tripUnitType ?? prev.tripUnitType,
+          tripUnitType: normalizeTripUnitType(d.nameplateData?.tripUnitType) || prev.tripUnitType,
           ratingPlug: d.nameplateData?.ratingPlug ?? prev.ratingPlug,
           curveNo: d.nameplateData?.curveNo ?? prev.curveNo,
           chargeMotorVoltage: d.nameplateData?.chargeMotorVoltage ?? prev.chargeMotorVoltage,
@@ -655,7 +667,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           type: data.nameplate_data?.type || '',
           frameSize: data.nameplate_data?.frameSize || '',
           icRating: data.nameplate_data?.icRating || '',
-          tripUnitType: data.nameplate_data?.tripUnitType || '',
+          tripUnitType: normalizeTripUnitType(data.nameplate_data?.tripUnitType || ''),
           ratingPlug: data.nameplate_data?.ratingPlug || '',
           curveNo: data.nameplate_data?.curveNo || '',
           chargeMotorVoltage: data.nameplate_data?.chargeMotorVoltage || '',

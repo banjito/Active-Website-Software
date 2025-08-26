@@ -1,0 +1,411 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36DFZK7XA7YR6HTST4BM022",
+  "reportType": "LargeDryTypeXfmrMTSReport.tsx",
+  "createdAt": "2025-08-21T13:35:11.973Z",
+  "updatedAt": "2025-08-21T13:36:00.049Z",
+  "version": 178,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "86"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "980"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "69"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "69868-08-06"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "06"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "980"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "6"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "986"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "980"
+        },
+        {
+          "label": "Address",
+          "type": "textarea",
+          "value": "980668"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Nameplate",
+          "type": "table",
+          "value": {
+            "manufacturer": "60",
+            "catalogNumber": "609860",
+            "serialNumber": "98698",
+            "kva": "6",
+            "kvaSecondary": "8906",
+            "tempRise": "89",
+            "impedance": "6",
+            "primary": {
+              "volts": "98",
+              "voltsSecondary": "689",
+              "connection": "Delta",
+              "material": "Aluminum"
+            },
+            "secondary": {
+              "volts": "6",
+              "voltsSecondary": "98",
+              "connection": "Wye",
+              "material": "Aluminum"
+            },
+            "tapVoltages": [
+              "698",
+              "6",
+              "89",
+              "6",
+              "98",
+              "9806",
+              "980"
+            ],
+            "tapPositionCurrent": "69",
+            "tapPositionSecondary": "806",
+            "tapSpecificVolts": "89",
+            "tapSpecificPercent": "6"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.2.1.2.A.1",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.2",
+                "description": "Inspect anchorage, alignment, and grounding.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.3*",
+                "description": "Prior to cleaning the unit, perform as-found tests.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.4",
+                "description": "Clean the unit.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.5*",
+                "description": "Verify that control and alarm settings on temperature indicators are as specified.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.6",
+                "description": "Verify that cooling fans operate correctly.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.7",
+                "description": "Inspect bolted electrical connections for high resistance using a low-resistance ohmmeter.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.8",
+                "description": "Perform specific inspections and mechanical tests as recommended by the manufacturer.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.9",
+                "description": "Perform as-left tests.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.10",
+                "description": "Verify that as-left tap connections are as specified.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.1.2.A.11",
+                "description": "Verify the presence of surge arresters.",
+                "result": "Satisfactory"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance + Temp Corrected + DA/PI",
+          "type": "table",
+          "value": {
+            "testVoltage": "1000V",
+            "unit": "MΩ",
+            "rows": [
+              {
+                "id": "dielectricAbsorption",
+                "primary": "0.00",
+                "secondary": "",
+                "primaryToSecondary": "",
+                "acceptable": "No"
+              },
+              {
+                "id": "polarizationIndex",
+                "primary": "14948.17",
+                "secondary": "",
+                "primaryToSecondary": "",
+                "acceptable": "No"
+              }
+            ],
+            "primaryToGround": {
+              "testVoltage": "5000",
+              "units": "MΩ",
+              "r05": "0986890",
+              "r1": "06",
+              "r10": "89689"
+            },
+            "secondaryToGround": {
+              "testVoltage": "1000",
+              "units": "MΩ",
+              "r05": "6",
+              "r1": "89",
+              "r10": "69806"
+            },
+            "primaryToSecondary": {
+              "testVoltage": "5000",
+              "units": "MΩ",
+              "r05": "986",
+              "r1": "098",
+              "r10": "68"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "09867"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "9086"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "860988"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "689"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "06",
+    "reportType": "LargeDryTypeXfmrMTSReport",
+    "fields": {
+      "customer": "86",
+      "jobNumber": "980",
+      "technicians": "69",
+      "date": "69868-08-06",
+      "identifier": "06",
+      "temperatureF": "980",
+      "substation": "6",
+      "eqptLocation": "986",
+      "user": "980",
+      "address": "980668",
+      "dry-nameplate": {
+        "manufacturer": "60",
+        "catalogNumber": "609860",
+        "serialNumber": "98698",
+        "kva": "6",
+        "kvaSecondary": "8906",
+        "tempRise": "89",
+        "impedance": "6",
+        "primary": {
+          "volts": "98",
+          "voltsSecondary": "689",
+          "connection": "Delta",
+          "material": "Aluminum"
+        },
+        "secondary": {
+          "volts": "6",
+          "voltsSecondary": "98",
+          "connection": "Wye",
+          "material": "Aluminum"
+        },
+        "tapVoltages": [
+          "698",
+          "6",
+          "89",
+          "6",
+          "98",
+          "9806",
+          "980"
+        ],
+        "tapPositionCurrent": "69",
+        "tapPositionSecondary": "806",
+        "tapSpecificVolts": "89",
+        "tapSpecificPercent": "6"
+      },
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.2.1.2.A.1",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.2",
+            "description": "Inspect anchorage, alignment, and grounding.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.3*",
+            "description": "Prior to cleaning the unit, perform as-found tests.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.4",
+            "description": "Clean the unit.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.5*",
+            "description": "Verify that control and alarm settings on temperature indicators are as specified.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.6",
+            "description": "Verify that cooling fans operate correctly.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.7",
+            "description": "Inspect bolted electrical connections for high resistance using a low-resistance ohmmeter.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.8",
+            "description": "Perform specific inspections and mechanical tests as recommended by the manufacturer.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.9",
+            "description": "Perform as-left tests.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.10",
+            "description": "Verify that as-left tap connections are as specified.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.1.2.A.11",
+            "description": "Verify the presence of surge arresters.",
+            "result": "Satisfactory"
+          }
+        ]
+      },
+      "dryTypeIr": {
+        "testVoltage": "1000V",
+        "unit": "MΩ",
+        "rows": [
+          {
+            "id": "dielectricAbsorption",
+            "primary": "0.00",
+            "secondary": "",
+            "primaryToSecondary": "",
+            "acceptable": "No"
+          },
+          {
+            "id": "polarizationIndex",
+            "primary": "14948.17",
+            "secondary": "",
+            "primaryToSecondary": "",
+            "acceptable": "No"
+          }
+        ],
+        "primaryToGround": {
+          "testVoltage": "5000",
+          "units": "MΩ",
+          "r05": "0986890",
+          "r1": "06",
+          "r10": "89689"
+        },
+        "secondaryToGround": {
+          "testVoltage": "1000",
+          "units": "MΩ",
+          "r05": "6",
+          "r1": "89",
+          "r10": "69806"
+        },
+        "primaryToSecondary": {
+          "testVoltage": "5000",
+          "units": "MΩ",
+          "r05": "986",
+          "r1": "098",
+          "r10": "68"
+        }
+      },
+      "megohmmeter": "09867",
+      "serialNumber": "9086",
+      "ampId": "860988",
+      "comments": "689"
+    }
+  }
+}

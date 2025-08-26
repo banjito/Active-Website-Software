@@ -134,14 +134,44 @@ export class LowVoltageSwitchMultiDeviceImporter extends BaseImporter implements
 			}
 
 			// Contact Resistance
-			if (srcFields.switchContact?.rows) {
-				normalized.contactResistance.rows = srcFields.switchContact.rows.map((r: any) => ({
+			const mapContactRow = (r: any) => {
+				// Prefer per-phase fields; fallback to combined strings split into phases
+				const split3 = (val: any): [string,string,string] => {
+					if (typeof val !== 'string') return ['', '', ''];
+					const parts = String(val).split('/').map((p: string) => p.trim()).filter(Boolean);
+					return [parts[0] || '', parts[1] || '', parts[2] || ''] as [string,string,string];
+				};
+				const [sw1, sw2, sw3] = (r.sw_p1 !== undefined || r.sw_p2 !== undefined || r.sw_p3 !== undefined)
+					? [r.sw_p1 || '', r.sw_p2 || '', r.sw_p3 || '']
+					: split3(r.switchOnly);
+				const [fu1, fu2, fu3] = (r.fu_p1 !== undefined || r.fu_p2 !== undefined || r.fu_p3 !== undefined)
+					? [r.fu_p1 || '', r.fu_p2 || '', r.fu_p3 || '']
+					: split3(r.fuseOnly);
+				const [sf1, sf2, sf3] = (r.sf_p1 !== undefined || r.sf_p2 !== undefined || r.sf_p3 !== undefined)
+					? [r.sf_p1 || '', r.sf_p2 || '', r.sf_p3 || '']
+					: split3(r.switchPlusFuse);
+				return {
 					units: r.units || 'µΩ',
 					position: r.position || '',
-					switchOnly: r.switchOnly || '',
-					fuseOnly: r.fuseOnly || '',
-					switchPlusFuse: r.switchPlusFuse || ''
-				}));
+					sw_p1: sw1, sw_p2: sw2, sw_p3: sw3,
+					fu_p1: fu1, fu_p2: fu2, fu_p3: fu3,
+					sf_p1: sf1, sf_p2: sf2, sf_p3: sf3,
+				};
+			};
+
+			if (srcFields.switchContact?.rows) {
+				normalized.contactResistance.rows = srcFields.switchContact.rows.map((r: any) => mapContactRow(r));
+			} else if (srcFields.switchContactLVMulti?.rows) {
+				normalized.contactResistance.rows = srcFields.switchContactLVMulti.rows.map((r: any) => mapContactRow(r));
+			} else if (Array.isArray((data as any)?.sections)) {
+				for (const section of (data as any).sections) {
+					if (!section?.fields || !String(section.title || '').toLowerCase().includes('contact resistance')) continue;
+					for (const field of section.fields) {
+						if (field?.type === 'table' && Array.isArray(field?.value?.rows)) {
+							normalized.contactResistance.rows = field.value.rows.map((r: any) => mapContactRow(r));
+						}
+					}
+				}
 			}
 
 			// Equipment

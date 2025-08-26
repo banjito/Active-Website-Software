@@ -113,7 +113,7 @@ export class LargeDryTypeTransformerImporter extends BaseImporter implements Rep
               insulationResistance.temperature = reportInfo.temperature?.fahrenheit?.toString() || '';
               insulationResistance.primaryToGround = {
                 testVoltage: irData.primaryToGround?.testVoltage || '',
-                unit: irData.primaryToGround?.unit || '',
+                unit: irData.primaryToGround?.units || irData.primaryToGround?.unit || irData.unit || 'MΩ',
                 readings: {
                   halfMinute: irData.primaryToGround?.r05 || '',
                   oneMinute: irData.primaryToGround?.r1 || '',
@@ -129,38 +129,48 @@ export class LargeDryTypeTransformerImporter extends BaseImporter implements Rep
               };
               insulationResistance.secondaryToGround = {
                 testVoltage: irData.secondaryToGround?.testVoltage || '',
-                unit: irData.secondaryToGround?.unit || '',
+                unit: irData.secondaryToGround?.units || irData.secondaryToGround?.unit || irData.unit || 'MΩ',
                 readings: {
-                  halfMinute: '',
-                  oneMinute: '',
-                  tenMinute: ''
+                  halfMinute: irData.secondaryToGround?.r05 || '',
+                  oneMinute: irData.secondaryToGround?.r1 || '',
+                  tenMinute: irData.secondaryToGround?.r10 || ''
                 },
                 corrected: {
-                  halfMinute: '',
-                  oneMinute: '',
-                  tenMinute: ''
+                  halfMinute: irData.secondaryToGround?.r05 || '',
+                  oneMinute: irData.secondaryToGround?.r1 || '',
+                  tenMinute: irData.secondaryToGround?.r10 || ''
                 },
                 dielectricAbsorption: '',
                 polarizationIndex: ''
               };
               insulationResistance.primaryToSecondary = {
                 testVoltage: irData.primaryToSecondary?.testVoltage || '',
-                unit: irData.primaryToSecondary?.unit || '',
+                unit: irData.primaryToSecondary?.units || irData.primaryToSecondary?.unit || irData.unit || 'MΩ',
                 readings: {
-                  halfMinute: '',
-                  oneMinute: '',
-                  tenMinute: ''
+                  halfMinute: irData.primaryToSecondary?.r05 || '',
+                  oneMinute: irData.primaryToSecondary?.r1 || '',
+                  tenMinute: irData.primaryToSecondary?.r10 || ''
                 },
                 corrected: {
-                  halfMinute: '',
-                  oneMinute: '',
-                  tenMinute: ''
+                  halfMinute: irData.primaryToSecondary?.r05 || '',
+                  oneMinute: irData.primaryToSecondary?.r1 || '',
+                  tenMinute: irData.primaryToSecondary?.r10 || ''
                 },
                 dielectricAbsorption: '',
                 polarizationIndex: ''
               };
-              insulationResistance.dielectricAbsorptionAcceptable = '';
-              insulationResistance.polarizationIndexAcceptable = '';
+              // Map DA/PI values and acceptance from rows when present
+              if (Array.isArray(irData.rows)) {
+                const daRow = irData.rows.find((r: any) => (r.id || '').toLowerCase().includes('dielectric')) || {};
+                const piRow = irData.rows.find((r: any) => (r.id || '').toLowerCase().includes('polarization')) || {};
+                insulationResistance.primaryToGround.dielectricAbsorption = daRow.primary || insulationResistance.primaryToGround.dielectricAbsorption || '';
+                insulationResistance.primaryToGround.polarizationIndex = piRow.primary || insulationResistance.primaryToGround.polarizationIndex || '';
+                insulationResistance.dielectricAbsorptionAcceptable = (daRow.acceptable || '').toString();
+                insulationResistance.polarizationIndexAcceptable = (piRow.acceptable || '').toString();
+              } else {
+                insulationResistance.dielectricAbsorptionAcceptable = insulationResistance.dielectricAbsorptionAcceptable || '';
+                insulationResistance.polarizationIndexAcceptable = insulationResistance.polarizationIndexAcceptable || '';
+              }
             }
           });
         } else if (section.title.toLowerCase().includes('turns') && section.title.toLowerCase().includes('ratio')) {
@@ -199,6 +209,68 @@ export class LargeDryTypeTransformerImporter extends BaseImporter implements Rep
           });
         }
       });
+    }
+
+    // Also check if insulation resistance exists in data.fields.dryTypeIr (fallback)
+    if (data.data && data.data.fields && data.data.fields.dryTypeIr && Object.keys(insulationResistance).length === 0) {
+      const irData = data.data.fields.dryTypeIr;
+      insulationResistance.temperature = reportInfo.temperature?.fahrenheit?.toString() || '';
+      insulationResistance.primaryToGround = {
+        testVoltage: irData.primaryToGround?.testVoltage || '',
+        unit: irData.primaryToGround?.units || irData.primaryToGround?.unit || irData.unit || 'MΩ',
+        readings: {
+          halfMinute: irData.primaryToGround?.r05 || '',
+          oneMinute: irData.primaryToGround?.r1 || '',
+          tenMinute: irData.primaryToGround?.r10 || ''
+        },
+        corrected: {
+          halfMinute: irData.primaryToGround?.r05 || '',
+          oneMinute: irData.primaryToGround?.r1 || '',
+          tenMinute: irData.primaryToGround?.r10 || ''
+        },
+        dielectricAbsorption: '',
+        polarizationIndex: ''
+      };
+      insulationResistance.secondaryToGround = {
+        testVoltage: irData.secondaryToGround?.testVoltage || '',
+        unit: irData.secondaryToGround?.units || irData.secondaryToGround?.unit || irData.unit || 'MΩ',
+        readings: {
+          halfMinute: irData.secondaryToGround?.r05 || '',
+          oneMinute: irData.secondaryToGround?.r1 || '',
+          tenMinute: irData.secondaryToGround?.r10 || ''
+        },
+        corrected: {
+          halfMinute: irData.secondaryToGround?.r05 || '',
+          oneMinute: irData.secondaryToGround?.r1 || '',
+          tenMinute: irData.secondaryToGround?.r10 || ''
+        },
+        dielectricAbsorption: '',
+        polarizationIndex: ''
+      };
+      insulationResistance.primaryToSecondary = {
+        testVoltage: irData.primaryToSecondary?.testVoltage || '',
+        unit: irData.primaryToSecondary?.units || irData.primaryToSecondary?.unit || irData.unit || 'MΩ',
+        readings: {
+          halfMinute: irData.primaryToSecondary?.r05 || '',
+          oneMinute: irData.primaryToSecondary?.r1 || '',
+          tenMinute: irData.primaryToSecondary?.r10 || ''
+        },
+        corrected: {
+          halfMinute: irData.primaryToSecondary?.r05 || '',
+          oneMinute: irData.primaryToSecondary?.r1 || '',
+          tenMinute: irData.primaryToSecondary?.r10 || ''
+        },
+        dielectricAbsorption: '',
+        polarizationIndex: ''
+      };
+      if (Array.isArray(irData.rows)) {
+        const daRow = irData.rows.find((r: any) => (r.id || '').toLowerCase().includes('dielectric')) || {};
+        const piRow = irData.rows.find((r: any) => (r.id || '').toLowerCase().includes('polarization')) || {};
+        insulationResistance.primaryToGround.dielectricAbsorption = daRow.primary || insulationResistance.primaryToGround.dielectricAbsorption || '';
+        insulationResistance.primaryToGround.polarizationIndex = piRow.primary || insulationResistance.primaryToGround.polarizationIndex || '';
+        insulationResistance.dielectricAbsorptionAcceptable = (daRow.acceptable || '').toString();
+        insulationResistance.polarizationIndexAcceptable = (piRow.acceptable || '').toString();
+      }
     }
 
     // Also check if turns ratio data exists in data.fields.turnsRatio (fallback)

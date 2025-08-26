@@ -2,7 +2,7 @@ import { BaseImporter } from './BaseImporter';
 import { DatabaseSchema, ReportData, ReportImportResult, ReportImporter } from './types';
 
 export class LiquidXfmrVisualMTSImporter extends BaseImporter implements ReportImporter {
-  protected tableName = 'low_voltage_cable_test_3sets';
+  protected tableName = 'liquid_xfmr_visual_mts_reports';
   protected requiredColumns = ['job_id', 'user_id'];
 
   canImport(data: ReportData): boolean {
@@ -383,21 +383,31 @@ export class LiquidXfmrVisualMTSImporter extends BaseImporter implements ReportI
       reportInfo.comments = comments;
     }
 
-    const dataToInsert: any = {
-      job_id: jobId,
-      user_id: userId,
-      data: {
-        reportInfo,
-        visualInspection,
-        testEquipment,
-        status: 'PASS',
-        isLiquidType: true,
-        reportType: 'liquid-xfmr-visual-mts-report'
-      }
+    // Build adaptive payload based on available columns
+    const baseData = {
+      reportInfo,
+      visualInspection,
+      testEquipment,
+      status: 'PASS',
+      isLiquidType: true,
+      reportType: 'liquid-xfmr-visual-mts-report'
     };
+    const hasData = (schema.jsonbColumns || []).includes('data');
+    const hasReportData = (schema.jsonbColumns || []).includes('report_data');
+    let payload: any = { job_id: jobId, user_id: userId };
+    if (hasData) payload.data = baseData;
+    else if (hasReportData) payload.report_data = baseData;
+    else {
+      const split: any = { job_id: jobId, user_id: userId };
+      if ((schema.columns || []).includes('report_info')) split.report_info = reportInfo;
+      if ((schema.columns || []).includes('visual_inspection')) split.visual_inspection = visualInspection;
+      if ((schema.columns || []).includes('test_equipment')) split.test_equipment = testEquipment;
+      if ((schema.columns || []).includes('comments') && reportInfo.comments) split.comments = reportInfo.comments;
+      payload = split;
+    }
 
-    console.log('💾 Data being inserted into database:', JSON.stringify(dataToInsert, null, 2));
-    return dataToInsert;
+    console.log('💾 Data being inserted into database:', JSON.stringify(payload, null, 2));
+    return payload;
   }
 
   protected getReportType(): string {

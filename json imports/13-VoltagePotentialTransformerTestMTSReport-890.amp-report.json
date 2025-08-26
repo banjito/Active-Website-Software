@@ -1,0 +1,441 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36D2YC72HMZBJXTDWF02Y1Q",
+  "reportType": "13-VoltagePotentialTransformerTestMTSReport.tsx",
+  "createdAt": "2025-08-21T13:28:16.096Z",
+  "updatedAt": "2025-08-21T13:28:54.993Z",
+  "version": 62,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "565t"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "8907"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "890"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "0009-07-08"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "890"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "7"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": "980"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "7"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "98"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "6789"
+        }
+      ]
+    },
+    {
+      "title": "Device Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "6786"
+        },
+        {
+          "label": "Catalog Number",
+          "type": "text",
+          "value": "9"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "6"
+        },
+        {
+          "label": "Accuracy Class",
+          "type": "text",
+          "value": "07"
+        },
+        {
+          "label": "Manufactured Year",
+          "type": "text",
+          "value": "9"
+        },
+        {
+          "label": "Voltage Rating",
+          "type": "text",
+          "value": "697"
+        },
+        {
+          "label": "Insulation Class",
+          "type": "text",
+          "value": "6"
+        },
+        {
+          "label": "Frequency",
+          "type": "text",
+          "value": "970"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.10.2.1",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.2.3",
+                "description": "Clean the unit.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.2.4",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.10.1.B.1.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.2.5",
+                "description": "Verify that all required grounding and connections provide contact.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.2.6",
+                "description": "Verify correct operation of transformer withdrawal mechanism and grounding operation.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.2.7",
+                "description": "Verify correct primary and secondary fuse sizes for voltage transformers.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.2.8",
+                "description": "Use appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+                "result": "Satisfactory"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Fuse Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "89767"
+        },
+        {
+          "label": "Catalog Number",
+          "type": "text",
+          "value": "86"
+        },
+        {
+          "label": "Class",
+          "type": "text",
+          "value": "789"
+        },
+        {
+          "label": "Voltage Rating (kV)",
+          "type": "text",
+          "value": "687"
+        },
+        {
+          "label": "Ampacity (A)",
+          "type": "text",
+          "value": "5"
+        },
+        {
+          "label": "I.C. Rating (kA)",
+          "type": "text",
+          "value": "865"
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Fuse Resistance",
+      "fields": [
+        {
+          "label": "Fuse Resistance",
+          "type": "table",
+          "value": {
+            "asFound": "86",
+            "asLeft": "5"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance & Ratio",
+      "fields": [
+        {
+          "label": "Insulation Resistance",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "Primary to Ground",
+                "units": "MΩ",
+                "testVoltage": "500V",
+                "results": "86",
+                "corrected": "16.80"
+              },
+              {
+                "id": "Secondary to Ground",
+                "units": "MΩ",
+                "results": "5",
+                "corrected": "0.98"
+              },
+              {
+                "id": "Primary to Secondary",
+                "units": "MΩ",
+                "testVoltage": "500V",
+                "results": "5",
+                "corrected": "0.98"
+              }
+            ]
+          }
+        },
+        {
+          "label": "Secondary Voltage at as-found tap (V)",
+          "type": "number",
+          "value": "68"
+        },
+        {
+          "label": "Turns Ratio Test",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "tap": "5",
+                "calculatedRatio": "1.0000",
+                "deviation": "-400.00",
+                "passFail": "Fail",
+                "primaryVoltage": "68",
+                "measuredH1H2": "5"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "68"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "5"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "68"
+        },
+        {
+          "label": "Low Resistance Ohmmeter",
+          "type": "text",
+          "value": "58"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "695"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "68"
+        },
+        {
+          "label": "TTR Test Set",
+          "type": "text",
+          "value": "5"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "68"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "68"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "890",
+    "reportType": "13-VoltagePotentialTransformerTestMTSReport",
+    "fields": {
+      "customer": "565t",
+      "jobNumber": "8907",
+      "technicians": "890",
+      "date": "0009-07-08",
+      "identifier": "890",
+      "temperatureF": "7",
+      "humidity": "980",
+      "substation": "7",
+      "eqptLocation": "98",
+      "user": "6789",
+      "manufacturer": "6786",
+      "catalogNumber": "9",
+      "serialNumber": "6",
+      "accuracyClass": "07",
+      "manufacturedYear": "9",
+      "voltageRating": "697",
+      "insulationClass": "6",
+      "frequency": "970",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.10.2.1",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.2.3",
+            "description": "Clean the unit.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.2.4",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.10.1.B.1.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.2.5",
+            "description": "Verify that all required grounding and connections provide contact.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.2.6",
+            "description": "Verify correct operation of transformer withdrawal mechanism and grounding operation.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.2.7",
+            "description": "Verify correct primary and secondary fuse sizes for voltage transformers.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.2.8",
+            "description": "Use appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+            "result": "Satisfactory"
+          }
+        ]
+      },
+      "fuseManufacturer": "89767",
+      "fuseCatalogNumber": "86",
+      "fuseClass": "789",
+      "fuseVoltageRatingKv": "687",
+      "fuseAmpacityA": "5",
+      "fuseIcRatingKa": "865",
+      "fuseResistance": {
+        "asFound": "86",
+        "asLeft": "5"
+      },
+      "vtInsulation": {
+        "rows": [
+          {
+            "id": "Primary to Ground",
+            "units": "MΩ",
+            "testVoltage": "500V",
+            "results": "86",
+            "corrected": "16.80"
+          },
+          {
+            "id": "Secondary to Ground",
+            "units": "MΩ",
+            "results": "5",
+            "corrected": "0.98"
+          },
+          {
+            "id": "Primary to Secondary",
+            "units": "MΩ",
+            "testVoltage": "500V",
+            "results": "5",
+            "corrected": "0.98"
+          }
+        ]
+      },
+      "secondaryVoltageTap": "68",
+      "vtTurnsRatio": {
+        "rows": [
+          {
+            "tap": "5",
+            "calculatedRatio": "1.0000",
+            "deviation": "-400.00",
+            "passFail": "Fail",
+            "primaryVoltage": "68",
+            "measuredH1H2": "5"
+          }
+        ]
+      },
+      "megohmmeter": "68",
+      "megohmmeterSerial": "5",
+      "megohmmeterAmpId": "68",
+      "lro": "58",
+      "lroSerial": "695",
+      "lroAmpId": "68",
+      "ttr": "5",
+      "ttrSerial": "68",
+      "ttrAmpId": "5",
+      "comments": "68"
+    }
+  }
+}

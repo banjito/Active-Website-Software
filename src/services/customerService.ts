@@ -553,10 +553,13 @@ export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at
 }
 
 export async function updateCustomer(id: string, customer: Partial<Customer>) {
+  // Strip fields that aren't part of common.customers to avoid 400s
+  const { category_id, category, ...customerData } = customer as any;
+
   const { data, error } = await supabase
     .schema('common')
     .from('customers')
-    .update(customer)
+    .update(customerData)
     .eq('id', id)
     .select()
     .single();

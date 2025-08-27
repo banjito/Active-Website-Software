@@ -425,6 +425,13 @@ export default function JobDetail() {
       template_type: 'ATS'
     },
     {
+      id: 'potential-transformer-ats-report',
+      name: 'Potential Transformer ATS',
+      file_url: `report:/jobs/${id}/potential-transformer-ats-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
       id: 'low-voltage-circuit-breaker-electronic-trip-unit-ats',
       name: '8-Low Voltage Circuit Breaker Electronic Trip Unit ATS - Secondary Injection',
       file_url: `report:/jobs/${id}/low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report?returnToAssets=true`,
@@ -1536,6 +1543,7 @@ export default function JobDetail() {
       'low-voltage-switch-report': 'low-voltage-switch-report',
       'medium-voltage-switch-oil-report': 'medium-voltage-switch-oil-report',
       'medium-voltage-switch-sf6-report': 'medium-voltage-switch-sf6-report',
+      'potential-transformer-ats-report': 'potential-transformer-ats-report',
       'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report': 'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report',
       'low-voltage-circuit-breaker-thermal-magnetic-ats-report': 'low-voltage-circuit-breaker-thermal-magnetic-ats-report',
       'low-voltage-circuit-breaker-thermal-magnetic-mts-report': 'low-voltage-circuit-breaker-thermal-magnetic-mts-report',

@@ -112,6 +112,7 @@ import MetalEnclosedBuswayReport from './components/reports/MetalEnclosedBuswayR
 // Import Medium Voltage Switch Oil Report component
 import MediumVoltageSwitchOilReport from './components/reports/MediumVoltageSwitchOilReport';
 import MediumVoltageSwitchSF6Report from './components/reports/MediumVoltageSwitchSF6Report';
+import PotentialTransformerATSReport from './components/reports/PotentialTransformerATSReport';
 
 // Import Low Voltage Circuit Breaker Electronic Trip Unit ATS Report component
 import LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport from './components/reports/LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport';
@@ -467,6 +468,7 @@ function App() {
                   <Route path="/jobs/:id/oil-inspection/:reportId?" element={<RequireAuth><Layout><OilInspectionReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-switch-oil-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageSwitchOilReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-switch-sf6-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageSwitchSF6Report /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/potential-transformer-ats-report/:reportId?" element={<RequireAuth><Layout><PotentialTransformerATSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-cable-test-12sets/:reportId?" element={<RequireAuth><Layout><TwelveSetsLowVoltageCableTestForm /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-cable-test-3sets/:reportId?" element={<RequireAuth><Layout><ThreeLowVoltageCableMTSForm /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-cable-test-3sets-ats/:reportId?" element={<RequireAuth><Layout><ThreeLowVoltageCableATSForm /></Layout></RequireAuth>} />

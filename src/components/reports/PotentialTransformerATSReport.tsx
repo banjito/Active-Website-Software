@@ -584,7 +584,6 @@ const PotentialTransformerATSReport: React.FC = () => {
         input, select, textarea {
           width: auto !important;
           border: none !important;
-          border-bottom: 1px solid black !important;
           background: transparent !important;
           padding: 0 1px !important;
           margin: 0 !important;
@@ -634,7 +633,6 @@ const PotentialTransformerATSReport: React.FC = () => {
         /* Specific input styling in tables */
         table input, table select {
           border: none !important;
-          border-bottom: none !important;
           padding: 0 !important;
           margin: 0 !important;
           height: 10px !important;
@@ -926,12 +924,12 @@ const PotentialTransformerATSReport: React.FC = () => {
         body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
         * { color: black !important; }
         
-        /* Form elements - hide interactive indicators */
+        /* Form elements – render as plain text in print (no boxes/underlines) */
         input, select, textarea { 
-          background-color: white !important; 
-          border: 1px solid black !important; 
+          background-color: transparent !important; 
+          border: none !important; 
           color: black !important;
-          padding: 2px !important; 
+          padding: 0 !important; 
           font-size: 10px !important;
           -webkit-appearance: none !important;
           -moz-appearance: none !important;
@@ -952,11 +950,31 @@ const PotentialTransformerATSReport: React.FC = () => {
           font-size: 9px !important;
         }
         
+        /* Aggressively remove any remaining input chrome inside electrical sections */
+        .section-electrical-tests input, .section-electrical-tests select, .section-electrical-tests textarea,
+        .section-test-equipment input, .section-test-equipment select, .section-test-equipment textarea,
+        .ir-table input, .ir-table select, .ir-table textarea,
+        .ir-corrected-table input, .ir-corrected-table select, .ir-corrected-table textarea,
+        .contact-resistance-table input, .contact-resistance-table select, .contact-resistance-table textarea,
+        .turns-ratio-table input, .turns-ratio-table select, .turns-ratio-table textarea {
+          border: 0 !important;
+          border-color: transparent !important;
+          background: transparent !important;
+          box-shadow: none !important;
+          outline: none !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        
         /* Hide dropdown arrows and form control indicators */
         select {
           background-image: none !important;
           padding-right: 4px !important;
         }
+        select::-ms-expand { display: none !important; }
         
         /* Hide spin buttons on number inputs */
         input[type="number"]::-webkit-outer-spin-button,
@@ -1008,6 +1026,17 @@ const PotentialTransformerATSReport: React.FC = () => {
           display: block !important; 
         }
         
+        /* Nuclear option: strip any inner element borders inside table cells */
+        td *, th * {
+          border: none !important;
+          background: transparent !important;
+          box-shadow: none !important;
+          outline: none !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+        }
+
         /* Ensure textarea in comments shows properly */
         textarea { display: block !important; width: 100% !important; }
       }

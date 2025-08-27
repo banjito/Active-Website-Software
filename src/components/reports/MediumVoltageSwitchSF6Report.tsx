@@ -371,7 +371,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
         // Create asset and link to job
         if (savedId) {
-          const assetName = `ATL06 - ${formData.identifier || formData.substation || 'Unnamed'}`;
+          const assetName = `Medium Voltage Switch SF6 Report - ${formData.identifier || formData.substation || 'Unnamed'}`;
           const fileUrl = `report:/jobs/${jobId}/medium-voltage-switch-sf6-report/${savedId}`;
           const { data: asset, error: assetError } = await supabase
             .schema('neta_ops')
@@ -708,7 +708,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
               </svg>
               Back to Job
             </button>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ATL06 - Medium Voltage Way Switch (SF6)</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Medium Voltage Way Switch (SF6)</h1>
           </div>
           <div className="flex gap-2">
             <select
@@ -754,7 +754,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 35, marginLeft: '5px', marginTop: '2px' }} />
           </div>
           <div className="flex-1 text-center">
-            <h1 className="text-2xl font-bold text-black mb-1">ATL06 - Medium Voltage Way Switch (SF6)</h1>
+            <h1 className="text-2xl font-bold text-black mb-1">Medium Voltage Way Switch (SF6)</h1>
           </div>
           <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c', width: '120px' }}>
             ATS 7.5.4

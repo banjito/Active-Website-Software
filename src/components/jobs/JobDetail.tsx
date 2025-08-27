@@ -419,7 +419,7 @@ export default function JobDetail() {
     },
     {
       id: 'medium-voltage-switch-sf6-report',
-      name: 'ATL06 - Medium Voltage Way Switch (SF6)',
+      name: 'Medium Voltage Way Switch (SF6)',
       file_url: `report:/jobs/${id}/medium-voltage-switch-sf6-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'

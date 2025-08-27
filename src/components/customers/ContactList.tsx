@@ -224,7 +224,7 @@ export default function ContactList() {
     }
   }
 
-  function handleEdit(contact: Contact) {
+  async function handleEdit(contact: Contact) {
     setFormData({
       customer_id: contact.customer_id,
       first_name: contact.first_name,
@@ -234,6 +234,26 @@ export default function ContactList() {
       position: contact.position || '',
       is_primary: contact.is_primary,
     });
+
+    // Pre-fill the visible customer search input so required validation passes
+    if ((contact as any).customers?.company_name) {
+      setCustomerSearch((contact as any).customers.company_name);
+    } else if (contact.customer_id) {
+      try {
+        const { data: customerData } = await supabase
+          .schema('common')
+          .from('customers')
+          .select('company_name')
+          .eq('id', contact.customer_id)
+          .single();
+        if (customerData?.company_name) {
+          setCustomerSearch(customerData.company_name);
+        }
+      } catch {}
+    }
+    setFilteredCustomers([]);
+    setShowCustomerResults(false);
+
     setIsEditMode(true);
     setEditingContactId(contact.id);
     setIsOpen(true);
@@ -402,11 +422,10 @@ export default function ContactList() {
                     )}
                   </td>
                   <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    {/* Temporarily commented out buttons for debugging */}
-                    {/* 
                     <button 
                       className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2"
                       onClick={(e) => {
+                        e.stopPropagation();
                         handleEdit(contact);
                       }}
                     >
@@ -415,12 +434,12 @@ export default function ContactList() {
                     <button 
                       className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                       onClick={(e) => {
+                        e.stopPropagation();
                         handleDelete(contact.id);
                       }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
-                    */}
                   </td>
                 </tr>
               ))}

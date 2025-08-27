@@ -1893,6 +1893,9 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
             </div>
         </div>
           
+        {/* Print spacer to extend page break by ~half a page before Electrical Tests */}
+        <div className="hidden print:block" aria-hidden="true" style={{ height: '50vh' }} />
+
         {/* Electrical Tests Section */}
         <section aria-labelledby="electrical-tests-heading" className="mb-6">
           <h2 id="electrical-tests-heading" className="section-electrical-tests text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests</h2>

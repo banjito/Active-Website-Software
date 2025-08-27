@@ -3,23 +3,12 @@ import { useAuth } from '../../lib/AuthContext';
 import { useDivision } from '../../App';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
-  Plus,
-  Users,
   FileText,
-  BriefcaseIcon,
   LogOut,
   MapPin,
   User as UserIcon,
   Settings,
   Eye,
-  Calendar,
-  Building,
-  Wrench,
-  GraduationCap,
-  Award,
-  LineChart,
-  Heart,
-  ClipboardList,
   ArrowLeft,
   Menu,
   X
@@ -192,7 +181,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 location.pathname === '/hr' && !location.hash ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <FileText className="mr-2 h-4 w-4" />
               HR Dashboard
             </Button>
           </Link>
@@ -203,7 +191,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 location.hash === '#employees' ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <Users className="mr-2 h-4 w-4" />
               Employee Records
             </Button>
           </Link>
@@ -214,7 +201,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 location.hash === '#training' ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <GraduationCap className="mr-2 h-4 w-4" />
               Training
             </Button>
           </Link>
@@ -225,7 +211,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 location.hash === '#certifications' ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <Award className="mr-2 h-4 w-4" />
               Certifications
             </Button>
           </Link>
@@ -236,7 +221,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 location.hash === '#performance' ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <LineChart className="mr-2 h-4 w-4" />
               Performance Reviews
             </Button>
           </Link>
@@ -247,7 +231,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 location.hash === '#benefits' ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <Heart className="mr-2 h-4 w-4" />
               Benefits
             </Button>
           </Link>
@@ -258,7 +241,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 location.hash === '#policies' ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <ClipboardList className="mr-2 h-4 w-4" />
               Policies
             </Button>
           </Link>
@@ -286,7 +268,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   location.pathname === dashboardPath ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <FileText className="mr-2 h-4 w-4" />
               {isOfficeAdmin || isOfficePortal ? 'Office Dashboard' : dashboardDisplayName}
             </Button>
           </Link>
@@ -297,7 +278,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 location.pathname.endsWith('/customers') ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <Building className="mr-2 h-4 w-4" />
               Customers
             </Button>
           </Link>
@@ -308,7 +288,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 location.pathname.endsWith('/contacts') ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <Users className="mr-2 h-4 w-4" />
               Contacts
             </Button>
           </Link>
@@ -323,7 +302,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     location.pathname.endsWith('/jobs') ? 'bg-black/5 dark:bg-dark-50' : ''
                   }`}
                 >
-                  <BriefcaseIcon className="mr-2 h-4 w-4" />
                   Jobs
                 </Button>
               </Link>
@@ -334,7 +312,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     location.pathname.endsWith('/scheduling') ? 'bg-black/5 dark:bg-dark-50' : ''
                   }`}
                 >
-                  <Calendar className="mr-2 h-4 w-4" />
                   Scheduling
                 </Button>
               </Link>

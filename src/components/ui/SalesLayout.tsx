@@ -2,17 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../lib/AuthContext';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
-  Users,        // For Customers/Contacts
-  BriefcaseIcon, // For Opportunities
   LogOut,
   MapPin,
   User as UserIcon,
   Settings,
   FileText,
-  Eye,
-  Target,       // For Goals
-  BarChart,     // For Dashboard
-  Building      // For Customers
+  Eye
 } from "lucide-react"
 import { Button } from './Button';
 import { ThemeToggle } from '../theme/theme-toggle';
@@ -105,7 +100,6 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
                   location.pathname === '/sales-dashboard' ? 'bg-black/5 dark:bg-dark-50' : ''
                 }`}
               >
-                <BarChart className="h-4 w-4 mr-2" />
                 Sales Dashboard
               </Button>
             </Link>
@@ -118,7 +112,6 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
                   location.pathname.startsWith('/sales-dashboard/opportunities') ? 'bg-black/5 dark:bg-dark-50' : ''
                 }`}
               >
-                <BriefcaseIcon className="h-4 w-4 mr-2" />
                 Opportunities
               </Button>
             </Link>
@@ -131,7 +124,6 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
                   location.pathname.startsWith('/sales/goals') ? 'bg-black/5 dark:bg-dark-50' : ''
                 }`}
               >
-                <Target className="h-4 w-4 mr-2" />
                 Sales Goals
               </Button>
             </Link>
@@ -144,7 +136,6 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
                   location.pathname.startsWith('/customers') || location.pathname.startsWith('/sales-dashboard/customers') ? 'bg-black/5 dark:bg-dark-50' : ''
                 }`}
               >
-                <Building className="h-4 w-4 mr-2" />
                 Customers
               </Button>
             </Link>
@@ -157,7 +148,6 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
                   location.pathname.startsWith('/contacts') || location.pathname.startsWith('/sales-dashboard/contacts') ? 'bg-black/5 dark:bg-dark-50' : ''
                 }`}
               >
-                <Users className="h-4 w-4 mr-2" />
                 Contacts
               </Button>
             </Link>

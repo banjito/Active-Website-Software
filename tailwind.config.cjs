@@ -131,8 +131,8 @@ module.exports = {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Quicksand', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif']
+        sans: ['Helvetica Neue', 'Helvetica', 'ui-sans-serif', 'system-ui', '-apple-system', 'Arial', 'sans-serif'],
+        display: ['Helvetica Neue', 'Helvetica', 'ui-sans-serif', 'system-ui', '-apple-system', 'Arial', 'sans-serif']
       },
       borderRadius: {
         lg: "var(--radius)",

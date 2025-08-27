@@ -96,11 +96,11 @@ export default function Login() {
     
     // Set login favicon
     console.log('Setting ampOS favicon for login page...');
-    setFavicon('/ampOS-favicon.png');
+    setFavicon('/favicon/ampOS-favicon.svg');
     
     // Cleanup: restore default favicon when leaving login page
     return () => {
-      setFavicon('/favicon/favicon.png');
+      setFavicon('/favicon/ampOS-favicon.svg');
     };
   }, []);
 
@@ -193,103 +193,36 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex">
+    <div className="min-h-screen bg-black text-[#ECE7DB] flex">
       {/* Left Side - Branding Section (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#4A9B8E] to-[#3A8A7D] relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-          <div className="absolute top-0 left-0 w-full h-full bg-repeat opacity-20" 
-               style={{
-                 backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-                 backgroundSize: '30px 30px'
-               }}>
-          </div>
-        </div>
-        
-        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 text-center">
-          {/* Logo Section */}
-          <div className="mb-8">
-            <div className="flex justify-center mb-6">
-              <img
-                src="/ampOS-logo.png"
-                alt="ampOS Logo"
-                className="h-24 w-auto max-w-xs rounded-lg shadow-lg"
-              />
-            </div>
-            <h1 className="text-4xl font-bold mb-2"></h1>
-            <p className="text-xl text-white/90">Professional Electrical Testing & Maintenance</p>
-          </div>
-
-          {/* Features */}
-          <div className="space-y-6 max-w-md">
-            <div className="flex items-center space-x-4">
-              <div className="bg-white/20 p-3 rounded-lg">
-                <Shield className="h-6 w-6" />
-              </div>
-              <div className="text-left">
-                <h3 className="font-semibold">Secure & Reliable</h3>
-                <p className="text-white/80 text-sm">Enterprise-grade security for your data</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="bg-white/20 p-3 rounded-lg">
-                <Zap className="h-6 w-6" />
-              </div>
-              <div className="text-left">
-                <h3 className="font-semibold">Real-time Updates</h3>
-                <p className="text-white/80 text-sm">Stay connected with live project status</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="bg-white/20 p-3 rounded-lg">
-                <Users className="h-6 w-6" />
-              </div>
-              <div className="text-left">
-                <h3 className="font-semibold">Team Collaboration</h3>
-                <p className="text-white/80 text-sm">Work seamlessly with your team</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="bg-white/20 p-3 rounded-lg">
-                <Award className="h-6 w-6" />
-              </div>
-              <div className="text-left">
-                <h3 className="font-semibold">Fully Customizable</h3>
-                <p className="text-white/80 text-sm">Your software, your way!</p>
-              </div>
-            </div>
-          </div>
+      <div className="hidden lg:flex lg:w-1/2 bg-black items-center justify-center relative overflow-hidden">
+        <div className="relative z-10 flex flex-col justify-center items-center p-12 text-center">
+          {/* Wordmark */}
+          <h1 className="text-6xl tracking-tight" style={{ letterSpacing: '-0.02em' }}>ampOS</h1>
+          <p className="mt-6 text-lg text-[#D9D5CA]">Professional Electrical Testing & Maintenance</p>
         </div>
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-        {/* Mobile Logo (Visible only on mobile) */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-black">
+        {/* Mobile Wordmark (Visible only on mobile) */}
         <div className="lg:hidden flex justify-center mb-8">
-          <img
-            src="/ampOS-logo.png"
-            alt="ampOS Logo"
-            className="h-20 w-auto max-w-xs rounded-lg shadow-lg"
-          />
+          <h1 className="text-5xl tracking-tight" style={{ letterSpacing: '-0.02em' }}>ampOS</h1>
         </div>
 
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-[#ECE7DB] mb-2">
               {isSignUpMode ? 'Join Our Team' : 'Welcome Back'}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-[#BDB8AC]">
               {isSignUpMode 
                 ? 'Create your account to get started with ampOS' 
                 : 'Sign in to access your dashboard and manage your projects'}
             </p>
           </div>
 
-          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+          <Card className="border border-[#2A2A2A] shadow-xl bg-[#121212]">
             <CardContent className="p-8">
               <form className="space-y-6" onSubmit={isSignUpMode ? handleSignUp : handleSubmit}>
                 <div className="space-y-4">
@@ -304,7 +237,7 @@ export default function Login() {
                     onChange={(e) => setEmail(e.target.value)}
                     leftIcon={<Mail className="h-5 w-5 text-gray-400" />}
                     placeholder="you@ampqes.com"
-                    className="bg-white border-gray-300 focus:border-[#4A9B8E] focus:ring-[#4A9B8E] h-12"
+                    className="bg-[#1A1A1A] border-[#333] text-[#ECE7DB] placeholder-gray-400 focus:border-[#ECE7DB] focus:ring-[#ECE7DB] h-12"
                   />
 
                   <Input
@@ -319,15 +252,15 @@ export default function Login() {
                     leftIcon={<Lock className="h-5 w-5 text-gray-400" />}
                     minLength={6}
                     hint={isSignUpMode ? "Password must be at least 6 characters" : undefined}
-                    className="bg-white border-gray-300 focus:border-[#4A9B8E] focus:ring-[#4A9B8E] h-12"
+                    className="bg-[#1A1A1A] border-[#333] text-[#ECE7DB] placeholder-gray-400 focus:border-[#ECE7DB] focus:ring-[#ECE7DB] h-12"
                   />
                 </div>
 
                 {error && (
                   <div className={`rounded-xl p-4 ${
                     error.startsWith('Success') || error.includes('created successfully')
-                      ? 'bg-green-50 border border-green-200 text-green-800' 
-                      : 'bg-red-50 border border-red-200 text-red-700'
+                      ? 'bg-green-900/20 border border-green-700 text-green-200' 
+                      : 'bg-red-900/20 border border-red-700 text-red-200'
                   }`}>
                     <div className="text-sm font-medium">
                       {error}
@@ -343,7 +276,7 @@ export default function Login() {
                     fullWidth
                     isLoading={loading}
                     leftIcon={isSignUpMode ? <UserPlus className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
-                    className="bg-gradient-to-r from-[#4A9B8E] to-[#3A8A7D] hover:from-[#3A8A7D] hover:to-[#2A7A6D] text-white border-transparent h-12 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="bg-[#ECE7DB] hover:bg-[#e6dfd2] text-black border-transparent h-12 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     {isSignUpMode ? 'Create Account' : 'Sign In'}
                   </Button>
@@ -353,10 +286,10 @@ export default function Login() {
               <div className="mt-8">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
+                    <div className="w-full border-t border-[#2A2A2A]"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-500 font-medium">
+                    <span className="px-4 bg-[#121212] text-[#BDB8AC] font-medium">
                       {isSignUpMode ? 'Already have an account?' : 'New to ampOS?'}
                     </span>
                   </div>
@@ -373,7 +306,7 @@ export default function Login() {
                   }}
                   disabled={loading}
                   leftIcon={isSignUpMode ? <LogIn className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
-                  className="mt-4 border-gray-300 text-gray-700 hover:bg-gray-50 h-12 font-medium"
+                  className="mt-4 border-[#333] text-[#ECE7DB] hover:bg-[#1A1A1A] h-12 font-medium"
                 >
                   {isSignUpMode ? 'Sign in instead' : 'Create account'}
                 </Button>
@@ -384,7 +317,7 @@ export default function Login() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-[#9A9487]">
             © 2024 ampOS. All rights reserved.
           </p>
         </div>

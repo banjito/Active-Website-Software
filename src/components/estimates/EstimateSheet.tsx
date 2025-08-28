@@ -789,11 +789,15 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     
     const randomQuoteNumber = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Always persist travel data regardless of toggle visibility
+    const safeTravelData = travelData ? travelData : {};
+    const dataWithEmbeddedTravel = { ...(data as any), travel_data: safeTravelData };
     const quoteRecord = {
       opportunity_id: opportunityId,
-      // Use current state data and travelData for saving
-      data: JSON.stringify(data), 
-      travel_data: showTravel ? JSON.stringify(travelData) : null,
+      // Embed travel into the main data blob for consumers that read from data
+      data: JSON.stringify(dataWithEmbeddedTravel),
+      // Also save a dedicated travel_data column for direct access
+      travel_data: JSON.stringify(safeTravelData),
       quote_number: randomQuoteNumber()
     };
     
@@ -1679,8 +1683,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         return name.length > 0 || hasQty || hasAnyCost;
       });
     }
-    // --- Get customer total cost for options ---
-    function getFinalValueFromParsed(parsed: any) {
+    // --- Build the same numerator used by getFinalValue in the sheet (before /0.96 and without travel) ---
+    function getFinalNumeratorWithoutTravel(parsed: any) {
       // Defensive: fallback to 0 if missing
       const cv = parsed.calculatedValues || {};
       const hs = parsed.hoursSummary || {};
@@ -1690,8 +1694,15 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const straightTimeHours = hs.straightTimeHours || 0;
       const overtimeHours = hs.overtimeHours || 0;
       const doubleTimeHours = hs.doubleTimeHours || 0;
-      // Same as getFinalValue in sheet
-      return Math.ceil(((totalMaterial * 1.09 * 1.3) + (totalExpense * 1.09) + (nonSovExpense * 1.00) + (straightTimeHours * 240) + (overtimeHours * 360) + (doubleTimeHours * 480)) / 0.96);
+      // Same as getFinalValue numerator in the sheet (no travel here)
+      return (
+        (totalMaterial * 1.09 * 1.3) +
+        (totalExpense * 1.09) +
+        (nonSovExpense * 1.00) +
+        (straightTimeHours * 240) +
+        (overtimeHours * 360) +
+        (doubleTimeHours * 480)
+      );
     }
     function formatCurrency(amount: number) {
       return new Intl.NumberFormat('en-US', {
@@ -1701,10 +1712,27 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         maximumFractionDigits: 2
       }).format(amount);
     }
-    // Include travel cost from parsed travel_data when computing final for letter
+    // Include travel cost from the most reliable source, in order of preference:
+    // 1) quote.travel_data column
+    // 2) embedded parsedData.travel_data
+    // 3) current in-memory travelData state (unsaved)
     const parsedTravel = (() => {
-      const t = parsedData?.travel_data ? (typeof parsedData.travel_data === 'string' ? (() => { try { return JSON.parse(parsedData.travel_data); } catch { return null; } })() : parsedData.travel_data) : null;
-      return t || {};
+      // Try quote.travel_data
+      let source: any = (quote as any)?.travel_data ?? null;
+      if (typeof source === 'string') {
+        try { source = JSON.parse(source); } catch { source = null; }
+      }
+      // Fallback to embedded travel in data blob
+      if (!source && parsedData?.travel_data) {
+        source = typeof parsedData.travel_data === 'string'
+          ? (() => { try { return JSON.parse(parsedData.travel_data); } catch { return null; } })()
+          : parsedData.travel_data;
+      }
+      // Fallback to current state
+      if (!source && travelData) {
+        source = travelData;
+      }
+      return source || {};
     })();
     const getParsedTotalTravelCost = () => {
       const td: any = parsedTravel as any;
@@ -1719,7 +1747,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         (td?.rentalCar?.[0]?.totalAmount ?? 0)
       );
     };
-    const finalValue = Math.ceil((getFinalValueFromParsed(parsedData) + getParsedTotalTravelCost()) );
+    // Match sheet logic exactly: add travel into numerator, then divide by 0.96
+    const finalValue = Math.ceil((getFinalNumeratorWithoutTravel(parsedData) + getParsedTotalTravelCost()) / 0.96);
     const mobilization = (() => {
       const factor = getMobilizationFactor(finalValue);
       return formatCurrency(Math.ceil(finalValue * factor));

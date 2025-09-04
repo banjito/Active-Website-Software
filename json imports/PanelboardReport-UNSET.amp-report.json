@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36F72C4Z21582VZ2P40W1XK",
+  "reportType": "PanelboardReport.tsx",
+  "createdAt": "2025-08-21T14:05:24.234Z",
+  "updatedAt": "2025-08-21T14:06:07.814Z",
+  "version": 48,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": ""
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": 68
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": "234523"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.1.A.1",
+                "description": "Compare equipment nameplate data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.2",
+                "description": "Inspect physical, electrical, and mechanical condition of cords and connectors.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.3",
+                "description": "Inspect anchorage, alignment, grounding, and required area clearances.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.4",
+                "description": "Verify the unit is clean and all shipping bracing removed.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.5",
+                "description": "Verify that fuse and circuit breaker sizes and types correspond to drawings and coordination study.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.6",
+                "description": "Verify that current and voltage transformer ratios correspond to drawings.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.7",
+                "description": "Verify wiring connections are tight and secure to prevent damage.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.8.1",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.1.B.1.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.9",
+                "description": "Confirm correct operation and sequencing of interlock systems.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.10",
+                "description": "Verify appropriate lubrication on moving parts.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.11",
+                "description": "Inspect insulators for evidence of physical damage or contaminated surfaces.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.12",
+                "description": "Verify correct barrier and shutter installation and operation.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.13",
+                "description": "Exercise all active components.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.14",
+                "description": "Inspect mechanical indicating devices for correct operation.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.15",
+                "description": "Verify that filters are in place and vents are clear.",
+                "result": "Satisfactory"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance (Measured & Temp Corrected)",
+          "type": "table",
+          "value": {
+            "tcf": 1,
+            "measured": {
+              "ag": "243523",
+              "bg": "45234",
+              "cg": "5234",
+              "ab": "2345",
+              "bc": "2345",
+              "ca": "32452",
+              "an": "3452",
+              "bn": "4523",
+              "cn": "5234"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Contact Resistance",
+      "fields": [
+        {
+          "label": "Contact Resistance",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "unit": "µΩ",
+                "aPhase": "23452",
+                "bPhase": "5234",
+                "cPhase": "34253",
+                "neutral": "52345",
+                "ground": "2345"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Test Equipment Used",
+          "type": "table",
+          "value": {
+            "megohmmeter": {
+              "name": "5",
+              "serialNumber": "5",
+              "ampId": "5"
+            },
+            "lowResistanceOhmmeter": {
+              "ampId": "5",
+              "serialNumber": "5",
+              "name": "5"
+            },
+            "primaryInjectionTestSet": {
+              "name": "5",
+              "serialNumber": "5",
+              "ampId": "5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "2345234"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "UNSET",
+    "reportType": "PanelboardReport",
+    "fields": {
+      "customerName": "",
+      "jobNumber": "",
+      "address": "",
+      "identifier": "",
+      "technicians": "",
+      "substation": "",
+      "date": "",
+      "eqptLocation": "",
+      "temperatureF": 68,
+      "humidity": "234523",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.1.A.1",
+            "description": "Compare equipment nameplate data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.2",
+            "description": "Inspect physical, electrical, and mechanical condition of cords and connectors.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.3",
+            "description": "Inspect anchorage, alignment, grounding, and required area clearances.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.4",
+            "description": "Verify the unit is clean and all shipping bracing removed.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.5",
+            "description": "Verify that fuse and circuit breaker sizes and types correspond to drawings and coordination study.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.6",
+            "description": "Verify that current and voltage transformer ratios correspond to drawings.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.7",
+            "description": "Verify wiring connections are tight and secure to prevent damage.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.8.1",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.1.B.1.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.9",
+            "description": "Confirm correct operation and sequencing of interlock systems.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.10",
+            "description": "Verify appropriate lubrication on moving parts.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.11",
+            "description": "Inspect insulators for evidence of physical damage or contaminated surfaces.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.12",
+            "description": "Verify correct barrier and shutter installation and operation.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.13",
+            "description": "Exercise all active components.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.14",
+            "description": "Inspect mechanical indicating devices for correct operation.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.15",
+            "description": "Verify that filters are in place and vents are clear.",
+            "result": "Satisfactory"
+          }
+        ]
+      },
+      "panelboardIr": {
+        "tcf": 1,
+        "measured": {
+          "ag": "243523",
+          "bg": "45234",
+          "cg": "5234",
+          "ab": "2345",
+          "bc": "2345",
+          "ca": "32452",
+          "an": "3452",
+          "bn": "4523",
+          "cn": "5234"
+        }
+      },
+      "panelboardCr": {
+        "rows": [
+          {
+            "unit": "µΩ",
+            "aPhase": "23452",
+            "bPhase": "5234",
+            "cPhase": "34253",
+            "neutral": "52345",
+            "ground": "2345"
+          }
+        ]
+      },
+      "testEquipment3": {
+        "megohmmeter": {
+          "name": "5",
+          "serialNumber": "5",
+          "ampId": "5"
+        },
+        "lowResistanceOhmmeter": {
+          "ampId": "5",
+          "serialNumber": "5",
+          "name": "5"
+        },
+        "primaryInjectionTestSet": {
+          "name": "5",
+          "serialNumber": "5",
+          "ampId": "5"
+        }
+      },
+      "comments": "2345234"
+    }
+  }
+}

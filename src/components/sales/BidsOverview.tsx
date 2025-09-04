@@ -1,0 +1,550 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui';
+import { DollarSign, Calendar } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+
+interface WeeklyBidItem {
+  id: string;
+  title: string;
+  expectedValue: number;
+  created_at: string;
+}
+
+interface BidsOverviewData {
+  thisWeekBids: WeeklyBidItem[];
+  lastWeekBids: WeeklyBidItem[];
+}
+
+interface WeekGroup {
+  range: string;
+  items: WeeklyBidItem[];
+  totalValue: number;
+}
+
+const BidsOverview: React.FC = () => {
+  const [data, setData] = useState<BidsOverviewData>({ thisWeekBids: [], lastWeekBids: [] });
+  const [thisWeekRange, setThisWeekRange] = useState<string>('');
+  const [lastWeekRange, setLastWeekRange] = useState<string>('');
+  const [showAllWeeks, setShowAllWeeks] = useState<boolean>(false);
+  const [historyLoading, setHistoryLoading] = useState<boolean>(false);
+  const [allWeeks, setAllWeeks] = useState<WeekGroup[]>([]);
+  const [allTimeTotal, setAllTimeTotal] = useState<number>(0);
+  const [historyPage, setHistoryPage] = useState<number>(0); // 0-based pages
+  const weeksPerPage = 4;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchBidsData = async () => {
+      try {
+        setLoading(true);
+        
+        // Calculate date ranges for this week and last week (Sunday to Saturday)
+        const now = new Date();
+        const startOfThisWeek = new Date(now);
+        startOfThisWeek.setDate(now.getDate() - now.getDay()); // Start of current week (Sunday)
+        startOfThisWeek.setHours(0, 0, 0, 0);
+        
+        const startOfLastWeek = new Date(startOfThisWeek);
+        startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
+        
+        const endOfLastWeek = new Date(startOfThisWeek);
+        endOfLastWeek.setDate(startOfThisWeek.getDate() - 1); // Saturday (day before this week's Sunday)
+        endOfLastWeek.setHours(23, 59, 59, 999);
+
+        console.log('Current date:', now.toISOString());
+        console.log('Week calculation (Sunday to Saturday):', {
+          startOfThisWeek: startOfThisWeek.toISOString(),
+          startOfLastWeek: startOfLastWeek.toISOString(),
+          endOfLastWeek: endOfLastWeek.toISOString()
+        });
+
+        // Fetch opportunities data from Supabase
+        const { data: opportunities, error: opportunitiesError } = await supabase
+          .schema('business')
+          .from('opportunities')
+          .select(`
+            id,
+            title,
+            created_at,
+            quoted_amount
+          `)
+          .order('created_at', { ascending: false });
+
+        if (opportunitiesError) throw opportunitiesError;
+
+        console.log('Opportunities fetched:', opportunities?.length);
+        const relevantOpps = (opportunities || []).filter(o => {
+          const d = new Date(o.created_at);
+          return d >= startOfLastWeek; // anything from last week up through now
+        });
+        console.log('Relevant opps (last week through this week):', relevantOpps.length);
+
+        // Load letter proposals for NET 30 price extraction (fallback to quoted_amount)
+        let opportunitiesWithLetterProposals = relevantOpps || [];
+        try {
+          const ids = (relevantOpps || []).map(o => o.id);
+          if (ids.length) {
+            const { data: letters } = await supabase
+              .schema('business')
+              .from('letter_proposals')
+              .select('id, opportunity_id, html, created_at')
+              .in('opportunity_id', ids)
+              .order('created_at', { ascending: false });
+
+            const byOpp: Record<string, any[]> = {};
+            (letters || []).forEach((lp: any) => {
+              if (!byOpp[lp.opportunity_id]) byOpp[lp.opportunity_id] = [];
+              byOpp[lp.opportunity_id].push(lp);
+            });
+            // Ensure newest-first per opportunity
+            Object.keys(byOpp).forEach((k) => {
+              byOpp[k].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            });
+
+            opportunitiesWithLetterProposals = (relevantOpps || []).map((o: any) => ({
+              ...o,
+              letter_proposals: byOpp[o.id] || []
+            }));
+          }
+        } catch (e) {
+          console.warn('Letter proposals load failed (continuing with quoted_amount):', e);
+        }
+
+        const getNet30Price = (o: any): number => {
+          const fallback = typeof o.quoted_amount === 'number'
+            ? o.quoted_amount
+            : Number(String(o.quoted_amount ?? '').replace(/[^0-9.-]/g, '')) || 0;
+
+          const letters = (o as any).letter_proposals as any[] | undefined;
+          if (!letters || !letters.length) return fallback;
+          const latest = letters[0];
+          if (!latest?.html) return fallback;
+          const m = latest.html.match(/Option\s*1:\s*Where\s*NET\s*30\s*Terms\s*are\s*applicable[^$]*\$([0-9,]+(?:\.[0-9]{2})?)/i);
+          if (m && m[1]) return Number(m[1].replace(/,/g, '')) || fallback;
+          return fallback;
+        };
+
+        // Save human-readable ranges for display
+        const formatRange = (s: Date, e: Date) => `${s.toLocaleDateString()} - ${e.toLocaleDateString()}`;
+        setThisWeekRange(formatRange(startOfThisWeek, new Date(startOfThisWeek.getFullYear(), startOfThisWeek.getMonth(), startOfThisWeek.getDate() + 6)));
+        setLastWeekRange(formatRange(startOfLastWeek, new Date(startOfThisWeek.getTime() - 1)));
+
+        // Compute weekly buckets using NET 30 from letter proposals when available,
+        // otherwise fall back to quoted_amount
+        const thisWeekBids = (opportunitiesWithLetterProposals || [])
+          .filter(o => new Date(o.created_at) >= startOfThisWeek)
+          .map(o => ({ id: String(o.id), title: o.title ?? 'Untitled Opportunity', expectedValue: getNet30Price(o), created_at: o.created_at }));
+
+        const lastWeekBids = (opportunitiesWithLetterProposals || [])
+          .filter(o => {
+            const d = new Date(o.created_at);
+            return d >= startOfLastWeek && d <= endOfLastWeek;
+          })
+          .map(o => ({ id: String(o.id), title: o.title ?? 'Untitled Opportunity', expectedValue: getNet30Price(o), created_at: o.created_at }));
+
+        console.log('This week bids:', thisWeekBids.length, 'Total value:', thisWeekBids.reduce((s, b) => s + b.expectedValue, 0));
+        console.log('Last week bids:', lastWeekBids.length, 'Total value:', lastWeekBids.reduce((s, b) => s + b.expectedValue, 0));
+
+        setData({ thisWeekBids, lastWeekBids });
+      } catch (err) {
+        console.error('Error fetching bids data:', err);
+        setError('Failed to load bids data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBidsData();
+  }, []);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'awarded':
+      case 'decision - forecasted win':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400';
+      case 'lost':
+      case 'decision - forecast lose':
+      case 'no quote':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400';
+      case 'quote':
+      case 'decision':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400';
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const loadAllWeeks = async () => {
+    try {
+      setHistoryLoading(true);
+      // Get all opportunities ever (paginate to bypass default 1000 limit)
+      const pageSize = 1000;
+      let from = 0;
+      let allOpps: any[] = [];
+      /* eslint-disable no-constant-condition */
+      while (true) {
+        const { data: page, error: pageErr } = await supabase
+          .schema('business')
+          .from('opportunities')
+          .select('id, title, created_at, quoted_amount, expected_value')
+          .order('created_at', { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (pageErr) throw pageErr;
+        const batch = page || [];
+        allOpps = allOpps.concat(batch);
+        if (batch.length < pageSize) break;
+        from += pageSize;
+      }
+      const opps = allOpps;
+
+      // Fetch all letter proposals and map by opportunity_id
+      let withLetters = opps || [];
+      try {
+        const ids = (opps || []).map(o => o.id);
+        // Avoid overly long URLs by keeping the IN list small
+        const chunkSize = 100;
+        const byOpp: Record<string, any[]> = {};
+        for (let i = 0; i < ids.length; i += chunkSize) {
+          const chunk = ids.slice(i, i + chunkSize);
+          const { data: letters } = await supabase
+            .schema('business')
+            .from('letter_proposals')
+            .select('id, opportunity_id, html, created_at')
+            .in('opportunity_id', chunk)
+            .order('created_at', { ascending: false });
+          (letters || []).forEach((lp: any) => {
+            if (!byOpp[lp.opportunity_id]) byOpp[lp.opportunity_id] = [];
+            byOpp[lp.opportunity_id].push(lp);
+          });
+        }
+        // Ensure newest-first per opportunity across chunks
+        Object.keys(byOpp).forEach((k) => {
+          byOpp[k].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        });
+        withLetters = (opps || []).map((o: any) => ({ ...o, letter_proposals: byOpp[o.id] || [] }));
+      } catch (_e) {
+        // best-effort; continue with quoted_amount fallback
+      }
+
+      const parseNum = (v: any): number => {
+        if (v === null || v === undefined) return 0;
+        if (typeof v === 'number') return isFinite(v) ? v : 0;
+        const n = Number(String(v).replace(/[^0-9.-]/g, ''));
+        return isFinite(n) ? n : 0;
+      };
+
+      const getNet30 = (o: any): number => {
+        const fallback = parseNum(o.quoted_amount);
+        const letters = (o as any).letter_proposals as any[] | undefined;
+        if (!letters || !letters.length) return fallback;
+        const latest = letters[0];
+        const m = latest?.html?.match(/Option\s*1:\s*Where\s*NET\s*30\s*Terms\s*are\s*applicable[^$]*\$([0-9,]+(?:\.[0-9]{2})?)/i);
+        if (m && m[1]) return Number(m[1].replace(/,/g, '')) || fallback;
+        return fallback;
+      };
+
+      const weekKey = (d: Date) => {
+        const start = new Date(d);
+        start.setDate(d.getDate() - d.getDay());
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        return {
+          key: `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`,
+          start,
+          end
+        };
+      };
+
+      const map: Record<string, WeekGroup> = {};
+      (withLetters || []).forEach((o: any) => {
+        const d = new Date(o.created_at);
+        const { key } = weekKey(d);
+        const item: WeeklyBidItem = {
+          id: String(o.id),
+          title: o.title ?? 'Untitled Opportunity',
+          expectedValue: getNet30(o),
+          created_at: o.created_at
+        };
+        if (!map[key]) map[key] = { range: key, items: [], totalValue: 0 };
+        map[key].items.push(item);
+        map[key].totalValue += item.expectedValue;
+      });
+
+      const groups = Object.values(map)
+        .sort((a, b) => {
+          const aStart = new Date(a.range.split(' - ')[0]).getTime();
+          const bStart = new Date(b.range.split(' - ')[0]).getTime();
+          return bStart - aStart; // newest first
+        });
+
+      // Recompute to exclude truly zero-value weeks from paging perception if desired
+      setAllWeeks(groups);
+      const allTotal = groups.reduce((sum, g) => sum + g.totalValue, 0);
+      setAllTimeTotal(allTotal);
+      setHistoryPage(0);
+      setShowAllWeeks(true);
+    } catch (e) {
+      console.error('Failed to load history:', e);
+      setError('Failed to load history');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Bids Overview</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="border border-gray-200 dark:border-gray-700 dark:bg-dark-150">
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Bids Overview</h2>
+        </div>
+        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-dark-150">
+          <CardContent className="p-6">
+            <div className="text-center text-gray-500 dark:text-gray-400">
+              {error}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Weekly Bids</h2>
+        <div className="text-sm text-gray-600 dark:text-gray-300">(Total all time: <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(allTimeTotal)}</span>)</div>
+      </div>
+
+      {/* Weekly Bids Summary (Sunday–Saturday) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* This Week Card */}
+        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-dark-150">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">This Week</CardTitle>
+                <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
+                  {thisWeekRange}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-blue-50 dark:bg-blue-900/50">
+                    <Calendar className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Bids</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{data.thisWeekBids.length}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-green-50 dark:bg-green-900/50">
+                    <DollarSign className="h-4 w-4 text-green-500 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Value</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(data.thisWeekBids.reduce((sum, bid) => sum + bid.expectedValue, 0))}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {/* List this week's bids */}
+              <div className="max-h-64 overflow-auto divide-y divide-gray-200 dark:divide-gray-700">
+                {data.thisWeekBids.map((b) => (
+                  <div key={b.id} className="py-2 flex items-center justify-between">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{b.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(b.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {formatCurrency(b.expectedValue)}
+                    </div>
+                  </div>
+                ))}
+                {data.thisWeekBids.length === 0 && (
+                  <div className="py-4 text-sm text-gray-500 dark:text-gray-400 text-center">No bids this week</div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Last Week Card */}
+        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-dark-150">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Last Week</CardTitle>
+                <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
+                  {lastWeekRange}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-purple-50 dark:bg-purple-900/50">
+                    <Calendar className="h-4 w-4 text-purple-500 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Bids</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{data.lastWeekBids.length}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-orange-50 dark:bg-orange-900/50">
+                    <DollarSign className="h-4 w-4 text-orange-500 dark:text-orange-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Value</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(data.lastWeekBids.reduce((sum, bid) => sum + bid.expectedValue, 0))}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {/* List last week's bids */}
+              <div className="max-h-64 overflow-auto divide-y divide-gray-200 dark:divide-gray-700">
+                {data.lastWeekBids.map((b) => (
+                  <div key={b.id} className="py-2 flex items-center justify-between">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{b.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(b.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {formatCurrency(b.expectedValue)}
+                    </div>
+                  </div>
+                ))}
+                {data.lastWeekBids.length === 0 && (
+                  <div className="py-4 text-sm text-gray-500 dark:text-gray-400 text-center">No bids last week</div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* History toggle */}
+      <div className="flex items-center justify-end">
+        <button
+          onClick={() => {
+            if (!showAllWeeks && !allWeeks.length) {
+              loadAllWeeks();
+            } else {
+              setShowAllWeeks((v) => !v);
+            }
+          }}
+          className="px-3 py-1.5 text-sm font-medium rounded-md bg-gray-100 dark:bg-dark-100 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-200"
+        >
+          {showAllWeeks ? 'Hide History' : historyLoading ? 'Loading…' : 'Show All Bids History'}
+        </button>
+      </div>
+
+      {/* All-time weekly groups */}
+      {showAllWeeks && (
+        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-dark-150">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">All Bids History (Weekly)</CardTitle>
+                <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
+                  Every opportunity ever, grouped Sunday–Saturday, with NET 30/quoted totals
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setHistoryPage(p => Math.max(0, p - 1))}
+                  disabled={historyPage === 0}
+                  className={`px-2 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600 ${historyPage === 0 ? 'opacity-50 cursor-not-allowed' : 'bg-gray-100 dark:bg-dark-100 hover:bg-gray-200 dark:hover:bg-dark-200'} text-gray-800 dark:text-white`}
+                >
+                  Prev 4 weeks
+                </button>
+                <button
+                  onClick={() => setHistoryPage(p => (p + 1) * weeksPerPage < allWeeks.length ? p + 1 : p)}
+                  disabled={(historyPage + 1) * weeksPerPage >= allWeeks.length}
+                  className={`px-2 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600 ${((historyPage + 1) * weeksPerPage >= allWeeks.length) ? 'opacity-50 cursor-not-allowed' : 'bg-gray-100 dark:bg-dark-100 hover:bg-gray-200 dark:hover:bg-dark-200'} text-gray-800 dark:text-white`}
+                >
+                  Next 4 weeks
+                </button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {allWeeks.slice(historyPage * weeksPerPage, (historyPage + 1) * weeksPerPage).map((group) => (
+                <div key={group.range} className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{group.range}</div>
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(group.totalValue)}</div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {group.items.map((b) => (
+                      <div key={b.id} className="flex items-center justify-between p-2 rounded border border-gray-200 dark:border-gray-700">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{b.title}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(b.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(b.expectedValue)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {!allWeeks.length && (
+                <div className="text-sm text-gray-500 dark:text-gray-400">No history found.</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default BidsOverview;

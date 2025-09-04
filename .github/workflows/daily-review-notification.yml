@@ -1,0 +1,48 @@
+name: Daily Review Notification
+
+on:
+  schedule:
+    # Runs daily at 17:30 UTC (11:30 AM CST, 12:30 PM CDT)
+    - cron: '30 17 * * *'
+  workflow_dispatch: # Allows manual triggering for testing
+
+jobs:
+  send-notification:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check Current Time
+        run: |
+          echo "Current UTC time: $(date -u)"
+          echo "Current local time: $(date)"
+          echo "Timezone: $(timedatectl show --property=Timezone --value 2>/dev/null || echo 'UTC')"
+
+      - name: Send Daily Review Notification
+        run: |
+          echo "Sending daily review notification..."
+          echo "Target time was: 17:30 UTC (11:30 AM CST)"
+          
+          response=$(curl -s -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/daily-review-notification")
+          
+          http_code="${response: -3}"
+          response_body="${response%???}"
+          
+          echo "HTTP Status Code: $http_code"
+          echo "Response: $response_body"
+          
+          if [ "$http_code" -eq 200 ]; then
+            echo "✅ Daily review notification sent successfully"
+          else
+            echo "❌ Failed to send daily review notification"
+            exit 1
+          fi
+
+      - name: Log Notification Attempt
+        if: always()
+        run: |
+          echo "Daily review notification job completed at $(date)"
+          echo "Timezone: $(timedatectl show --property=Timezone --value 2>/dev/null || echo 'UTC')"

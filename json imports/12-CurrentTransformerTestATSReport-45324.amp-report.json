@@ -1,0 +1,508 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36CY76XVAV0CR4E2H98C7KE",
+  "reportType": "12-CurrentTransformerTestATSReport.tsx",
+  "createdAt": "2025-08-21T13:23:41.120Z",
+  "updatedAt": "2025-08-21T13:26:16.332Z",
+  "version": 312,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "431254132"
+        },
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "3245234"
+        },
+        {
+          "label": "Address",
+          "type": "textarea",
+          "value": "54325234"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "52345"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "234532453"
+        },
+        {
+          "label": "Equipment Location",
+          "type": "text",
+          "value": "432532"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": ""
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "3245342"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "5342532"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "45324"
+        }
+      ]
+    },
+    {
+      "title": "Device Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "324532"
+        },
+        {
+          "label": "Class",
+          "type": "text",
+          "value": "432523"
+        },
+        {
+          "label": "CT Ratio",
+          "type": "text",
+          "value": "453245"
+        },
+        {
+          "label": "Catalog Number",
+          "type": "text",
+          "value": "3425324"
+        },
+        {
+          "label": "Voltage Rating (V)",
+          "type": "text",
+          "value": "53245"
+        },
+        {
+          "label": "Polarity Facing",
+          "type": "text",
+          "value": "432543"
+        },
+        {
+          "label": "Type",
+          "type": "text",
+          "value": "53245234"
+        },
+        {
+          "label": "Frequency",
+          "type": "text",
+          "value": "53245"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.10.1.A.1",
+                "description": "Compare equipment nameplate data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.1.A.2",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.1.A.3",
+                "description": "Verify correct connection of transformers with system requirements.",
+                "result": "Unsatisfactory"
+              },
+              {
+                "id": "7.10.1.A.4",
+                "description": "Verify that adequate clearances exist between primary and secondary circuit wiring.",
+                "result": "Cleaned"
+              },
+              {
+                "id": "7.10.1.A.5",
+                "description": "Verify the unit is clean.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.1.A.6",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.10.1.B.1.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.1.A.7",
+                "description": "Verify that all required grounding and shorting connections provide contact.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.10.1.A.8",
+                "description": "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+                "result": "Satisfactory"
+              }
+            ]
+          }
+        },
+        {
+          "label": "E-Gap",
+          "type": "table",
+          "value": {
+            "cPhase": "4325",
+            "bPhase": "432534",
+            "aPhase": "432523",
+            "tolerance": "52345",
+            "unitMeasurement": "5234532"
+          }
+        }
+      ]
+    },
+    {
+      "title": "CT Identification",
+      "fields": [
+        {
+          "label": "CT Identification",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "phase": "qwerqwe",
+                "serial": "qwerwqe"
+              },
+              {
+                "phase": "ewqrweq",
+                "serial": "weqre"
+              },
+              {
+                "phase": "rewqrq",
+                "serial": "rqwer"
+              },
+              {
+                "phase": "ewqw",
+                "serial": "erqwe"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests",
+      "fields": [
+        {
+          "label": "Ratio and Polarity",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "rp-0",
+                "identifier": "7896978",
+                "ratio": "68796879",
+                "testValue": "6879",
+                "pri": "6789",
+                "sec": "678",
+                "measuredRatio": "6789",
+                "ratioDev": "678",
+                "polarity": "Satisfactory"
+              },
+              {
+                "id": "rp-1",
+                "ratioDev": "87",
+                "measuredRatio": "96",
+                "sec": "678",
+                "identifier": "876786",
+                "ratio": "89756",
+                "testValue": "786789",
+                "pri": "678",
+                "polarity": "Satisfactory"
+              },
+              {
+                "id": "rp-2",
+                "identifier": "8976",
+                "ratio": "789",
+                "testValue": "678",
+                "pri": "96",
+                "sec": "879",
+                "measuredRatio": "68",
+                "ratioDev": "79",
+                "polarity": "Satisfactory"
+              },
+              {
+                "id": "rp-3",
+                "identifier": "78697",
+                "ratio": "67",
+                "testValue": "89",
+                "pri": "6789",
+                "sec": "68",
+                "measuredRatio": "795",
+                "ratioDev": "6",
+                "polarity": "Satisfactory"
+              }
+            ],
+            "testType": "voltage"
+          }
+        },
+        {
+          "label": "Primary Winding - 1 min. Insulation Resistance to Ground",
+          "type": "table",
+          "value": {
+            "readingPhase1": "98767896",
+            "tempCorrection20CPhase1": "3950715840.00",
+            "readingPhase2": "8796",
+            "tempCorrection20CPhase2": "351840.00",
+            "readingPhase3": "879689",
+            "tempCorrection20CPhase3": "35187560.00",
+            "readingNeutral": "7689",
+            "tempCorrection20CNeutral": "307560.00",
+            "units": "MΩ"
+          }
+        },
+        {
+          "label": "Secondary Winding - 1 min. Insulation Resistance to Ground",
+          "type": "table",
+          "value": {
+            "readingPhase1": "9876789",
+            "tempCorrection20CPhase1": "395071560.00",
+            "readingPhase2": "67",
+            "tempCorrection20CPhase2": "2680.00",
+            "readingPhase3": "896",
+            "tempCorrection20CPhase3": "35840.00",
+            "readingNeutral": "8976",
+            "tempCorrection20CNeutral": "359040.00"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "89767"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "896789"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "687"
+        },
+        {
+          "label": "CT Ratio Test Set",
+          "type": "text",
+          "value": "96"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "879"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "9876786879yu"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "45324",
+    "reportType": "12-CurrentTransformerTestATSReport",
+    "fields": {
+      "jobNumber": "431254132",
+      "customerName": "3245234",
+      "customerAddress": "54325234",
+      "technicians": "52345",
+      "substation": "234532453",
+      "eqptLocation": "432532",
+      "date": "",
+      "userName": "3245342",
+      "temperatureF": "5342532",
+      "identifier": "45324",
+      "manufacturer": "324532",
+      "class": "432523",
+      "ctRatio": "453245",
+      "catalogNumber": "3425324",
+      "voltageRating": "53245",
+      "polarityFacing": "432543",
+      "type": "53245234",
+      "frequency": "53245",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.10.1.A.1",
+            "description": "Compare equipment nameplate data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.1.A.2",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.1.A.3",
+            "description": "Verify correct connection of transformers with system requirements.",
+            "result": "Unsatisfactory"
+          },
+          {
+            "id": "7.10.1.A.4",
+            "description": "Verify that adequate clearances exist between primary and secondary circuit wiring.",
+            "result": "Cleaned"
+          },
+          {
+            "id": "7.10.1.A.5",
+            "description": "Verify the unit is clean.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.1.A.6",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.10.1.B.1.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.1.A.7",
+            "description": "Verify that all required grounding and shorting connections provide contact.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.10.1.A.8",
+            "description": "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+            "result": "Satisfactory"
+          }
+        ]
+      },
+      "eGap": {
+        "cPhase": "4325",
+        "bPhase": "432534",
+        "aPhase": "432523",
+        "tolerance": "52345",
+        "unitMeasurement": "5234532"
+      },
+      "ctId": {
+        "rows": [
+          {
+            "phase": "qwerqwe",
+            "serial": "qwerwqe"
+          },
+          {
+            "phase": "ewqrweq",
+            "serial": "weqre"
+          },
+          {
+            "phase": "rewqrq",
+            "serial": "rqwer"
+          },
+          {
+            "phase": "ewqw",
+            "serial": "erqwe"
+          }
+        ]
+      },
+      "ratioPolarity": {
+        "rows": [
+          {
+            "id": "rp-0",
+            "identifier": "7896978",
+            "ratio": "68796879",
+            "testValue": "6879",
+            "pri": "6789",
+            "sec": "678",
+            "measuredRatio": "6789",
+            "ratioDev": "678",
+            "polarity": "Satisfactory"
+          },
+          {
+            "id": "rp-1",
+            "ratioDev": "87",
+            "measuredRatio": "96",
+            "sec": "678",
+            "identifier": "876786",
+            "ratio": "89756",
+            "testValue": "786789",
+            "pri": "678",
+            "polarity": "Satisfactory"
+          },
+          {
+            "id": "rp-2",
+            "identifier": "8976",
+            "ratio": "789",
+            "testValue": "678",
+            "pri": "96",
+            "sec": "879",
+            "measuredRatio": "68",
+            "ratioDev": "79",
+            "polarity": "Satisfactory"
+          },
+          {
+            "id": "rp-3",
+            "identifier": "78697",
+            "ratio": "67",
+            "testValue": "89",
+            "pri": "6789",
+            "sec": "68",
+            "measuredRatio": "795",
+            "ratioDev": "6",
+            "polarity": "Satisfactory"
+          }
+        ],
+        "testType": "voltage"
+      },
+      "primaryInsulation": {
+        "readingPhase1": "98767896",
+        "tempCorrection20CPhase1": "3950715840.00",
+        "readingPhase2": "8796",
+        "tempCorrection20CPhase2": "351840.00",
+        "readingPhase3": "879689",
+        "tempCorrection20CPhase3": "35187560.00",
+        "readingNeutral": "7689",
+        "tempCorrection20CNeutral": "307560.00",
+        "units": "MΩ"
+      },
+      "secondaryInsulation": {
+        "readingPhase1": "9876789",
+        "tempCorrection20CPhase1": "395071560.00",
+        "readingPhase2": "67",
+        "tempCorrection20CPhase2": "2680.00",
+        "readingPhase3": "896",
+        "tempCorrection20CPhase3": "35840.00",
+        "readingNeutral": "8976",
+        "tempCorrection20CNeutral": "359040.00"
+      },
+      "megohmmeter": "89767",
+      "serialNumber": "896789",
+      "ampId": "687",
+      "ctRatioTestSetName": "96",
+      "ctRatioTestSetSerial": "879",
+      "ctRatioTestSetAmpId": "6",
+      "comments": "9876786879yu"
+    }
+  }
+}

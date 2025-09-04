@@ -1160,14 +1160,14 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2"></th><th className="border border-gray-300 dark:border-gray-700 px-3 py-2"></th>
                 {[ "phaseA", "phaseB", "phaseC" ].map(phase => (
                   <React.Fragment key={phase}>
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
                     <select onChange={(e) => { const newReadings = [...formData.withstandTest.readings]; newReadings.forEach(r => { r[phase].currentUnit = e.target.value; }); handleChange('withstandTest', { readings: newReadings });}}
                             value={formData.withstandTest.readings[0]?.[phase]?.currentUnit || 'mA'} disabled={!isEditMode}
                             className={`w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
                       {currentUnits.map(unit => (<option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>))}
                     </select>
                   </th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">nF</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">nF</th>
                   </React.Fragment>
                 ))}
             </tr></thead>

@@ -356,6 +356,9 @@ const MediumVoltageCableVLFTest = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false); // Default to view mode
   const [error, setError] = useState(null);
+  // Always-visible kVAC options for MTS route (keep input editable)
+  const [openKvacIndex, setOpenKvacIndex] = useState(null);
+  const mtsKVACOptions = ['7','10','16','24','33','43','63','103','123'];
   
   // Parse URL for jobId and reportId on mount and path change
   useEffect(() => {
@@ -2900,13 +2903,51 @@ const MediumVoltageCableVLFTest = () => {
                     />
                   </td>
                   <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
-            <input
-              type="text"
-                      value={reading.kVAC || "13"}
-                      onChange={(e) => handleWithstandTestChange(index, 'kVAC', e.target.value)}
-              readOnly={!isEditMode}
-                      className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
+            {isMTSRoute ? (
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  value={reading.kVAC}
+                  onChange={(e) => handleWithstandTestChange(index, 'kVAC', e.target.value)}
+                  readOnly={!isEditMode}
+                  className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+                {isEditMode && (
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setOpenKvacIndex(openKvacIndex === index ? null : index)}
+                      className="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-dark-100 text-gray-700 dark:text-white"
+                      aria-label="Select kVAC"
+                    >
+                      ▼
+                    </button>
+                    {openKvacIndex === index && (
+                      <div className="absolute right-0 z-10 mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-700 rounded shadow-md max-h-48 overflow-auto">
+                        {mtsKVACOptions.map(v => (
+                          <div
+                            key={v}
+                            className="px-2 py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-100"
+                            onClick={() => { handleWithstandTestChange(index, 'kVAC', v); setOpenKvacIndex(null); }}
+                          >
+                            {v}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <input
+                type="text"
+                value={reading.kVAC}
+                onChange={(e) => handleWithstandTestChange(index, 'kVAC', e.target.value)}
+                readOnly={!isEditMode}
+                list="kvac-options-ats"
+                className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-center ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              />
+            )}
                   </td>
                   <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap">
             <input
@@ -2967,6 +3008,12 @@ const MediumVoltageCableVLFTest = () => {
             </tbody>
           </table>
         </div>
+        {/* kVAC suggestion list for ATS (keeps input editable) */}
+        <datalist id="kvac-options-ats">
+          {['10','13','16','21','26','28','32','36','38','42','44','57','80','84','110','140','160','168'].map(v => (
+            <option key={v} value={v} />
+          ))}
+        </datalist>
       </section>
       
       {/* Add Tan Delta Test Section */}

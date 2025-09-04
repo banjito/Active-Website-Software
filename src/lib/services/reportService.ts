@@ -5,7 +5,7 @@ import { User } from '@/lib/types/auth';
 /**
  * Report status types
  */
-export type ReportStatus = 'draft' | 'submitted' | 'in-review' | 'approved' | 'rejected' | 'archived';
+export type ReportStatus = 'draft' | 'submitted' | 'in-review' | 'approved' | 'rejected' | 'archived' | 'sent';
 
 /**
  * Technical Report interface
@@ -490,6 +490,67 @@ export async function archiveReport(id: string, userId: string, comments?: strin
 }
 
 /**
+ * Mark a report as sent
+ */
+export async function markReportAsSent(id: string, userId: string, comments?: string) {
+  try {
+    const now = new Date().toISOString();
+    
+    // First get current report
+    const { data: currentReport, error: fetchError } = await supabase
+      .schema('neta_ops')
+      .from('technical_reports')
+      .select('*')
+      .eq('id', id)
+      .single();
+      
+    if (fetchError) throw fetchError;
+    
+    // Only allow marking as sent if the report is currently approved
+    if (currentReport.status !== 'approved') {
+      throw new Error('Only approved reports can be marked as sent');
+    }
+    
+    // Create new revision history entry
+    const newRevisionEntry = {
+      version: currentReport.current_version,
+      timestamp: now,
+      user_id: userId,
+      status: 'sent' as ReportStatus,
+      comments: comments || 'Report marked as sent'
+    };
+    
+    // Add to existing revision history
+    const updatedRevisionHistory = [
+      ...currentReport.revision_history,
+      newRevisionEntry
+    ];
+    
+    // Update the report
+    const updates = {
+      status: 'sent' as ReportStatus,
+      revision_history: updatedRevisionHistory,
+      updated_at: now
+    };
+    
+    const { data, error } = await supabase
+      .schema('neta_ops')
+      .from('technical_reports')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error('Error marking report as sent:', error);
+    return { data: null, error };
+  }
+}
+
+/**
  * Get approval metrics
  */
 export async function getReportApprovalMetrics(timeRange?: { startDate: string, endDate: string }) {
@@ -519,7 +580,8 @@ export async function getReportApprovalMetrics(timeRange?: { startDate: string, 
             inReview: 0,
             approved: 0,
             rejected: 0,
-            archived: 0
+            archived: 0,
+            sent: 0
           }, 
           error: null 
         };
@@ -535,7 +597,8 @@ export async function getReportApprovalMetrics(timeRange?: { startDate: string, 
       inReview: 0, // Removed in-review status
       approved: data.filter(r => r.status === 'approved').length,
       rejected: data.filter(r => r.status === 'rejected').length,
-      archived: data.filter(r => r.status === 'archived').length
+      archived: data.filter(r => r.status === 'archived').length,
+      sent: data.filter(r => r.status === 'sent').length
     };
     
     return { data: metrics, error: null };
@@ -549,7 +612,8 @@ export async function getReportApprovalMetrics(timeRange?: { startDate: string, 
         inReview: 0, 
         approved: 0, 
         rejected: 0, 
-        archived: 0 
+        archived: 0,
+        sent: 0
       }, 
       error 
     };
@@ -741,6 +805,7 @@ export const reportService = {
   submitReportForApproval,
   reviewReport,
   archiveReport,
+  markReportAsSent,
   getReportApprovalMetrics,
   getReportHistoryByJob,
   getPendingReportsForReview,

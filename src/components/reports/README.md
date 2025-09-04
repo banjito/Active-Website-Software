@@ -4,7 +4,7 @@ This component provides a comprehensive workflow for managing technical reports 
 
 ## Features
 
-- **Status Tracking**: Reports progress through different statuses (draft, submitted, in-review, approved, rejected, archived)
+- **Status Tracking**: Reports progress through different statuses (draft, submitted, in-review, approved, sent, rejected, archived)
 - **Role-Based Permissions**: Different user roles have different permissions within the workflow
 - **Revision History**: Complete tracking of all changes made to reports
 - **Comment System**: Reviewers can provide feedback and comments on reports
@@ -25,8 +25,9 @@ This component provides a comprehensive workflow for managing technical reports 
 2. **Submitted**: Report has been submitted for review/approval
 3. **In Review**: Report is currently being reviewed
 4. **Approved**: Report has received final approval
-5. **Rejected**: Report was rejected and needs revision
-6. **Archived**: Report has been archived for historical reference
+5. **Sent**: Report has been marked as sent to the customer/client
+6. **Rejected**: Report was rejected and needs revision
+7. **Archived**: Report has been archived for historical reference
 
 ## Using the Report Approval Workflow
 
@@ -40,6 +41,14 @@ This component provides a comprehensive workflow for managing technical reports 
 6. Choose to mark as "In Review", "Approve", or "Reject" the report
 7. Add comments explaining your decision (required for rejections)
 8. Submit your review
+
+### For Marking Reports as Sent
+
+1. Navigate to the Reports page in your division portal
+2. Select the "Report Approval" tab
+3. Click on the "Approved" tab to see all approved reports
+4. Click "Mark as Sent" on any approved report to mark it as sent to the customer/client
+5. The report will move to the "Sent" tab and show a blue "Sent" status badge
 
 ### For All Users
 

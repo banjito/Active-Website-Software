@@ -5,7 +5,7 @@ interface Asset {
   id: string;
   name: string;
   file_url: string;
-  status?: 'in_progress' | 'ready_for_review' | 'approved' | 'issue';
+  status?: 'in_progress' | 'ready_for_review' | 'approved' | 'sent' | 'issue';
 }
 
 interface ProgressCallback {

@@ -198,7 +198,8 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
     inReview: 0,
     approved: 0,
     rejected: 0,
-    archived: 0
+    archived: 0,
+    sent: 0
   });
 
   // Role-based access control
@@ -273,6 +274,9 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
         case 'approved':
           statusFilter = 'approved';
           break;
+        case 'sent':
+          statusFilter = 'sent';
+          break;
         case 'rejected':
           statusFilter = 'rejected';
           break;
@@ -324,6 +328,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
         let merged = byLinked.filter(r => {
           if (activeTab === 'pending') return r.status === 'submitted';
           if (activeTab === 'approved') return r.status === 'approved';
+          if (activeTab === 'sent') return r.status === 'sent';
           if (activeTab === 'rejected') return r.status === 'rejected' || r.status === 'issue';
           if (activeTab === 'archived') return r.status === 'archived';
           return true;
@@ -490,15 +495,16 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
         if (allReportsResponse.data) {
           // Calculate metrics manually from the filtered reports
           const reports = allReportsResponse.data;
-          const metricCounts = {
-            total: reports.length,
-            draft: reports.filter(r => r.status === 'draft').length,
-            submitted: reports.filter(r => r.status === 'submitted').length,
-            inReview: 0, // Removed in-review status
-            approved: reports.filter(r => r.status === 'approved').length,
-            rejected: reports.filter(r => r.status === 'rejected').length,
-            archived: reports.filter(r => r.status === 'archived').length
-          };
+                     const metricCounts = {
+             total: reports.length,
+             draft: reports.filter(r => r.status === 'draft').length,
+             submitted: reports.filter(r => r.status === 'submitted').length,
+             inReview: 0, // Removed in-review status
+             approved: reports.filter(r => r.status === 'approved').length,
+             rejected: reports.filter(r => r.status === 'rejected').length,
+             archived: reports.filter(r => r.status === 'archived').length,
+             sent: reports.filter(r => r.status === 'sent').length
+           };
           setMetrics(metricCounts);
           return;
         }
@@ -527,6 +533,85 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
   const handleViewReport = (report: TechnicalReport) => {
     setSelectedReport(report);
     setShowViewDialog(true);
+  };
+
+  const handleMarkAsSent = async (report: TechnicalReport) => {
+    console.log('handleMarkAsSent called with report:', report.id, 'user:', user?.id);
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      console.log('Calling reportService.markReportAsSent...');
+      const response = await reportService.markReportAsSent(report.id, user.id, 'Report marked as sent');
+      
+      if (response.error) {
+        toast({
+          title: "Error",
+          description: `Failed to mark report as sent: ${response.error && typeof response.error === 'object' ? (response.error as any).message || 'Unknown error' : 'Unknown error'}`,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Report marked as sent successfully",
+          variant: "success"
+        });
+        fetchReports();
+        fetchMetrics();
+        if (onUpdate) { try { onUpdate(); } catch { /* noop */ } }
+      }
+    } catch (err) {
+      console.error('Error marking report as sent:', err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMarkAsApproved = async (report: TechnicalReport) => {
+    console.log('handleMarkAsApproved called with report:', report.id, 'user:', user?.id);
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      console.log('Calling reportService.reviewReport to mark as approved...');
+      const response = await reportService.reviewReport({
+        report_id: report.id,
+        status: 'approved',
+        comments: 'Report marked as approved from sent status',
+        reviewer_id: user.id
+      });
+      
+      if (response.error) {
+        toast({
+          title: "Error",
+          description: `Failed to mark report as approved: ${response.error && typeof response.error === 'object' ? (response.error as any).message || 'Unknown error' : 'Unknown error'}`,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Report marked as approved successfully",
+          variant: "success"
+        });
+        fetchReports();
+        fetchMetrics();
+        if (onUpdate) { try { onUpdate(); } catch { /* noop */ } }
+      }
+    } catch (err) {
+      console.error('Error marking report as approved:', err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const submitReview = async () => {
@@ -581,9 +666,10 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
         return <Badge variant="outline">Draft</Badge>;
       case 'submitted':
         return <Badge variant="default">Pending</Badge>;
-
       case 'approved':
         return <Badge variant="secondary">Approved</Badge>;
+      case 'sent':
+        return <Badge variant="default" className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">Sent</Badge>;
       case 'rejected':
         return <Badge variant="destructive">Rejected</Badge>;
       case 'archived':
@@ -726,7 +812,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
 
       {/* Metrics Summary Cards - Only show if not job-specific */}
       {!isJobSpecific && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
@@ -741,8 +827,6 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
             </CardContent>
           </Card>
           
-
-          
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Approved</CardTitle>
@@ -750,6 +834,20 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
                 {metrics.approved}
+                <span className="text-sm text-gray-500 font-normal ml-2">
+                  reports
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Sent</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">
+                {metrics.sent}
                 <span className="text-sm text-gray-500 font-normal ml-2">
                   reports
                 </span>
@@ -787,6 +885,10 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
           <TabsTrigger value="approved">
             <CheckCircle className="mr-2 h-4 w-4" />
             Approved
+          </TabsTrigger>
+          <TabsTrigger value="sent">
+            <Download className="mr-2 h-4 w-4" />
+            Sent
           </TabsTrigger>
           <TabsTrigger value="rejected">
             <XCircle className="mr-2 h-4 w-4" />
@@ -899,6 +1001,34 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
                                       <Eye className="h-4 w-4 mr-2" />
                                       View
                                     </Button>
+                                    {(() => {
+                                      const shouldShowSent = activeTab === 'approved' && report.status === 'approved';
+                                      const shouldShowApproved = activeTab === 'sent' && report.status === 'sent';
+                                      console.log('Button visibility check:', { reportId: report.id, activeTab, reportStatus: report.status, shouldShowSent, shouldShowApproved });
+                                      return shouldShowSent || shouldShowApproved;
+                                    })() && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => {
+                                          if (report.status === 'approved') {
+                                            console.log('Mark as Sent clicked for report:', report.id, 'status:', report.status, 'activeTab:', activeTab);
+                                            handleMarkAsSent(report);
+                                          } else if (report.status === 'sent') {
+                                            console.log('Mark as Approved clicked for report:', report.id, 'status:', report.status, 'activeTab:', activeTab);
+                                            handleMarkAsApproved(report);
+                                          }
+                                        }}
+                                        className={`${
+                                          report.status === 'approved' 
+                                            ? 'text-blue-600 hover:text-blue-700 border-blue-300 hover:border-blue-400'
+                                            : 'text-green-600 hover:text-green-700 border-green-300 hover:border-green-400'
+                                        }`}
+                                      >
+                                        <Download className="h-4 w-4 mr-2" />
+                                        {report.status === 'approved' ? 'Mark as Sent' : 'Mark as Approved'}
+                                      </Button>
+                                    )}
                                   </div>
                                 </div>
                               ))}
@@ -927,6 +1057,34 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
                             <Eye className="h-4 w-4 mr-2" />
                             View
                           </Button>
+                          {(() => {
+                            const shouldShowSent = activeTab === 'approved' && report.status === 'approved';
+                            const shouldShowApproved = activeTab === 'sent' && report.status === 'sent';
+                            console.log('Button visibility check (global):', { reportId: report.id, activeTab, reportStatus: report.status, shouldShowSent, shouldShowApproved });
+                            return shouldShowSent || shouldShowApproved;
+                          })() && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                if (report.status === 'approved') {
+                                  console.log('Mark as Sent clicked for report (global):', report.id, 'status:', report.status, 'activeTab:', activeTab);
+                                  handleMarkAsSent(report);
+                                } else if (report.status === 'sent') {
+                                  console.log('Mark as Approved clicked for report (global):', report.id, 'status:', report.status, 'activeTab:', activeTab);
+                                  handleMarkAsApproved(report);
+                                }
+                              }}
+                              className={`${
+                                report.status === 'approved' 
+                                  ? 'text-blue-600 hover:text-blue-700 border-blue-300 hover:border-blue-400'
+                                  : 'text-green-600 hover:text-green-700 border-green-300 hover:border-green-400'
+                              }`}
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              {report.status === 'approved' ? 'Mark as Sent' : 'Mark as Approved'}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}

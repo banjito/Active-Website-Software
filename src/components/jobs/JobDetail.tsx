@@ -65,7 +65,7 @@ interface Asset {
   file_url: string;
   created_at: string;
   template_type?: 'MTS' | 'ATS' | null;
-  status?: 'in_progress' | 'ready_for_review' | 'approved' | 'issue';
+  status?: 'in_progress' | 'ready_for_review' | 'approved' | 'sent' | 'issue';
 }
 
 interface RelatedOpportunity {
@@ -120,7 +120,7 @@ export default function JobDetail() {
   const [jobAssets, setJobAssets] = useState<Asset[]>([]);
   const [filteredJobAssets, setFilteredJobAssets] = useState<Asset[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [assetStatusFilter, setAssetStatusFilter] = useState<'all' | 'in_progress' | 'ready_for_review' | 'approved' | 'issue'>('all');
+  const [assetStatusFilter, setAssetStatusFilter] = useState<'all' | 'in_progress' | 'ready_for_review' | 'approved' | 'sent' | 'issue'>('all');
   const [reportSearchQuery, setReportSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newAssetName, setNewAssetName] = useState('');
@@ -823,6 +823,8 @@ export default function JobDetail() {
       filtered = filtered.filter(asset => asset.status === 'ready_for_review');
     } else if (assetStatusFilter === 'approved') {
       filtered = filtered.filter(asset => asset.status === 'approved');
+    } else if (assetStatusFilter === 'sent') {
+      filtered = filtered.filter(asset => asset.status === 'sent');
     } else if (assetStatusFilter === 'issue') {
       filtered = filtered.filter(asset => asset.status === 'issue');
     }
@@ -2908,6 +2910,16 @@ export default function JobDetail() {
                               Approved ({jobAssets.filter(asset => asset.status === 'approved').length})
                             </button>
                             <button
+                              onClick={() => setAssetStatusFilter('sent')}
+                              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                assetStatusFilter === 'sent'
+                                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                              }`}
+                            >
+                              Sent ({jobAssets.filter(asset => asset.status === 'sent').length})
+                            </button>
+                            <button
                               onClick={() => setAssetStatusFilter('issue')}
                               className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                                 assetStatusFilter === 'issue'
@@ -3032,9 +3044,23 @@ export default function JobDetail() {
                                                   <TableCell className="font-medium">{asset.id === 'low-voltage-cable-test-12sets' ? '3-Low Voltage Cable Test ATS' : asset.name}</TableCell>
                                                   <TableCell>
                                                     {asset.status === 'approved' ? (
-                                                      <span className="px-2 py-1 rounded text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                        Approved
-                                                      </span>
+                                                      <select
+                                                        value={asset.status}
+                                                        onChange={(e) => handleStatusUpdate(asset.id, e.target.value as Asset['status'])}
+                                                        className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                                      >
+                                                        <option value="approved">Approved</option>
+                                                        <option value="sent">Sent</option>
+                                                      </select>
+                                                    ) : asset.status === 'sent' ? (
+                                                      <select
+                                                        value={asset.status}
+                                                        onChange={(e) => handleStatusUpdate(asset.id, e.target.value as Asset['status'])}
+                                                        className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                                      >
+                                                        <option value="sent">Sent</option>
+                                                        <option value="approved">Approved</option>
+                                                      </select>
                                                     ) : asset.status === 'issue' ? (
                                                       <select
                                                         value={asset.status}

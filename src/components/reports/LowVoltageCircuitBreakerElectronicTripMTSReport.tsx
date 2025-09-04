@@ -376,22 +376,22 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
       },
       results: {
         longTime: {
-          ratedAmperes1: '', ratedAmperes2: '', multiplier: '', toleranceMin: '', toleranceMax: '',
+          ratedAmperes1: '', ratedAmperes2: '', multiplier: '300%', toleranceMin: '-10%', toleranceMax: '10%',
           testAmperes1: '', testAmperes2: '', toleranceMin1: '', toleranceMin2: '', toleranceMax1: '', toleranceMax2: '',
           pole1: { sec: '', a: '' }, pole2: { sec: '', a: '' }, pole3: { sec: '', a: '' }
         },
         shortTime: {
-          ratedAmperes1: '', ratedAmperes2: '', multiplier: '', toleranceMin: '', toleranceMax: '',
+          ratedAmperes1: '', ratedAmperes2: '', multiplier: '110%', toleranceMin: '-10%', toleranceMax: '10%',
           testAmperes1: '', testAmperes2: '', toleranceMin1: '', toleranceMin2: '', toleranceMax1: '', toleranceMax2: '',
           pole1: { sec: '', a: '' }, pole2: { sec: '', a: '' }, pole3: { sec: '', a: '' }
         },
         instantaneous: {
-          ratedAmperes1: '', ratedAmperes2: '', multiplier: '', toleranceMin: '', toleranceMax: '',
+          ratedAmperes1: '', ratedAmperes2: '', multiplier: '', toleranceMin: '-20%', toleranceMax: '20%',
           testAmperes1: '', testAmperes2: '', toleranceMin1: '', toleranceMin2: '', toleranceMax1: '', toleranceMax2: '',
           pole1: { sec: '', a: '' }, pole2: { sec: '', a: '' }, pole3: { sec: '', a: '' }
         },
         groundFault: {
-          ratedAmperes1: '', ratedAmperes2: '', multiplier: '', toleranceMin: '', toleranceMax: '',
+          ratedAmperes1: '', ratedAmperes2: '', multiplier: '110%', toleranceMin: '-15%', toleranceMax: '15%',
           testAmperes1: '', testAmperes2: '', toleranceMin1: '', toleranceMin2: '', toleranceMax1: '', toleranceMax2: '',
           pole1: { sec: '', a: '' }, pole2: { sec: '', a: '' }, pole3: { sec: '', a: '' }
         }
@@ -769,7 +769,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           .update(reportPayload)
           .eq('id', reportId)
           .select()
-          .single();
+          .maybeSingle();
       } else {
         // Create new report in normalized store
         result = await supabase
@@ -777,11 +777,23 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           .from('low_voltage_cable_test_3sets')
           .insert(reportPayload)
           .select()
-          .single();
+          .maybeSingle();
 
         // Create asset entry for the new report
-        if (result.data) {
-          const newReportId = result.data.id;
+        let newReportId = result.data?.id;
+        if (!result.error && !newReportId) {
+          const { data: fetched } = await supabase
+            .schema('neta_ops')
+            .from('low_voltage_cable_test_3sets')
+            .select('id')
+            .eq('job_id', jobId)
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          newReportId = fetched?.id;
+        }
+        if (newReportId) {
           const assetData = {
             name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
             file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
@@ -793,19 +805,21 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
             .from('assets')
             .insert(assetData)
             .select()
-            .single();
+            .maybeSingle();
 
           if (assetError) throw assetError;
 
           // Link asset to job
-          await supabase
-            .schema('neta_ops')
-            .from('job_assets')
-            .insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id
-            });
+          if (assetResult?.id) {
+            await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({
+                job_id: jobId,
+                asset_id: assetResult.id,
+                user_id: user.id
+              });
+          }
         }
       }
 
@@ -1856,7 +1870,21 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                     onChange={(e) => handleChange('primaryInjection.results.longTime.ratedAmperes1', e.target.value)} 
                     readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                   </td>
-                  <td className={`${tableStyles.cell} text-center`} colSpan={2}>300%</td>
+                  <td className={`${tableStyles.cell} text-center`} colSpan={2}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.longTime.multiplier || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.longTime.multiplier', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
                   <td className={tableStyles.cell}>
                     <input type="text" value={formData.primaryInjection.results.longTime.testAmperes1 || ''} 
                     onChange={(e) => handleChange('primaryInjection.results.longTime.testAmperes1', e.target.value)} 
@@ -1899,8 +1927,36 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                 </tr>
                 <tr>
                   <td className={tableStyles.cell}>LTPU</td>
-                  <td className={tableStyles.cell}>-10%</td>
-                  <td className={tableStyles.cell}>10%</td>
+                  <td className={tableStyles.cell}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.longTime.toleranceMin || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.longTime.toleranceMin', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
+                  <td className={tableStyles.cell}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.longTime.toleranceMax || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.longTime.toleranceMax', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
                   <td className={tableStyles.cell}>
                     <input type="text" value={formData.primaryInjection.results.longTime.testAmperes2 || ''} 
                     onChange={(e) => handleChange('primaryInjection.results.longTime.testAmperes2', e.target.value)} 
@@ -1950,7 +2006,21 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                     onChange={(e) => handleChange('primaryInjection.results.shortTime.ratedAmperes1', e.target.value)} 
                     readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                   </td>
-                  <td className={`${tableStyles.cell} text-center`} colSpan={2}>110%</td>
+                  <td className={`${tableStyles.cell} text-center`} colSpan={2}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.shortTime.multiplier || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.shortTime.multiplier', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
                   <td className={tableStyles.cell}>
                     <input type="text" value={formData.primaryInjection.results.shortTime.testAmperes1 || ''} 
                     onChange={(e) => handleChange('primaryInjection.results.shortTime.testAmperes1', e.target.value)} 
@@ -1993,8 +2063,36 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                 </tr>
                 <tr>
                   <td className={tableStyles.cell}>STPU</td>
-                  <td className={tableStyles.cell}>-10%</td>
-                  <td className={tableStyles.cell}>10%</td>
+                  <td className={tableStyles.cell}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.shortTime.toleranceMin || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.shortTime.toleranceMin', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
+                  <td className={tableStyles.cell}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.shortTime.toleranceMax || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.shortTime.toleranceMax', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
                   <td className={tableStyles.cell}>
                     <input type="text" value={formData.primaryInjection.results.shortTime.testAmperes2 || ''} 
                     onChange={(e) => handleChange('primaryInjection.results.shortTime.testAmperes2', e.target.value)} 
@@ -2044,7 +2142,21 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                     onChange={(e) => handleChange('primaryInjection.results.instantaneous.ratedAmperes1', e.target.value)} 
                     readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                   </td>
-                  <td className={`${tableStyles.cell} text-center`} colSpan={2}></td>
+                  <td className={`${tableStyles.cell} text-center`} colSpan={2}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.instantaneous.multiplier || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.instantaneous.multiplier', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
                   <td className={tableStyles.cell}></td>
                   <td className={tableStyles.cell}></td>
                   <td className={tableStyles.cell}></td>
@@ -2054,8 +2166,36 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                 </tr>
                 <tr>
                   <td className={tableStyles.cell}>IPU</td>
-                  <td className={tableStyles.cell}>-20%</td>
-                  <td className={tableStyles.cell}>20%</td>
+                  <td className={tableStyles.cell}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.instantaneous.toleranceMin || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.instantaneous.toleranceMin', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
+                  <td className={tableStyles.cell}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.instantaneous.toleranceMax || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.instantaneous.toleranceMax', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
                   <td className={tableStyles.cell}>
                     <input type="text" value={formData.primaryInjection.results.instantaneous.testAmperes2 || ''} 
                     onChange={(e) => handleChange('primaryInjection.results.instantaneous.testAmperes2', e.target.value)} 
@@ -2105,7 +2245,21 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                     onChange={(e) => handleChange('primaryInjection.results.groundFault.ratedAmperes1', e.target.value)} 
                     readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                   </td>
-                  <td className={`${tableStyles.cell} text-center`} colSpan={2}>110%</td>
+                  <td className={`${tableStyles.cell} text-center`} colSpan={2}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.groundFault.multiplier || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.groundFault.multiplier', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
                   <td className={tableStyles.cell}>
                     <input type="text" value={formData.primaryInjection.results.groundFault.testAmperes1 || ''} 
                     onChange={(e) => handleChange('primaryInjection.results.groundFault.testAmperes1', e.target.value)} 
@@ -2148,8 +2302,36 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                 </tr>
                 <tr>
                   <td className={tableStyles.cell}>GFPU</td>
-                  <td className={tableStyles.cell}>-15%</td>
-                  <td className={tableStyles.cell}>15%</td>
+                  <td className={tableStyles.cell}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.groundFault.toleranceMin || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.groundFault.toleranceMin', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
+                  <td className={tableStyles.cell}>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={(formData.primaryInjection.results.groundFault.toleranceMax || '').replace(/%/g, '')}
+                        onChange={(e) => {
+                          const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                          handleChange('primaryInjection.results.groundFault.toleranceMax', v ? `${v}%` : '');
+                        }}
+                        readOnly={!isEditing}
+                        className={`${tableStyles.input} text-center w-20`}
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </td>
                   <td className={tableStyles.cell}>
                     <input type="text" value={formData.primaryInjection.results.groundFault.testAmperes2 || ''} 
                     onChange={(e) => handleChange('primaryInjection.results.groundFault.testAmperes2', e.target.value)} 

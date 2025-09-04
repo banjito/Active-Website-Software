@@ -673,7 +673,8 @@ const LiquidFilledTransformerReport: React.FC = () => {
         .select(`
           title,
           job_number,
-          customer_id
+          customer_id,
+          site_address
         `)
         .eq('id', jobId)
         .single();
@@ -683,7 +684,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
       if (jobData) {
         // Then fetch customer data from common schema
         let customerName = '';
-        let customerAddress = '';
+        let customerAddress = (jobData as any).site_address || '';
         
         if (jobData.customer_id) {
           const { data: customerData, error: customerError } = await supabase
@@ -699,7 +700,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
             
           if (!customerError && customerData) {
             customerName = customerData.company_name || customerData.name || '';
-            customerAddress = customerData.address || '';
+            if (!customerAddress) customerAddress = customerData.address || '';
           }
         }
 
@@ -1075,6 +1076,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
                 <div><label className="form-label">Customer:</label><input type="text" value={formData.customer} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
                 <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
+                <div className="md:col-span-2"><label className="form-label">Address:</label><input type="text" value={formData.address} readOnly className="form-input bg-gray-100 dark:bg-dark-200 w-full" /></div>
                 <div><label className="form-label">Technicians:</label><input type="text" value={formData.technicians} onChange={(e) => handleChange(null, 'technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                 <div><label className="form-label">Date:</label><input type="date" value={formData.date} onChange={(e) => handleChange(null, 'date', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
                 <div><label className="form-label">Identifier:</label><input type="text" value={formData.identifier} onChange={(e) => handleChange(null, 'identifier', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>

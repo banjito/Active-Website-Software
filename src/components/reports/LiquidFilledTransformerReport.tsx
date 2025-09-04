@@ -765,7 +765,10 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 setFormData(prev => ({
                   ...prev,
                   customer: normalized?.reportInfo?.customer ?? prev.customer,
-                  address: normalized?.reportInfo?.address ?? prev.address,
+                  address: (() => {
+                    const addr = normalized?.reportInfo?.address;
+                    return (typeof addr === 'string' && addr.trim().length > 0) ? addr : prev.address;
+                  })(),
                   date: normalized?.reportInfo?.date ?? prev.date,
                   technicians: normalized?.reportInfo?.technicians ?? '',
                   jobNumber: normalized?.reportInfo?.jobNumber ?? prev.jobNumber,

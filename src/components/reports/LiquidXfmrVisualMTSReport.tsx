@@ -412,7 +412,10 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
               ...prev, // Preserve all existing properties
               // Job Information
               customer: importedData.reportInfo?.customer ?? prev.customer,
-              address: importedData.reportInfo?.address ?? prev.address,
+              address: (() => {
+                const addr = importedData.reportInfo?.address;
+                return (typeof addr === 'string' && addr.trim().length > 0) ? addr : prev.address;
+              })(),
               user: importedData.reportInfo?.userName ?? prev.user,
               date: importedData.reportInfo?.date ?? prev.date,
               jobNumber: importedData.reportInfo?.jobNumber ?? prev.jobNumber,

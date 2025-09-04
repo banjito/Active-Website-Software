@@ -441,15 +441,15 @@ const SwitchgearReport: React.FC = () => {
       temperatureCorrectedTests: formData.insulationResistanceTests.map(test => ({
         busSection: test.busSection,
         values: {
-          ag: test.values.ag ? (parseFloat(test.values.ag) * tcf).toFixed(2) : '',
-          bg: test.values.bg ? (parseFloat(test.values.bg) * tcf).toFixed(2) : '',
-          cg: test.values.cg ? (parseFloat(test.values.cg) * tcf).toFixed(2) : '',
-          ab: test.values.ab ? (parseFloat(test.values.ab) * tcf).toFixed(2) : '',
-          bc: test.values.bc ? (parseFloat(test.values.bc) * tcf).toFixed(2) : '',
-          ca: test.values.ca ? (parseFloat(test.values.ca) * tcf).toFixed(2) : '',
-          an: test.values.an ? (parseFloat(test.values.an) * tcf).toFixed(2) : '',
-          bn: test.values.bn ? (parseFloat(test.values.bn) * tcf).toFixed(2) : '',
-          cn: test.values.cn ? (parseFloat(test.values.cn) * tcf).toFixed(2) : ''
+          ag: test.values.ag && test.values.ag.trim() !== '' && test.values.ag.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.ag) * tcf).toFixed(2) : 'N/A',
+          bg: test.values.bg && test.values.bg.trim() !== '' && test.values.bg.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.bg) * tcf).toFixed(2) : 'N/A',
+          cg: test.values.cg && test.values.cg.trim() !== '' && test.values.cg.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.cg) * tcf).toFixed(2) : 'N/A',
+          ab: test.values.ab && test.values.ab.trim() !== '' && test.values.ab.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.ab) * tcf).toFixed(2) : 'N/A',
+          bc: test.values.bc && test.values.bc.trim() !== '' && test.values.bc.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.bc) * tcf).toFixed(2) : 'N/A',
+          ca: test.values.ca && test.values.ca.trim() !== '' && test.values.ca.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.ca) * tcf).toFixed(2) : 'N/A',
+          an: test.values.an && test.values.an.trim() !== '' && test.values.an.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.an) * tcf).toFixed(2) : 'N/A',
+          bn: test.values.bn && test.values.bn.trim() !== '' && test.values.bn.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.bn) * tcf).toFixed(2) : 'N/A',
+          cn: test.values.cn && test.values.cn.trim() !== '' && test.values.cn.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.cn) * tcf).toFixed(2) : 'N/A'
         },
         unit: test.unit
       }))
@@ -729,7 +729,37 @@ const SwitchgearReport: React.FC = () => {
 
   const calculateCorrectedValue = (value: string): string => {
     const tcf = getTCF(formData.temperature.celsius);
-    return (parseFloat(value) * tcf).toFixed(2);
+    
+    if (!value || value.trim() === '' || value.trim().toLowerCase() === 'n/a') {
+      return 'N/A';
+    }
+    const parsedValue = parseFloat(value);
+    if (isNaN(parsedValue)) {
+      return 'N/A';
+    }
+    return (parsedValue * tcf).toFixed(2);
+  };
+
+  const fillEmptyFieldsWithNA = () => {
+    const newTests = formData.insulationResistanceTests.map(test => ({
+      ...test,
+      values: {
+        ag: test.values.ag && test.values.ag.trim() !== '' ? test.values.ag : 'N/A',
+        bg: test.values.bg && test.values.bg.trim() !== '' ? test.values.bg : 'N/A',
+        cg: test.values.cg && test.values.cg.trim() !== '' ? test.values.cg : 'N/A',
+        ab: test.values.ab && test.values.ab.trim() !== '' ? test.values.ab : 'N/A',
+        bc: test.values.bc && test.values.bc.trim() !== '' ? test.values.bc : 'N/A',
+        ca: test.values.ca && test.values.ca.trim() !== '' ? test.values.ca : 'N/A',
+        an: test.values.an && test.values.an.trim() !== '' ? test.values.an : 'N/A',
+        bn: test.values.bn && test.values.bn.trim() !== '' ? test.values.bn : 'N/A',
+        cn: test.values.cn && test.values.cn.trim() !== '' ? test.values.cn : 'N/A'
+      }
+    }));
+    
+    setFormData(prev => ({
+      ...prev,
+      insulationResistanceTests: newTests
+    }));
   };
 
   if (loading) {
@@ -879,7 +909,7 @@ const SwitchgearReport: React.FC = () => {
               <div>
                 <label htmlFor="humidity" className="form-label">Humidity (%):</label>
                 <div className="flex items-center">
-                  <input id="humidity" type="number" name="temperature.humidity" value={formData.temperature.humidity} onChange={(e) => setFormData(prev => ({ ...prev, temperature: { ...prev.temperature, humidity: Number(e.target.value) } }))} readOnly={!isEditing} className={`form-input text-sm w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  <input id="humidity" type="number" name="temperature.humidity" value={formData.temperature.humidity || ''} onChange={(e) => setFormData(prev => ({ ...prev, temperature: { ...prev.temperature, humidity: e.target.value === '' ? null : Number(e.target.value) } }))} readOnly={!isEditing} className={`form-input text-sm w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </div>
               </div>
               <div className="flex items-center mt-auto mb-1">
@@ -998,7 +1028,16 @@ const SwitchgearReport: React.FC = () => {
           <div className="mb-6 section-insulation-resistance">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Measured Insulation Resistance Values</h2>
-            <div className="flex justify-end mb-2">
+            <div className="flex justify-between items-center mb-2">
+              <div className="print:hidden">
+                <button
+                  onClick={fillEmptyFieldsWithNA}
+                  disabled={!isEditing}
+                  className={`px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${!isEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  Fill Empty Fields with N/A
+                </button>
+              </div>
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
                 <select value={formData.insulationResistanceTests[0]?.testVoltage || ''} onChange={(e) => { const newTests = formData.insulationResistanceTests.map(test => ({ ...test, testVoltage: e.target.value })); setFormData({ ...formData, insulationResistanceTests: newTests }); }} disabled={!isEditing} className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
@@ -1058,7 +1097,14 @@ const SwitchgearReport: React.FC = () => {
                       {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
                         <td key={key} className="px-3 py-2">
                           <div className="print:hidden">
-                            <input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.insulationResistanceTests]; newTests[index].values[key] = e.target.value; setFormData(prev => ({ ...prev, insulationResistanceTests: newTests, temperatureCorrectedTests: newTests.map(test => ({ ...test, values: { ag: test.values.ag ? (parseFloat(test.values.ag) * prev.temperature.tcf).toFixed(2) : '', bg: test.values.bg ? (parseFloat(test.values.bg) * prev.temperature.tcf).toFixed(2) : '', cg: test.values.cg ? (parseFloat(test.values.cg) * prev.temperature.tcf).toFixed(2) : '', ab: test.values.ab ? (parseFloat(test.values.ab) * prev.temperature.tcf).toFixed(2) : '', bc: test.values.bc ? (parseFloat(test.values.bc) * prev.temperature.tcf).toFixed(2) : '', ca: test.values.ca ? (parseFloat(test.values.ca) * prev.temperature.tcf).toFixed(2) : '', an: test.values.an ? (parseFloat(test.values.an) * prev.temperature.tcf).toFixed(2) : '', bn: test.values.bn ? (parseFloat(test.values.bn) * prev.temperature.tcf).toFixed(2) : '', cn: test.values.cn ? (parseFloat(test.values.cn) * prev.temperature.tcf).toFixed(2) : '' }, unit: test.unit })) })); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                            <input type="text" value={test.values[key]} onChange={(e) => { 
+                              const newTests = [...formData.insulationResistanceTests]; 
+                              newTests[index].values[key] = e.target.value; 
+                              setFormData(prev => ({ 
+                                ...prev, 
+                                insulationResistanceTests: newTests 
+                              })); 
+                            }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                           </div>
                           <div className="hidden print:block text-center">{test.values[key]}</div>
                         </td>
@@ -1122,7 +1168,7 @@ const SwitchgearReport: React.FC = () => {
                     <tr key={index}>
                       <td className="px-3 py-2"><div className="print:hidden"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{test.busSection}</div></td>
                       {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
-                        <td key={key} className="px-3 py-2"><div className="print:hidden"><input type="text" value={formData.insulationResistanceTests[index]?.values[key] ? (parseFloat(formData.insulationResistanceTests[index].values[key]) * formData.temperature.tcf).toFixed(2) : ''} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{formData.insulationResistanceTests[index]?.values[key] ? (parseFloat(formData.insulationResistanceTests[index].values[key]) * formData.temperature.tcf).toFixed(2) : ''}</div></td>
+                        <td key={key} className="px-3 py-2"><div className="print:hidden"><input type="text" value={formData.temperatureCorrectedTests[index]?.values[key] || 'N/A'} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{formData.temperatureCorrectedTests[index]?.values[key] || 'N/A'}</div></td>
                       ))}
                       <td className="px-3 py-2"><div className="print:hidden"><input type="text" value={test.unit} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{test.unit}</div></td>
                     </tr>

@@ -1827,8 +1827,8 @@ const MediumVoltageVLFReport: React.FC = () => {
                 <div className="flex-1 border-b border-gray-300 dark:border-gray-600">
                 <input
                   type="number"
-                    value={formData.temperature?.humidity || 0}
-                    onChange={(e) => handleChange('temperature', {...formData.temperature, humidity: Number(e.target.value)})}
+                    value={formData.temperature?.humidity || ''}
+                    onChange={(e) => handleChange('temperature', {...formData.temperature, humidity: e.target.value === '' ? null : Number(e.target.value)})}
                   readOnly={!isEditMode}
                     className={`w-full bg-transparent border-none focus:ring-0 ${!isEditMode ? 'cursor-default' : ''}`}
                 />

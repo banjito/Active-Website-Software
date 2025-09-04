@@ -727,7 +727,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
           </div>
                 <div className="mb-4 flex items-center">
                   <label htmlFor="humidity" className="form-label inline-block w-32">Humidity:</label>
-                  <input id="humidity" type="number" value={formData.temperature.humidity} onChange={(e) => handleChange('temperature.humidity', Number(e.target.value))} readOnly={!isEditing} className="form-input w-20" />
+                  <input id="humidity" type="number" value={formData.temperature.humidity || ''} onChange={(e) => handleChange('temperature.humidity', e.target.value === '' ? null : Number(e.target.value))} readOnly={!isEditing} className="form-input w-20" />
                   <span className="ml-2">%</span>
           </div>
           </div>

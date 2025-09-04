@@ -770,7 +770,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
                 </div>
                 <div>
                   <label htmlFor="temperature.humidity" className="form-label inline-block w-32">Humidity:</label>
-                  <input id="temperature.humidity" name="temperature.humidity" type="number" value={formData.temperature.humidity} onChange={(e) => handleChange('temperature.humidity', Number(e.target.value))} readOnly={!isEditing} className={`form-input w-20 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  <input id="temperature.humidity" name="temperature.humidity" type="number" value={formData.temperature.humidity || ''} onChange={(e) => handleChange('temperature.humidity', e.target.value === '' ? null : Number(e.target.value))} readOnly={!isEditing} className={`form-input w-20 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                   <span className="ml-1">%</span>
                 </div>
                 <div>

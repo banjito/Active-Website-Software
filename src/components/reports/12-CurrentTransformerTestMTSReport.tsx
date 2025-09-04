@@ -830,7 +830,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Humidity</label>
-              <input type="number" value={formData.temperature.humidity} onChange={e => handleChange('temperature.humidity', Number(e.target.value))} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                              <input type="number" value={formData.temperature.humidity || ''} onChange={e => handleChange('temperature.humidity', e.target.value === '' ? null : Number(e.target.value))} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Substation</label>

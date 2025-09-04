@@ -857,7 +857,7 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
               </div></div>
             <div className="mb-4 flex">
               <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">Humidity</label>
-              <div className="flex items-center flex-1"><div className="flex-1 border-b border-gray-300 dark:border-gray-600"><input type="number" value={formData.temperature?.humidity || 0} onChange={(e) => handleChange('temperature', {...formData.temperature, humidity: Number(e.target.value)})} readOnly={!isEditMode} className={`w-full bg-transparent border-none focus:ring-0 ${!isEditMode ? 'cursor-default' : ''}`}/></div><span className="ml-2">%</span></div>
+              <div className="flex items-center flex-1"><div className="flex-1 border-b border-gray-300 dark:border-gray-600"><input type="number" value={formData.temperature?.humidity || ''} onChange={(e) => handleChange('temperature', {...formData.temperature, humidity: e.target.value === '' ? null : Number(e.target.value)})} readOnly={!isEditMode} className={`w-full bg-transparent border-none focus:ring-0 ${!isEditMode ? 'cursor-default' : ''}`}/></div><span className="ml-2">%</span></div>
             </div>
             <div className="mb-4 flex">
               <label className="inline-block w-24 font-medium text-gray-700 dark:text-gray-300">Substation</label>
@@ -1160,14 +1160,14 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
                 <th className="border border-gray-300 dark:border-gray-700 px-3 py-2"></th><th className="border border-gray-300 dark:border-gray-700 px-3 py-2"></th>
                 {[ "phaseA", "phaseB", "phaseC" ].map(phase => (
                   <React.Fragment key={phase}>
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     <select onChange={(e) => { const newReadings = [...formData.withstandTest.readings]; newReadings.forEach(r => { r[phase].currentUnit = e.target.value; }); handleChange('withstandTest', { readings: newReadings });}}
                             value={formData.withstandTest.readings[0]?.[phase]?.currentUnit || 'mA'} disabled={!isEditMode}
                             className={`w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
                       {currentUnits.map(unit => (<option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>))}
                     </select>
                   </th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">nF</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">nF</th>
                   </React.Fragment>
                 ))}
             </tr></thead>
@@ -1175,7 +1175,7 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
             {formData.withstandTest?.readings.map((reading, index) => (
               <tr key={index}>
                 <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap"><input type="text" value={reading.timeMinutes} onChange={(e) => handleWithstandTestChange(index, 'timeMinutes', e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/></td>
-                <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap"><input type="text" value={reading.kVAC} onChange={(e) => handleWithstandTestChange(index, 'kVAC', e.target.value)} readOnly={!isEditMode} list="kvac-options-mts" className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/></td>
+                <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap"><input type="text" value={reading.kVAC} onChange={(e) => handleWithstandTestChange(index, 'kVAC', e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/></td>
                 {[ "phaseA", "phaseB", "phaseC" ].map(phase => (
                   <React.Fragment key={`${index}-${phase}`}>
                   <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap"><input type="text" value={reading[phase]?.mA || ''} onChange={(e) => handleWithstandTestChange(index, phase, e.target.value, phase, 'mA')} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/></td>
@@ -1187,12 +1187,6 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
             </tbody>
           </table>
         </div>
-        {/* kVAC suggestion list for MTS (keeps input editable) */}
-        <datalist id="kvac-options-mts">
-          {['7','10','16','24','33','43','63','103','123'].map(v => (
-            <option key={v} value={v} />
-          ))}
-        </datalist>
       </section>
 
       {/* Test Equipment Used */}

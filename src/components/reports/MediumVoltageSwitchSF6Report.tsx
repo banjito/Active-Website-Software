@@ -829,7 +829,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
               </div>
               <div>
                 <label className="form-label">Humidity (%):</label>
-                <input type="number" className={`form-input text-sm ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} value={formData.humidity} readOnly={!isEditMode} onChange={(e) => handleChange('humidity', Number(e.target.value))} />
+                <input type="number" className={`form-input text-sm ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`} value={formData.humidity || ''} readOnly={!isEditMode} onChange={(e) => handleChange('humidity', e.target.value === '' ? null : Number(e.target.value))} />
               </div>
             </div>
             <div className="flex items-end">

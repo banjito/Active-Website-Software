@@ -476,20 +476,24 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
   useEffect(() => {
     const { celsius } = formData.temperature;
     const tcf = getTCF(celsius);
+    
     setFormData(prev => {
       const newTempCorrected = prev.measuredInsulationResistance.map(row => {
         const correctedRow: InsulationResistanceRow = { busSection: row.busSection, ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' };
         (Object.keys(row) as Array<keyof InsulationResistanceRow>).forEach(key => {
           if (key !== 'busSection') {
-            const valStr = String(row[key]); // Ensure it's a string
-            if (valStr.startsWith('>') || valStr.startsWith('<') || valStr.toLowerCase() === 'n/a' || valStr.trim() === '') {
-                correctedRow[key] = valStr; // Keep special string values
+            const valStr = String(row[key] || ''); // Ensure it's a string and handle null/undefined
+            const trimmedVal = valStr.trim();
+            
+            // Check for empty, N/A, or special values
+            if (trimmedVal === '' || trimmedVal.toLowerCase() === 'n/a' || trimmedVal.startsWith('>') || trimmedVal.startsWith('<')) {
+                correctedRow[key] = 'N/A';
             } else {
-                const val = parseFloat(valStr);
-                if (!isNaN(val)) {
+                const val = parseFloat(trimmedVal);
+                if (!isNaN(val) && isFinite(val)) {
                     correctedRow[key] = (val * tcf).toFixed(2);
                 } else {
-                    correctedRow[key] = valStr; // Keep original if not a number
+                    correctedRow[key] = 'N/A'; // Show N/A for invalid numbers
                 }
             }
           }
@@ -599,6 +603,26 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
       current[keys[keys.length - 1]] = value;
       return { ...prev };
     });
+  };
+
+  const fillEmptyFieldsWithNA = () => {
+    const newTests = formData.measuredInsulationResistance.map(row => ({
+      ...row,
+      ag: row.ag && row.ag.trim() !== '' ? row.ag : 'N/A',
+      bg: row.bg && row.bg.trim() !== '' ? row.bg : 'N/A',
+      cg: row.cg && row.cg.trim() !== '' ? row.cg : 'N/A',
+      ab: row.ab && row.ab.trim() !== '' ? row.ab : 'N/A',
+      bc: row.bc && row.bc.trim() !== '' ? row.bc : 'N/A',
+      ca: row.ca && row.ca.trim() !== '' ? row.ca : 'N/A',
+      an: row.an && row.an.trim() !== '' ? row.an : 'N/A',
+      bn: row.bn && row.bn.trim() !== '' ? row.bn : 'N/A',
+      cn: row.cn && row.cn.trim() !== '' ? row.cn : 'N/A'
+    }));
+    
+    setFormData(prev => ({
+      ...prev,
+      measuredInsulationResistance: newTests
+    }));
   };
   
   const handleListInputChange = (listName: keyof FormData, index: number, field: string, value: any) => {
@@ -746,7 +770,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
             <div><label htmlFor="eqptLocation" className="form-label">Eqpt. Location:</label><input id="eqptLocation" type="text" value={formData.eqptLocation} onChange={e => handleInputChange('eqptLocation', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div className="md:col-span-2"><label htmlFor="userName" className="form-label">User:</label><input id="userName" type="text" value={formData.userName} onChange={e => handleInputChange('userName', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} /></div>
             <div className="md:col-span-2"><label htmlFor="customerLocation" className="form-label">Address:</label><input id="customerLocation" type="text" value={formData.customerLocation} readOnly className="form-input bg-gray-100 dark:bg-dark-200" style={{ width: `${Math.max(200, Math.min(500, formData.customerLocation.length * 10))}px`, minWidth: '200px', maxWidth: '500px' }} /></div>
-            <div><label htmlFor="humidity" className="form-label">Humidity %:</label><input id="humidity" type="number" value={formData.temperature.humidity} onChange={e => handleInputChange('temperature.humidity', parseFloat(e.target.value))} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Optional" /></div>
+            <div><label htmlFor="humidity" className="form-label">Humidity %:</label><input id="humidity" type="number" value={formData.temperature.humidity || ''} onChange={e => handleInputChange('temperature.humidity', e.target.value === '' ? null : parseFloat(e.target.value))} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Optional" /></div>
           </div>
           <JobInfoPrintTable
             data={{
@@ -851,19 +875,30 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold flex-grow">Electrical Tests - Measured Insulation Resistance Values</h2>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
-            <select
-              value={formData.insulationResistanceTestVoltage}
-              onChange={(e) => handleInputChange('insulationResistanceTestVoltage', e.target.value)}
-              disabled={!isEditing}
-              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            >
-              <option value="">Select...</option>
-              {INSULATION_RESISTANCE_TEST_VOLTAGES.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
+          <div className="flex items-center space-x-4">
+            <div className="print:hidden">
+              <button
+                onClick={fillEmptyFieldsWithNA}
+                disabled={!isEditing}
+                className={`px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${!isEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                Fill Empty Fields with N/A
+              </button>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
+              <select
+                value={formData.insulationResistanceTestVoltage}
+                onChange={(e) => handleInputChange('insulationResistanceTestVoltage', e.target.value)}
+                disabled={!isEditing}
+                className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              >
+                <option value="">Select...</option>
+                {INSULATION_RESISTANCE_TEST_VOLTAGES.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto section-insulation-resistance">

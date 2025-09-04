@@ -2659,6 +2659,7 @@ const MediumVoltageVLFReport: React.FC = () => {
                       value={reading.kVAC}
                       onChange={(e) => handleWithstandTestChange(index, 'kVAC', e.target.value)}
               readOnly={!isEditMode}
+                      list="kvac-options-ats"
                       className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
                   </td>
@@ -2721,6 +2722,12 @@ const MediumVoltageVLFReport: React.FC = () => {
             </tbody>
           </table>
         </div>
+        {/* kVAC suggestion list for ATS (keeps input editable) */}
+        <datalist id="kvac-options-ats">
+          {['10','13','16','21','26','28','32','36','38','42','44','57','80','84','110','140','160','168'].map(v => (
+            <option key={v} value={v} />
+          ))}
+        </datalist>
       </section>
 
       {/* Test Equipment Used */}

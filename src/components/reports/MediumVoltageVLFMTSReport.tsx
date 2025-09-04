@@ -1175,7 +1175,7 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
             {formData.withstandTest?.readings.map((reading, index) => (
               <tr key={index}>
                 <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap"><input type="text" value={reading.timeMinutes} onChange={(e) => handleWithstandTestChange(index, 'timeMinutes', e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/></td>
-                <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap"><input type="text" value={reading.kVAC} onChange={(e) => handleWithstandTestChange(index, 'kVAC', e.target.value)} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/></td>
+                <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap"><input type="text" value={reading.kVAC} onChange={(e) => handleWithstandTestChange(index, 'kVAC', e.target.value)} readOnly={!isEditMode} list="kvac-options-mts" className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/></td>
                 {[ "phaseA", "phaseB", "phaseC" ].map(phase => (
                   <React.Fragment key={`${index}-${phase}`}>
                   <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 whitespace-nowrap"><input type="text" value={reading[phase]?.mA || ''} onChange={(e) => handleWithstandTestChange(index, phase, e.target.value, phase, 'mA')} readOnly={!isEditMode} className={`w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/></td>
@@ -1187,6 +1187,12 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
             </tbody>
           </table>
         </div>
+        {/* kVAC suggestion list for MTS (keeps input editable) */}
+        <datalist id="kvac-options-mts">
+          {['7','10','16','24','33','43','63','103','123'].map(v => (
+            <option key={v} value={v} />
+          ))}
+        </datalist>
       </section>
 
       {/* Test Equipment Used */}

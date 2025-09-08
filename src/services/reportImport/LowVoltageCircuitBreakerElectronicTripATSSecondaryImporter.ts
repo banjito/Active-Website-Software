@@ -2,7 +2,7 @@ import { BaseImporter } from './BaseImporter';
 import { DatabaseSchema, ReportData, ReportImportResult, ReportImporter } from './types';
 
 export class LowVoltageCircuitBreakerElectronicTripATSSecondaryImporter extends BaseImporter implements ReportImporter {
-	protected tableName = 'low_voltage_cable_test_3sets';
+	protected tableName = 'low_voltage_circuit_breaker_electronic_trip_ats';
 	protected requiredColumns = ['job_id', 'user_id'];
 
 	canImport(data: ReportData): boolean {
@@ -86,14 +86,19 @@ export class LowVoltageCircuitBreakerElectronicTripATSSecondaryImporter extends 
 			}
 		}
 
+		// Build final payload using the correct table structure with separate JSONB columns
 		const payload: any = {
 			job_id: jobId,
 			user_id: userId,
-			data: {
-				...normalized,
-				status: 'PASS',
-				reportType: this.getReportType()
-			}
+			report_info: normalized.reportInfo,
+			nameplate_data: normalized.nameplateData,
+			visual_mechanical: { items: normalized.visualInspection },
+			device_settings: normalized.deviceSettings || {},
+			contact_resistance: normalized.breakerContactResistance || {},
+			insulation_resistance: normalized.contactorInsulation || {},
+			primary_injection: normalized.secondaryInjection || {}, // Note: secondary injection goes in primary_injection column
+			test_equipment: normalized.testEquipment || {},
+			comments: normalized.reportInfo.comments || ''
 		};
 		return payload;
 	}

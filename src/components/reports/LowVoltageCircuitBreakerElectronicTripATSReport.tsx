@@ -479,72 +479,73 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
     }
 
     try {
-      // First try loading from the normalized JSONB store
+      // First try loading from the correct table
       const { data: generic, error: genericErr } = await supabase
         .schema('neta_ops')
-        .from('low_voltage_cable_test_3sets')
+        .from('low_voltage_circuit_breaker_electronic_trip_ats')
         .select('*')
         .eq('id', reportId)
         .single();
 
-      if (generic && generic.data) {
-        const d = generic.data as any;
+      if (generic) {
+        // The table has separate JSONB columns, not a single 'data' field
+        const d = generic as any;
         setFormData(prev => {
           const updated = {
             ...prev,
             // Job info
-            customer: d.reportInfo?.customer ?? prev.customer,
-            address: d.reportInfo?.address ?? prev.address,
-            user: d.reportInfo?.userName ?? prev.user,
-            date: d.reportInfo?.date ?? prev.date,
-            identifier: d.reportInfo?.identifier ?? prev.identifier,
-            jobNumber: d.reportInfo?.jobNumber ?? prev.jobNumber,
-            technicians: d.reportInfo?.technicians ?? prev.technicians,
+            customer: d.report_info?.customer ?? prev.customer,
+            address: d.report_info?.address ?? prev.address,
+            user: d.report_info?.user ?? prev.user,
+            date: d.report_info?.date ?? prev.date,
+            identifier: d.report_info?.identifier ?? prev.identifier,
+            jobNumber: d.report_info?.jobNumber ?? prev.jobNumber,
+            technicians: d.report_info?.technicians ?? prev.technicians,
             temperature: {
               ...prev.temperature,
-              fahrenheit: d.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
-              celsius: d.reportInfo?.temperature?.celsius ?? prev.temperature.celsius,
-              tcf: d.reportInfo?.temperature?.correctionFactor ?? prev.temperature.tcf,
-              humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
+              fahrenheit: d.report_info?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
+              celsius: d.report_info?.temperature?.celsius ?? prev.temperature.celsius,
+              tcf: d.report_info?.temperature?.tcf ?? prev.temperature.tcf,
+              humidity: d.report_info?.temperature?.humidity ?? prev.temperature.humidity,
             },
-            substation: d.reportInfo?.substation ?? prev.substation,
-            eqptLocation: d.reportInfo?.eqptLocation ?? prev.eqptLocation,
+            substation: d.report_info?.substation ?? prev.substation,
+            eqptLocation: d.report_info?.eqptLocation ?? prev.eqptLocation,
 
             // Nameplate
-            manufacturer: d.nameplateData?.manufacturer ?? prev.manufacturer,
-            catalogNumber: d.nameplateData?.catalogNumber ?? prev.catalogNumber,
-            serialNumber: d.nameplateData?.serialNumber ?? prev.serialNumber,
-            type: d.nameplateData?.type ?? prev.type,
-            frameSize: d.nameplateData?.frameSize ?? prev.frameSize,
-            icRating: d.nameplateData?.icRating ?? prev.icRating,
-            tripUnitType: d.nameplateData?.tripUnitType ?? prev.tripUnitType,
-            ratingPlug: d.nameplateData?.ratingPlug ?? prev.ratingPlug,
-            curveNo: d.nameplateData?.curveNo ?? prev.curveNo,
-            chargeMotorVoltage: d.nameplateData?.chargeMotorVoltage ?? prev.chargeMotorVoltage,
-            operation: d.nameplateData?.operation ?? prev.operation,
-            mounting: d.nameplateData?.mounting ?? prev.mounting,
-            zoneInterlock: d.nameplateData?.zoneInterlock ?? prev.zoneInterlock,
-            thermalMemory: d.nameplateData?.thermalMemory ?? prev.thermalMemory,
+            manufacturer: d.nameplate_data?.manufacturer ?? prev.manufacturer,
+            catalogNumber: d.nameplate_data?.catalogNumber ?? prev.catalogNumber,
+            serialNumber: d.nameplate_data?.serialNumber ?? prev.serialNumber,
+            type: d.nameplate_data?.type ?? prev.type,
+            frameSize: d.nameplate_data?.frameSize ?? prev.frameSize,
+            icRating: d.nameplate_data?.icRating ?? prev.icRating,
+            tripUnitType: d.nameplate_data?.tripUnitType ?? prev.tripUnitType,
+            ratingPlug: d.nameplate_data?.ratingPlug ?? prev.ratingPlug,
+            curveNo: d.nameplate_data?.curveNo ?? prev.curveNo,
+            chargeMotorVoltage: d.nameplate_data?.chargeMotorVoltage ?? prev.chargeMotorVoltage,
+            operation: d.nameplate_data?.operation ?? prev.operation,
+            mounting: d.nameplate_data?.mounting ?? prev.mounting,
+            zoneInterlock: d.nameplate_data?.zoneInterlock ?? prev.zoneInterlock,
+            thermalMemory: d.nameplate_data?.thermalMemory ?? prev.thermalMemory,
 
             // Visual/mechanical
             visualInspectionItems: prev.visualInspectionItems.map(item => ({
               ...item,
-              result: (d.visualInspection && d.visualInspection[item.id]) ? d.visualInspection[item.id] : item.result,
+              result: (d.visual_mechanical?.items && d.visual_mechanical.items[item.id]) ? d.visual_mechanical.items[item.id] : item.result,
             })),
 
             // Device settings
-            deviceSettings: d.deviceSettings ?? prev.deviceSettings,
+            deviceSettings: d.device_settings ?? prev.deviceSettings,
 
             // Contact resistance
-            contactResistance: d.breakerContactResistance ? {
+            contactResistance: d.contact_resistance ? {
               ...prev.contactResistance,
-              ...d.breakerContactResistance,
+              ...d.contact_resistance,
             } : prev.contactResistance,
 
-            // Insulation resistance mapping from contactorInsulation
+            // Insulation resistance mapping from insulation_resistance
             insulationResistance: (() => {
               const ir = { ...prev.insulationResistance };
-              const src = d.contactorInsulation;
+              const src = d.insulation_resistance;
               if (src) {
                 ir.testVoltage = src.testVoltage ?? ir.testVoltage;
                 const rows = Array.isArray(src.rows) ? src.rows : [];
@@ -593,32 +594,31 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             })(),
 
             // Primary injection
-            primaryInjection: d.primaryInjection ? {
+            primaryInjection: d.primary_injection ? {
               ...prev.primaryInjection,
               testedSettings: {
-                longTime: { ...prev.primaryInjection.testedSettings.longTime, ...(d.primaryInjection.testedSettings?.longTime || {}) },
-                shortTime: { ...prev.primaryInjection.testedSettings.shortTime, ...(d.primaryInjection.testedSettings?.shortTime || {}) },
-                instantaneous: { ...prev.primaryInjection.testedSettings.instantaneous, ...(d.primaryInjection.testedSettings?.instantaneous || {}) },
-                groundFault: { ...prev.primaryInjection.testedSettings.groundFault, ...(d.primaryInjection.testedSettings?.groundFault || {}) },
+                longTime: { ...prev.primaryInjection.testedSettings.longTime, ...(d.primary_injection.testedSettings?.longTime || {}) },
+                shortTime: { ...prev.primaryInjection.testedSettings.shortTime, ...(d.primary_injection.testedSettings?.shortTime || {}) },
+                instantaneous: { ...prev.primaryInjection.testedSettings.instantaneous, ...(d.primary_injection.testedSettings?.instantaneous || {}) },
+                groundFault: { ...prev.primaryInjection.testedSettings.groundFault, ...(d.primary_injection.testedSettings?.groundFault || {}) },
               },
               results: {
-                longTime: { ...prev.primaryInjection.results.longTime, ...(d.primaryInjection.results?.longTime || {}) },
-                shortTime: { ...prev.primaryInjection.results.shortTime, ...(d.primaryInjection.results?.shortTime || {}) },
-                instantaneous: { ...prev.primaryInjection.results.instantaneous, ...(d.primaryInjection.results?.instantaneous || {}) },
-                groundFault: { ...prev.primaryInjection.results.groundFault, ...(d.primaryInjection.results?.groundFault || {}) },
+                longTime: { ...prev.primaryInjection.results.longTime, ...(d.primary_injection.results?.longTime || {}) },
+                shortTime: { ...prev.primaryInjection.results.shortTime, ...(d.primary_injection.results?.shortTime || {}) },
+                instantaneous: { ...prev.primaryInjection.results.instantaneous, ...(d.primary_injection.results?.instantaneous || {}) },
+                groundFault: { ...prev.primaryInjection.results.groundFault, ...(d.primary_injection.results?.groundFault || {}) },
               }
             } : prev.primaryInjection,
 
             // Test equipment
             testEquipment: {
-              megohmmeter: { ...prev.testEquipment.megohmmeter, ...(d.testEquipment?.megohmmeter || {}) },
-              lowResistanceOhmmeter: { ...prev.testEquipment.lowResistanceOhmmeter, ...(d.testEquipment?.lowResistanceOhmmeter || {}) },
-              primaryInjectionTestSet: { ...prev.testEquipment.primaryInjectionTestSet, ...(d.testEquipment?.primaryInjectionTestSet || {}) },
+              megohmmeter: { ...prev.testEquipment.megohmmeter, ...(d.test_equipment?.megohmmeter || {}) },
+              lowResistanceOhmmeter: { ...prev.testEquipment.lowResistanceOhmmeter, ...(d.test_equipment?.lowResistanceOhmmeter || {}) },
+              primaryInjectionTestSet: { ...prev.testEquipment.primaryInjectionTestSet, ...(d.test_equipment?.primaryInjectionTestSet || {}) },
             },
 
-            // Comments and status
-            comments: d.reportInfo?.comments ?? prev.comments,
-            status: d.status ?? prev.status,
+            // Comments
+            comments: d.comments ?? prev.comments,
           };
           return updated;
         });
@@ -627,12 +627,12 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
         // Also run backfill for generic table loads to ensure all data is populated
         try {
           console.log('=== GENERIC TABLE BACKFILL DEBUG START ===');
-          console.log('Running backfill for generic table load, identifier:', d.reportInfo?.identifier);
-          const identifier = d.reportInfo?.identifier;
+          console.log('Running backfill for generic table load, identifier:', d.report_info?.identifier);
+          const identifier = d.report_info?.identifier;
           if (identifier) {
             const { data: genList } = await supabase
               .schema('neta_ops')
-              .from('low_voltage_cable_test_3sets')
+              .from('low_voltage_circuit_breaker_electronic_trip_ats')
               .select('*')
               .filter('data->fields->>identifier', 'eq', identifier)
               .ilike('data->>reportType', '%LowVoltageCircuitBreaker%ATS%');
@@ -755,7 +755,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           if (identifier) {
             const { data: genList } = await supabase
               .schema('neta_ops')
-              .from('low_voltage_cable_test_3sets')
+              .from('low_voltage_circuit_breaker_electronic_trip_ats')
               .select('*')
               .filter('data->fields->>identifier', 'eq', identifier)
               .ilike('data->>reportType', '%LowVoltageCircuitBreaker%ATS%');

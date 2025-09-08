@@ -1881,7 +1881,7 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        setShowEstimate('letter');
+                        setShowEstimate('letters');
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >

@@ -1100,7 +1100,13 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
       setIsEditing(false); // Exit editing mode
       alert(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
-      navigateAfterSave(navigate, jobId, location); // Use utility function
+      
+      // If this was a new report, navigate to the edit URL with the new report ID
+      if (!reportId && result.data?.id) {
+        navigate(`/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-report/${result.data.id}?returnToAssets=true`, { replace: true });
+      } else {
+        navigateAfterSave(navigate, jobId, location); // Use utility function
+      }
     } catch (error: any) {
       console.error('Error saving report:', error);
       // Provide more specific error details if available

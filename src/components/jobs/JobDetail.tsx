@@ -1634,6 +1634,13 @@ export default function JobDetail() {
     const urlContent = asset.file_url.split(':/')[1];
     const pathSegments = urlContent.split('/');
 
+    console.log('🔍 Debug getReportEditPath:', {
+      file_url: asset.file_url,
+      urlContent,
+      pathSegments,
+      assetId: asset.id
+    });
+
     if (pathSegments[0] !== 'jobs' || !pathSegments[1] || !pathSegments[2]) {
       console.error('Unexpected asset.file_url format for report path:', asset.file_url, 'Expected format like "report:/jobs/JOB_ID/report-slug..."');
       return `/jobs/${id}`; // Fallback to current job detail page
@@ -1642,6 +1649,12 @@ export default function JobDetail() {
     const jobIdSegment = pathSegments[1]; // This is the job ID from the asset's URL
     let reportNameSlug = pathSegments[2];
     const reportIdFromUrl = pathSegments[3]; // This might be an actual ID or undefined
+    
+    console.log('🔍 Debug path extraction:', {
+      jobIdSegment,
+      reportNameSlug,
+      reportIdFromUrl
+    });
 
     // Clean query parameters from reportNameSlug if it's the last significant path part before query
     if (reportNameSlug.includes('?')) {
@@ -1718,16 +1731,22 @@ export default function JobDetail() {
     if (isTemplate) {
       // For templates (new reports), navigate to the path without a reportId segment.
       // The jobIdSegment here is the current job's ID passed via the template literal in defaultAssets
-      return `/jobs/${jobIdSegment}/${mappedReportName}`;
+      const templatePath = `/jobs/${jobIdSegment}/${mappedReportName}`;
+      console.log('🔍 Template path:', templatePath);
+      return templatePath;
     } else if (reportIdFromUrl) {
       // For existing reports that have an ID in their URL structure.
       // Add returnToAssets=true so that when users navigate back, they go to the assets tab
-      return `/jobs/${jobIdSegment}/${mappedReportName}/${reportIdFromUrl}?returnToAssets=true`;
+      const existingPath = `/jobs/${jobIdSegment}/${mappedReportName}/${reportIdFromUrl}?returnToAssets=true`;
+      console.log('🔍 Existing report path:', existingPath);
+      return existingPath;
     } else {
       // Fallback for existing assets that might have a malformed URL or if it's a template missed by the above check.
       // This primarily targets new reports from templates.
       console.warn('Asset is not a template and has no reportId in URL, defaulting to new report path:', asset.file_url);
-      return `/jobs/${jobIdSegment}/${mappedReportName}?returnToAssets=true`;
+      const fallbackPath = `/jobs/${jobIdSegment}/${mappedReportName}?returnToAssets=true`;
+      console.log('🔍 Fallback path:', fallbackPath);
+      return fallbackPath;
     }
   };
 

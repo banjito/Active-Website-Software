@@ -1073,6 +1073,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             user_id: user.id
           };
 
+          console.log('🔧 Creating asset with data:', assetData);
           const { data: assetResult, error: assetError } = await supabase
             .schema('neta_ops')
             .from('assets')
@@ -1080,11 +1081,16 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             .select()
             .maybeSingle();
 
-          if (assetError) throw assetError;
+          if (assetError) {
+            console.error('❌ Asset creation failed:', assetError);
+            throw assetError;
+          }
+          console.log('✅ Asset created successfully:', assetResult);
 
           // Link asset to job
           if (assetResult?.id) {
-            await supabase
+            console.log('🔗 Linking asset to job:', { job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            const { error: linkError } = await supabase
               .schema('neta_ops')
               .from('job_assets')
               .insert({
@@ -1092,6 +1098,14 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 asset_id: assetResult.id,
                 user_id: user.id
               });
+            
+            if (linkError) {
+              console.error('❌ Asset linking failed:', linkError);
+              throw linkError;
+            }
+            console.log('✅ Asset linked to job successfully');
+          } else {
+            console.warn('⚠️ No asset ID returned, cannot link to job');
           }
         }
       }

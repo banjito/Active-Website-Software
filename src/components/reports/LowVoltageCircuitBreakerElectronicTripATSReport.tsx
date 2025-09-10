@@ -1570,6 +1570,31 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
       }
       currentLevel[keys[keys.length - 1]] = value;
 
+      // Helper: parse percent like "-10%" or "5" to decimal (e.g., -0.1, 0.05)
+      const parsePercentToDecimal = (percentStr: string | undefined): number | null => {
+        if (percentStr === undefined || percentStr === null) return null;
+        const cleaned = `${percentStr}`.replace(/%/g, '');
+        const num = parseFloat(cleaned);
+        if (isNaN(num)) return null;
+        return num / 100;
+      };
+
+      // Helper: recompute tolerance bounds (Min2/Max2) from Test Amperes 2 and tolerance percents
+      const recomputeToleranceBounds = (section: 'longTime' | 'shortTime' | 'instantaneous' | 'groundFault') => {
+        const sectionResults = newState.primaryInjection?.results?.[section];
+        if (!sectionResults) return;
+        const base = Number(sectionResults.testAmperes2);
+        if (isNaN(base)) {
+          sectionResults.toleranceMin2 = '';
+          sectionResults.toleranceMax2 = '';
+          return;
+        }
+        const pMin = parsePercentToDecimal(sectionResults.toleranceMin);
+        const pMax = parsePercentToDecimal(sectionResults.toleranceMax);
+        sectionResults.toleranceMin2 = pMin === null ? '' : (base + (base * pMin)).toFixed(1);
+        sectionResults.toleranceMax2 = pMax === null ? '' : (base + (base * pMax)).toFixed(1);
+      };
+
       // Check if this is a rated amperes field and calculate related values
       if (path.includes('ratedAmperes1')) {
         const section = path.includes('longTime') ? 'longTime' 
@@ -1584,10 +1609,25 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           if (sectionResults) {
             sectionResults.testAmperes1 = calculated.testAmperes1;
             sectionResults.testAmperes2 = calculated.testAmperes2;
-            sectionResults.toleranceMin2 = calculated.toleranceMin2;
-            sectionResults.toleranceMax2 = calculated.toleranceMax2;
+            // Recompute tolerance bounds using current tolerance % values
+            recomputeToleranceBounds(section);
           }
         }
+      }
+
+      // Recompute tolerance bounds when tolerance %s or test amperes change
+      if (
+        path.includes('primaryInjection.results.') && (
+          path.endsWith('.toleranceMin') ||
+          path.endsWith('.toleranceMax') ||
+          path.endsWith('.testAmperes2')
+        )
+      ) {
+        const section = path.includes('longTime') ? 'longTime' 
+                     : path.includes('shortTime') ? 'shortTime'
+                     : path.includes('instantaneous') ? 'instantaneous'
+                     : 'groundFault';
+        recomputeToleranceBounds(section);
       }
 
       return newState;
@@ -1610,10 +1650,8 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
     
     return {
       testAmperes1: section === 'instantaneous' ? '' : (value * mult.test).toFixed(1),
-      testAmperes2: value.toString(),
-      toleranceMin2: (value * (1 - mult.tolerance)).toFixed(1),
-      toleranceMax2: (value * (1 + mult.tolerance)).toFixed(1)
-    };
+      testAmperes2: value.toString()
+    } as { testAmperes1: string; testAmperes2: string };
   };
 
   if (loading) {

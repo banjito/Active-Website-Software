@@ -2124,7 +2124,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
 
     const signatureUrl = (window as any)?.AMP_SIGNATURE_URL || '/img/brian-rodgers-signature.jpg';
     setLetterHtml(`
-      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; min-height: 1100px;">
+      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; min-height: 1100px; line-height: 1.35;">
         <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 8px; margin-bottom: 24px;">
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 40px; margin-right: 12px;" />
           <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
@@ -2345,7 +2345,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const scopeOption3 = formatCurrency(Math.ceil(processedQuote.finalValue * 1.09));
       
       return `
-        <div class="amp-scope-block" style="margin-bottom: 32px; border: 1px solid #ddd; border-radius: 8px; padding: 16px; background-color: #fafafa;">
+        <div class="amp-scope-block" style="margin-bottom: 32px; border: 1px solid #ddd; border-radius: 8px; padding: 16px; background-color: #fafafa; break-inside: avoid; page-break-inside: avoid;">
           <div class="amp-scope-controls print-hidden" contenteditable="false" style="display:flex;gap:6px;justify-content:flex-end;margin:-8px -8px 8px -8px;padding:6px 8px;">
             <button class="move-up" aria-label="Move scope up" title="Move up" style="border:1px solid #e5e7eb;background:#fff;border-radius:6px;padding:4px 8px;cursor:pointer;">▲</button>
             <button class="move-down" aria-label="Move scope down" title="Move down" style="border:1px solid #e5e7eb;background:#fff;border-radius:6px;padding:4px 8px;cursor:pointer;">▼</button>
@@ -2374,7 +2374,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     const signatureUrl = (window as any)?.AMP_SIGNATURE_URL || '/img/brian-rodgers-signature.jpg';
     
     setLetterHtml(`
-      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; min-height: 1100px;">
+      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; min-height: 1100px; line-height: 1.35;">
         <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 8px; margin-bottom: 24px;">
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 40px; margin-right: 12px;" />
           <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
@@ -2395,7 +2395,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         <div><b>Combined Scope of Work</b></div>
         ${sovTablesHtml}
         
-        <div style="margin-top: 32px; border: 2px solid #f26722; border-radius: 8px; padding: 20px; background-color: #fff8f5;">
+        <div class="amp-combined-summary" style="margin-top: 32px; border: 2px solid #f26722; border-radius: 8px; padding: 20px; background-color: #fff8f5; break-inside: avoid; page-break-inside: avoid;">
           <h3 style="font-size: 1.3em; font-weight: bold; margin-bottom: 16px; color: #f26722; text-align: center;">COMBINED PRICING SUMMARY</h3>
           
           <div style="text-align: center;">
@@ -2490,12 +2490,20 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             text-align: center;
             background: white;
           }
+          /* Keep the combined pricing card together */
+          .amp-combined-summary { break-inside: avoid; page-break-inside: avoid; }
           /* Hide the dropdown, keep the sentence */
           #neta-standard-select { display: none !important; }
           /* Hide scope reordering controls in print */
           .amp-scope-controls { display: none !important; }
-          ul, ol, li, p, div { break-inside: avoid; }
-          .procedure-section { break-inside: avoid; }
+          /* Avoid breaking inside key blocks only */
+          .amp-scope-block,
+          table, thead, tbody, tr, td, th,
+          .procedure-section { break-inside: avoid; page-break-inside: avoid; }
+          /* Reasonable widows/orphans to reduce awkward splits */
+          p { orphans: 2; widows: 2; }
+          /* Ensure images scale and don't force weird breaks */
+          img { max-width: 100%; height: auto; page-break-inside: avoid; }
           .print-page-break { page-break-before: always; break-before: page; }
         }
         /* Signature should render well */

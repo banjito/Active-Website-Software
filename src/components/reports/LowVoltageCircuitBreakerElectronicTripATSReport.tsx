@@ -781,23 +781,68 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 p3: data.insulation_resistance?.measured?.lineToLoad?.p3 ?? prev.insulationResistance.measured.lineToLoad.p3,
               },
             },
-            corrected: {
-              poleToPole: {
-                p1p2: (data as any)?.insulation_resistance?.corrected?.poleToPole?.p1p2 ?? prev.insulationResistance.corrected.poleToPole.p1p2,
-                p2p3: (data as any)?.insulation_resistance?.corrected?.poleToPole?.p2p3 ?? prev.insulationResistance.corrected.poleToPole.p2p3,
-                p3p1: (data as any)?.insulation_resistance?.corrected?.poleToPole?.p3p1 ?? prev.insulationResistance.corrected.poleToPole.p3p1,
-              },
-              poleToFrame: {
-                p1: (data as any)?.insulation_resistance?.corrected?.poleToFrame?.p1 ?? prev.insulationResistance.corrected.poleToFrame.p1,
-                p2: (data as any)?.insulation_resistance?.corrected?.poleToFrame?.p2 ?? prev.insulationResistance.corrected.poleToFrame.p2,
-                p3: (data as any)?.insulation_resistance?.corrected?.poleToFrame?.p3 ?? prev.insulationResistance.corrected.poleToFrame.p3,
-              },
-              lineToLoad: {
-                p1: (data as any)?.insulation_resistance?.corrected?.lineToLoad?.p1 ?? prev.insulationResistance.corrected.lineToLoad.p1,
-                p2: (data as any)?.insulation_resistance?.corrected?.lineToLoad?.p2 ?? prev.insulationResistance.corrected.lineToLoad.p2,
-                p3: (data as any)?.insulation_resistance?.corrected?.lineToLoad?.p3 ?? prev.insulationResistance.corrected.lineToLoad.p3,
-              },
-            },
+            corrected: (() => {
+              // Get the measured values first
+              const measured = {
+                poleToPole: {
+                  p1p2: (data as any)?.insulation_resistance?.measured?.poleToPole?.p1p2 ?? prev.insulationResistance.measured.poleToPole.p1p2,
+                  p2p3: (data as any)?.insulation_resistance?.measured?.poleToPole?.p2p3 ?? prev.insulationResistance.measured.poleToPole.p2p3,
+                  p3p1: (data as any)?.insulation_resistance?.measured?.poleToPole?.p3p1 ?? prev.insulationResistance.measured.poleToPole.p3p1,
+                },
+                poleToFrame: {
+                  p1: (data as any)?.insulation_resistance?.measured?.poleToFrame?.p1 ?? prev.insulationResistance.measured.poleToFrame.p1,
+                  p2: (data as any)?.insulation_resistance?.measured?.poleToFrame?.p2 ?? prev.insulationResistance.measured.poleToFrame.p2,
+                  p3: (data as any)?.insulation_resistance?.measured?.poleToFrame?.p3 ?? prev.insulationResistance.measured.poleToFrame.p3,
+                },
+                lineToLoad: {
+                  p1: (data as any)?.insulation_resistance?.measured?.lineToLoad?.p1 ?? prev.insulationResistance.measured.lineToLoad.p1,
+                  p2: (data as any)?.insulation_resistance?.measured?.lineToLoad?.p2 ?? prev.insulationResistance.measured.lineToLoad.p2,
+                  p3: (data as any)?.insulation_resistance?.measured?.lineToLoad?.p3 ?? prev.insulationResistance.measured.lineToLoad.p3,
+                },
+              };
+
+              // Calculate corrected values using current TCF
+              const calculateCorrectedValue = (value: string): string => {
+                if (value === "" || value === null || value === undefined) {
+                  return "";
+                }
+                
+                // Check if value contains non-numeric characters (like >, <, letters, etc.)
+                const hasNonNumericChars = /[^0-9.-]/.test(value);
+                if (hasNonNumericChars) {
+                  // If it contains symbols or letters, just return the original value
+                  return value;
+                }
+                
+                // If it's a pure number, proceed with TCF calculation
+                if (isNaN(Number(value))) {
+                  return "";
+                }
+                
+                const numericValue = parseFloat(value);
+                const tcf = getTCF(Math.round(((data.report_info?.temperature?.fahrenheit ?? prev.temperature.fahrenheit - 32) * 5) / 9));
+                if (!tcf || tcf === 0) return numericValue.toFixed(2);
+                return (numericValue * tcf).toFixed(2);
+              };
+
+              return {
+                poleToPole: {
+                  p1p2: calculateCorrectedValue(measured.poleToPole.p1p2),
+                  p2p3: calculateCorrectedValue(measured.poleToPole.p2p3),
+                  p3p1: calculateCorrectedValue(measured.poleToPole.p3p1),
+                },
+                poleToFrame: {
+                  p1: calculateCorrectedValue(measured.poleToFrame.p1),
+                  p2: calculateCorrectedValue(measured.poleToFrame.p2),
+                  p3: calculateCorrectedValue(measured.poleToFrame.p3),
+                },
+                lineToLoad: {
+                  p1: calculateCorrectedValue(measured.lineToLoad.p1),
+                  p2: calculateCorrectedValue(measured.lineToLoad.p2),
+                  p3: calculateCorrectedValue(measured.lineToLoad.p3),
+                },
+              };
+            })(),
           },
           primaryInjection: (data as any)?.primary_injection ? {
             testedSettings: {
@@ -994,15 +1039,96 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                         const rowLTL = findRow('line to load');
                         if (rowPTP) {
                           ir.measured.poleToPole = { p1p2: rowPTP.p1 ?? ir.measured.poleToPole.p1p2, p2p3: rowPTP.p2 ?? ir.measured.poleToPole.p2p3, p3p1: rowPTP.p3 ?? ir.measured.poleToPole.p3p1 };
-                          ir.corrected.poleToPole = { p1p2: rowPTP.p1c ?? ir.corrected.poleToPole.p1p2, p2p3: rowPTP.p2c ?? ir.corrected.poleToPole.p2p3, p3p1: rowPTP.p3c ?? ir.corrected.poleToPole.p3p1 };
+                          // Calculate corrected values using current TCF instead of using stored values
+                          const calculateCorrectedValue = (value: string): string => {
+                            if (value === "" || value === null || value === undefined) {
+                              return "";
+                            }
+                            
+                            // Check if value contains non-numeric characters (like >, <, letters, etc.)
+                            const hasNonNumericChars = /[^0-9.-]/.test(value);
+                            if (hasNonNumericChars) {
+                              // If it contains symbols or letters, just return the original value
+                              return value;
+                            }
+                            
+                            // If it's a pure number, proceed with TCF calculation
+                            if (isNaN(Number(value))) {
+                              return "";
+                            }
+                            
+                            const numericValue = parseFloat(value);
+                            const tcf = getTCF(Math.round(((fields?.temperatureF ?? prev.temperature.fahrenheit - 32) * 5) / 9));
+                            if (!tcf || tcf === 0) return numericValue.toFixed(2);
+                            return (numericValue * tcf).toFixed(2);
+                          };
+                          ir.corrected.poleToPole = { 
+                            p1p2: calculateCorrectedValue(rowPTP.p1 ?? ir.measured.poleToPole.p1p2), 
+                            p2p3: calculateCorrectedValue(rowPTP.p2 ?? ir.measured.poleToPole.p2p3), 
+                            p3p1: calculateCorrectedValue(rowPTP.p3 ?? ir.measured.poleToPole.p3p1) 
+                          };
                         }
                         if (rowPTF) {
                           ir.measured.poleToFrame = { p1: rowPTF.p1 ?? ir.measured.poleToFrame.p1, p2: rowPTF.p2 ?? ir.measured.poleToFrame.p2, p3: rowPTF.p3 ?? ir.measured.poleToFrame.p3 };
-                          ir.corrected.poleToFrame = { p1: rowPTF.p1c ?? ir.corrected.poleToFrame.p1, p2: rowPTF.p2c ?? ir.corrected.poleToFrame.p2, p3: rowPTF.p3c ?? ir.corrected.poleToFrame.p3 };
+                          // Calculate corrected values using current TCF instead of using stored values
+                          const calculateCorrectedValue = (value: string): string => {
+                            if (value === "" || value === null || value === undefined) {
+                              return "";
+                            }
+                            
+                            // Check if value contains non-numeric characters (like >, <, letters, etc.)
+                            const hasNonNumericChars = /[^0-9.-]/.test(value);
+                            if (hasNonNumericChars) {
+                              // If it contains symbols or letters, just return the original value
+                              return value;
+                            }
+                            
+                            // If it's a pure number, proceed with TCF calculation
+                            if (isNaN(Number(value))) {
+                              return "";
+                            }
+                            
+                            const numericValue = parseFloat(value);
+                            const tcf = getTCF(Math.round(((fields?.temperatureF ?? prev.temperature.fahrenheit - 32) * 5) / 9));
+                            if (!tcf || tcf === 0) return numericValue.toFixed(2);
+                            return (numericValue * tcf).toFixed(2);
+                          };
+                          ir.corrected.poleToFrame = { 
+                            p1: calculateCorrectedValue(rowPTF.p1 ?? ir.measured.poleToFrame.p1), 
+                            p2: calculateCorrectedValue(rowPTF.p2 ?? ir.measured.poleToFrame.p2), 
+                            p3: calculateCorrectedValue(rowPTF.p3 ?? ir.measured.poleToFrame.p3) 
+                          };
                         }
                         if (rowLTL) {
                           ir.measured.lineToLoad = { p1: rowLTL.p1 ?? ir.measured.lineToLoad.p1, p2: rowLTL.p2 ?? ir.measured.lineToLoad.p2, p3: rowLTL.p3 ?? ir.measured.lineToLoad.p3 };
-                          ir.corrected.lineToLoad = { p1: rowLTL.p1c ?? ir.corrected.lineToLoad.p1, p2: rowLTL.p2c ?? ir.corrected.lineToLoad.p2, p3: rowLTL.p3c ?? ir.corrected.lineToLoad.p3 };
+                          // Calculate corrected values using current TCF instead of using stored values
+                          const calculateCorrectedValue = (value: string): string => {
+                            if (value === "" || value === null || value === undefined) {
+                              return "";
+                            }
+                            
+                            // Check if value contains non-numeric characters (like >, <, letters, etc.)
+                            const hasNonNumericChars = /[^0-9.-]/.test(value);
+                            if (hasNonNumericChars) {
+                              // If it contains symbols or letters, just return the original value
+                              return value;
+                            }
+                            
+                            // If it's a pure number, proceed with TCF calculation
+                            if (isNaN(Number(value))) {
+                              return "";
+                            }
+                            
+                            const numericValue = parseFloat(value);
+                            const tcf = getTCF(Math.round(((fields?.temperatureF ?? prev.temperature.fahrenheit - 32) * 5) / 9));
+                            if (!tcf || tcf === 0) return numericValue.toFixed(2);
+                            return (numericValue * tcf).toFixed(2);
+                          };
+                          ir.corrected.lineToLoad = { 
+                            p1: calculateCorrectedValue(rowLTL.p1 ?? ir.measured.lineToLoad.p1), 
+                            p2: calculateCorrectedValue(rowLTL.p2 ?? ir.measured.lineToLoad.p2), 
+                            p3: calculateCorrectedValue(rowLTL.p3 ?? ir.measured.lineToLoad.p3) 
+                          };
                         }
                       }
                       return ir;
@@ -1267,6 +1393,61 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
     });
   }, [formData.temperature.fahrenheit, formData.temperature.celsius]); // Trigger when temperature changes
 
+  // Auto-recalculate corrected values when TCF changes (for imported reports)
+  useEffect(() => {
+    const calculateCorrectedValue = (value: string): string => {
+      if (value === "" || value === null || value === undefined) {
+        return "";
+      }
+      
+      // Check if value contains non-numeric characters (like >, <, letters, etc.)
+      const hasNonNumericChars = /[^0-9.-]/.test(value);
+      if (hasNonNumericChars) {
+        // If it contains symbols or letters, just return the original value
+        return value;
+      }
+      
+      // If it's a pure number, proceed with TCF calculation
+      if (isNaN(Number(value))) {
+        return "";
+      }
+      
+      const numericValue = parseFloat(value);
+      const tcf = formData.temperature.tcf;
+      // Handle cases where tcf might be zero or invalid
+      if (!tcf || tcf === 0) return numericValue.toFixed(2);
+      return (numericValue * tcf).toFixed(2);
+    };
+
+    setFormData(prev => {
+      const newCorrected = {
+        poleToPole: {
+          p1p2: calculateCorrectedValue(prev.insulationResistance.measured.poleToPole.p1p2),
+          p2p3: calculateCorrectedValue(prev.insulationResistance.measured.poleToPole.p2p3),
+          p3p1: calculateCorrectedValue(prev.insulationResistance.measured.poleToPole.p3p1),
+        },
+        poleToFrame: {
+          p1: calculateCorrectedValue(prev.insulationResistance.measured.poleToFrame.p1),
+          p2: calculateCorrectedValue(prev.insulationResistance.measured.poleToFrame.p2),
+          p3: calculateCorrectedValue(prev.insulationResistance.measured.poleToFrame.p3),
+        },
+        lineToLoad: {
+          p1: calculateCorrectedValue(prev.insulationResistance.measured.lineToLoad.p1),
+          p2: calculateCorrectedValue(prev.insulationResistance.measured.lineToLoad.p2),
+          p3: calculateCorrectedValue(prev.insulationResistance.measured.lineToLoad.p3),
+        }
+      };
+
+      return {
+        ...prev,
+        insulationResistance: {
+          ...prev.insulationResistance,
+          corrected: newCorrected
+        }
+      };
+    });
+  }, [formData.temperature.tcf]); // Trigger when TCF changes
+
   // --- Temperature Handlers (from PanelboardReport) ---
   const handleFahrenheitChange = (fahrenheit: number) => {
     const calculatedCelsius = ((fahrenheit - 32) * 5) / 9;
@@ -1307,9 +1488,22 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
     if (!isEditing) return; // Only calculate in edit mode
 
     const calculateCorrectedValue = (value: string): string => {
-      if (value === "" || value === null || value === undefined || isNaN(Number(value))) {
-          return "";
+      if (value === "" || value === null || value === undefined) {
+        return "";
       }
+      
+      // Check if value contains non-numeric characters (like >, <, letters, etc.)
+      const hasNonNumericChars = /[^0-9.-]/.test(value);
+      if (hasNonNumericChars) {
+        // If it contains symbols or letters, just return the original value
+        return value;
+      }
+      
+      // If it's a pure number, proceed with TCF calculation
+      if (isNaN(Number(value))) {
+        return "";
+      }
+      
       const numericValue = parseFloat(value);
       const tcf = formData.temperature.tcf;
       // Handle cases where tcf might be zero or invalid

@@ -312,6 +312,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   const [showTravel, setShowTravel] = useState(false);
   const [isGettingData, setIsGettingData] = useState(true);
   const [opportunityData, setOpportunityData] = useState<OpportunityData | null>(null);
+  const [isManualLaborHours, setIsManualLaborHours] = useState(false);
   const { user } = useAuth(); // Get user at component level
 
   // State for the travel data object
@@ -697,16 +698,35 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     // Calculate total work hours
     const totalWorkHours = men * hoursPerDay * daysOnsite;
     
-    // Default distribution: 80% straight time, 15% overtime, 5% double time
-    // Use smart rounding to ensure total equals target hours
-    const straightTimeTarget = totalWorkHours * 0.8;
-    const overtimeTarget = totalWorkHours * 0.15;
-    const doubleTimeTarget = totalWorkHours * 0.05;
+    // New formula based on hours per day:
+    // 0-8 hours/day: all straight time
+    // 8-12 hours/day: first 8 hours straight, rest overtime
+    // 12+ hours/day: first 8 hours straight, next 4 hours overtime, rest double time
+    let straightTime = 0;
+    let overtime = 0;
+    let doubleTime = 0;
     
-    // Round to integers while ensuring total equals totalWorkHours
-    const straightTime = Math.floor(straightTimeTarget);
-    const overtime = Math.floor(overtimeTarget);
-    const doubleTime = totalWorkHours - straightTime - overtime; // Use remainder for double time
+    if (totalWorkHours > 0 && hoursPerDay > 0) {
+      const totalDays = Math.ceil(totalWorkHours / hoursPerDay);
+      
+      for (let day = 0; day < totalDays; day++) {
+        const hoursThisDay = Math.min(hoursPerDay, totalWorkHours - (day * hoursPerDay));
+        
+        if (hoursThisDay <= 8) {
+          // All hours are straight time
+          straightTime += hoursThisDay;
+        } else if (hoursThisDay <= 12) {
+          // First 8 hours are straight time, rest is overtime
+          straightTime += 8;
+          overtime += (hoursThisDay - 8);
+        } else {
+          // First 8 hours are straight time, next 4 are overtime, rest is double time
+          straightTime += 8;
+          overtime += 4;
+          doubleTime += (hoursThisDay - 12);
+        }
+      }
+    }
     
     return {
       straightTime,
@@ -1181,6 +1201,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       
       // Apply formula automatically when SOV item labor data changes
       if (section === 'sov' && (field === 'laborMen' || field === 'laborHours' || field === 'quantity')) {
+        setIsManualLaborHours(false); // Reset manual flag when SOV data changes
         const defaultHours = calculateDefaultLaborHours(newData);
         newData.hoursSummary = {
           ...newData.hoursSummary,
@@ -1214,6 +1235,12 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
 
   const handleHoursSummaryChange = (field: string, value: string) => {
     console.log('handleHoursSummaryChange called:', { field, value });
+    
+    // Set manual flag when labor hours are edited
+    if (field === 'straightTimeHours' || field === 'overtimeHours' || field === 'doubleTimeHours') {
+      setIsManualLaborHours(true);
+    }
+    
     setData(prev => {
       const newData = {
         ...prev,
@@ -1225,6 +1252,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       
       // Apply formula automatically when men or hoursPerDay changes
       if (field === 'men' || field === 'hoursPerDay') {
+        setIsManualLaborHours(false); // Reset manual flag when formula inputs change
         const defaultHours = calculateDefaultLaborHours(newData);
         newData.hoursSummary = {
           ...newData.hoursSummary,
@@ -1356,10 +1384,10 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         nonSovHours: nonSovLaborHours,
         travelHours: totalTravelHours,
         totalHours: totalHours,
-        // Don't override manually entered labor hours - keep existing values
-        // straightTimeHours: straightTimeHours,
-        // overtimeHours: overtimeHours,
-        // doubleTimeHours: doubleTimeHours
+        // Apply formula automatically when SOV data or hours per day changes, unless manually edited
+        straightTimeHours: isManualLaborHours ? prev.hoursSummary.straightTimeHours : straightTimeHours,
+        overtimeHours: isManualLaborHours ? prev.hoursSummary.overtimeHours : overtimeHours,
+        doubleTimeHours: isManualLaborHours ? prev.hoursSummary.doubleTimeHours : doubleTimeHours
       }
     }));
   }, [data.sovItems, data.nonSovItems, data.hoursSummary.men, data.hoursSummary.hoursPerDay, showTravel, travelData]);
@@ -3983,6 +4011,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                         </div>
                         <button
                           onClick={() => {
+                            setIsManualLaborHours(false); // Reset manual flag
                             const defaultHours = calculateDefaultLaborHours(data);
                             setData(prev => ({
                               ...prev,

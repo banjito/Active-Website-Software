@@ -1635,6 +1635,8 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             sectionResults.toleranceMax2 = calculated.toleranceMax2;
             // Recompute based on current tolerance % using bottom testAmperes2
             recomputeBottomTolerance(newState, section as SectionKey);
+            // Also respect editable multiplier to derive top-row test amperes
+            recomputeTopFromMultiplier(newState, section as SectionKey);
           }
         }
       }
@@ -1648,6 +1650,10 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           : null;
         if (section && (path.endsWith('.testAmperes2') || path.endsWith('.toleranceMin') || path.endsWith('.toleranceMax'))) {
           recomputeBottomTolerance(newState, section);
+        }
+        // If user edits the multiplier, recompute the top-row test amperes
+        if (section && path.endsWith('.multiplier')) {
+          recomputeTopFromMultiplier(newState, section);
         }
       }
 
@@ -1687,6 +1693,20 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   };
 
   type SectionKey = 'longTime' | 'shortTime' | 'instantaneous' | 'groundFault';
+
+  // Recompute top-row test amperes from ratedAmperes1 and editable multiplier
+  const recomputeTopFromMultiplier = (state: any, section: SectionKey) => {
+    const res = state?.primaryInjection?.results?.[section];
+    if (!res) return;
+    const rated = Number(res.ratedAmperes1);
+    const multPct = parsePercent(res.multiplier);
+    if (!isFinite(rated) || !isFinite(multPct) || multPct === 0) {
+      // For instantaneous allow blank; others clear if invalid
+      res.testAmperes1 = section === 'instantaneous' ? (res.testAmperes1 || '') : '';
+      return;
+    }
+    res.testAmperes1 = (rated * multPct).toFixed(1);
+  };
 
   // Recompute bottom-row tolerance min/max based on bottom-row testAmperes2 and tolerance % inputs
   const recomputeBottomTolerance = (state: any, section: SectionKey) => {

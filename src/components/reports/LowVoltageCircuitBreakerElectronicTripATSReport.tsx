@@ -500,13 +500,21 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             identifier: d.reportInfo?.identifier ?? prev.identifier,
             jobNumber: d.reportInfo?.jobNumber ?? prev.jobNumber,
             technicians: d.reportInfo?.technicians ?? prev.technicians,
-            temperature: {
-              ...prev.temperature,
-              fahrenheit: d.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
-              celsius: d.reportInfo?.temperature?.celsius ?? prev.temperature.celsius,
-              tcf: d.reportInfo?.temperature?.correctionFactor ?? prev.temperature.tcf,
-              humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
-            },
+            temperature: (() => {
+              const fahrenheit = d.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit;
+              const celsius = d.reportInfo?.temperature?.celsius ?? prev.temperature.celsius;
+              // Always recalculate TCF based on the temperature values to ensure consistency
+              const calculatedCelsius = celsius || (fahrenheit ? Math.round(((fahrenheit - 32) * 5) / 9) : prev.temperature.celsius);
+              const calculatedTCF = getTCF(calculatedCelsius);
+              
+              return {
+                ...prev.temperature,
+                fahrenheit: fahrenheit || prev.temperature.fahrenheit,
+                celsius: calculatedCelsius,
+                tcf: calculatedTCF,
+                humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
+              };
+            })(),
             substation: d.reportInfo?.substation ?? prev.substation,
             eqptLocation: d.reportInfo?.eqptLocation ?? prev.eqptLocation,
 
@@ -718,7 +726,22 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           identifier: data.report_info?.identifier || prev.identifier,
           jobNumber: data.report_info?.jobNumber || prev.jobNumber,
           technicians: data.report_info?.technicians || prev.technicians,
-          temperature: data.report_info?.temperature || prev.temperature,
+          temperature: (() => {
+            const tempData = data.report_info?.temperature || prev.temperature;
+            const fahrenheit = tempData?.fahrenheit ?? prev.temperature.fahrenheit;
+            const celsius = tempData?.celsius ?? prev.temperature.celsius;
+            // Always recalculate TCF based on the temperature values to ensure consistency
+            const calculatedCelsius = celsius || (fahrenheit ? Math.round(((fahrenheit - 32) * 5) / 9) : prev.temperature.celsius);
+            const calculatedTCF = getTCF(calculatedCelsius);
+            
+            return {
+              ...prev.temperature,
+              fahrenheit: fahrenheit || prev.temperature.fahrenheit,
+              celsius: calculatedCelsius,
+              tcf: calculatedTCF,
+              humidity: tempData?.humidity ?? prev.temperature.humidity,
+            };
+          })(),
           substation: data.report_info?.substation || prev.substation,
           eqptLocation: data.report_info?.eqptLocation || prev.eqptLocation,
           manufacturer: data.nameplate_data?.manufacturer || '',
@@ -1217,6 +1240,32 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
       ]
     }));
   }, []); // Run once on mount
+
+  // Auto-calculate TCF when temperature values change (for imported reports)
+  useEffect(() => {
+    setFormData(prev => {
+      const currentCelsius = prev.temperature.celsius;
+      const currentFahrenheit = prev.temperature.fahrenheit;
+      const currentTCF = prev.temperature.tcf;
+      
+      // Recalculate TCF if we have a valid temperature
+      if (currentCelsius !== null && currentCelsius !== undefined && !isNaN(currentCelsius)) {
+        const calculatedTCF = getTCF(currentCelsius);
+        // Only update if the TCF is different to avoid infinite loops
+        if (calculatedTCF !== currentTCF) {
+          return {
+            ...prev,
+            temperature: {
+              ...prev.temperature,
+              tcf: calculatedTCF
+            }
+          };
+        }
+      }
+      
+      return prev; // No changes needed
+    });
+  }, [formData.temperature.fahrenheit, formData.temperature.celsius]); // Trigger when temperature changes
 
   // --- Temperature Handlers (from PanelboardReport) ---
   const handleFahrenheitChange = (fahrenheit: number) => {

@@ -1,0 +1,496 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36EP8VRKWCQ4RG6399RD5VD",
+  "reportType": "LowVoltageSwitchReport.tsx",
+  "createdAt": "2025-08-21T13:56:01.523Z",
+  "updatedAt": "2025-08-21T13:56:57.157Z",
+  "version": 209,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "2345234"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "2543253"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "452345"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "23452345"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "2345234"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "532"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "275760-02-04"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "2435234"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "4325324"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": "5324"
+        }
+      ]
+    },
+    {
+      "title": "Enclosure Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "32435234"
+        },
+        {
+          "label": "Catalog No.",
+          "type": "text",
+          "value": "5234523"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "452345"
+        },
+        {
+          "label": "Series",
+          "type": "text",
+          "value": "3245324"
+        },
+        {
+          "label": "Type",
+          "type": "text",
+          "value": "3423534"
+        },
+        {
+          "label": "System Voltage",
+          "type": "text",
+          "value": "52345"
+        },
+        {
+          "label": "Rated Voltage",
+          "type": "text",
+          "value": "2345324"
+        },
+        {
+          "label": "Rated Current",
+          "type": "text",
+          "value": "52345234"
+        },
+        {
+          "label": "AIC Rating (kA)",
+          "type": "text",
+          "value": "45243"
+        },
+        {
+          "label": "Phase Configuration",
+          "type": "text",
+          "value": "523452"
+        }
+      ]
+    },
+    {
+      "title": "Switch Data",
+      "fields": [
+        {
+          "label": "Switch Rows",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "position": "3425",
+                "manufacturer": "345234",
+                "catalogNo": "2345324",
+                "serialNo": "53245",
+                "type": "3245",
+                "ratedAmperage": "32453",
+                "ratedVoltage": "2453"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Fuse Data",
+      "fields": [
+        {
+          "label": "Fuses",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "position": "432523",
+                "manufacturer": "45324",
+                "catalogNo": "5324",
+                "fuseClass": "53245",
+                "amperage": "53245",
+                "aic": "3425324",
+                "voltage": "5"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance",
+          "type": "table",
+          "value": {
+            "testVoltage": "1000V",
+            "rows": [
+              {
+                "units": "MΩ",
+                "position": "3245234",
+                "p1p2": "5324",
+                "p2p3": "5324",
+                "p3p1": "5342",
+                "p1_frame": "3425",
+                "p2_frame": "34525",
+                "p3_frame": "34532",
+                "p1_line": "2345",
+                "p2_line": "3245324",
+                "p3_line": "5"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Contact Resistance",
+      "fields": [
+        {
+          "label": "Contact Resistance",
+          "type": "table",
+          "value": {
+            "units": "μΩ",
+            "poleToPole": {
+              "p1p2": "3425",
+              "p2p3": "34523",
+              "p3p1": "45324"
+            },
+            "poleToFrame": {
+              "p1": "53245",
+              "p2": "3245",
+              "p3": "45"
+            },
+            "lineToLoad": {
+              "p1": "3245234",
+              "p2": "5324",
+              "p3": "534"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Visual & Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual & Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.5.1.1.A.1",
+                "description": "Compare equipment nameplate data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.2",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.3",
+                "description": "Inspect anchorage, alignment, grounding, and required clearances.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.4",
+                "description": "Verify the unit is clean.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.5",
+                "description": "Verify correct blade alignment, blade penetration, travel stops, and mechanical operation.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.6",
+                "description": "Verify that fuse sizes and types are in accordance with drawings, short-circuit studies, and coordination study.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.7",
+                "description": "Verify that each fuse has adequate mechanical support and contact integrity.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.8.1",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.5.1.1.B.1.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.9",
+                "description": "Verify operation and sequencing of interlocking systems.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.10",
+                "description": "Verify correct phase barrier installation.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.11",
+                "description": "Verify correct operation of all indicating and control devices.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.5.1.1.A.12",
+                "description": "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+                "result": "Satisfactory"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "2435234"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "52345"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "2345"
+        },
+        {
+          "label": "Low Resistance Ohmmeter",
+          "type": "text",
+          "value": "432534"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "5234"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "523"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "43253452"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "23452345",
+    "reportType": "LowVoltageSwitchReport",
+    "fields": {
+      "customer": "2345234",
+      "jobNumber": "2543253",
+      "address": "452345",
+      "identifier": "23452345",
+      "technicians": "2345234",
+      "substation": "532",
+      "date": "275760-02-04",
+      "eqptLocation": "2435234",
+      "temperatureF": "4325324",
+      "humidity": "5324",
+      "manufacturer": "32435234",
+      "catalogNo": "5234523",
+      "serialNumber": "452345",
+      "series": "3245324",
+      "type": "3423534",
+      "systemVoltage": "52345",
+      "ratedVoltage": "2345324",
+      "ratedCurrent": "52345234",
+      "aicRating": "45243",
+      "phaseConfiguration": "523452",
+      "switchRows": {
+        "rows": [
+          {
+            "position": "3425",
+            "manufacturer": "345234",
+            "catalogNo": "2345324",
+            "serialNo": "53245",
+            "type": "3245",
+            "ratedAmperage": "32453",
+            "ratedVoltage": "2453"
+          }
+        ]
+      },
+      "fuseRows": {
+        "rows": [
+          {
+            "position": "432523",
+            "manufacturer": "45324",
+            "catalogNo": "5324",
+            "fuseClass": "53245",
+            "amperage": "53245",
+            "aic": "3425324",
+            "voltage": "5"
+          }
+        ]
+      },
+      "switchIrTables": {
+        "testVoltage": "1000V",
+        "rows": [
+          {
+            "units": "MΩ",
+            "position": "3245234",
+            "p1p2": "5324",
+            "p2p3": "5324",
+            "p3p1": "5342",
+            "p1_frame": "3425",
+            "p2_frame": "34525",
+            "p3_frame": "34532",
+            "p1_line": "2345",
+            "p2_line": "3245324",
+            "p3_line": "5"
+          }
+        ]
+      },
+      "switchContactLV": {
+        "units": "μΩ",
+        "poleToPole": {
+          "p1p2": "3425",
+          "p2p3": "34523",
+          "p3p1": "45324"
+        },
+        "poleToFrame": {
+          "p1": "53245",
+          "p2": "3245",
+          "p3": "45"
+        },
+        "lineToLoad": {
+          "p1": "3245234",
+          "p2": "5324",
+          "p3": "534"
+        }
+      },
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.5.1.1.A.1",
+            "description": "Compare equipment nameplate data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.2",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.3",
+            "description": "Inspect anchorage, alignment, grounding, and required clearances.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.4",
+            "description": "Verify the unit is clean.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.5",
+            "description": "Verify correct blade alignment, blade penetration, travel stops, and mechanical operation.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.6",
+            "description": "Verify that fuse sizes and types are in accordance with drawings, short-circuit studies, and coordination study.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.7",
+            "description": "Verify that each fuse has adequate mechanical support and contact integrity.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.8.1",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.5.1.1.B.1.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.9",
+            "description": "Verify operation and sequencing of interlocking systems.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.10",
+            "description": "Verify correct phase barrier installation.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.11",
+            "description": "Verify correct operation of all indicating and control devices.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.5.1.1.A.12",
+            "description": "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+            "result": "Satisfactory"
+          }
+        ]
+      },
+      "megohmmeter": "2435234",
+      "megohmmeterSerial": "52345",
+      "megohmmeterAmpId": "2345",
+      "lro": "432534",
+      "lroSerial": "5234",
+      "lroAmpId": "523",
+      "comments": "43253452"
+    }
+  }
+}

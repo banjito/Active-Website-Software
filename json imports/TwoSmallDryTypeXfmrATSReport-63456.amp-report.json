@@ -1,0 +1,446 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36FT647AJ5YH6TE67GZW8A1",
+  "reportType": "TwoSmallDryTypeXfmrATSReport.tsx",
+  "createdAt": "2025-08-21T14:15:39.111Z",
+  "updatedAt": "2025-08-21T14:16:33.775Z",
+  "version": 194,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "346354"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "34563546"
+        },
+        {
+          "label": "Job Number",
+          "type": "text",
+          "value": "3456345"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "6345-03-04"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "3456345"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "63456"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "35465"
+        },
+        {
+          "label": "Temp. (°F)",
+          "type": "number",
+          "value": 68
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": 50
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "436445"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "3456345"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Nameplate Data",
+          "type": "table",
+          "value": {
+            "manufacturer": "",
+            "catalogNumber": "",
+            "serialNumber": "",
+            "kva": "097897",
+            "kvaSecondary": "897",
+            "tempRise": "78",
+            "impedance": "7",
+            "primary": {
+              "volts": "878",
+              "voltsSecondary": "89079",
+              "connection": "Delta",
+              "material": "Aluminum"
+            },
+            "secondary": {
+              "volts": "08978",
+              "voltsSecondary": "0",
+              "connection": "Wye",
+              "material": "Aluminum"
+            },
+            "tapVoltages": [
+              "7089",
+              "87",
+              "7890",
+              "8709",
+              "78",
+              "87",
+              "788"
+            ],
+            "tapPositionCurrent": "7007",
+            "tapPositionSecondary": "89",
+            "tapSpecificVolts": "",
+            "tapSpecificPercent": "78"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.2.11.A.1",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.11.A.2",
+                "description": "Inspect anchorage, alignment, and grounding.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.11.A.3",
+                "description": "*Prior to cleaning the unit, perform as-found tests.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.11.A.4",
+                "description": "Clean the unit.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.11.A.5",
+                "description": "Inspect bolted electrical connections for high resistance using a low-resistance ohmmeter",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.11.A.6.1",
+                "description": "Perform as-left tests.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.2.11.A.7",
+                "description": "Verify that as-left tap connections are as specified.",
+                "result": "Satisfactory"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Measured Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance",
+          "type": "table",
+          "value": {
+            "testVoltage": "1000V",
+            "unit": "GΩ",
+            "rows": [
+              {
+                "id": "dielectricAbsorption",
+                "primary": "0.01",
+                "secondary": "1.23",
+                "primaryToSecondary": "0.83",
+                "acceptable": "No"
+              },
+              {
+                "id": "polarizationIndex",
+                "primary": "1.00",
+                "secondary": "",
+                "primaryToSecondary": "",
+                "acceptable": "No"
+              }
+            ],
+            "primaryToGround": {
+              "testVoltage": "250V",
+              "units": "GΩ",
+              "table100Units": "GΩ",
+              "r05": "98087",
+              "r1": "887",
+              "table100Value": "0978"
+            },
+            "secondaryToGround": {
+              "testVoltage": "250V",
+              "units": "GΩ",
+              "table100Units": "GΩ",
+              "r05": "0798",
+              "r1": "0978",
+              "table100Value": "87908970789789"
+            },
+            "primaryToSecondary": {
+              "testVoltage": "250V",
+              "units": "GΩ",
+              "table100Units": "GΩ",
+              "r05": "0978",
+              "r1": "809",
+              "table100Value": "79780789"
+            },
+            "darMin": "87",
+            "passFail": "PASS"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Turns Ratio",
+      "fields": [
+        {
+          "label": "Turns Ratio",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "tap": "3",
+                "calculatedRatio": "",
+                "devH1H2": "",
+                "devH2H3": "",
+                "devH3H1": "",
+                "nameplateVoltage": "7896767",
+                "measuredH1H2": "6",
+                "measuredH2H3": "7",
+                "measuredH3H1": "6"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Test Equipment Used",
+          "type": "table",
+          "value": {
+            "megohmmeter": {
+              "name": "6",
+              "serialNumber": "5",
+              "ampId": "5"
+            },
+            "lowResistanceOhmmeter": {
+              "ampId": "5",
+              "serialNumber": "5",
+              "name": "5"
+            },
+            "primaryInjectionTestSet": {
+              "name": "5",
+              "serialNumber": "5",
+              "ampId": "5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "456354"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "63456",
+    "reportType": "TwoSmallDryTypeXfmrATSReport",
+    "fields": {
+      "customer": "346354",
+      "address": "34563546",
+      "jobNumber": "3456345",
+      "date": "6345-03-04",
+      "technicians": "3456345",
+      "identifier": "63456",
+      "user": "35465",
+      "temperatureF": 68,
+      "humidity": 50,
+      "substation": "436445",
+      "eqptLocation": "3456345",
+      "dry-nameplate": {
+        "manufacturer": "",
+        "catalogNumber": "",
+        "serialNumber": "",
+        "kva": "097897",
+        "kvaSecondary": "897",
+        "tempRise": "78",
+        "impedance": "7",
+        "primary": {
+          "volts": "878",
+          "voltsSecondary": "89079",
+          "connection": "Delta",
+          "material": "Aluminum"
+        },
+        "secondary": {
+          "volts": "08978",
+          "voltsSecondary": "0",
+          "connection": "Wye",
+          "material": "Aluminum"
+        },
+        "tapVoltages": [
+          "7089",
+          "87",
+          "7890",
+          "8709",
+          "78",
+          "87",
+          "788"
+        ],
+        "tapPositionCurrent": "7007",
+        "tapPositionSecondary": "89",
+        "tapSpecificVolts": "",
+        "tapSpecificPercent": "78"
+      },
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.2.11.A.1",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.11.A.2",
+            "description": "Inspect anchorage, alignment, and grounding.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.11.A.3",
+            "description": "*Prior to cleaning the unit, perform as-found tests.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.11.A.4",
+            "description": "Clean the unit.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.11.A.5",
+            "description": "Inspect bolted electrical connections for high resistance using a low-resistance ohmmeter",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.11.A.6.1",
+            "description": "Perform as-left tests.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.2.11.A.7",
+            "description": "Verify that as-left tap connections are as specified.",
+            "result": "Satisfactory"
+          }
+        ]
+      },
+      "dryTypeIrSmall": {
+        "testVoltage": "1000V",
+        "unit": "GΩ",
+        "rows": [
+          {
+            "id": "dielectricAbsorption",
+            "primary": "0.01",
+            "secondary": "1.23",
+            "primaryToSecondary": "0.83",
+            "acceptable": "No"
+          },
+          {
+            "id": "polarizationIndex",
+            "primary": "1.00",
+            "secondary": "",
+            "primaryToSecondary": "",
+            "acceptable": "No"
+          }
+        ],
+        "primaryToGround": {
+          "testVoltage": "250V",
+          "units": "GΩ",
+          "table100Units": "GΩ",
+          "r05": "98087",
+          "r1": "887",
+          "table100Value": "0978"
+        },
+        "secondaryToGround": {
+          "testVoltage": "250V",
+          "units": "GΩ",
+          "table100Units": "GΩ",
+          "r05": "0798",
+          "r1": "0978",
+          "table100Value": "87908970789789"
+        },
+        "primaryToSecondary": {
+          "testVoltage": "250V",
+          "units": "GΩ",
+          "table100Units": "GΩ",
+          "r05": "0978",
+          "r1": "809",
+          "table100Value": "79780789"
+        },
+        "darMin": "87",
+        "passFail": "PASS"
+      },
+      "turnsRatioSmallDry": {
+        "rows": [
+          {
+            "tap": "3",
+            "calculatedRatio": "",
+            "devH1H2": "",
+            "devH2H3": "",
+            "devH3H1": "",
+            "nameplateVoltage": "7896767",
+            "measuredH1H2": "6",
+            "measuredH2H3": "7",
+            "measuredH3H1": "6"
+          }
+        ]
+      },
+      "testEquipment3": {
+        "megohmmeter": {
+          "name": "6",
+          "serialNumber": "5",
+          "ampId": "5"
+        },
+        "lowResistanceOhmmeter": {
+          "ampId": "5",
+          "serialNumber": "5",
+          "name": "5"
+        },
+        "primaryInjectionTestSet": {
+          "name": "5",
+          "serialNumber": "5",
+          "ampId": "5"
+        }
+      },
+      "comments": "456354"
+    }
+  }
+}

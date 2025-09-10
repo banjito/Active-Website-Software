@@ -1,0 +1,934 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36FJKQ53RCZ45MF75MY0EVT",
+  "reportType": "SwitchgearReport.tsx",
+  "createdAt": "2025-08-21T14:08:17.751Z",
+  "updatedAt": "2025-08-21T14:12:25.975Z",
+  "version": 209,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "2352345"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "23452345"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": ""
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "2345234523"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "3245234"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "3245234"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "523452345"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": 68
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "34243"
+        },
+        {
+          "label": "Humidity %",
+          "type": "number",
+          "value": "5234523"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "45234"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "5234"
+        },
+        {
+          "label": "Catalog Number",
+          "type": "text",
+          "value": "2435324"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "5234532"
+        },
+        {
+          "label": "Type",
+          "type": "text",
+          "value": "45234"
+        },
+        {
+          "label": "System Voltage",
+          "type": "text",
+          "value": "52345"
+        },
+        {
+          "label": "Rated Voltage",
+          "type": "text",
+          "value": "324523"
+        },
+        {
+          "label": "Rated Current",
+          "type": "text",
+          "value": "2345234"
+        },
+        {
+          "label": "Phase Configuration",
+          "type": "text",
+          "value": "52345"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.1.A.1",
+                "description": "Compare equipment nameplate data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.2",
+                "description": "Inspect physical, electrical, and mechanical condition of cords and connectors.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.3",
+                "description": "Inspect anchorage, alignment, grounding, and required area clearances.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.4",
+                "description": "Verify the unit is clean and all shipping bracing, loose parts, and documentation shipped inside cubicles have been removed.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.5",
+                "description": "Verify that fuse and circuit breaker sizes and types correspond to drawings and coordination study as well as to the circuit breaker address for microprocessor-communication packages.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.6",
+                "description": "Verify that current and voltage transformer ratios correspond to drawings.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.7",
+                "description": "Verify that wiring connections are tight and that wiring is secure to prevent damage during routine operation of moving parts.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.8.1",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.1.B.1.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.9",
+                "description": "Confirm correct operation and sequencing of electrical and mechanical interlock systems.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.10",
+                "description": "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.11",
+                "description": "Inspect insulators for evidence of physical damage or contaminated surfaces.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.12",
+                "description": "Verify correct barrier and shutter installation and operation.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.13",
+                "description": "Exercise all active components.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.14",
+                "description": "Inspect mechanical indicating devices for correct operation.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.1.A.15",
+                "description": "Verify that filters are in place and vents are clear.",
+                "result": "Satisfactory"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Measured Insulation Resistance Values",
+      "fields": [
+        {
+          "label": "Measured Insulation Resistance",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "bus": "Bus 1",
+                "unit": "MΩ",
+                "ag": "900789",
+                "bg": "7",
+                "cg": "089",
+                "ab": "7",
+                "bc": "9087",
+                "ca": "798",
+                "an": "078",
+                "bn": "980",
+                "cn": "8798"
+              },
+              {
+                "bus": "Bus 2",
+                "unit": "MΩ",
+                "ag": "709",
+                "bg": "8789",
+                "cg": "789",
+                "ab": "80770",
+                "bc": "7899",
+                "ca": "7808",
+                "an": "79789",
+                "bn": "087",
+                "cn": "90789"
+              },
+              {
+                "bus": "Bus 3",
+                "unit": "MΩ",
+                "ag": "7890",
+                "bg": "0978",
+                "cg": "0789",
+                "ab": "0789",
+                "bc": "0789",
+                "ca": "0897",
+                "an": "0879",
+                "bn": "8709",
+                "cn": "7890"
+              },
+              {
+                "bus": "Bus 4",
+                "unit": "MΩ",
+                "ag": "99780",
+                "bg": "9780",
+                "cg": "9780",
+                "ab": "97809780",
+                "bc": "9780",
+                "ca": "9780",
+                "an": "978097",
+                "bn": "809",
+                "cn": "70789"
+              },
+              {
+                "bus": "Bus 5",
+                "unit": "MΩ",
+                "ag": "9780",
+                "bg": "978",
+                "cg": "09780",
+                "ab": "9780",
+                "bc": "9780",
+                "ca": "789",
+                "an": "7890",
+                "bn": "7890",
+                "cn": "7890"
+              },
+              {
+                "bus": "Bus 6",
+                "unit": "MΩ",
+                "ag": "0789",
+                "bg": "8790",
+                "cg": "789",
+                "ab": "789",
+                "bc": "7890",
+                "ca": "078978",
+                "an": "90078978",
+                "bn": "90",
+                "cn": "789078"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Temperature Corrected Values",
+      "fields": [
+        {
+          "label": "Temperature Corrected",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "bus": "Bus 1",
+                "unit": "MΩ",
+                "ag": "900789.00",
+                "bg": "7.00",
+                "cg": "89.00",
+                "ab": "7.00",
+                "bc": "9087.00",
+                "ca": "798.00",
+                "an": "78.00",
+                "bn": "980.00",
+                "cn": "8798.00"
+              },
+              {
+                "bus": "Bus 2",
+                "unit": "MΩ",
+                "ag": "709.00",
+                "bg": "8789.00",
+                "cg": "789.00",
+                "ab": "80770.00",
+                "bc": "7899.00",
+                "ca": "7808.00",
+                "an": "79789.00",
+                "bn": "87.00",
+                "cn": "90789.00"
+              },
+              {
+                "bus": "Bus 3",
+                "unit": "MΩ",
+                "ag": "7890.00",
+                "bg": "978.00",
+                "cg": "789.00",
+                "ab": "789.00",
+                "bc": "789.00",
+                "ca": "897.00",
+                "an": "879.00",
+                "bn": "8709.00",
+                "cn": "7890.00"
+              },
+              {
+                "bus": "Bus 4",
+                "unit": "MΩ",
+                "ag": "99780.00",
+                "bg": "9780.00",
+                "cg": "9780.00",
+                "ab": "97809780.00",
+                "bc": "9780.00",
+                "ca": "9780.00",
+                "an": "978097.00",
+                "bn": "809.00",
+                "cn": "70789.00"
+              },
+              {
+                "bus": "Bus 5",
+                "unit": "MΩ",
+                "ag": "9780.00",
+                "bg": "978.00",
+                "cg": "9780.00",
+                "ab": "9780.00",
+                "bc": "9780.00",
+                "ca": "789.00",
+                "an": "7890.00",
+                "bn": "7890.00",
+                "cn": "7890.00"
+              },
+              {
+                "bus": "Bus 6",
+                "unit": "MΩ",
+                "ag": "789.00",
+                "bg": "8790.00",
+                "cg": "789.00",
+                "ab": "789.00",
+                "bc": "7890.00",
+                "ca": "78978.00",
+                "an": "90078978.00",
+                "bn": "90.00",
+                "cn": "789078.00"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Contact Resistance",
+      "fields": [
+        {
+          "label": "Contact Resistance",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "bus": "Bus 1",
+                "unit": "µΩ",
+                "a": "0789878790",
+                "b": "8790",
+                "c": "87",
+                "neutral": "8790",
+                "ground": "789"
+              },
+              {
+                "bus": "Bus 2",
+                "unit": "µΩ",
+                "a": "789",
+                "b": "7890",
+                "c": "9780",
+                "neutral": "7890",
+                "ground": "7890"
+              },
+              {
+                "bus": "Bus 3",
+                "unit": "µΩ",
+                "a": "0789",
+                "b": "879097",
+                "c": "897",
+                "neutral": "80789078",
+                "ground": "7890"
+              },
+              {
+                "bus": "Bus 4",
+                "unit": "µΩ",
+                "a": "07890",
+                "b": "0789",
+                "c": "879",
+                "neutral": "789879",
+                "ground": "87"
+              },
+              {
+                "bus": "Bus 5",
+                "unit": "µΩ",
+                "a": "78907890",
+                "b": "7890",
+                "c": "-00897",
+                "neutral": "7",
+                "ground": "7890"
+              },
+              {
+                "bus": "Bus 6",
+                "unit": "µΩ",
+                "a": "789",
+                "b": "7878",
+                "c": "978",
+                "neutral": "978",
+                "ground": "97"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Dielectric Withstand",
+      "fields": [
+        {
+          "label": "Dielectric Withstand",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "bus": "Bus 1",
+                "unit": "µA",
+                "ag": "89098798",
+                "bg": "8789",
+                "cg": "7789789"
+              },
+              {
+                "bus": "Bus 2",
+                "unit": "µA",
+                "ag": "707",
+                "bg": "989870",
+                "cg": "78"
+              },
+              {
+                "bus": "Bus 3",
+                "unit": "µA",
+                "ag": "09780",
+                "bg": "0789",
+                "cg": "8790"
+              },
+              {
+                "bus": "Bus 4",
+                "unit": "µA",
+                "ag": "7890",
+                "bg": "8790",
+                "cg": "0789"
+              },
+              {
+                "bus": "Bus 5",
+                "unit": "µA",
+                "ag": "789",
+                "bg": "700",
+                "cg": "790"
+              },
+              {
+                "bus": "Bus 6",
+                "unit": "µA",
+                "ag": "897",
+                "bg": "80078",
+                "cg": "987"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Test Equipment Used",
+          "type": "table",
+          "value": {
+            "megohmmeter": {
+              "name": "8",
+              "serialNumber": "5",
+              "ampId": "5"
+            },
+            "lowResistanceOhmmeter": {
+              "name": "5",
+              "serialNumber": "5",
+              "ampId": "5"
+            },
+            "primaryInjectionTestSet": {
+              "ampId": "5",
+              "serialNumber": "5",
+              "name": "5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "53543"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "45234",
+    "reportType": "SwitchgearReport",
+    "fields": {
+      "customer": "2352345",
+      "address": "23452345",
+      "date": "",
+      "technicians": "2345234523",
+      "jobNumber": "3245234",
+      "substation": "3245234",
+      "eqptLocation": "523452345",
+      "temperatureF": 68,
+      "user": "34243",
+      "humidity": "5234523",
+      "identifier": "45234",
+      "manufacturer": "5234",
+      "catalogNumber": "2435324",
+      "serialNumber": "5234532",
+      "type": "45234",
+      "systemVoltage": "52345",
+      "ratedVoltage": "324523",
+      "ratedCurrent": "2345234",
+      "phaseConfiguration": "52345",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.1.A.1",
+            "description": "Compare equipment nameplate data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.2",
+            "description": "Inspect physical, electrical, and mechanical condition of cords and connectors.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.3",
+            "description": "Inspect anchorage, alignment, grounding, and required area clearances.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.4",
+            "description": "Verify the unit is clean and all shipping bracing, loose parts, and documentation shipped inside cubicles have been removed.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.5",
+            "description": "Verify that fuse and circuit breaker sizes and types correspond to drawings and coordination study as well as to the circuit breaker address for microprocessor-communication packages.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.6",
+            "description": "Verify that current and voltage transformer ratios correspond to drawings.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.7",
+            "description": "Verify that wiring connections are tight and that wiring is secure to prevent damage during routine operation of moving parts.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.8.1",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.1.B.1.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.9",
+            "description": "Confirm correct operation and sequencing of electrical and mechanical interlock systems.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.10",
+            "description": "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.11",
+            "description": "Inspect insulators for evidence of physical damage or contaminated surfaces.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.12",
+            "description": "Verify correct barrier and shutter installation and operation.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.13",
+            "description": "Exercise all active components.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.14",
+            "description": "Inspect mechanical indicating devices for correct operation.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.1.A.15",
+            "description": "Verify that filters are in place and vents are clear.",
+            "result": "Satisfactory"
+          }
+        ]
+      },
+      "insulationMeasured": {
+        "rows": [
+          {
+            "bus": "Bus 1",
+            "unit": "MΩ",
+            "ag": "900789",
+            "bg": "7",
+            "cg": "089",
+            "ab": "7",
+            "bc": "9087",
+            "ca": "798",
+            "an": "078",
+            "bn": "980",
+            "cn": "8798"
+          },
+          {
+            "bus": "Bus 2",
+            "unit": "MΩ",
+            "ag": "709",
+            "bg": "8789",
+            "cg": "789",
+            "ab": "80770",
+            "bc": "7899",
+            "ca": "7808",
+            "an": "79789",
+            "bn": "087",
+            "cn": "90789"
+          },
+          {
+            "bus": "Bus 3",
+            "unit": "MΩ",
+            "ag": "7890",
+            "bg": "0978",
+            "cg": "0789",
+            "ab": "0789",
+            "bc": "0789",
+            "ca": "0897",
+            "an": "0879",
+            "bn": "8709",
+            "cn": "7890"
+          },
+          {
+            "bus": "Bus 4",
+            "unit": "MΩ",
+            "ag": "99780",
+            "bg": "9780",
+            "cg": "9780",
+            "ab": "97809780",
+            "bc": "9780",
+            "ca": "9780",
+            "an": "978097",
+            "bn": "809",
+            "cn": "70789"
+          },
+          {
+            "bus": "Bus 5",
+            "unit": "MΩ",
+            "ag": "9780",
+            "bg": "978",
+            "cg": "09780",
+            "ab": "9780",
+            "bc": "9780",
+            "ca": "789",
+            "an": "7890",
+            "bn": "7890",
+            "cn": "7890"
+          },
+          {
+            "bus": "Bus 6",
+            "unit": "MΩ",
+            "ag": "0789",
+            "bg": "8790",
+            "cg": "789",
+            "ab": "789",
+            "bc": "7890",
+            "ca": "078978",
+            "an": "90078978",
+            "bn": "90",
+            "cn": "789078"
+          }
+        ]
+      },
+      "insulationCorrected": {
+        "rows": [
+          {
+            "bus": "Bus 1",
+            "unit": "MΩ",
+            "ag": "900789.00",
+            "bg": "7.00",
+            "cg": "89.00",
+            "ab": "7.00",
+            "bc": "9087.00",
+            "ca": "798.00",
+            "an": "78.00",
+            "bn": "980.00",
+            "cn": "8798.00"
+          },
+          {
+            "bus": "Bus 2",
+            "unit": "MΩ",
+            "ag": "709.00",
+            "bg": "8789.00",
+            "cg": "789.00",
+            "ab": "80770.00",
+            "bc": "7899.00",
+            "ca": "7808.00",
+            "an": "79789.00",
+            "bn": "87.00",
+            "cn": "90789.00"
+          },
+          {
+            "bus": "Bus 3",
+            "unit": "MΩ",
+            "ag": "7890.00",
+            "bg": "978.00",
+            "cg": "789.00",
+            "ab": "789.00",
+            "bc": "789.00",
+            "ca": "897.00",
+            "an": "879.00",
+            "bn": "8709.00",
+            "cn": "7890.00"
+          },
+          {
+            "bus": "Bus 4",
+            "unit": "MΩ",
+            "ag": "99780.00",
+            "bg": "9780.00",
+            "cg": "9780.00",
+            "ab": "97809780.00",
+            "bc": "9780.00",
+            "ca": "9780.00",
+            "an": "978097.00",
+            "bn": "809.00",
+            "cn": "70789.00"
+          },
+          {
+            "bus": "Bus 5",
+            "unit": "MΩ",
+            "ag": "9780.00",
+            "bg": "978.00",
+            "cg": "9780.00",
+            "ab": "9780.00",
+            "bc": "9780.00",
+            "ca": "789.00",
+            "an": "7890.00",
+            "bn": "7890.00",
+            "cn": "7890.00"
+          },
+          {
+            "bus": "Bus 6",
+            "unit": "MΩ",
+            "ag": "789.00",
+            "bg": "8790.00",
+            "cg": "789.00",
+            "ab": "789.00",
+            "bc": "7890.00",
+            "ca": "78978.00",
+            "an": "90078978.00",
+            "bn": "90.00",
+            "cn": "789078.00"
+          }
+        ]
+      },
+      "switchgearContact": {
+        "rows": [
+          {
+            "bus": "Bus 1",
+            "unit": "µΩ",
+            "a": "0789878790",
+            "b": "8790",
+            "c": "87",
+            "neutral": "8790",
+            "ground": "789"
+          },
+          {
+            "bus": "Bus 2",
+            "unit": "µΩ",
+            "a": "789",
+            "b": "7890",
+            "c": "9780",
+            "neutral": "7890",
+            "ground": "7890"
+          },
+          {
+            "bus": "Bus 3",
+            "unit": "µΩ",
+            "a": "0789",
+            "b": "879097",
+            "c": "897",
+            "neutral": "80789078",
+            "ground": "7890"
+          },
+          {
+            "bus": "Bus 4",
+            "unit": "µΩ",
+            "a": "07890",
+            "b": "0789",
+            "c": "879",
+            "neutral": "789879",
+            "ground": "87"
+          },
+          {
+            "bus": "Bus 5",
+            "unit": "µΩ",
+            "a": "78907890",
+            "b": "7890",
+            "c": "-00897",
+            "neutral": "7",
+            "ground": "7890"
+          },
+          {
+            "bus": "Bus 6",
+            "unit": "µΩ",
+            "a": "789",
+            "b": "7878",
+            "c": "978",
+            "neutral": "978",
+            "ground": "97"
+          }
+        ]
+      },
+      "switchgearDielectric": {
+        "rows": [
+          {
+            "bus": "Bus 1",
+            "unit": "µA",
+            "ag": "89098798",
+            "bg": "8789",
+            "cg": "7789789"
+          },
+          {
+            "bus": "Bus 2",
+            "unit": "µA",
+            "ag": "707",
+            "bg": "989870",
+            "cg": "78"
+          },
+          {
+            "bus": "Bus 3",
+            "unit": "µA",
+            "ag": "09780",
+            "bg": "0789",
+            "cg": "8790"
+          },
+          {
+            "bus": "Bus 4",
+            "unit": "µA",
+            "ag": "7890",
+            "bg": "8790",
+            "cg": "0789"
+          },
+          {
+            "bus": "Bus 5",
+            "unit": "µA",
+            "ag": "789",
+            "bg": "700",
+            "cg": "790"
+          },
+          {
+            "bus": "Bus 6",
+            "unit": "µA",
+            "ag": "897",
+            "bg": "80078",
+            "cg": "987"
+          }
+        ]
+      },
+      "testEquipment3": {
+        "megohmmeter": {
+          "name": "8",
+          "serialNumber": "5",
+          "ampId": "5"
+        },
+        "lowResistanceOhmmeter": {
+          "name": "5",
+          "serialNumber": "5",
+          "ampId": "5"
+        },
+        "primaryInjectionTestSet": {
+          "ampId": "5",
+          "serialNumber": "5",
+          "name": "5"
+        }
+      },
+      "comments": "53543"
+    }
+  }
+}

@@ -630,6 +630,8 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             comments: d.reportInfo?.comments ?? prev.comments,
             status: d.status ?? prev.status,
           };
+          // Recompute tolerance min/max for previously saved reports
+          normalizeLoadedPrimaryInjection(updated);
           return updated;
         });
         setIsEditing(false);
@@ -901,6 +903,12 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           comments: data.comments || '',
           status: data.report_info?.status || 'PASS',
         }));
+        // Ensure tolerance min/max are normalized for saved records
+        setFormData(prev => {
+          const cloned = { ...prev } as any;
+          normalizeLoadedPrimaryInjection(cloned);
+          return cloned;
+        });
         setIsEditing(false);
 
         // Retroactive backfill: if imported JSON exists in generic store keyed by identifier, merge it in
@@ -1625,7 +1633,21 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             sectionResults.testAmperes2 = calculated.testAmperes2;
             sectionResults.toleranceMin2 = calculated.toleranceMin2;
             sectionResults.toleranceMax2 = calculated.toleranceMax2;
+            // Recompute based on current tolerance % using bottom testAmperes2
+            recomputeBottomTolerance(newState, section as SectionKey);
           }
+        }
+      }
+
+      // If user edits bottom row testAmperes2 or tolerance %, recompute min/max dynamically
+      if (path.includes('primaryInjection.results.')) {
+        const section: SectionKey | null = path.includes('longTime') ? 'longTime'
+          : path.includes('shortTime') ? 'shortTime'
+          : path.includes('instantaneous') ? 'instantaneous'
+          : path.includes('groundFault') ? 'groundFault'
+          : null;
+        if (section && (path.endsWith('.testAmperes2') || path.endsWith('.toleranceMin') || path.endsWith('.toleranceMax'))) {
+          recomputeBottomTolerance(newState, section);
         }
       }
 
@@ -1653,6 +1675,41 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
       toleranceMin2: (value * (1 - mult.tolerance)).toFixed(1),
       toleranceMax2: (value * (1 + mult.tolerance)).toFixed(1)
     };
+  };
+
+  // Parse a percent string like "-10%" or "10" into decimal (-0.10, 0.10)
+  const parsePercent = (val?: string): number => {
+    if (!val) return 0;
+    const cleaned = `${val}`.toString().replace(/%/g, '').trim();
+    const num = Number(cleaned);
+    if (!isFinite(num)) return 0;
+    return num / 100;
+  };
+
+  type SectionKey = 'longTime' | 'shortTime' | 'instantaneous' | 'groundFault';
+
+  // Recompute bottom-row tolerance min/max based on bottom-row testAmperes2 and tolerance % inputs
+  const recomputeBottomTolerance = (state: any, section: SectionKey) => {
+    const res = state?.primaryInjection?.results?.[section];
+    if (!res) return;
+    const test2 = Number(res.testAmperes2);
+    if (!isFinite(test2)) {
+      res.toleranceMin2 = '';
+      res.toleranceMax2 = '';
+      return;
+    }
+    const minPct = parsePercent(res.toleranceMin);
+    const maxPct = parsePercent(res.toleranceMax);
+    res.toleranceMin2 = (test2 * (1 + minPct)).toFixed(1);
+    res.toleranceMax2 = (test2 * (1 + maxPct)).toFixed(1);
+  };
+
+  // Normalize previously saved reports after load
+  const normalizeLoadedPrimaryInjection = (state: any) => {
+    try {
+      const sections: SectionKey[] = ['longTime', 'shortTime', 'instantaneous', 'groundFault'];
+      sections.forEach(sec => recomputeBottomTolerance(state, sec));
+    } catch (_) {}
   };
 
   if (loading) {

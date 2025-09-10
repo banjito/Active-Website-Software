@@ -154,6 +154,8 @@ interface OpportunityData {
 }
 
 interface EstimateData {
+  // Optional custom title shown in tabs and selectors; falls back to Quote <number>
+  title?: string;
   client: string;
   jobDescription: string;
   dateDue: string;
@@ -380,6 +382,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   // State for the main data object
   const [data, setData] = useState<EstimateData>(() => {
     const defaults: EstimateData = {
+      title: '',
       client: '',
       jobDescription: '',
       dateDue: '',
@@ -762,6 +765,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       
       // Merge the loaded data with defaults to ensure all required properties exist
       const completeData = {
+        title: parsedData.title || '',
         client: parsedData.client || '',
         jobDescription: parsedData.jobDescription || '',
         dateDue: parsedData.dateDue || '',
@@ -2257,7 +2261,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         parsedData,
         sovItems,
         finalValue,
-        quoteNumber: (opportunityData as any)?.quote_number || quote.id?.slice(0,6) || (selectedQuotesForCombined[quoteIndex] + 1)
+        quoteNumber: (opportunityData as any)?.quote_number || quote.id?.slice(0,6) || (selectedQuotesForCombined[quoteIndex] + 1),
+        displayTitle: (parsedData?.title && String(parsedData.title).trim()) ? String(parsedData.title).trim() : ''
       };
     });
     
@@ -2275,6 +2280,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     // Generate SOV tables for each quote with individual pricing
     const sovTablesHtml = processedQuotes.map((processedQuote, index) => {
       const scopeNumber = index + 1;
+      const headingText = processedQuote.displayTitle || `Scope ${scopeNumber} - Scope of Work`;
       const sovTableRows = processedQuote.sovItems && processedQuote.sovItems.length > 0
         ? processedQuote.sovItems.map((item: any) => {
             const name = (item.item || '').toString();
@@ -2295,7 +2301,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       
       return `
         <div style="margin-bottom: 32px; border: 1px solid #ddd; border-radius: 8px; padding: 16px; background-color: #fafafa;">
-          <h3 style="font-size: 1.2em; font-weight: bold; margin-bottom: 12px; color: #333; border-bottom: 2px solid #f26722; padding-bottom: 8px;">Scope ${scopeNumber} - Scope of Work</h3>
+          <h3 style="font-size: 1.2em; font-weight: bold; margin-bottom: 12px; color: #333; border-bottom: 2px solid #f26722; padding-bottom: 8px;">${headingText}</h3>
           <table style='width:100%;border-collapse:collapse;margin-bottom:16px;'>
             <thead>
               <tr><th style='border:1px solid #ccc;padding:4px 12px;text-align:left;background-color:#f5f5f5;'>Name</th><th style='border:1px solid #ccc;padding:4px 12px;text-align:center;background-color:#f5f5f5;'>Quantity</th></tr>
@@ -2882,7 +2888,14 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                             loadQuoteData(quote);
                           }}
                         >
-                          Quote {(opportunityData as any)?.quote_number || quote.id?.slice(0,6) || index + 1}
+                          {(function(){
+                            try {
+                              const parsed = typeof quote.data === 'string' ? JSON.parse(quote.data) : quote.data || {};
+                              const customTitle = parsed?.title?.trim();
+                              if (customTitle) return customTitle;
+                            } catch {}
+                            return `Quote ${(opportunityData as any)?.quote_number || quote.id?.slice(0,6) || index + 1}`;
+                          })()}
                         </Tab>
                         <button
                           className="ml-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded"
@@ -3004,6 +3017,19 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                         </div>
                       </div>
                       
+                      {/* Quote Title (renameable) */}
+                      <div style={styles.formGroup}>
+                        <label style={styles.formLabel}>Quote Title (optional):</label>
+                        <input 
+                          type="text" 
+                          style={styles.formInput}
+                          value={data.title || ''}
+                          onChange={(e) => handleGeneralChange('title', e.target.value)}
+                          readOnly={isViewMode}
+                          placeholder="E.g. Switchgear Testing Scope A"
+                        />
+                      </div>
+
                       {/* Notes Section */}
                       <div style={{
                         backgroundColor: 'var(--summary-bg)',
@@ -4445,7 +4471,14 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             <ul>
               {quotes.map((q, idx) => (
                 <li key={q.id} className="mb-2 flex items-center justify-between">
-                  <span>Quote {(opportunityData as any)?.quote_number || q.id?.slice(0,6) || (idx + 1)} - {q.created_at?.slice(0,10)}</span>
+                  <span>{(function(){
+                    try {
+                      const parsed = typeof q.data === 'string' ? JSON.parse(q.data) : q.data || {};
+                      const customTitle = parsed?.title?.trim();
+                      if (customTitle) return customTitle;
+                    } catch {}
+                    return `Quote ${(opportunityData as any)?.quote_number || q.id?.slice(0,6) || (idx + 1)}`;
+                  })()} - {q.created_at?.slice(0,10)}</span>
                   <Button onClick={() => handleSelectQuoteForLetter(idx)} className="bg-[#f26722] text-white ml-2">Select</Button>
                 </li>
               ))}
@@ -4498,7 +4531,14 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                       className="mr-3 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                     />
                     <label htmlFor={`quote-${idx}`} className="text-sm font-medium text-gray-900 cursor-pointer">
-                      Quote {(opportunityData as any)?.quote_number || q.id?.slice(0,6) || (idx + 1)} - {q.created_at?.slice(0,10)}
+                      {(function(){
+                        try {
+                          const parsed = typeof q.data === 'string' ? JSON.parse(q.data) : q.data || {};
+                          const customTitle = parsed?.title?.trim();
+                          if (customTitle) return customTitle;
+                        } catch {}
+                        return `Quote ${(opportunityData as any)?.quote_number || q.id?.slice(0,6) || (idx + 1)}`;
+                      })()} - {q.created_at?.slice(0,10)}
                     </label>
                   </div>
                 </div>

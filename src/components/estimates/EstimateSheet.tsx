@@ -1908,6 +1908,51 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           letterUpdateSourceRef.current = 'programmatic';
           editor.innerHTML = letterHtml;
         }
+
+        // Bind up/down arrow controls for combined-letter scope blocks
+        try {
+          const blocks = Array.from(editor.querySelectorAll('.amp-scope-block')) as HTMLElement[];
+          if (blocks.length) {
+            blocks.forEach((block) => {
+              if ((block as any)._ampArrowsBound) return;
+              const upBtn = block.querySelector('.amp-scope-controls .move-up') as HTMLButtonElement | null;
+              const downBtn = block.querySelector('.amp-scope-controls .move-down') as HTMLButtonElement | null;
+              const moveUp = (e: Event) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const parent = block.parentElement;
+                if (!parent) return;
+                const prev = block.previousElementSibling as HTMLElement | null;
+                if (prev && prev.classList.contains('amp-scope-block')) {
+                  parent.insertBefore(block, prev);
+                  try {
+                    const html = editor.innerHTML;
+                    setLetterHtml(html);
+                    localStorage.setItem(`letter-proposal-draft-${opportunityId}`, html);
+                  } catch {}
+                }
+              };
+              const moveDown = (e: Event) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const parent = block.parentElement;
+                if (!parent) return;
+                const next = block.nextElementSibling as HTMLElement | null;
+                if (next && next.classList.contains('amp-scope-block')) {
+                  parent.insertBefore(next, block);
+                  try {
+                    const html = editor.innerHTML;
+                    setLetterHtml(html);
+                    localStorage.setItem(`letter-proposal-draft-${opportunityId}`, html);
+                  } catch {}
+                }
+              };
+              upBtn?.addEventListener('click', moveUp as any);
+              downBtn?.addEventListener('click', moveDown as any);
+              (block as any)._ampArrowsBound = true;
+            });
+          }
+        } catch {}
       }, 100);
     }
   }, [isLetterProposalOpen, letterHtml]);
@@ -2300,7 +2345,11 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const scopeOption3 = formatCurrency(Math.ceil(processedQuote.finalValue * 1.09));
       
       return `
-        <div style="margin-bottom: 32px; border: 1px solid #ddd; border-radius: 8px; padding: 16px; background-color: #fafafa;">
+        <div class="amp-scope-block" style="margin-bottom: 32px; border: 1px solid #ddd; border-radius: 8px; padding: 16px; background-color: #fafafa;">
+          <div class="amp-scope-controls print-hidden" contenteditable="false" style="display:flex;gap:6px;justify-content:flex-end;margin:-8px -8px 8px -8px;padding:6px 8px;">
+            <button class="move-up" aria-label="Move scope up" title="Move up" style="border:1px solid #e5e7eb;background:#fff;border-radius:6px;padding:4px 8px;cursor:pointer;">▲</button>
+            <button class="move-down" aria-label="Move scope down" title="Move down" style="border:1px solid #e5e7eb;background:#fff;border-radius:6px;padding:4px 8px;cursor:pointer;">▼</button>
+          </div>
           <h3 style="font-size: 1.2em; font-weight: bold; margin-bottom: 12px; color: #333; border-bottom: 2px solid #f26722; padding-bottom: 8px;">${headingText}</h3>
           <table style='width:100%;border-collapse:collapse;margin-bottom:16px;'>
             <thead>
@@ -2443,6 +2492,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           }
           /* Hide the dropdown, keep the sentence */
           #neta-standard-select { display: none !important; }
+          /* Hide scope reordering controls in print */
+          .amp-scope-controls { display: none !important; }
           ul, ol, li, p, div { break-inside: avoid; }
           .procedure-section { break-inside: avoid; }
           .print-page-break { page-break-before: always; break-before: page; }

@@ -1146,7 +1146,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   const getFinalValue = () => {
     return Math.ceil((
       // Financial Summary Total (F46)
-      (data.calculatedValues.totalMaterial * 1.09 * 1.3) +
+      (data.calculatedValues.totalMaterial * 1.09 * materialMarkup) +
       (data.calculatedValues.totalExpense * 1.09) +
       (data.calculatedValues.nonSovExpense * 1.00) +
       // Labor Calculation Total (D52) - Use editable hourly rates
@@ -1797,6 +1797,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     doubleTime: 480.00
     });
     
+  const [materialMarkup, setMaterialMarkup] = useState(1.3);
+    
     // Trigger recalculation when hourly rates change
     useEffect(() => {
       // This will cause the component to re-render and recalculate getFinalValue()
@@ -1999,7 +2001,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const doubleTimeHours = hs.doubleTimeHours || 0;
       // Same as getFinalValue numerator in the sheet (no travel here)
       return (
-        (totalMaterial * 1.09 * 1.3) +
+        (totalMaterial * 1.09 * materialMarkup) +
         (totalExpense * 1.09) +
         (nonSovExpense * 1.00) +
         (straightTimeHours * hourlyRates.straightTime) +
@@ -2211,7 +2213,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         const overtimeHours = hs.overtimeHours || 0;
         const doubleTimeHours = hs.doubleTimeHours || 0;
         return (
-          (totalMaterial * 1.09 * 1.3) +
+          (totalMaterial * 1.09 * materialMarkup) +
           (totalExpense * 1.09) +
           (nonSovExpense * 1.00) +
           (straightTimeHours * hourlyRates.straightTime) +
@@ -3945,8 +3947,22 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                             <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.totalMaterial)}</td>
                             <td style={{...styles.tableCell, padding: '12px 8px'}}>1.09</td>
                             <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.totalMaterial * 1.09)}</td>
-                            <td style={{...styles.tableCell, padding: '12px 8px'}}>1.3</td>
-                            <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.totalMaterial * 1.09 * 1.3)}</td>
+                            <td style={{...styles.tableCell, padding: '12px 8px'}}>
+                              <input
+                                type="number"
+                                style={{...styles.tableInput, width: '100%'}}
+                                value={materialMarkup}
+                                onChange={(e) => {
+                                  const markup = parseFloat(e.target.value) || 1.3;
+                                  setMaterialMarkup(markup);
+                                }}
+                                step="0.1"
+                                min="0"
+                                readOnly={isViewMode}
+                                placeholder="1.3"
+                              />
+                            </td>
+                            <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.totalMaterial * 1.09 * materialMarkup)}</td>
                           </tr>
                           <tr>
                             <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>EXPENSE TOTAL (From Sheet 1):</td>
@@ -3968,7 +3984,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                             <td colSpan={5} style={{...styles.tableCell, textAlign: 'right', fontWeight: 'bold', padding: '12px 8px'}}>Total:</td>
                             <td style={{...styles.tableCell, ...styles.calculated, fontWeight: 'bold', padding: '12px 8px'}}>
                               {formatCurrency(
-                                (data.calculatedValues.totalMaterial * 1.09 * 1.3) +
+                                (data.calculatedValues.totalMaterial * 1.09 * materialMarkup) +
                                 (data.calculatedValues.totalExpense * 1.09) +
                                 (data.calculatedValues.nonSovExpense * 1.00) +
                                 // Add labor costs using editable hourly rates
@@ -4306,7 +4322,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                               <div style={{fontSize: '16px', fontWeight: 'bold'}}>
                                 {formatCurrency((
                                   // Financial Summary Total (F46)
-                                  (data.calculatedValues.totalMaterial * 1.09 * 1.3) +
+                                  (data.calculatedValues.totalMaterial * 1.09 * materialMarkup) +
                                   (data.calculatedValues.totalExpense * 1.09) +
                                   (data.calculatedValues.nonSovExpense * 1.00) +
                                   // Labor Calculation Total (D52) - Use editable hourly rates
@@ -4324,7 +4340,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                               <div style={{marginBottom: '5px'}}>
                                 {formatCurrency(Math.ceil((
                                   // Financial Summary Total (F46)
-                                  (data.calculatedValues.totalMaterial * 1.09 * 1.3) +
+                                  (data.calculatedValues.totalMaterial * 1.09 * materialMarkup) +
                                   (data.calculatedValues.totalExpense * 1.09) +
                                   (data.calculatedValues.nonSovExpense * 1.00) +
                                   // Labor Calculation Total (D52) - Use editable hourly rates

@@ -680,15 +680,33 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   const calculateDefaultLaborHours = (data: any) => {
     const men = data.hoursSummary.men || 2;
     const hoursPerDay = data.hoursSummary.hoursPerDay || 8;
-    const daysOnsite = data.hoursSummary.daysOnsite || 0;
+    
+    // Calculate total SOV labor hours from the SOV items
+    let sovLaborHours = 0;
+    if (data.sovItems) {
+      sovLaborHours = data.sovItems.reduce((total: number, item: any) => {
+        return total + (calculateLaborUnit(item.laborMen, item.laborHours) * item.quantity);
+      }, 0);
+    }
+    
+    // Calculate days onsite from SOV labor hours
+    const daysOnsite = men > 0 && hoursPerDay > 0 
+      ? sovLaborHours / (men * hoursPerDay) 
+      : 0;
     
     // Calculate total work hours
     const totalWorkHours = men * hoursPerDay * daysOnsite;
     
     // Default distribution: 80% straight time, 15% overtime, 5% double time
-    const straightTime = Math.round(totalWorkHours * 0.8);
-    const overtime = Math.round(totalWorkHours * 0.15);
-    const doubleTime = Math.round(totalWorkHours * 0.05);
+    // Use smart rounding to ensure total equals target hours
+    const straightTimeTarget = totalWorkHours * 0.8;
+    const overtimeTarget = totalWorkHours * 0.15;
+    const doubleTimeTarget = totalWorkHours * 0.05;
+    
+    // Round to integers while ensuring total equals totalWorkHours
+    const straightTime = Math.floor(straightTimeTarget);
+    const overtime = Math.floor(overtimeTarget);
+    const doubleTime = totalWorkHours - straightTime - overtime; // Use remainder for double time
     
     return {
       straightTime,
@@ -1155,10 +1173,25 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       [field]: field === 'item' || field === 'notes' ? value : Number(value)
     };
     
-    setData(prev => ({
-      ...prev,
-      [itemsKey]: newItems
-    }));
+    setData(prev => {
+      const newData = {
+        ...prev,
+        [itemsKey]: newItems
+      };
+      
+      // Apply formula automatically when SOV item labor data changes
+      if (section === 'sov' && (field === 'laborMen' || field === 'laborHours' || field === 'quantity')) {
+        const defaultHours = calculateDefaultLaborHours(newData);
+        newData.hoursSummary = {
+          ...newData.hoursSummary,
+          straightTimeHours: defaultHours.straightTime,
+          overtimeHours: defaultHours.overtime,
+          doubleTimeHours: defaultHours.doubleTime
+        };
+      }
+      
+      return newData;
+    });
     setIsDirty(true);
     // Clear blanking state for this field when user types something
     const key = makeKey(section, index, field);
@@ -1181,13 +1214,28 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
 
   const handleHoursSummaryChange = (field: string, value: string) => {
     console.log('handleHoursSummaryChange called:', { field, value });
-    setData(prev => ({
-      ...prev,
-      hoursSummary: {
-        ...prev.hoursSummary,
-        [field]: value === '' ? 0 : Number(value) || 0
+    setData(prev => {
+      const newData = {
+        ...prev,
+        hoursSummary: {
+          ...prev.hoursSummary,
+          [field]: value === '' ? 0 : Number(value) || 0
+        }
+      };
+      
+      // Apply formula automatically when men or hoursPerDay changes
+      if (field === 'men' || field === 'hoursPerDay') {
+        const defaultHours = calculateDefaultLaborHours(newData);
+        newData.hoursSummary = {
+          ...newData.hoursSummary,
+          straightTimeHours: defaultHours.straightTime,
+          overtimeHours: defaultHours.overtime,
+          doubleTimeHours: defaultHours.doubleTime
+        };
       }
-    }));
+      
+      return newData;
+    });
     setIsDirty(true);
   };
 

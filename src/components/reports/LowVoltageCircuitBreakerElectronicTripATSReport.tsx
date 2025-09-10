@@ -534,11 +534,13 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             zoneInterlock: d.nameplateData?.zoneInterlock ?? prev.zoneInterlock,
             thermalMemory: d.nameplateData?.thermalMemory ?? prev.thermalMemory,
 
-            // Visual/mechanical
-            visualInspectionItems: Array.isArray(prev.visualInspectionItems) ? prev.visualInspectionItems.map(item => ({
-              ...item,
-              result: (d.visualInspection && d.visualInspection[item.id]) ? d.visualInspection[item.id] : item.result,
-            })) : [],
+            // Visual/mechanical - merge by id, preserve defaults when missing
+            visualInspectionItems: Array.isArray(prev.visualInspectionItems)
+              ? prev.visualInspectionItems.map(item => ({
+                  ...item,
+                  result: (d.visualInspection && d.visualInspection[item.id]) ? d.visualInspection[item.id] : item.result,
+                }))
+              : prev.visualInspectionItems,
 
             // Device settings
             deviceSettings: d.deviceSettings ?? prev.deviceSettings,
@@ -673,9 +675,20 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                     thermalMemory: prev.thermalMemory || fields?.thermalMemory,
                     
                     // Update other sections if missing
-                    visualInspectionItems: Array.isArray(fields?.['vm-table']?.rows)
-                      ? fields['vm-table'].rows.map((row: any) => ({ id: row.id ?? '', description: row.description ?? '', result: row.result ?? '' }))
-                      : prev.visualInspectionItems,
+                    visualInspectionItems: (() => {
+                      const rows = Array.isArray(fields?.['vm-table']?.rows) ? fields['vm-table'].rows : null;
+                      if (rows && rows.length > 0) {
+                        const byId: Record<string, any> = {};
+                        rows.forEach((row: any) => {
+                          if (row && typeof row.id === 'string') byId[row.id] = row;
+                        });
+                        return prev.visualInspectionItems.map(item => ({
+                          ...item,
+                          result: byId[item.id]?.result ?? item.result
+                        }));
+                      }
+                      return prev.visualInspectionItems;
+                    })(),
                     contactResistance: fields?.breakerContactResistance ? { 
                       ...prev.contactResistance, 
                       p1: fields.breakerContactResistance.p1,
@@ -758,7 +771,33 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           mounting: data.nameplate_data?.mounting || '',
           zoneInterlock: data.nameplate_data?.zoneInterlock || '',
           thermalMemory: data.nameplate_data?.thermalMemory || '',
-          visualInspectionItems: data.visual_mechanical?.items || prev.visualInspectionItems,
+          // Visual/mechanical: accept arrays in various legacy shapes and merge by id
+          visualInspectionItems: (() => {
+            const vm = (data as any).visual_mechanical;
+            const vmi = (data as any).visual_mechanical_inspection;
+            const vi = (data as any).visualInspection;
+            const itemsSource =
+              (Array.isArray(vm?.items) && vm.items) ||
+              (Array.isArray(vmi?.items) && vmi.items) ||
+              (Array.isArray(vmi) && vmi) ||
+              (Array.isArray(vm) && vm) ||
+              null;
+            if (Array.isArray(itemsSource)) {
+              const byId: Record<string, any> = {};
+              itemsSource.forEach((it: any) => { if (it && typeof it.id === 'string') byId[it.id] = it; });
+              return prev.visualInspectionItems.map(item => ({
+                ...item,
+                result: byId[item.id]?.result ?? item.result
+              }));
+            }
+            if (vi && !Array.isArray(vi)) {
+              return prev.visualInspectionItems.map(item => ({
+                ...item,
+                result: vi[item.id]?.result ?? vi[item.id] ?? item.result
+              }));
+            }
+            return prev.visualInspectionItems;
+          })(),
           deviceSettings: data.device_settings || prev.deviceSettings,
           contactResistance: data.contact_resistance || prev.contactResistance,
           insulationResistance: {
@@ -1570,31 +1609,6 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
       }
       currentLevel[keys[keys.length - 1]] = value;
 
-      // Helper: parse percent like "-10%" or "5" to decimal (e.g., -0.1, 0.05)
-      const parsePercentToDecimal = (percentStr: string | undefined): number | null => {
-        if (percentStr === undefined || percentStr === null) return null;
-        const cleaned = `${percentStr}`.replace(/%/g, '');
-        const num = parseFloat(cleaned);
-        if (isNaN(num)) return null;
-        return num / 100;
-      };
-
-      // Helper: recompute tolerance bounds (Min2/Max2) from Test Amperes 2 and tolerance percents
-      const recomputeToleranceBounds = (section: 'longTime' | 'shortTime' | 'instantaneous' | 'groundFault') => {
-        const sectionResults = newState.primaryInjection?.results?.[section];
-        if (!sectionResults) return;
-        const base = Number(sectionResults.testAmperes2);
-        if (isNaN(base)) {
-          sectionResults.toleranceMin2 = '';
-          sectionResults.toleranceMax2 = '';
-          return;
-        }
-        const pMin = parsePercentToDecimal(sectionResults.toleranceMin);
-        const pMax = parsePercentToDecimal(sectionResults.toleranceMax);
-        sectionResults.toleranceMin2 = pMin === null ? '' : (base + (base * pMin)).toFixed(1);
-        sectionResults.toleranceMax2 = pMax === null ? '' : (base + (base * pMax)).toFixed(1);
-      };
-
       // Check if this is a rated amperes field and calculate related values
       if (path.includes('ratedAmperes1')) {
         const section = path.includes('longTime') ? 'longTime' 
@@ -1609,25 +1623,10 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           if (sectionResults) {
             sectionResults.testAmperes1 = calculated.testAmperes1;
             sectionResults.testAmperes2 = calculated.testAmperes2;
-            // Recompute tolerance bounds using current tolerance % values
-            recomputeToleranceBounds(section);
+            sectionResults.toleranceMin2 = calculated.toleranceMin2;
+            sectionResults.toleranceMax2 = calculated.toleranceMax2;
           }
         }
-      }
-
-      // Recompute tolerance bounds when tolerance %s or test amperes change
-      if (
-        path.includes('primaryInjection.results.') && (
-          path.endsWith('.toleranceMin') ||
-          path.endsWith('.toleranceMax') ||
-          path.endsWith('.testAmperes2')
-        )
-      ) {
-        const section = path.includes('longTime') ? 'longTime' 
-                     : path.includes('shortTime') ? 'shortTime'
-                     : path.includes('instantaneous') ? 'instantaneous'
-                     : 'groundFault';
-        recomputeToleranceBounds(section);
       }
 
       return newState;
@@ -1650,8 +1649,10 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
     
     return {
       testAmperes1: section === 'instantaneous' ? '' : (value * mult.test).toFixed(1),
-      testAmperes2: value.toString()
-    } as { testAmperes1: string; testAmperes2: string };
+      testAmperes2: value.toString(),
+      toleranceMin2: (value * (1 - mult.tolerance)).toFixed(1),
+      toleranceMax2: (value * (1 + mult.tolerance)).toFixed(1)
+    };
   };
 
   if (loading) {

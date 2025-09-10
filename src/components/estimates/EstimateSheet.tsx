@@ -2129,21 +2129,21 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 40px; margin-right: 12px;" />
           <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
         </div>
-        <div>Date: ${dateStr}</div>
-        <div style="margin-bottom: 12px;"><b>Letter # ${letterQuoteNumber}</b></div>
+        <div class="amp-section">Date: ${dateStr}</div>
+        <div class="amp-section" style="margin-bottom: 12px;"><b>Letter # ${letterQuoteNumber}</b></div>
         <div>
           ${contactName}<br/>
           ${customer.company_name || 'Company'}<br/>
           ${formatAddressForLetter(customer.address)}<br/>
         </div>
-        <div style="margin: 16px 0;">Dear Mr./Ms. ${contactName},</div>
-        <div>AMP LLC is pleased to offer the following proposal for your consideration.</div>
-        <div style="margin: 16px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at <span style='border-bottom:1px dotted #aaa;'>_______</span></div>
-        <div style="margin: 16px 0;"><b>NETA Standard:</b>
+        <div class="amp-section amp-keep-with-next" style="margin: 16px 0;">Dear Mr./Ms. ${contactName},</div>
+        <div class="amp-section">AMP LLC is pleased to offer the following proposal for your consideration.</div>
+        <div class="amp-section" style="margin: 16px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at <span style='border-bottom:1px dotted #aaa;'>_______</span></div>
+        <div class="amp-section" style="margin: 16px 0;"><b>NETA Standard:</b>
           <span id="neta-standard-text" style="margin-left:6px;">${NETA_OPTIONS.find(o => o.value === netaStandard)?.text || '[Select NETA Standard]'}</span>
         </div>
-        <div><b>Scope</b></div>
-        <table style='width:100%;border-collapse:collapse;margin-bottom:16px;'>
+        <div class="amp-section amp-keep-with-next"><b>Scope</b></div>
+        <table class="amp-section" style='width:100%;border-collapse:collapse;margin-bottom:16px;'>
           <thead>
             <tr><th style='border:1px solid #ccc;padding:4px 12px;text-align:left;'>Name</th><th style='border:1px solid #ccc;padding:4px 12px;text-align:center;'>Quantity</th></tr>
           </thead>
@@ -2151,16 +2151,16 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             ${sovTableRows}
           </tbody>
         </table>
-        <div style="margin-top: 24px;"><b>Pricing & Terms</b></div>
-        <div>Mobilization costs of ${mobilization} shall be paid before the first day of work in addition to:</div>
-        <ul style="margin-top: 8px;">
+        <div class="amp-section amp-keep-with-next" style="margin-top: 24px;"><b>Pricing & Terms</b></div>
+        <div class="amp-section">Mobilization costs of ${mobilization} shall be paid before the first day of work in addition to:</div>
+        <ul class="amp-section" style="margin-top: 8px;">
           <li>Option 1: Where NET 30 Terms are applicable and agreed upon: <b>${option1}</b></li>
           <li>Option 2: Where NET 60 Terms are applicable and agreed upon: <b>${option2}</b></li>
           <li>Option 3: Where NET 90 Terms are applicable and agreed upon: <b>${option3}</b></li>
         </ul>
-        <div style="margin-top: 12px;">AMP LLC does not offer or accept terms greater than 90 days. No retainage is allowed. This work is subject to progress billing where applicable.</div>
-        <div style="margin-top: 12px;">This price is based upon the following:</div>
-        <ol style="margin-left: 20px;">
+        <div class="amp-section">AMP LLC does not offer or accept terms greater than 90 days. No retainage is allowed. This work is subject to progress billing where applicable.</div>
+        <div class="amp-section amp-keep-with-next" style="margin-top: 12px;">This price is based upon the following:</div>
+        <ol class="amp-section" style="margin-left: 20px;">
           <li>The schedule for this work will be mutually determined.</li>
           <li>Work to be performed during normal working hours, Monday through Friday.</li>
           <li>Repairs and/or retests, if required, will be separately quoted.</li>
@@ -2169,17 +2169,19 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           <li>Arc flash analysis, short circuit, and coordination study to be provided by others.</li>
           <li>All work performed by AMP will be in accordance with the safety policy attached</li>
         </ol>
-        <div style="margin-top: 24px;"><b>Conclusion</b></div>
-        <div>This proposal is valid for 120 days.</div>
-        <div style="margin-top: 16px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
-        <div style="margin-top: 16px;">Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</div>
-        <div>Should you have any questions please contact the undersigned.</div>
-        <div style="margin-top: 20px;">Sincerely,</div>
-        <div style="margin: 10px 0 6px 0; min-height: 60px;">
+        <div class="amp-section-block" style="break-inside: avoid; page-break-inside: avoid;">
+          <div class="amp-section amp-keep-with-next" style="margin-top: 24px;"><b>Conclusion</b></div>
+          <div class="amp-section">This proposal is valid for 120 days.</div>
+          <div class="amp-section" style="margin-top: 16px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
+          <div class="amp-section" style="margin-top: 16px;">Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</div>
+          <div class="amp-section">Should you have any questions please contact the undersigned.</div>
+        </div>
+        <div class="amp-section amp-keep-with-next" style="margin-top: 20px;">Sincerely,</div>
+        <div class="amp-section" style="margin: 10px 0 6px 0; min-height: 60px; break-inside: avoid; page-break-inside: avoid;">
           <img src="${signatureUrl}" alt="Signature" style="height: 60px; max-width: 280px; object-fit: contain;" onerror="this.style.display='none'"/>
         </div>
-        <div>Brian Rodgers</div>
-        <div>Chief Executive Officer</div>
+        <div class="amp-section">Brian Rodgers</div>
+        <div class="amp-section">Chief Executive Officer</div>
         <div style="text-align:center; margin-top: 16px; font-size: 0.95em; color: #444;">END OF LETTER</div>
         <div class="amp-footer" style="position:absolute;left:0;right:0;bottom:0;width:100%;font-size:0.9em;color:#555;border-top:1px solid #ccc;padding:8px 0;text-align:center;background:white;">P.O. Box 526 | Huntsville, Alabama 35804 | (256) 513-8255</div>
         <div style="page-break-after: always; margin-top: 40px;"></div>
@@ -2498,8 +2500,11 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           .amp-scope-controls { display: none !important; }
           /* Avoid breaking inside key blocks only */
           .amp-scope-block,
+          .amp-section,
           table, thead, tbody, tr, td, th,
           .procedure-section { break-inside: avoid; page-break-inside: avoid; }
+          /* Keep headings together with the content that follows */
+          .amp-keep-with-next { break-after: avoid; page-break-after: avoid; }
           /* Reasonable widows/orphans to reduce awkward splits */
           p { orphans: 2; widows: 2; }
           /* Ensure images scale and don't force weird breaks */

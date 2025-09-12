@@ -63,6 +63,8 @@ interface JobFormData {
   job_number?: string; 
 }
 
+type StatusFilter = 'all' | 'in_progress' | 'pending' | 'completed';
+
 const initialFormData: JobFormData = {
   customer_id: '',
   title: '',
@@ -92,6 +94,7 @@ export default function JobList() {
   const [formData, setFormData] = useState<JobFormData>(initialFormData);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   useEffect(() => {
     if (user) {
@@ -101,23 +104,29 @@ export default function JobList() {
   }, [user, division]);
 
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredJobs(jobs);
-    } else {
-      const filtered = jobs.filter(job => {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-          job.title?.toLowerCase().includes(searchLower) ||
-          job.customers?.company_name?.toLowerCase().includes(searchLower) ||
-          job.customers?.name?.toLowerCase().includes(searchLower) ||
-          job.job_number?.toLowerCase().includes(searchLower) ||
-          job.status?.toLowerCase().includes(searchLower) ||
-          job.description?.toLowerCase().includes(searchLower)
-        );
-      });
-      setFilteredJobs(filtered);
+    let base = jobs;
+    if (statusFilter !== 'all') {
+      base = base.filter(j => (j.status || '').toLowerCase() === statusFilter);
     }
-  }, [searchTerm, jobs]);
+
+    if (searchTerm.trim() === '') {
+      setFilteredJobs(base);
+      return;
+    }
+
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = base.filter(job => {
+      return (
+        job.title?.toLowerCase().includes(searchLower) ||
+        job.customers?.company_name?.toLowerCase().includes(searchLower) ||
+        job.customers?.name?.toLowerCase().includes(searchLower) ||
+        job.job_number?.toLowerCase().includes(searchLower) ||
+        job.status?.toLowerCase().includes(searchLower) ||
+        job.description?.toLowerCase().includes(searchLower)
+      );
+    });
+    setFilteredJobs(filtered);
+  }, [searchTerm, statusFilter, jobs]);
 
   async function fetchJobs() {
     setLoading(true);
@@ -393,6 +402,37 @@ export default function JobList() {
               <Plus className="h-5 w-5" />
             </button>
           )}
+        </div>
+      </div>
+
+      {/* Status Tabs */}
+      <div className="mt-6">
+        <div className="inline-flex rounded-md shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden" role="tablist" aria-label="Job status filter">
+          {([
+            { key: 'all', label: 'All Jobs' },
+            { key: 'in_progress', label: 'In Progress' },
+            { key: 'pending', label: 'Pending' },
+            { key: 'completed', label: 'Completed' }
+          ] as { key: StatusFilter; label: string }[]).map(t => {
+            const active = statusFilter === t.key;
+            return (
+              <button
+                key={t.key}
+                role="tab"
+                aria-selected={active}
+                className={
+                  `px-4 py-2 text-sm font-medium focus:outline-none ${
+                    active
+                      ? 'bg-[#f26722] text-white'
+                      : 'bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-100'
+                  }` + (t.key !== 'completed' ? ' border-r border-gray-200 dark:border-gray-700' : '')
+                }
+                onClick={() => setStatusFilter(t.key)}
+              >
+                {t.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 

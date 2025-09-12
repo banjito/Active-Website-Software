@@ -4770,6 +4770,137 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
               ) : null}
               <Button onClick={async () => {
                 try {
+                  // Extract NET 30 price from the letter HTML
+                  let net30Price = 0;
+                  
+                  // For single letter proposals, extract from the selected quote
+                  if (selectedLetterQuoteIndex !== null && quotes[selectedLetterQuoteIndex]) {
+                    const selectedQuote = quotes[selectedLetterQuoteIndex];
+                    let parsedData = selectedQuote.data;
+                    if (typeof parsedData === 'string') {
+                      try {
+                        parsedData = JSON.parse(parsedData);
+                      } catch (e) {
+                        parsedData = {};
+                      }
+                    }
+                    
+                    // Calculate NET 30 price from the selected quote
+                    const finalValue = (() => {
+                      const cv = parsedData.calculatedValues || {};
+                      const hs = parsedData.hoursSummary || {};
+                      const totalMaterial = cv.totalMaterial || 0;
+                      const totalExpense = cv.totalExpense || 0;
+                      const nonSovExpense = cv.nonSovExpense || 0;
+                      const straightTimeHours = hs.straightTimeHours || 0;
+                      const overtimeHours = hs.overtimeHours || 0;
+                      const doubleTimeHours = hs.doubleTimeHours || 0;
+                      return (
+                        (totalMaterial * 1.09 * materialMarkup) +
+                        (totalExpense * 1.09) +
+                        (nonSovExpense * 1.00) +
+                        (straightTimeHours * hourlyRates.straightTime) +
+                        (overtimeHours * hourlyRates.overtime) +
+                        (doubleTimeHours * hourlyRates.doubleTime)
+                      );
+                    })();
+                    
+                    // Add travel cost
+                    const parsedTravel = (() => {
+                      let source: any = (selectedQuote as any)?.travel_data ?? null;
+                      if (typeof source === 'string') {
+                        try { source = JSON.parse(source); } catch { source = null; }
+                      }
+                      if (!source && parsedData?.travel_data) {
+                        source = typeof parsedData.travel_data === 'string'
+                          ? (() => { try { return JSON.parse(parsedData.travel_data); } catch { return null; } })()
+                          : parsedData.travel_data;
+                      }
+                      return source || {};
+                    })();
+                    
+                    const getParsedTotalTravelCost = () => {
+                      const td: any = parsedTravel as any;
+                      return (
+                        (td?.travelExpense?.[0]?.vehicleTravelCost ?? 0) +
+                        (td?.travelTime?.[0]?.totalTravelLabor ?? 0) +
+                        (td?.perDiem?.[0]?.totalPerDiem ?? 0) +
+                        (td?.lodging?.[0]?.totalAmount ?? 0) +
+                        (td?.localMiles?.[0]?.totalLocalMilesCost ?? 0) +
+                        (td?.flights?.[0]?.totalFlightAmount ?? 0) +
+                        (td?.airTravelTime?.[0]?.totalTravelLabor ?? 0) +
+                        (td?.rentalCar?.[0]?.totalAmount ?? 0)
+                      );
+                    };
+                    
+                    net30Price = Math.ceil((finalValue + getParsedTotalTravelCost()) / 0.96);
+                  }
+                  
+                  // For combined letter proposals, extract from the combined total
+                  if (selectedQuotesForCombined.length > 0) {
+                    const selectedQuotes = selectedQuotesForCombined.map(idx => quotes[idx]);
+                    const processedQuotes = selectedQuotes.map((quote) => {
+                      let parsedData = quote.data;
+                      if (typeof parsedData === 'string') {
+                        try {
+                          parsedData = JSON.parse(parsedData);
+                        } catch (e) {
+                          parsedData = {};
+                        }
+                      }
+                      
+                      const finalValue = (() => {
+                        const cv = parsedData.calculatedValues || {};
+                        const hs = parsedData.hoursSummary || {};
+                        const totalMaterial = cv.totalMaterial || 0;
+                        const totalExpense = cv.totalExpense || 0;
+                        const nonSovExpense = cv.nonSovExpense || 0;
+                        const straightTimeHours = hs.straightTimeHours || 0;
+                        const overtimeHours = hs.overtimeHours || 0;
+                        const doubleTimeHours = hs.doubleTimeHours || 0;
+                        return (
+                          (totalMaterial * 1.09 * materialMarkup) +
+                          (totalExpense * 1.09) +
+                          (nonSovExpense * 1.00) +
+                          (straightTimeHours * hourlyRates.straightTime) +
+                          (overtimeHours * hourlyRates.overtime) +
+                          (doubleTimeHours * hourlyRates.doubleTime)
+                        );
+                      })();
+                      
+                      const parsedTravel = (() => {
+                        let source: any = (quote as any)?.travel_data ?? null;
+                        if (typeof source === 'string') {
+                          try { source = JSON.parse(source); } catch { source = null; }
+                        }
+                        if (!source && parsedData?.travel_data) {
+                          source = typeof parsedData.travel_data === 'string'
+                            ? (() => { try { return JSON.parse(parsedData.travel_data); } catch { return null; } })()
+                            : parsedData.travel_data;
+                        }
+                        return source || {};
+                      })();
+                      
+                      const getParsedTotalTravelCost = () => {
+                        const td: any = parsedTravel as any;
+                        return (
+                          (td?.travelExpense?.[0]?.vehicleTravelCost ?? 0) +
+                          (td?.travelTime?.[0]?.totalTravelLabor ?? 0) +
+                          (td?.perDiem?.[0]?.totalPerDiem ?? 0) +
+                          (td?.lodging?.[0]?.totalAmount ?? 0) +
+                          (td?.localMiles?.[0]?.totalLocalMilesCost ?? 0) +
+                          (td?.flights?.[0]?.totalFlightAmount ?? 0) +
+                          (td?.airTravelTime?.[0]?.totalTravelLabor ?? 0) +
+                          (td?.rentalCar?.[0]?.totalAmount ?? 0)
+                        );
+                      };
+                      
+                      return Math.ceil((finalValue + getParsedTotalTravelCost()) / 0.96);
+                    });
+                    
+                    net30Price = processedQuotes.reduce((sum, price) => sum + price, 0);
+                  }
+                  
                   const payload: any = {
                     opportunity_id: opportunityId,
                     html: letterHtml,
@@ -4780,6 +4911,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                       hoursSummary: data.hoursSummary,
                     }
                   };
+                  
                   if (currentLetterId) {
                     const { error } = await supabase
                       .schema('business')
@@ -4787,6 +4919,19 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                       .update(payload)
                       .eq('id', currentLetterId);
                     if (error) throw error;
+                    
+                    // Update quoted_amount in opportunities table
+                    if (net30Price > 0) {
+                      const { error: updateError } = await supabase
+                        .schema('business')
+                        .from('opportunities')
+                        .update({ quoted_amount: net30Price })
+                        .eq('id', opportunityId);
+                      if (updateError) {
+                        console.warn('Failed to update quoted_amount:', updateError);
+                      }
+                    }
+                    
                     alert('Letter updated successfully');
                   } else {
                     const { data: inserted, error } = await supabase
@@ -4797,6 +4942,19 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                       .single();
                     if (error) throw error;
                     setCurrentLetterId(inserted?.id || null);
+                    
+                    // Update quoted_amount in opportunities table
+                    if (net30Price > 0) {
+                      const { error: updateError } = await supabase
+                        .schema('business')
+                        .from('opportunities')
+                        .update({ quoted_amount: net30Price })
+                        .eq('id', opportunityId);
+                      if (updateError) {
+                        console.warn('Failed to update quoted_amount:', updateError);
+                      }
+                    }
+                    
                     alert('Letter saved successfully');
                   }
                 } catch (e: any) {

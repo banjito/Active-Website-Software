@@ -9,6 +9,8 @@ import JobDetail from './components/jobs/JobDetail';
 import Dashboard from './app/dashboard/page';
 import PortalLanding from './app/portal/page';
 import SalesDashboard from './app/sales-dashboard/page';
+import MeetingsPage from './app/meetings/page';
+import MyDataPage from './app/meetings/my-data/page';
 
 import Login from './components/auth/Login';
 import JobDiagnostics from './components/jobs/JobDiagnostics';
@@ -20,6 +22,7 @@ import DebugTableCheck from './components/debug/debug-table';
 import ChatDebug from './components/chat/ChatDebug';
 import { Layout } from './components/ui/Layout';
 import SalesLayout from './components/ui/SalesLayout';
+import { MeetingsLayout } from './components/ui/MeetingsLayout';
 import SwitchgearReport from './components/reports/SwitchgearReport';
 import PanelboardReport from './components/reports/PanelboardReport';
 import DryTypeTransformerReport from './components/reports/DryTypeTransformerReport';
@@ -417,6 +420,10 @@ function App() {
                   <Route path="/sales/goals/new" element={<RequireAuth><SalesLayout><NewGoalPage /></SalesLayout></RequireAuth>} />
                   <Route path="/sales/goals/:id/edit" element={<RequireAuth><SalesLayout><EditGoalPage /></SalesLayout></RequireAuth>} />
                   <Route path="/sales/goals/management" element={<RequireAuth><SalesLayout><GoalManagementPage /></SalesLayout></RequireAuth>} />
+
+                  {/* === Meetings Portal Routes === */}
+                  <Route path="/meetings" element={<RequireAuth><MeetingsLayout><MeetingsPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/my-90" element={<RequireAuth><MeetingsLayout><MyDataPage /></MeetingsLayout></RequireAuth>} />
 
                   {/* === Division-Specific Dashboard Routes === */}
                   {/* These specific routes should come before the generic /:division/dashboard route */}

@@ -2073,6 +2073,24 @@ export default function JobDetail() {
     }
   };
 
+  const handleQuickStatusSave = async (newStatus: 'pending' | 'in_progress' | 'completed') => {
+    if (!id) return;
+    try {
+      const { error } = await supabase
+        .schema('neta_ops')
+        .from('jobs')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+      setJob(prev => prev ? { ...prev, status: newStatus } : prev);
+      setIsStatusEditing(false);
+      toast({ title: 'Status updated', description: `Job status set to ${newStatus.replace('_',' ')}`, variant: 'success' });
+    } catch (e) {
+      console.error('Quick status update failed:', e);
+      toast({ title: 'Update failed', description: 'Could not update job status.', variant: 'destructive' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-8">
@@ -2475,16 +2493,52 @@ export default function JobDetail() {
                           <CardTitle className="text-sm font-medium text-gray-600 dark:text-white">Project Status</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="flex items-center space-x-2">
-                            <div className={`h-3 w-3 rounded-full ${
-                              job.status === 'completed' ? 'bg-green-500' :
-                              job.status === 'in_progress' ? 'bg-blue-500' :
-                              job.status === 'pending' ? 'bg-yellow-500' :
-                              'bg-gray-500'
-                            }`} />
-                            <span className="text-lg font-semibold capitalize text-gray-900 dark:text-white">
-                              {job.status.replace('_', ' ')}
-                            </span>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center space-x-2">
+                              <div className={`h-3 w-3 rounded-full ${
+                                job.status === 'completed' ? 'bg-green-500' :
+                                job.status === 'in_progress' ? 'bg-blue-500' :
+                                job.status === 'pending' ? 'bg-yellow-500' :
+                                'bg-gray-500'
+                              }`} />
+                              <span className="text-lg font-semibold capitalize text-gray-900 dark:text-white">
+                                {job.status.replace('_', ' ')}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {!isStatusEditing ? (
+                                <button
+                                  className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-100 text-gray-700 dark:text-white"
+                                  onClick={() => setIsStatusEditing(true)}
+                                >
+                                  Change
+                                </button>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <select
+                                    defaultValue={job.status}
+                                    onChange={(e) => setJob(prev => prev ? { ...prev, status: e.target.value as any } : prev)}
+                                    className="mt-0 block w-full p-2 bg-gray-100 dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white"
+                                  >
+                                    <option value="pending">Pending</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                  </select>
+                                  <button
+                                    className="px-3 py-1 text-sm text-white bg-[#f26722] rounded-md hover:bg-[#e55611]"
+                                    onClick={() => handleQuickStatusSave((job.status as any) || 'pending')}
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-100 text-gray-700 dark:text-white"
+                                    onClick={() => setIsStatusEditing(false)}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </CardContent>
                       </Card>

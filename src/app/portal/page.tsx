@@ -4,7 +4,7 @@ import Card from "../../components/ui/Card"
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs"
 import { Badge } from "../../components/ui"
-import { ChevronRight, Building, MapPin, Bell, User as UserIcon, Settings, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronRight, Building, MapPin, Bell, User as UserIcon, Settings, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { useAuth } from "../../lib/AuthContext"
 import { useDivision } from '../../App'
@@ -1433,6 +1433,46 @@ export default function PortalLanding() {
                   <Button 
                     className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm"
                     onClick={() => handlePortalClick("Engineering Portal", '/engineering/dashboard')}
+                  >
+                    Access Portal <span className="ml-1">›</span>
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              {/* Meetings Portal */}
+              <Card className="border border-gray-200 dark:border-dark-300">
+                <CardHeader className="flex flex-row items-start justify-between p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-full bg-gray-50 dark:bg-dark-700/20">
+                      <Calendar className="h-5 w-5 text-gray-500 dark:text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Meetings Portal</CardTitle>
+                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Schedule and manage meetings</CardDescription>
+                    </div>
+                  </div>
+                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">General</Badge>
+                </CardHeader>
+                <CardContent className="px-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-white">Meeting scheduling</span>
+                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Planning</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-white">Team collaboration</span>
+                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Communication</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-white">Meeting notes</span>
+                      <Badge variant="outline" className="text-xs font-normal px-2.5 py-0.5 text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-700/20">Documentation</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="px-6 pb-6 pt-0">
+                  <Button 
+                    className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm"
+                    onClick={() => navigate('/meetings')}
                   >
                     Access Portal <span className="ml-1">›</span>
                   </Button>

@@ -508,11 +508,11 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
               const calculatedTCF = getTCF(calculatedCelsius);
               
               return {
-                ...prev.temperature,
+              ...prev.temperature,
                 fahrenheit: fahrenheit || prev.temperature.fahrenheit,
                 celsius: calculatedCelsius,
                 tcf: calculatedTCF,
-                humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
+              humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
               };
             })(),
             substation: d.reportInfo?.substation ?? prev.substation,
@@ -537,8 +537,8 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             // Visual/mechanical - merge by id, preserve defaults when missing
             visualInspectionItems: Array.isArray(prev.visualInspectionItems)
               ? prev.visualInspectionItems.map(item => ({
-                  ...item,
-                  result: (d.visualInspection && d.visualInspection[item.id]) ? d.visualInspection[item.id] : item.result,
+              ...item,
+              result: (d.visualInspection && d.visualInspection[item.id]) ? d.visualInspection[item.id] : item.result,
                 }))
               : prev.visualInspectionItems,
 
@@ -825,17 +825,17 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             corrected: (() => {
               // Get the measured values first
               const measured = {
-                poleToPole: {
+              poleToPole: {
                   p1p2: (data as any)?.insulation_resistance?.measured?.poleToPole?.p1p2 ?? prev.insulationResistance.measured.poleToPole.p1p2,
                   p2p3: (data as any)?.insulation_resistance?.measured?.poleToPole?.p2p3 ?? prev.insulationResistance.measured.poleToPole.p2p3,
                   p3p1: (data as any)?.insulation_resistance?.measured?.poleToPole?.p3p1 ?? prev.insulationResistance.measured.poleToPole.p3p1,
-                },
-                poleToFrame: {
+              },
+              poleToFrame: {
                   p1: (data as any)?.insulation_resistance?.measured?.poleToFrame?.p1 ?? prev.insulationResistance.measured.poleToFrame.p1,
                   p2: (data as any)?.insulation_resistance?.measured?.poleToFrame?.p2 ?? prev.insulationResistance.measured.poleToFrame.p2,
                   p3: (data as any)?.insulation_resistance?.measured?.poleToFrame?.p3 ?? prev.insulationResistance.measured.poleToFrame.p3,
-                },
-                lineToLoad: {
+              },
+              lineToLoad: {
                   p1: (data as any)?.insulation_resistance?.measured?.lineToLoad?.p1 ?? prev.insulationResistance.measured.lineToLoad.p1,
                   p2: (data as any)?.insulation_resistance?.measured?.lineToLoad?.p2 ?? prev.insulationResistance.measured.lineToLoad.p2,
                   p3: (data as any)?.insulation_resistance?.measured?.lineToLoad?.p3 ?? prev.insulationResistance.measured.lineToLoad.p3,
@@ -1536,7 +1536,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
     const calculateCorrectedValue = (value: string): string => {
       if (value === "" || value === null || value === undefined) {
-        return "";
+          return "";
       }
       
       // Check if value contains non-numeric characters (like >, <, letters, etc.)

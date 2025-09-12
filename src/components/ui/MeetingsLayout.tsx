@@ -100,8 +100,8 @@ export const MeetingsLayout: React.FC<MeetingsLayoutProps> = ({ children }) => {
     {
       icon: Target,
       label: "My Data",
-      path: "/meetings/my-90",
-      active: location.pathname === "/meetings/my-90"
+      path: "/meetings/my-data",
+      active: location.pathname === "/meetings/my-data"
     },
     
     // First Group

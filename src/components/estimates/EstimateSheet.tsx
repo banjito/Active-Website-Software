@@ -932,7 +932,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       data: JSON.stringify(dataWithEmbeddedTravel),
       // Also save a dedicated travel_data column for direct access
       travel_data: JSON.stringify(safeTravelData),
-      quote_number: generateQuoteVersion()
+      quote_number: generateQuoteVersion(),
+      user_id: user.id // Track who created this estimate
     };
     
     try {
@@ -968,6 +969,33 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             try { localStorage.removeItem(draftKey); } catch {}
             setIsDirty(false);
             setDraftRestored(false);
+            
+            // Update prepared_by on the opportunity to include current user's email
+            if (opportunityId && user?.email) {
+              try {
+                const { data: opp, error: oppErr } = await supabase
+                  .schema('business')
+                  .from('opportunities')
+                  .select('prepared_by')
+                  .eq('id', opportunityId)
+                  .maybeSingle();
+                if (!oppErr) {
+                  const existing = (opp?.prepared_by as string | null) || '';
+                  const parts = existing.split(',').map(s => s.trim()).filter(Boolean);
+                  if (!parts.includes(user.email)) parts.push(user.email);
+                  const newPreparedBy = parts.join(', ');
+                  await supabase
+                    .schema('business')
+                    .from('opportunities')
+                    .update({ prepared_by: newPreparedBy })
+                    .eq('id', opportunityId);
+                }
+              } catch (e) {
+                console.error('Failed to update prepared_by after quote update:', e);
+              }
+              // Notify listeners to refresh
+              window.dispatchEvent(new CustomEvent('estimateSaved', { detail: { opportunityId } }));
+            }
         } else {
              console.warn('Update operation did not return data.');
              // Refetch to be sure state is correct
@@ -995,6 +1023,38 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             try { localStorage.removeItem(draftKey); } catch {}
             setIsDirty(false);
             setDraftRestored(false);
+            
+            // Trigger prepared_by update for the opportunity
+            if (opportunityId) {
+              // First, directly update prepared_by to include current user's email
+              if (user?.email) {
+                try {
+                  const { data: opp, error: oppErr } = await supabase
+                    .schema('business')
+                    .from('opportunities')
+                    .select('prepared_by')
+                    .eq('id', opportunityId)
+                    .maybeSingle();
+                  if (!oppErr) {
+                    const existing = (opp?.prepared_by as string | null) || '';
+                    const parts = existing.split(',').map(s => s.trim()).filter(Boolean);
+                    if (!parts.includes(user.email)) parts.push(user.email);
+                    const newPreparedBy = parts.join(', ');
+                    await supabase
+                      .schema('business')
+                      .from('opportunities')
+                      .update({ prepared_by: newPreparedBy })
+                      .eq('id', opportunityId);
+                  }
+                } catch (e) {
+                  console.error('Failed to update prepared_by after new quote:', e);
+                }
+              }
+              // Then notify listeners to refresh
+              window.dispatchEvent(new CustomEvent('estimateSaved', { 
+                detail: { opportunityId } 
+              }));
+            }
         } else {
             console.error('Insert operation did not return data.');
             alert('Quote saved, but failed to retrieve confirmation. Please refresh.');

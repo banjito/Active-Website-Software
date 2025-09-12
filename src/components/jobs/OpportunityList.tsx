@@ -33,6 +33,8 @@ interface FormData {
   notes: string;
   amp_division: string;
   sales_person: string;
+  reviewed_by: string;
+  prepared_by: string;
 }
 
 function getStatusColor(status: string) {
@@ -76,7 +78,9 @@ const initialFormData: FormData = {
   proposal_due_date: '',
   notes: '',
   amp_division: '',
-  sales_person: ''
+  sales_person: '',
+  reviewed_by: '',
+  prepared_by: ''
 };
 
 // Add this utility function to handle date formatting consistently
@@ -725,7 +729,9 @@ export default function OpportunityList() {
         sales_person: user.email, // Automatically set to the user's email
         user_id: user.id,
         quote_number: String(nextQuoteNumber),
-        proposal_due_date: formData.proposal_due_date || null
+        proposal_due_date: formData.proposal_due_date || null,
+        reviewed_by: formData.reviewed_by || null,
+        prepared_by: formData.prepared_by || null
       };
       
       console.log('Sending to Supabase:', opportunityDataBase);
@@ -1533,6 +1539,37 @@ export default function OpportunityList() {
                   <option value="georgia" className="dark:bg-dark-150 dark:text-white">Georgia Division</option>
                   <option value="international" className="dark:bg-dark-150 dark:text-white">International Division</option>
                 </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Reviewed By
+                  </label>
+                  <input
+                    type="text"
+                    name="reviewed_by"
+                    value={formData.reviewed_by}
+                    onChange={handleChange}
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    placeholder="Enter reviewer name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Prepared By (Auto-populated from estimate creators)
+                  </label>
+                  <input
+                    type="text"
+                    name="prepared_by"
+                    value={formData.prepared_by}
+                    onChange={handleChange}
+                    readOnly
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 dark:text-white cursor-not-allowed"
+                    placeholder="Auto-populated from estimate creators"
+                  />
+                </div>
               </div>
 
               <div className="mt-5 flex justify-end">

@@ -11,6 +11,9 @@ import PortalLanding from './app/portal/page';
 import SalesDashboard from './app/sales-dashboard/page';
 import MeetingsPage from './app/meetings/page';
 import MyDataPage from './app/meetings/my-data/page';
+import InsightsPage from './app/meetings/insights/page';
+import DataPage from './app/meetings/data/page';
+import RocksPage from './app/meetings/rocks/page';
 
 import Login from './components/auth/Login';
 import JobDiagnostics from './components/jobs/JobDiagnostics';
@@ -423,7 +426,10 @@ function App() {
 
                   {/* === Meetings Portal Routes === */}
                   <Route path="/meetings" element={<RequireAuth><MeetingsLayout><MeetingsPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/my-90" element={<RequireAuth><MeetingsLayout><MyDataPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/my-data" element={<RequireAuth><MeetingsLayout><MyDataPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/insights" element={<RequireAuth><MeetingsLayout><InsightsPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/data" element={<RequireAuth><MeetingsLayout><DataPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/rocks" element={<RequireAuth><MeetingsLayout><RocksPage /></MeetingsLayout></RequireAuth>} />
 
                   {/* === Division-Specific Dashboard Routes === */}
                   {/* These specific routes should come before the generic /:division/dashboard route */}

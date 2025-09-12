@@ -54,7 +54,9 @@ const initialFormData: OpportunityFormData = {
   sales_person: '',
   amp_division: '',
   quoted_amount: '',
-  selected_letter_proposal: ''
+  selected_letter_proposal: '',
+  reviewed_by: '',
+  prepared_by: ''
 };
 
 // Add this utility function to handle date formatting consistently
@@ -199,7 +201,9 @@ export default function OpportunityDetail() {
     probability: '0',
     amp_division: '',
     quoted_amount: '',
-    selected_letter_proposal: ''
+    selected_letter_proposal: '',
+    reviewed_by: '',
+    prepared_by: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showJobDialog, setShowJobDialog] = useState(false);
@@ -207,6 +211,67 @@ export default function OpportunityDetail() {
   const [showDivisionAnalytics, setShowDivisionAnalytics] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
   const [showEstimate, setShowEstimate] = useState<'new' | 'view' | 'letter' | 'letters' | 'combined-letter' | false>(false);
+  
+  // Function to update prepared_by field based on estimate creators
+  const updatePreparedByFromEstimates = async (opportunityId: string) => {
+    try {
+      // Get all estimates for this opportunity with user information
+      const { data: estimates, error } = await supabase
+        .schema('business')
+        .from('estimates')
+        .select(`
+          user_id,
+          auth.users!inner(email)
+        `)
+        .eq('opportunity_id', opportunityId);
+
+      if (error) {
+        console.error('Error fetching estimates for prepared_by:', error);
+        return;
+      }
+
+      if (estimates && estimates.length > 0) {
+        // Get unique user emails from estimate creators
+        const uniqueEmails = [...new Set(estimates.map(est => est.auth?.users?.email).filter(Boolean))];
+        const preparedByValue = uniqueEmails.join(', ');
+
+        // Update the opportunity's prepared_by field
+        const { error: updateError } = await supabase
+          .schema('business')
+          .from('opportunities')
+          .update({ prepared_by: preparedByValue })
+          .eq('id', opportunityId);
+
+        if (updateError) {
+          console.error('Error updating prepared_by:', updateError);
+        } else {
+          console.log('Updated prepared_by:', preparedByValue);
+          // Refresh the opportunity data to show the updated field
+          fetchOpportunity();
+        }
+      }
+    } catch (error) {
+      console.error('Error in updatePreparedByFromEstimates:', error);
+    }
+  };
+
+  // Listen for estimate save events to update prepared_by field
+  useEffect(() => {
+    const handleEstimateSaved = (event: CustomEvent) => {
+      const { opportunityId } = event.detail;
+      if (opportunityId === id) {
+        // Refresh the opportunity so UI shows latest prepared_by immediately
+        fetchOpportunity();
+      }
+    };
+
+    window.addEventListener('estimateSaved', handleEstimateSaved as EventListener);
+    
+    return () => {
+      window.removeEventListener('estimateSaved', handleEstimateSaved as EventListener);
+    };
+  }, [id]);
+
   // Clear any persisted estimate mode/draft when leaving the page
   useEffect(() => {
     return () => {
@@ -297,7 +362,9 @@ export default function OpportunityDetail() {
         probability: opportunity.probability?.toString() || '0',
         amp_division: opportunity.amp_division || '',
         quoted_amount: (opportunity as any).quoted_amount?.toString() || '',
-        selected_letter_proposal: (opportunity as any).selected_letter_proposal || ''
+        selected_letter_proposal: (opportunity as any).selected_letter_proposal || '',
+        reviewed_by: (opportunity as any).reviewed_by || '',
+        prepared_by: (opportunity as any).prepared_by || ''
       });
       // Fetch letter proposals for this opportunity
       fetchLetterProposals(opportunity.id);
@@ -340,7 +407,7 @@ export default function OpportunityDetail() {
     try {
       // Explicitly select columns to avoid implicit relationship lookups
       const opportunityColumns = 
-        'id, created_at, updated_at, customer_id, contact_id, title, description, status, expected_value, probability, expected_close_date, quote_number, notes, job_id, awarded_date, sales_person, amp_division, subcontractor_agreements, quoted_amount, selected_letter_proposal';
+        'id, created_at, updated_at, customer_id, contact_id, title, description, status, expected_value, probability, expected_close_date, quote_number, notes, job_id, awarded_date, sales_person, amp_division, subcontractor_agreements, quoted_amount, selected_letter_proposal, reviewed_by, prepared_by';
 
       let opportunityData: Opportunity | null = null;
       let primaryId: string | null = null;
@@ -576,6 +643,11 @@ export default function OpportunityDetail() {
       console.error('Error fetching opportunity:', error);
     } finally {
       setLoading(false);
+      
+      // Update prepared_by field based on existing estimates
+      if (opportunity && opportunity.id) {
+        updatePreparedByFromEstimates(opportunity.id);
+      }
     }
   }
 
@@ -678,7 +750,9 @@ export default function OpportunityDetail() {
         probability: editFormData.probability ? parseFloat(editFormData.probability) : 0,
         amp_division: editFormData.amp_division,
         quoted_amount: editFormData.quoted_amount ? parseFloat(editFormData.quoted_amount) : null,
-        selected_letter_proposal: editFormData.selected_letter_proposal || null
+        selected_letter_proposal: editFormData.selected_letter_proposal || null,
+        reviewed_by: editFormData.reviewed_by || null,
+        prepared_by: editFormData.prepared_by || null
       };
       updatePayload.proposal_due_date = proposalDueDate;
 
@@ -1201,7 +1275,9 @@ export default function OpportunityDetail() {
                         probability: opportunity.probability?.toString() || '0',
                         amp_division: opportunity.amp_division || '',
                         quoted_amount: (opportunity as any).quoted_amount?.toString() || '',
-                        selected_letter_proposal: (opportunity as any).selected_letter_proposal || ''
+                        selected_letter_proposal: (opportunity as any).selected_letter_proposal || '',
+                        reviewed_by: (opportunity as any).reviewed_by || '',
+                        prepared_by: (opportunity as any).prepared_by || ''
                       });
                     }
                   }}
@@ -1524,6 +1600,39 @@ export default function OpportunityDetail() {
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="reviewed_by" className="block text-sm font-medium text-gray-700 dark:text-white">
+                      Reviewed By
+                    </label>
+                    <input
+                      type="text"
+                      id="reviewed_by"
+                      name="reviewed_by"
+                      value={editFormData.reviewed_by}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      placeholder="Enter reviewer name"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="prepared_by" className="block text-sm font-medium text-gray-700 dark:text-white">
+                      Prepared By (Auto-populated from estimate creators)
+                    </label>
+                    <input
+                      type="text"
+                      id="prepared_by"
+                      name="prepared_by"
+                      value={editFormData.prepared_by}
+                      onChange={handleInputChange}
+                      readOnly
+                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 dark:text-white cursor-not-allowed"
+                      placeholder="Auto-populated from estimate creators"
+                    />
+                  </div>
+                </div>
+
                 <div className="mt-5 flex justify-end">
                   <button
                     type="button"
@@ -1751,6 +1860,18 @@ export default function OpportunityDetail() {
                         {opportunity.proposal_due_date
                           ? formatDateSafe(opportunity.proposal_due_date)
                           : 'Not specified'}
+                      </p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Reviewed By</p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {(opportunity as any).reviewed_by || 'Not specified'}
+                      </p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Prepared By</p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {(opportunity as any).prepared_by || 'Not specified'}
                       </p>
                     </div>
 

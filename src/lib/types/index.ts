@@ -55,6 +55,8 @@ export interface Opportunity {
   awarded_date?: string;
   sales_person?: string;
   amp_division?: string;
+  reviewed_by?: string;
+  prepared_by?: string;
   subcontractor_agreements?: SubcontractorAgreement[];
 }
 
@@ -73,4 +75,6 @@ export interface OpportunityFormData {
   amp_division: string;
   quoted_amount: string;
   selected_letter_proposal: string;
+  reviewed_by: string;
+  prepared_by: string;
 } 

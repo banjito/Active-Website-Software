@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X, MapPin } from 'lucide-react';
+import { Plus, Pencil, X, MapPin } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { format } from 'date-fns';
 import { supabase, isConnectionError } from '@/lib/supabase';
@@ -90,8 +90,6 @@ export default function JobList() {
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<JobFormData>(initialFormData);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
 
@@ -350,52 +348,6 @@ export default function JobList() {
     }
   }
 
-  async function handleDelete() {
-    if (!jobToDelete || !user) return;
-    
-    const jobBeingDeleted = jobs.find(j => j.id === jobToDelete);
-    const schemaToDeleteFrom = isLabDivision(jobBeingDeleted?.division) ? 'lab_ops' : 'neta_ops';
-    const tableToDeleteFrom = isLabDivision(jobBeingDeleted?.division) ? 'lab_jobs' : 'jobs';
-
-    try {
-      // First, find and update any opportunities that reference this job (assuming opportunities are only linked to neta_ops.jobs)
-      // If opportunities can also be linked to lab_ops.lab_jobs, this logic needs adjustment.
-      if (schemaToDeleteFrom === 'neta_ops') {
-        const { error: opportunityUpdateError } = await supabase
-          .schema('business') // Assuming opportunities are in 'business' schema
-          .from('opportunities')
-          .update({ job_id: null })
-          .eq('job_id', jobToDelete);
-
-        if (opportunityUpdateError) {
-          console.error('Error updating opportunity references:', opportunityUpdateError);
-          // Decide if this should throw and stop deletion or just warn
-        }
-      }
-
-      // Soft delete the job by setting deleted_at timestamp
-      const { error } = await supabase
-        .schema(schemaToDeleteFrom)
-        .from(tableToDeleteFrom)
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', jobToDelete);
-
-      if (error) throw error;
-
-      fetchJobs();
-      setDeleteConfirmOpen(false);
-      setJobToDelete(null);
-    } catch (error) {
-      console.error('Error deleting job:', error);
-      alert('Error deleting job. Please try again.');
-    }
-  }
-
-  function confirmDelete(jobId: string, e: React.MouseEvent) {
-    e.stopPropagation(); 
-    setJobToDelete(jobId);
-    setDeleteConfirmOpen(true);
-  }
 
   function formatDivisionName(divisionValue: string | null): string {
     if (!divisionValue) return '';
@@ -504,9 +456,6 @@ export default function JobList() {
                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
                   Priority
                 </th>
-                <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                  <span className="sr-only">Actions</span>
-                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-dark-150">
@@ -548,14 +497,6 @@ export default function JobList() {
                       {job.priority}
                     </span>
                   </td>
-                  <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <button
-                      onClick={(e) => confirmDelete(job.id, e)}
-                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -563,54 +504,6 @@ export default function JobList() {
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
-        className="fixed inset-0 z-10 overflow-y-auto"
-      >
-        <div className="flex items-center justify-center min-h-screen">
-          <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-
-          <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-md w-full mx-auto p-6 shadow-xl">
-            <div className="absolute top-0 right-0 pt-4 pr-4">
-              <button
-                type="button"
-                className="text-gray-400 hover:text-gray-500"
-                onClick={() => setDeleteConfirmOpen(false)}
-              >
-                <span className="sr-only">Close</span>
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            
-            <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-4">
-              Delete Job
-            </Dialog.Title>
-            
-            <p className="text-gray-700 dark:text-dark-300 mb-4">
-              Are you sure you want to delete this job? This action cannot be undone.
-            </p>
-
-            <div className="mt-5 flex justify-end space-x-3">
-              <button
-                type="button"
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-dark-300 bg-white dark:bg-dark-150 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none"
-                onClick={() => setDeleteConfirmOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none"
-                onClick={handleDelete}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      </Dialog>
 
       {/* Job Creation Form Dialog */}
       <Dialog

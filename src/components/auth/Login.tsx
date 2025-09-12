@@ -237,7 +237,7 @@ export default function Login() {
                     onChange={(e) => setEmail(e.target.value)}
                     leftIcon={<Mail className="h-5 w-5 text-gray-400" />}
                     placeholder="you@ampqes.com"
-                    className="bg-gray-200 border-gray-400 text-white placeholder-gray-500 focus:border-white focus:ring-white h-12"
+                    className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 focus:border-white focus:ring-white h-12"
                   />
 
                   <Input
@@ -252,7 +252,7 @@ export default function Login() {
                     leftIcon={<Lock className="h-5 w-5 text-gray-400" />}
                     minLength={6}
                     hint={isSignUpMode ? "Password must be at least 6 characters" : undefined}
-                    className="bg-gray-200 border-gray-400 text-white placeholder-gray-500 focus:border-white focus:ring-white h-12"
+                    className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 focus:border-white focus:ring-white h-12"
                   />
                 </div>
 

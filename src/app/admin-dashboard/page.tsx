@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, UserMinus, ShieldCheck, Settings, Users, ArrowLeft, FileText, Database, Sliders, LockKeyhole, Shield, Bell } from 'lucide-react';
+import { UserPlus, UserMinus, ShieldCheck, Settings, Users, ArrowLeft, FileText, Database, Sliders, LockKeyhole, Shield, Bell, Clock } from 'lucide-react';
 import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import AdminUserManagement from '@/components/admin/AdminUserManagement';
@@ -13,6 +13,7 @@ import { EncryptionSettings } from '@/components/admin/EncryptionSettings';
 import RoleManagement from '@/components/admin/RoleManagement';
 import PermissionManagement from '@/components/admin/PermissionManagement';
 import NotificationDevControls from '@/components/admin/NotificationDevControls';
+import InProgressDashboard from '@/components/admin/InProgressDashboard';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -27,7 +28,8 @@ export const AdminDashboard: React.FC = () => {
     'encryptionSettings' |
     'roleManagement' |
     'permissionManagement' |
-    'notifDevControls'
+    'notifDevControls' |
+    'inProgressDashboard'
   >('dashboard');
 
   // Redirect non-admin users
@@ -70,6 +72,8 @@ export const AdminDashboard: React.FC = () => {
         return <PermissionManagement />;
       case 'notifDevControls':
         return <NotificationDevControls />;
+      case 'inProgressDashboard':
+        return <InProgressDashboard />;
       default:
         return renderDashboard();
     }
@@ -79,6 +83,19 @@ export const AdminDashboard: React.FC = () => {
   const renderDashboard = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* In Progress Dashboard Card */}
+        <Card className="transition-all hover:shadow-md cursor-pointer" onClick={() => setCurrentView('inProgressDashboard')}>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg mb-2">In Progress Dashboard</CardTitle>
+                <p className="text-sm text-gray-500 dark:text-white">Monitor ongoing jobs, projects, and tasks</p>
+              </div>
+              <Clock className="h-8 w-8 text-cyan-500" />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* User Management Card */}
         <Card className="transition-all hover:shadow-md cursor-pointer" onClick={() => setCurrentView('userManagement')}>
           <CardContent className="p-6">
@@ -212,6 +229,7 @@ export const AdminDashboard: React.FC = () => {
         </Button>
         <h1 className="text-2xl font-bold">
           {currentView === 'dashboard' ? 'Admin Dashboard' : (
+            currentView === 'inProgressDashboard' ? 'In Progress Dashboard' :
             currentView === 'userManagement' ? 'User Management' :
             currentView === 'systemHealth' ? 'System Health' : 
             currentView === 'systemLogs' ? 'System Logs' :

@@ -14,6 +14,11 @@ import MyDataPage from './app/meetings/my-data/page';
 import InsightsPage from './app/meetings/insights/page';
 import DataPage from './app/meetings/data/page';
 import RocksPage from './app/meetings/rocks/page';
+import ToDosPage from './app/meetings/to-dos/page';
+import IssuesPage from './app/meetings/issues/page';
+import HeadlinesPage from './app/meetings/headlines/page';
+import VisionPage from './app/meetings/vision/page';
+import ResponsibilitiesPage from './app/meetings/responsibilities/page';
 
 import Login from './components/auth/Login';
 import JobDiagnostics from './components/jobs/JobDiagnostics';
@@ -430,6 +435,12 @@ function App() {
                   <Route path="/meetings/insights" element={<RequireAuth><MeetingsLayout><InsightsPage /></MeetingsLayout></RequireAuth>} />
                   <Route path="/meetings/data" element={<RequireAuth><MeetingsLayout><DataPage /></MeetingsLayout></RequireAuth>} />
                   <Route path="/meetings/rocks" element={<RequireAuth><MeetingsLayout><RocksPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/to-dos" element={<RequireAuth><MeetingsLayout><ToDosPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/todos" element={<RequireAuth><MeetingsLayout><ToDosPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/issues" element={<RequireAuth><MeetingsLayout><IssuesPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/headlines" element={<RequireAuth><MeetingsLayout><HeadlinesPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/vision" element={<RequireAuth><MeetingsLayout><VisionPage /></MeetingsLayout></RequireAuth>} />
+                  <Route path="/meetings/responsibilities" element={<RequireAuth><MeetingsLayout><ResponsibilitiesPage /></MeetingsLayout></RequireAuth>} />
 
                   {/* === Division-Specific Dashboard Routes === */}
                   {/* These specific routes should come before the generic /:division/dashboard route */}

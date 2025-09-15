@@ -160,6 +160,7 @@ export default function JobDetail() {
   const [showCommentsDialog, setShowCommentsDialog] = useState(false);
   const [selectedAssetForComments, setSelectedAssetForComments] = useState<Asset | null>(null);
   const [dynamicAssetNames, setDynamicAssetNames] = useState<Record<string, string>>({});
+  const [assetSubstations, setAssetSubstations] = useState<Record<string, string>>({});
 
   // Initialize manual tracker from loaded job (support both old/new shapes)
   useEffect(() => {
@@ -1731,17 +1732,20 @@ export default function JobDetail() {
     }
   };
 
-  // Helper: try to derive current identifier for a report asset, and compute display name
+  // Helper: derive current identifier and substation for a report asset to compute display name and grouping
   useEffect(() => {
     (async () => {
       if (!jobAssets || jobAssets.length === 0) return;
-      const updates: Record<string, string> = {};
+      const nameUpdates: Record<string, string> = {};
+      const substationUpdates: Record<string, string> = {};
 
       // Map report route slug to table name used for storage
       const slugToTable: Record<string, string> = {
         'panelboard-report': 'panelboard_reports',
         'switchgear-report': 'switchgear_reports',
         'dry-type-transformer': 'transformer_reports',
+        'large-dry-type-transformer-report': 'large_transformer_reports',
+        'large-dry-type-transformer': 'large_transformer_reports',
         'large-dry-type-transformer-mts-report': 'large_dry_type_transformer_mts_reports',
         'large-dry-type-xfmr-mts-report': 'large_dry_type_transformer_mts_reports',
         'liquid-xfmr-visual-mts-report': 'liquid_xfmr_visual_mts_reports',
@@ -1749,14 +1753,15 @@ export default function JobDetail() {
         'medium-voltage-switch-oil-report': 'medium_voltage_switch_oil_reports',
         'medium-voltage-switch-sf6-report': 'medium_voltage_switch_sf6_reports',
         'potential-transformer-ats-report': 'potential_transformer_ats_reports',
-        'low-voltage-panelboard-small-breaker-report': 'low_voltage_panelboard_small_breaker_reports',
-        'medium-voltage-circuit-breaker-report': 'medium_voltage_circuit_breaker_reports',
+        'low-voltage-panelboard-small-breaker-report': 'low_voltage_panelboard_small_breaker_report',      'medium-voltage-circuit-breaker-report': 'medium_voltage_circuit_breaker_reports',
         'medium-voltage-circuit-breaker-mts-report': 'medium_voltage_circuit_breaker_mts_reports',
         'medium-voltage-vlf-mts-report': 'medium_voltage_vlf_mts_reports',
+        'medium-voltage-cable-vlf-test-mts': 'medium_voltage_vlf_mts_reports',
         'medium-voltage-vlf': 'medium_voltage_vlf_mts_reports',
         'medium-voltage-vlf-tan-delta': 'tandelta_reports',
         'medium-voltage-vlf-tan-delta-mts': 'tandelta_mts_reports',
         'electrical-tan-delta-test-mts-form': 'tandelta_mts_reports',
+        'medium-voltage-cable-vlf-test': 'medium_voltage_cable_vlf_test',
         'current-transformer-test-ats-report': 'current_transformer_test_ats_reports',
         '12-current-transformer-test-ats-report': 'current_transformer_test_ats_reports',
         '12-current-transformer-test-mts-report': 'current_transformer_test_mts_reports',
@@ -1764,12 +1769,26 @@ export default function JobDetail() {
         '23-medium-voltage-motor-starter-mts-report': 'medium_voltage_motor_starter_mts_reports',
         'metal-enclosed-busway': 'metal_enclosed_busway_reports',
         'low-voltage-circuit-breaker-thermal-magnetic-mts-report': 'low_voltage_circuit_breaker_thermal_magnetic_mts_reports',
+        // ATS/Primary/Secondary injection variants
+        'low-voltage-circuit-breaker-electronic-trip-ats-report': 'low_voltage_circuit_breaker_electronic_trip_ats',
+        'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report': 'low_voltage_circuit_breaker_electronic_trip_ats',
+        'low-voltage-circuit-breaker-thermal-magnetic-ats-report': 'low_voltage_circuit_breaker_thermal_magnetic_ats',
+        'automatic-transfer-switch-ats-report': 'automatic_transfer_switch_ats_reports',
+        'low-voltage-circuit-breaker-electronic-trip-mts-report': 'low_voltage_circuit_breaker_electronic_trip_mts',
+        'low-voltage-circuit-breaker-electronic-trip-mts': 'low_voltage_circuit_breaker_electronic_trip_mts',
+        'low-voltage-circuit-breaker-electronic-trip-unit-mts': 'low_voltage_circuit_breaker_electronic_trip_mts',
+        'two-small-dry-typer-xfmr-mts-report': 'two_small_dry_type_xfmr_mts_reports',
         // Best-effort mappings for cable reports stored in legacy tables
-        'low-voltage-cable-test-3sets': 'transformer_reports',
-        'low-voltage-cable-test-12sets': 'transformer_reports',
+        'low-voltage-cable-test-3sets': 'low_voltage_cable_test_3sets',
+        'low-voltage-cable-test-12sets': 'low_voltage_cable_test_12sets',
         'low-voltage-cable-test-20sets': 'transformer_reports',
+        'low-voltage-switch-multi-device-test': 'low_voltage_switch_multi_device_reports',
+        'two-small-dry-typer-xfmr-ats-report': 'two_small_dry_type_xfmr_ats_reports',
+        'switchgear-panelboard-mts-report': 'switchgear_panelboard_mts_reports',
+        'liquid-filled-transformer': 'liquid_filled_transformer_reports',
+        'oil-inspection': 'oil_inspection_reports',
+        'standard-report': 'standard_reports'
         // Likely table names (if present). Failures will be ignored.
-        'low-voltage-circuit-breaker-electronic-trip-ats-report': 'low_voltage_circuit_breaker_electronic_trip_ats_reports',
       };
 
       // Extract canonical route slug from a computed edit path
@@ -1782,6 +1801,15 @@ export default function JobDetail() {
         } catch {
           return null;
         }
+      };
+
+      const slugFallbackTables: Record<string, string[]> = {
+        'low-voltage-panelboard-small-breaker-report': ['low_voltage_cable_test_3sets'],
+        'low-voltage-switch-multi-device-test': ['low_voltage_cable_test_3sets'],
+        'medium-voltage-vlf-mts-report': ['medium_voltage_cable_vlf_test'],
+        'medium-voltage-cable-vlf-test-mts': ['medium_voltage_cable_vlf_test'],
+        'low-voltage-circuit-breaker-electronic-trip-mts-report': ['low_voltage_cable_test_3sets'],
+        'low-voltage-circuit-breaker-thermal-magnetic-ats-report': ['low_voltage_cable_test_3sets']
       };
 
       const tasks = jobAssets.map(async (asset) => {
@@ -1802,26 +1830,58 @@ export default function JobDetail() {
           const canonicalSlug = extractCanonicalSlugFromPath(editPath) || slug;
           slug = canonicalSlug;
 
-          const table = slugToTable[slug];
-          if (!table) return;
+          const primaryTable = slugToTable[slug];
+          if (!primaryTable) return;
 
-          const { data, error } = await supabase
-            .schema('neta_ops')
-            .from(table)
-            .select('*')
-            .eq('id', reportIdFromUrl)
-            .maybeSingle();
-          if (error || !data) return;
+          const tablesToTry = [primaryTable, ...(slugFallbackTables[slug] || [])];
+          let data: any = null;
+          for (const t of tablesToTry) {
+            const { data: d } = await supabase
+              .schema('neta_ops')
+              .from(t)
+              .select('*')
+              .eq('id', reportIdFromUrl)
+              .maybeSingle();
+            if (d) { data = d; break; }
+          }
+          if (!data) return;
 
           // Heuristics to find current identifier
           const identifier =
             (data.report_info && (data.report_info.identifier || data.report_info.eqptLocation || data.report_info.location)) ||
-            (data.data && (data.data.identifier || data.data.eqptLocation || data.data.location || data.data.equipment_location)) ||
+            (data.report_data && (
+              data.report_data.identifier || data.report_data.eqptLocation || data.report_data.location ||
+              (data.report_data.reportInfo && (data.report_data.reportInfo.identifier || data.report_data.reportInfo.eqptLocation || data.report_data.reportInfo.location))
+            )) ||
+            (data.data && (
+              data.data.identifier || data.data.eqptLocation || data.data.location || data.data.equipment_location ||
+              (data.data.reportInfo && (data.data.reportInfo.identifier || data.data.reportInfo.eqptLocation || data.data.reportInfo.location))
+            )) ||
             '';
 
           if (identifier && typeof identifier === 'string') {
             const display = getAssetName(slug, identifier);
-            updates[asset.id] = display;
+            nameUpdates[asset.id] = display;
+          }
+
+          // Derive substation for grouping
+          const substation =
+            (data.report_info && (data.report_info.substation || data.report_info.location || (data.report_info.jobInfo && data.report_info.jobInfo.substation))) ||
+            (data.report_data && (
+              data.report_data.substation || (data.report_data.jobInfo && data.report_data.jobInfo.substation) ||
+              (data.report_data.reportInfo && (data.report_data.reportInfo.substation || data.report_data.reportInfo.location))
+            )) ||
+            (data.data && (
+              data.data.substation || data.data.location || (data.data.jobInfo && data.data.jobInfo.substation) ||
+              (data.data.reportInfo && (data.data.reportInfo.substation || data.data.reportInfo.location))
+            )) ||
+            '';
+
+          if (typeof substation === 'string') {
+            const normalized = substation.trim();
+            if (normalized) {
+              substationUpdates[asset.id] = normalized;
+            }
           }
         } catch (e) {
           // Ignore per-asset failures; keep original name
@@ -1829,8 +1889,11 @@ export default function JobDetail() {
       });
 
       await Promise.all(tasks);
-      if (Object.keys(updates).length > 0) {
-        setDynamicAssetNames(prev => ({ ...prev, ...updates }));
+      if (Object.keys(nameUpdates).length > 0) {
+        setDynamicAssetNames(prev => ({ ...prev, ...nameUpdates }));
+      }
+      if (Object.keys(substationUpdates).length > 0) {
+        setAssetSubstations(prev => ({ ...prev, ...substationUpdates }));
       }
     })();
   }, [jobAssets]);
@@ -3142,9 +3205,11 @@ export default function JobDetail() {
                             {(() => {
                               const getFolder = (asset: Asset): string => {
                                 const name = asset.name || '';
-                                const numberMatch = name.match(/^(\d+)\s*[-–]?\s*/);
+                                const sub = assetSubstations[asset.id];
+                                // Prefer grouping by Substation if available, even for imported assets
+                                if (typeof sub === 'string' && sub.trim()) return sub.trim();
+                                // Fall back to Imported bucket if marked as imported
                                 if (/import/i.test(name) || /import/i.test(asset.file_url || '')) return 'Imported';
-                                if (numberMatch) return numberMatch[1];
                                 return 'Other';
                               };
 
@@ -3160,11 +3225,7 @@ export default function JobDetail() {
                                 if (b === 'Imported') return 1;
                                 if (a === 'Other' && b !== 'Other') return 1;
                                 if (b === 'Other' && a !== 'Other') return -1;
-                                const na = parseInt(a, 10);
-                                const nb = parseInt(b, 10);
-                                const aNum = isNaN(na) ? Number.MAX_SAFE_INTEGER : na;
-                                const bNum = isNaN(nb) ? Number.MAX_SAFE_INTEGER : nb;
-                                return aNum - bNum;
+                                return a.localeCompare(b, undefined, { sensitivity: 'base' });
                               });
 
                               return (

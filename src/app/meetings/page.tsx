@@ -1,162 +1,138 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
-import { CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Calendar, Plus, Users, Clock, FileText, Settings } from 'lucide-react';
-import { useAuth } from '../../lib/AuthContext';
+import { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import { Printer, Info } from 'lucide-react';
 
 export default function MeetingsPage() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [meetings, setMeetings] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // TODO: Load meetings from database
-    setLoading(false);
-  }, []);
-
-  const handleCreateMeeting = () => {
-    // TODO: Navigate to create meeting page
-    console.log('Create new meeting');
-  };
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [teamFilter, setTeamFilter] = useState('amp-leadership');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-200">
-      {/* Header */}
-      <div className="bg-white dark:bg-dark-150 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/20">
-                <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Meetings Portal</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Schedule and manage team meetings</p>
+    <div className="p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Meetings
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Improve alignment and transparency across your organization.
+          </p>
+        </div>
+
+        {/* Tabs and Controls */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-6">
+            {/* Tabs */}
+            <div className="flex space-x-1">
+              <button
+                onClick={() => setActiveTab('upcoming')}
+                className={`px-4 py-2 font-medium transition-colors relative ${
+                  activeTab === 'upcoming'
+                    ? 'text-gray-900 dark:text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Upcoming
+                {activeTab === 'upcoming' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#f26722]"></div>
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab('past')}
+                className={`px-4 py-2 font-medium transition-colors relative ${
+                  activeTab === 'past'
+                    ? 'text-gray-900 dark:text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Past Meetings
+                {activeTab === 'past' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#f26722]"></div>
+                )}
+              </button>
+            </div>
+
+            {/* Team Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Team:</span>
+              <select
+                value={teamFilter}
+                onChange={(e) => setTeamFilter(e.target.value)}
+                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+              >
+                <option value="amp-leadership">AMP Leadership</option>
+                <option value="tech">Tech</option>
+                <option value="sales">Sales</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Print Button */}
+          <Button variant="outline" className="border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white">
+            <Printer className="h-4 w-4 mr-2" />
+            Print Meeting Agenda
+          </Button>
+        </div>
+
+        {/* Main Banner */}
+        <div className="relative mb-8 rounded-lg overflow-hidden">
+          <div 
+            className="h-64 bg-cover bg-center bg-blend-overlay"
+            style={{
+              backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"><rect fill="%23f3f4f6" width="1200" height="400"/><rect fill="%23e5e7eb" x="200" y="100" width="300" height="200" rx="10"/><rect fill="%23d1d5db" x="600" y="150" width="100" height="100" rx="50"/><rect fill="%23e5e7eb" x="800" y="120" width="200" height="160" rx="5"/></svg>')`,
+              backgroundColor: 'rgba(243, 244, 246, 0.8)'
+            }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                  AMP Leadership
+                </h2>
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  No Meetings in progress
+                </h3>
               </div>
             </div>
-            <Button
-              onClick={handleCreateMeeting}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md inline-flex items-center space-x-2"
-            >
-              <Plus className="h-4 w-4" />
-              <span>New Meeting</span>
-            </Button>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Upcoming Meetings */}
-          <div className="lg:col-span-2">
-            <Card className="border border-gray-200 dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-purple-600" />
-                  <span>Upcoming Meetings</span>
-                </CardTitle>
-                <CardDescription className="text-gray-500 dark:text-gray-400">
-                  Your scheduled meetings and events
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-                    <p className="mt-2 text-gray-500 dark:text-gray-400">Loading meetings...</p>
-                  </div>
-                ) : meetings.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No meetings scheduled</h3>
-                    <p className="text-gray-500 dark:text-gray-400 mb-4">Get started by creating your first meeting</p>
-                    <Button
-                      onClick={handleCreateMeeting}
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      Create Meeting
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Meeting items would go here */}
-                    <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-gray-900 dark:text-white">Sample Meeting</h4>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Today at 2:00 PM</p>
-                        </div>
-                        <Button variant="outline" size="sm">
-                          Join
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="space-y-6">
-            <Card className="border border-gray-200 dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button
-                  onClick={handleCreateMeeting}
-                  className="w-full justify-start bg-purple-600 hover:bg-purple-700 text-white"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Schedule Meeting
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => console.log('View calendar')}
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  View Calendar
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => console.log('Meeting templates')}
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Meeting Templates
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-gray-200 dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Team Stats</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Total Meetings</span>
-                    <span className="font-medium text-gray-900 dark:text-white">0</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">This Month</span>
-                    <span className="font-medium text-gray-900 dark:text-white">0</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Team Members</span>
-                    <span className="font-medium text-gray-900 dark:text-white">1</span>
+        {/* Upcoming Meetings Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-lg">Upcoming Meetings</CardTitle>
+              <Info className="h-4 w-4 text-gray-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-8 h-8 bg-gray-400 dark:bg-gray-500 rounded-full flex items-center justify-center">
+                  <div className="flex space-x-1">
+                    <div className="w-1 h-1 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
+                    <div className="w-1 h-1 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
+                    <div className="w-1 h-1 bg-gray-600 dark:bg-gray-300 rounded-full"></div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Your team hasn't created any scheduled Meetings yet.
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                Scheduled Meetings are a great way to keep your team aligned.
+              </p>
+              <a 
+                href="#" 
+                className="text-[#f26722] hover:text-[#e55611] font-medium"
+              >
+                Learn more about Scheduled Meetings
+              </a>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

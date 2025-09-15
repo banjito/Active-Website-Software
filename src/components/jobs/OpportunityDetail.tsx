@@ -110,7 +110,8 @@ async function createJobManually(
       budget: opportunity.expected_value,
       notes: (opportunity.notes || '') + '\n\nConverted from opportunity: ' + opportunity.quote_number,
       priority: 'medium',
-      division: opportunity.amp_division === 'Decatur' ? 'north_alabama' : opportunity.amp_division
+      division: opportunity.amp_division === 'Decatur' ? 'north_alabama' : opportunity.amp_division,
+      opportunity_id: opportunity.id  // Add the opportunity link
     })
     .select()
     .single();

@@ -168,36 +168,6 @@ export const MeetingsLayout: React.FC<MeetingsLayoutProps> = ({ children }) => {
       label: "Responsibilities",
       path: "/meetings/responsibilities",
       active: location.pathname === "/meetings/responsibilities"
-    },
-    {
-      icon: GraduationCap,
-      label: "Knowledge",
-      path: "/meetings/knowledge",
-      active: location.pathname === "/meetings/knowledge"
-    },
-    {
-      icon: BookOpen,
-      label: "Process",
-      path: "/meetings/process",
-      active: location.pathname === "/meetings/process"
-    },
-    {
-      icon: Phone,
-      label: "Directory",
-      path: "/meetings/directory",
-      active: location.pathname === "/meetings/directory"
-    },
-    {
-      icon: GraduationCap,
-      label: "Mastery",
-      path: "/meetings/mastery",
-      active: location.pathname === "/meetings/mastery"
-    },
-    {
-      icon: ClipboardList,
-      label: "Assessments",
-      path: "/meetings/assessments",
-      active: location.pathname === "/meetings/assessments"
     }
   ];
 

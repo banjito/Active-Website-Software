@@ -356,204 +356,91 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
     }
 
     try {
-      // First try loading from normalized JSONB store used by importers
+      // Load from circuit breaker thermal magnetic ATS table
       const { data: generic, error: gErr } = await supabase
-        .schema('neta_ops')
-        .from('low_voltage_cable_test_3sets')
-        .select('*')
-        .eq('id', reportId)
-        .single();
-
-      if (generic && generic.data) {
-        const d: any = generic.data;
-        setFormData(prev => ({
-          ...prev,
-          // Job info
-          customer: d.reportInfo?.customer ?? prev.customer,
-          address: d.reportInfo?.address ?? prev.address,
-          user: d.reportInfo?.userName ?? prev.user,
-          date: d.reportInfo?.date ?? prev.date,
-          identifier: d.reportInfo?.identifier ?? prev.identifier,
-          jobNumber: d.reportInfo?.jobNumber ?? prev.jobNumber,
-          technicians: d.reportInfo?.technicians ?? prev.technicians,
-          temperature: {
-            ...prev.temperature,
-            fahrenheit: d.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
-            celsius: d.reportInfo?.temperature?.celsius ?? prev.temperature.celsius,
-            tcf: d.reportInfo?.temperature?.correctionFactor ?? prev.temperature.tcf,
-            humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
-          },
-          substation: d.reportInfo?.substation ?? prev.substation,
-          eqptLocation: d.reportInfo?.eqptLocation ?? prev.eqptLocation,
-
-          // Nameplate
-          manufacturer: d.nameplateData?.manufacturer ?? prev.manufacturer,
-          catalogNumber: d.nameplateData?.catalogNumber ?? prev.catalogNumber,
-          serialNumber: d.nameplateData?.serialNumber ?? prev.serialNumber,
-          type: d.nameplateData?.type ?? prev.type,
-          icRating: d.nameplateData?.icRating ?? prev.icRating,
-          frameSize: d.nameplateData?.frameSize ?? prev.frameSize,
-          ratingPlug: d.nameplateData?.ratingPlug ?? prev.ratingPlug,
-          curveNo: d.nameplateData?.curveNo ?? prev.curveNo,
-          operation: d.nameplateData?.operation ?? prev.operation,
-          mounting: d.nameplateData?.mounting ?? prev.mounting,
-          thermalMemory: d.nameplateData?.thermalMemory ?? prev.thermalMemory,
-
-          // Visual / Mechanical
-          visualInspectionItems: prev.visualInspectionItems.map(item => ({
-            ...item,
-            result: (d.visualInspection && d.visualInspection[item.id]) ? d.visualInspection[item.id] : item.result,
-          })),
-
-          // Device Settings (thermal/magnetic)
-          deviceSettings: d.deviceSettings ?? prev.deviceSettings,
-
-          // Contact Resistance
-          contactResistance: d.breakerContactResistance ? { ...prev.contactResistance, ...d.breakerContactResistance } : prev.contactResistance,
-
-          // Insulation Resistance (map contactorInsulation rows)
-          insulationResistance: (() => {
-            const ir = { ...prev.insulationResistance };
-            const src = d.contactorInsulation;
-            if (src) {
-              ir.testVoltage = src.testVoltage ?? ir.testVoltage;
-              const rows = Array.isArray(src.rows) ? src.rows : [];
-              const findRow = (name: string) => rows.find((r: any) => typeof r.id === 'string' && r.id.toLowerCase().includes(name));
-              const rowPTP = findRow('pole to pole');
-              const rowPTF = findRow('pole to frame');
-              const rowLTL = findRow('line to load');
-              if (rowPTP) {
-                ir.measured.poleToPole = {
-                  p1p2: rowPTP.p1 ?? ir.measured.poleToPole.p1p2,
-                  p2p3: rowPTP.p2 ?? ir.measured.poleToPole.p2p3,
-                  p3p1: rowPTP.p3 ?? ir.measured.poleToPole.p3p1,
-                };
-                ir.corrected.poleToPole = {
-                  p1p2: rowPTP.p1c ?? ir.corrected.poleToPole.p1p2,
-                  p2p3: rowPTP.p2c ?? ir.corrected.poleToPole.p2p3,
-                  p3p1: rowPTP.p3c ?? ir.corrected.poleToPole.p3p1,
-                };
-              }
-              if (rowPTF) {
-                ir.measured.poleToFrame = {
-                  p1: rowPTF.p1 ?? ir.measured.poleToFrame.p1,
-                  p2: rowPTF.p2 ?? ir.measured.poleToFrame.p2,
-                  p3: rowPTF.p3 ?? ir.measured.poleToFrame.p3,
-                };
-                ir.corrected.poleToFrame = {
-                  p1: rowPTF.p1c ?? ir.corrected.poleToFrame.p1,
-                  p2: rowPTF.p2c ?? ir.corrected.poleToFrame.p2,
-                  p3: rowPTF.p3c ?? ir.corrected.poleToFrame.p3,
-                };
-              }
-              if (rowLTL) {
-                ir.measured.lineToLoad = {
-                  p1: rowLTL.p1 ?? ir.measured.lineToLoad.p1,
-                  p2: rowLTL.p2 ?? ir.measured.lineToLoad.p2,
-                  p3: rowLTL.p3 ?? ir.measured.lineToLoad.p3,
-                };
-                ir.corrected.lineToLoad = {
-                  p1: rowLTL.p1c ?? ir.corrected.lineToLoad.p1,
-                  p2: rowLTL.p2c ?? ir.corrected.lineToLoad.p2,
-                  p3: rowLTL.p3c ?? ir.corrected.lineToLoad.p3,
-                };
-              }
-            }
-            return ir;
-          })(),
-
-          // Primary Injection (thermal/magnetic)
-          primaryInjection: d.primaryInjection ? {
-            ...prev.primaryInjection,
-            testedSettings: {
-              thermal: d.primaryInjection.testedSettings?.thermal ?? prev.primaryInjection.testedSettings.thermal,
-              magnetic: d.primaryInjection.testedSettings?.magnetic ?? prev.primaryInjection.testedSettings.magnetic,
-            },
-            results: {
-              thermal: { ...prev.primaryInjection.results.thermal, ...(d.primaryInjection.results?.thermal || {}) },
-              magnetic: (() => {
-                const mPrev = prev.primaryInjection.results.magnetic;
-                const m = { ...mPrev, ...(d.primaryInjection.results?.magnetic || {}) } as typeof mPrev;
-                // Map pole readings: prefer 'a'; if only 'sec' provided in JSON, copy it into 'a' for magnetic row
-                const srcMag = d.primaryInjection.results?.magnetic || {};
-                const p1 = srcMag.pole1 || {};
-                const p2 = srcMag.pole2 || {};
-                const p3 = srcMag.pole3 || {};
-                if (p1.a !== undefined) m.pole1.a = p1.a; else if (p1.sec !== undefined) m.pole1.a = p1.sec;
-                if (p2.a !== undefined) m.pole2.a = p2.a; else if (p2.sec !== undefined) m.pole2.a = p2.sec;
-                if (p3.a !== undefined) m.pole3.a = p3.a; else if (p3.sec !== undefined) m.pole3.a = p3.sec;
-                return m;
-              })(),
-            }
-          } : prev.primaryInjection,
-
-          // Test Equipment
-          testEquipment: {
-            megohmmeter: { ...prev.testEquipment.megohmmeter, ...(d.testEquipment?.megohmmeter || {}) },
-            lowResistanceOhmmeter: { ...prev.testEquipment.lowResistanceOhmmeter, ...(d.testEquipment?.lowResistanceOhmmeter || {}) },
-            primaryInjectionTestSet: { ...prev.testEquipment.primaryInjectionTestSet, ...(d.testEquipment?.primaryInjectionTestSet || {}) },
-          },
-
-          // Comments & Status
-          comments: d.reportInfo?.comments ?? prev.comments,
-          status: d.status ?? prev.status,
-        }));
-        setIsEditing(false);
-        setLoading(false);
-        return;
-      }
-
-      // Fallback: dedicated table (if exists)
-      const { data, error } = await supabase
         .schema('neta_ops')
         .from('low_voltage_circuit_breaker_thermal_magnetic_ats')
         .select('*')
         .eq('id', reportId)
         .single();
 
-      if (error) {
-        if (error.code === 'PGRST116') {
+      if (generic) {
+        const data = generic;
+        setFormData(prev => ({
+          ...prev,
+          // Job info from report_info JSONB column
+          customer: data.report_info?.customer ?? prev.customer,
+          address: data.report_info?.address ?? prev.address,
+          user: data.report_info?.user ?? prev.user,
+          date: data.report_info?.date ?? prev.date,
+          identifier: data.report_info?.identifier ?? prev.identifier,
+          jobNumber: data.report_info?.jobNumber ?? prev.jobNumber,
+          technicians: data.report_info?.technicians ?? prev.technicians,
+          temperature: {
+            ...prev.temperature,
+            fahrenheit: data.report_info?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
+            celsius: data.report_info?.temperature?.celsius ?? prev.temperature.celsius,
+            tcf: data.report_info?.temperature?.tcf ?? prev.temperature.tcf,
+            humidity: data.report_info?.temperature?.humidity ?? prev.temperature.humidity,
+          },
+          substation: data.report_info?.substation ?? prev.substation,
+          eqptLocation: data.report_info?.eqptLocation ?? prev.eqptLocation,
+
+          // Nameplate from nameplate_data JSONB column
+          manufacturer: data.nameplate_data?.manufacturer ?? prev.manufacturer,
+          catalogNumber: data.nameplate_data?.catalogNumber ?? prev.catalogNumber,
+          serialNumber: data.nameplate_data?.serialNumber ?? prev.serialNumber,
+          type: data.nameplate_data?.type ?? prev.type,
+          icRating: data.nameplate_data?.icRating ?? prev.icRating,
+          frameSize: data.nameplate_data?.frameSize ?? prev.frameSize,
+          ratingPlug: data.nameplate_data?.ratingPlug ?? prev.ratingPlug,
+          curveNo: data.nameplate_data?.curveNo ?? prev.curveNo,
+          operation: data.nameplate_data?.operation ?? prev.operation,
+          mounting: data.nameplate_data?.mounting ?? prev.mounting,
+          thermalMemory: data.nameplate_data?.thermalMemory ?? prev.thermalMemory,
+
+          // Visual / Mechanical from visual_mechanical JSONB column
+          visualInspectionItems: prev.visualInspectionItems.map(item => ({
+            ...item,
+            result: (data.visual_mechanical?.items && data.visual_mechanical.items.find((vi: any) => vi.id === item.id)?.result) || item.result,
+          })),
+
+          // Device Settings from device_settings JSONB column
+          deviceSettings: data.device_settings ?? prev.deviceSettings,
+
+          // Contact Resistance from contact_resistance JSONB column
+          contactResistance: data.contact_resistance ?? prev.contactResistance,
+
+          // Insulation Resistance from insulation_resistance JSONB column
+          insulationResistance: data.insulation_resistance ?? prev.insulationResistance,
+
+          // Primary Injection from primary_injection JSONB column
+          primaryInjection: data.primary_injection ?? prev.primaryInjection,
+
+          // Test Equipment from test_equipment JSONB column - merge to preserve structure
+          testEquipment: {
+            megohmmeter: { ...prev.testEquipment.megohmmeter, ...(data.test_equipment?.megohmmeter || {}) },
+            lowResistanceOhmmeter: { ...prev.testEquipment.lowResistanceOhmmeter, ...(data.test_equipment?.lowResistanceOhmmeter || {}) },
+            primaryInjectionTestSet: { ...prev.testEquipment.primaryInjectionTestSet, ...(data.test_equipment?.primaryInjectionTestSet || {}) },
+          },
+
+          // Comments & Status
+          comments: data.comments ?? prev.comments,
+          status: data.report_info?.status ?? prev.status,
+        }));
+        setIsEditing(false);
+        setLoading(false);
+        return;
+      }
+
+      // If no data found, handle as new report
+      if (gErr) {
+        if (gErr.code === 'PGRST116') {
           console.warn(`Report with ID ${reportId} not found. Starting new report.`);
           setIsEditing(true);
         } else {
-          throw error;
+          throw gErr;
         }
-      }
-
-      if (data) {
-        setFormData(prev => ({
-          ...prev,
-          customer: data.report_info?.customer || prev.customer,
-          address: data.report_info?.address || prev.address,
-          user: data.report_info?.user || prev.user,
-          date: data.report_info?.date || prev.date,
-          identifier: data.report_info?.identifier || prev.identifier,
-          jobNumber: data.report_info?.jobNumber || prev.jobNumber,
-          technicians: data.report_info?.technicians || prev.technicians,
-          temperature: data.report_info?.temperature || prev.temperature,
-          substation: data.report_info?.substation || prev.substation,
-          eqptLocation: data.report_info?.eqptLocation || prev.eqptLocation,
-          manufacturer: data.nameplate_data?.manufacturer || '',
-          catalogNumber: data.nameplate_data?.catalogNumber || '',
-          serialNumber: data.nameplate_data?.serialNumber || '',
-          type: data.nameplate_data?.type || '',
-          icRating: data.nameplate_data?.icRating || '',
-          frameSize: data.nameplate_data?.frameSize || '',
-          ratingPlug: data.nameplate_data?.ratingPlug || '',
-          curveNo: data.nameplate_data?.curveNo || '',
-          operation: data.nameplate_data?.operation || '',
-          mounting: data.nameplate_data?.mounting || '',
-          thermalMemory: data.nameplate_data?.thermalMemory || '',
-          visualInspectionItems: data.visual_mechanical?.items || prev.visualInspectionItems,
-          deviceSettings: data.device_settings || prev.deviceSettings,
-          contactResistance: data.contact_resistance || prev.contactResistance,
-          insulationResistance: data.insulation_resistance || prev.insulationResistance,
-          primaryInjection: data.primary_injection || prev.primaryInjection,
-          testEquipment: data.test_equipment || prev.testEquipment,
-          comments: data.comments || '',
-          status: data.report_info?.status || 'PASS',
-        }));
-        setIsEditing(false);
       }
     } catch (error) {
       console.error('Error loading report:', error);

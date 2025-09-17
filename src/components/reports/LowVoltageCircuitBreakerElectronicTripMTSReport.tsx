@@ -312,16 +312,19 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
 
     // Visual and Mechanical Inspection
     visualInspectionItems: [
-      { id: '7.6.1.2.A.1', description: 'Inspect moving and stationary contacts for condition', result: '' },
-      { id: '7.6.1.2.A.2', description: 'Verify that primary and secondary contact wipe and break', result: '' },
-      { id: '7.6.1.2.A.3', description: 'Perform all mechanical operator and contact alignment mechanism', result: '' },
-      { id: '7.6.1.2.A.4', description: 'Use of a low-resistance ohmmeter in accordance with', result: '' },
-      { id: '7.6.1.2.A.5', description: 'Verify cell fit and element alignment', result: '' },
-      { id: '7.6.1.2.A.6', description: 'Inspect for correct operation and adjustment of all interlocking systems', result: '' },
-      { id: '7.6.1.2.A.7', description: 'Verify that all indicating devices are correctly installed and operating', result: '' },
-      { id: '7.6.1.2.A.8', description: 'Verify that all nameplates are legible and correct', result: '' },
-      { id: '7.6.1.2.A.9', description: 'Verify that all required devices are installed and operating', result: '' },
-      { id: '7.6.1.2.A.10', description: 'Verify that all required devices are installed and operating', result: '' }
+      { id: '7.6.1.2.A.1', description: 'Inspect physical and mechanical condition.', result: '' },
+      { id: '7.6.1.2.A.2', description: 'Inspect anchorage, alignment, and grounding.', result: '' },
+      { id: '7.6.1.2.A.3', description: 'Verify that all maintenance devices are available for servicing and operating the breaker.', result: '' },
+      { id: '7.6.1.2.A.5', description: 'Clean the unit.', result: '' },
+      { id: '7.6.1.2.A.6', description: 'Inspect arc chutes.', result: '' },
+      { id: '7.6.1.2.A.7', description: 'Inspect moving and stationary contacts for condition, wear, and alignment.', result: '' },
+      { id: '7.6.1.2.A.8', description: 'Verify that primary and secondary contact wipe and other dimensions vital to satisfactory operation of the breaker are in accordance with manufacturer\'s published data.', result: '' },
+      { id: '7.6.1.2.A.9', description: 'Perform all mechanical operator and contact alignment tests on both the breaker and its operating mechanism in accordance with manufacturer\'s published data.', result: '' },
+      { id: '7.6.1.2.A.10.1', description: 'Use of a low-resistance ohmmeter in accordance with Section 7.6.1.2.B.1.', result: '' },
+      { id: '7.6.1.2.A.11', description: 'Verify cell fit and element alignment.', result: '' },
+      { id: '7.6.1.2.A.12', description: 'Verify racking mechanism operation.', result: '' },
+      { id: '7.6.1.2.A.13', description: 'Use appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.', result: '' },
+      { id: '7.6.1.2.A.14', description: 'Perform adjustments for final protective device settings in accordance with coordination study provided by end user.', result: '' }
     ],
 
     // Device Settings

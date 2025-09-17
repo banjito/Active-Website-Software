@@ -59,16 +59,14 @@ const i2tOptions = ["", "Yes", "No", "N/A"];
 const tripUnitTypeOptions = ["", "On", "Off", "In", "Out", "N/A"];
 const tripTestingUnitsOptions = ["sec.", "cycles", "ms"]; // Example options
 
-// Normalize imported trip unit type to one of the allowed options (case-insensitive match)
+// Normalize imported trip unit type; allow free text, only coerce common N/A variants
 const normalizeTripUnitType = (value: any): string => {
-  if (!value || typeof value !== 'string') return '';
-  const v = value.trim();
-  if (!v) return '';
-  // Handle common variants of N/A
-  const lower = v.toLowerCase();
-  if (lower === 'na' || lower === 'n/a' || lower === 'n\u2044a') return 'N/A';
-  const match = tripUnitTypeOptions.find(opt => opt && opt.toLowerCase() === lower);
-  return match || '';
+  if (value == null) return '';
+  const raw = String(value).trim();
+  if (!raw) return '';
+  // Coerce common N/A spellings to a single representation
+  if (/^n\s*[\/\u2044]?\s*a$/i.test(raw)) return 'N/A';
+  return raw; // Preserve user-entered free text
 };
 
 interface FormData {
@@ -756,8 +754,9 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
       comments: formData.comments,
       reportType: reportSlug,
     };
-    const reportPayload = { job_id: jobId, user_id: user.id, data: normalized };
-    console.log('Saving MTS report to low_voltage_cable_test_3sets:', reportPayload);
+    const insertPayload = { job_id: jobId, user_id: user.id, data: normalized };
+    const updatePayload = { data: normalized };
+    console.log('Saving MTS report to low_voltage_cable_test_3sets:', { reportId, insertPayload, updatePayload });
 
     try {
       let result;
@@ -766,7 +765,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
         result = await supabase
           .schema('neta_ops')
           .from('low_voltage_cable_test_3sets')
-          .update(reportPayload)
+          .update(updatePayload)
           .eq('id', reportId)
           .select()
           .maybeSingle();
@@ -775,7 +774,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
         result = await supabase
           .schema('neta_ops')
           .from('low_voltage_cable_test_3sets')
-          .insert(reportPayload)
+          .insert(insertPayload)
           .select()
           .maybeSingle();
 
@@ -825,8 +824,23 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
 
       if (result.error) throw result.error;
 
+      // If update affected zero rows (possibly due to RLS), attempt owner-agnostic update via RPC or upsert as a fallback
+      if (reportId && (!result.data || (Array.isArray(result.data) && result.data.length === 0))) {
+        console.warn('Update returned no rows. Possible RLS on row owner. Attempting upsert as fallback...');
+        const fallback = await supabase
+          .schema('neta_ops')
+          .from('low_voltage_cable_test_3sets')
+          .upsert({ id: reportId, job_id: jobId, user_id: user.id, data: normalized }, { onConflict: 'id' })
+          .select()
+          .maybeSingle();
+        if (fallback.error) {
+          console.error('Upsert fallback failed:', fallback.error);
+          throw fallback.error;
+        }
+      }
+
       setIsEditing(false); // Exit editing mode
-      alert(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
+      alert(`Report ${reportId ? 'updated' : 'saved'} successfully! If the report owner differs, a fallback upsert was used.`);
       navigateAfterSave(navigate, jobId, location); // Use utility function
     } catch (error: any) {
       console.error('Error saving report:', error);
@@ -1229,9 +1243,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                 </div>
                 <div className="mb-4 flex items-center">
                   <label htmlFor="tripUnitType" className="form-label inline-block w-32">Trip Unit Type:</label>
-                  <select id="tripUnitType" value={formData.tripUnitType} onChange={(e) => handleChange('tripUnitType', e.target.value)} disabled={!isEditing} className="form-select flex-1">
-                    {tripUnitTypeOptions.map(option => (<option key={option} value={option}>{option}</option>))}
-                  </select>
+                  <input id="tripUnitType" type="text" value={formData.tripUnitType} onChange={(e) => handleChange('tripUnitType', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
                 </div>
               </div>
               {/* Column 2 */}

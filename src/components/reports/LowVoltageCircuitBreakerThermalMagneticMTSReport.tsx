@@ -790,7 +790,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
               </div>
             </div>
             {/* Print-only Nameplate Table (Thermal Magnetic specific) */}
-            <div className="hidden print:block mt-2">
+            <div className="hidden print:block mt-2 print-nameplate-table">
               <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
                 <colgroup>
                   <col style={{ width: '25%' }} />
@@ -1653,15 +1653,16 @@ if (typeof document !== 'undefined') {
       .print\\:font-bold { font-weight: bold !important; }
       .print\\:text-center { text-align: center !important; }
       
-      /* Preserve grid and flexbox layouts */
+      /* Restore flex/grid but constrain break behavior at critical areas */
       .grid { display: grid !important; }
       .flex { display: flex !important; }
-      .space-y-6 > * + * { margin-top: 1.5rem !important; }
-      .space-y-2 > * + * { margin-top: 0.5rem !important; }
-      .gap-4 { gap: 1rem !important; }
-      .gap-6 { gap: 1.5rem !important; }
-      .mb-4 { margin-bottom: 1rem !important; }
-      .mb-6 { margin-bottom: 1.5rem !important; }
+      /* Tighten vertical spacing to reduce overflows */
+      .space-y-6 > * + * { margin-top: 0.75rem !important; }
+      .space-y-2 > * + * { margin-top: 0.25rem !important; }
+      .gap-4 { gap: 0.5rem !important; }
+      .gap-6 { gap: 0.75rem !important; }
+      .mb-4 { margin-bottom: 0.5rem !important; }
+      .mb-6 { margin-bottom: 0.75rem !important; }
       .p-4 { padding: 1rem !important; }
       .p-6 { padding: 1.5rem !important; }
       
@@ -1671,7 +1672,11 @@ if (typeof document !== 'undefined') {
         width: 100%; 
         font-size: 11px !important;
         table-layout: fixed !important;
+        page-break-inside: auto !important;
       }
+      thead { display: table-header-group !important; }
+      tbody { display: table-row-group !important; }
+      tfoot { display: table-footer-group !important; }
       
       th, td { 
         border: 1px solid black !important; 
@@ -1724,12 +1729,12 @@ if (typeof document !== 'undefined') {
       /* Hide interactive elements */
       button:not(.print-visible) { display: none !important; }
       
-      /* Section styling */
-      section { 
-        break-inside: avoid !important; 
-        margin-bottom: 15px !important; 
+      /* Section styling: avoid breaking inside Job Info + Nameplate group only */
+      .job-info-print, .nameplate-onscreen, .print-nameplate-table {
         page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
+      h2 { page-break-after: avoid !important; }
       
       /* Grid layouts for forms */
       .grid-cols-1 { grid-template-columns: 1fr !important; }
@@ -1750,6 +1755,8 @@ if (typeof document !== 'undefined') {
       /* Headers */
       h1 { font-size: 18px !important; font-weight: bold !important; }
       h2 { font-size: 14px !important; font-weight: bold !important; }
+      /* Keep the Job Information block with the next content and avoid huge gaps */
+      .job-info-print { page-break-after: avoid !important; break-after: avoid !important; }
       h3 { font-size: 12px !important; font-weight: bold !important; }
       
       /* Ensure all text is black for maximum readability */

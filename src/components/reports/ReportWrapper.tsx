@@ -13,6 +13,12 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
       style.id = 'vm-standard-print-css';
       style.textContent = `
         @media print {
+          /* Override container sizing for print to avoid page-length blank gaps */
+          #report-container {
+            min-height: auto !important;
+            padding: 10px 20px 20px 20px !important;
+            margin: 0 auto !important;
+          }
           /* Global: make inputs/selects look like plain text in print */
           #report-container input,
           #report-container select,

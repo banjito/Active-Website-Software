@@ -31,7 +31,7 @@ const JobInfoPrintTable: React.FC<Props> = ({ data }) => {
   const dateText = data.date ? new Date(data.date).toLocaleDateString() : '';
 
   return (
-    <div className="hidden print:block">
+    <div className="hidden print:block job-info-print">
       <table className="w-full border-collapse border border-gray-300 print:border-black print:border">
         <tbody>
           <tr>

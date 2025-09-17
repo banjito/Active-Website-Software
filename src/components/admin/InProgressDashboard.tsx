@@ -124,7 +124,7 @@ const InProgressDashboard: React.FC = () => {
                 const { data: proposals, error: proposalsError } = await supabase
                   .schema('business')
                   .from('letter_proposals')
-                  .select('opportunity_id, data')
+                  .select('opportunity_id, html, created_at, data')
                   .in('opportunity_id', opportunityIds);
                 
                 letterProposals = proposals;
@@ -143,10 +143,21 @@ const InProgressDashboard: React.FC = () => {
                 const proposalMap = new Map();
                 if (letterProposals) {
                   console.log('Processing letter proposals:', letterProposals.length);
-                  letterProposals.forEach(proposal => {
+                  // Sort newest-first per opportunity
+                  const byOpp: Record<string, any[]> = {} as any;
+                  (letterProposals as any[]).forEach((lp: any) => {
+                    if (!byOpp[lp.opportunity_id]) byOpp[lp.opportunity_id] = [];
+                    byOpp[lp.opportunity_id].push(lp);
+                  });
+                  Object.keys(byOpp).forEach((k) => {
+                    byOpp[k].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                  });
+
+                  Object.values(byOpp).forEach((proposalsForOpp: any[]) => {
+                    const proposal = proposalsForOpp[0]; // newest
                     console.log('Raw proposal data:', {
                       opportunity_id: proposal.opportunity_id,
-                      data: proposal.data,
+                      hasHtml: !!proposal.html,
                       dataKeys: proposal.data ? Object.keys(proposal.data) : 'no data'
                     });
                     
@@ -159,8 +170,22 @@ const InProgressDashboard: React.FC = () => {
                       // Try different possible data structures
                       let quotedAmount = null;
                       
+                      // Try parsing from HTML first (authoritative)
+                      if (!quotedAmount && proposal.html) {
+                        try {
+                          const html: string = proposal.html as string;
+                          const m = html.match(/Option\s*1:\s*Where\s*NET\s*30\s*Terms\s*are\s*applicable[^$]*\$([0-9,]+(?:\.[0-9]{2})?)/i);
+                          if (m && m[1]) {
+                            quotedAmount = Number(m[1].replace(/,/g, '')) || null;
+                            console.log('Parsed NET30 from HTML:', quotedAmount);
+                          }
+                        } catch (e) {
+                          console.warn('Failed parsing NET30 from HTML:', e);
+                        }
+                      }
+                      
                       // Check for calculatedValues structure
-                      if (proposal.data.calculatedValues) {
+                      if (!quotedAmount && proposal.data.calculatedValues) {
                         quotedAmount = proposal.data.calculatedValues.net30Price || 
                                      proposal.data.calculatedValues.totalPrice ||
                                      proposal.data.calculatedValues.finalPrice;
@@ -299,8 +324,8 @@ const InProgressDashboard: React.FC = () => {
             const regionData = regionMap.get(region)!;
             regionData.jobs.push(job);
             
-            // Add quoted amount from opportunity if available
-            const quotedAmount = job.opportunities?.quoted_amount || job.opportunities?.expected_value || 0;
+            // Add quoted amount from opportunity if available (do NOT fall back to expected_value)
+            const quotedAmount = job.opportunities?.quoted_amount ?? 0;
             regionData.totalQuotedValue += quotedAmount;
             
             // Add budget separately
@@ -576,14 +601,13 @@ const InProgressDashboard: React.FC = () => {
                             </div>
                             <div className="text-right">
                               {(() => {
-                                const quotedAmount = job.opportunities?.quoted_amount || job.opportunities?.expected_value || 0;
-                                const usedSource = job.opportunities?.quoted_amount ? 'quoted_amount' : 
-                                                 job.opportunities?.expected_value ? 'expected_value' : 'fallback_0';
+                                // Only use actual quoted amount; if absent, show 0
+                                const quotedAmount = job.opportunities?.quoted_amount ?? 0;
+                                const usedSource = job.opportunities?.quoted_amount ? 'quoted_amount' : 'fallback_0';
                                 console.log(`Displaying job ${job.id} quoted amount:`, {
                                   jobTitle: job.title,
                                   opportunityId: job.opportunity_id,
                                   quoted_amount: job.opportunities?.quoted_amount,
-                                  expected_value: job.opportunities?.expected_value,
                                   jobBudget: job.budget,
                                   finalAmount: quotedAmount,
                                   usedSource: usedSource,
@@ -595,8 +619,7 @@ const InProgressDashboard: React.FC = () => {
                                       {formatCurrency(quotedAmount)}
                                     </p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                                      {usedSource === 'quoted_amount' ? 'Quoted Value' : 
-                                       usedSource === 'expected_value' ? 'Expected Value' : 'No Quote'}
+                                      {usedSource === 'quoted_amount' ? 'Quoted Value' : 'No Quote'}
                                     </p>
                                     <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
                                       Budget: {formatCurrency(job.budget || 0)}

@@ -162,6 +162,7 @@ interface FormData {
     megohmmeter: { name: string; serialNumber: string; ampId: string };
     lowResistanceOhmmeter: { name: string; serialNumber: string; ampId: string }; // Added based on image
     secondaryInjectionTestSet: { name: string; serialNumber: string; ampId: string }; // Added based on image
+    primaryVerificationTestSet: { name: string; serialNumber: string; ampId: string };
   };
 
   // Comments
@@ -284,7 +285,8 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
     testEquipment: {
       megohmmeter: { name: '', serialNumber: '', ampId: '' },
       lowResistanceOhmmeter: { name: '', serialNumber: '', ampId: '' },
-      secondaryInjectionTestSet: { name: '', serialNumber: '', ampId: '' }
+      secondaryInjectionTestSet: { name: '', serialNumber: '', ampId: '' },
+      primaryVerificationTestSet: { name: '', serialNumber: '', ampId: '' }
     },
     comments: '',
     status: 'PASS', // Default status
@@ -489,6 +491,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             megohmmeter: { ...prev.testEquipment.megohmmeter, ...(d.testEquipment?.megohmmeter || {}) },
             lowResistanceOhmmeter: { ...prev.testEquipment.lowResistanceOhmmeter, ...(d.testEquipment?.lowResistanceOhmmeter || {}) },
             secondaryInjectionTestSet: { ...prev.testEquipment.secondaryInjectionTestSet, ...(d.testEquipment?.secondaryInjectionTestSet || {}) },
+            primaryVerificationTestSet: { ...prev.testEquipment.primaryVerificationTestSet, ...(d.testEquipment?.primaryVerificationTestSet || {}) },
           },
 
           // Comments & status
@@ -1733,6 +1736,9 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
               <div><label className="form-label">Secondary Inj Test Set:</label><input type="text" value={formData.testEquipment.secondaryInjectionTestSet.name} onChange={(e) => handleChange('testEquipment.secondaryInjectionTestSet.name', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
               <div><label className="form-label">Serial Number:</label><input type="text" value={formData.testEquipment.secondaryInjectionTestSet.serialNumber} onChange={(e) => handleChange('testEquipment.secondaryInjectionTestSet.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
               <div><label className="form-label">AMP ID:</label><input type="text" value={formData.testEquipment.secondaryInjectionTestSet.ampId} onChange={(e) => handleChange('testEquipment.secondaryInjectionTestSet.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
+              <div><label className="form-label">Primary Verification Set:</label><input type="text" value={formData.testEquipment.primaryVerificationTestSet.name} onChange={(e) => handleChange('testEquipment.primaryVerificationTestSet.name', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
+              <div><label className="form-label">Serial Number:</label><input type="text" value={formData.testEquipment.primaryVerificationTestSet.serialNumber} onChange={(e) => handleChange('testEquipment.primaryVerificationTestSet.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
+              <div><label className="form-label">AMP ID:</label><input type="text" value={formData.testEquipment.primaryVerificationTestSet.ampId} onChange={(e) => handleChange('testEquipment.primaryVerificationTestSet.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
                     </div>
                     </div>
 
@@ -1775,6 +1781,11 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                   <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.secondaryInjectionTestSet.name || 'Secondary Inj Test Set'}</td>
                   <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.secondaryInjectionTestSet.serialNumber}</td>
                   <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.secondaryInjectionTestSet.ampId}</td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.primaryVerificationTestSet.name || 'Primary Verification Set'}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.primaryVerificationTestSet.serialNumber}</td>
+                  <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.primaryVerificationTestSet.ampId}</td>
                 </tr>
               </tbody>
             </table>

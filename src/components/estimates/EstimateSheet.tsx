@@ -436,6 +436,27 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   // Track fields temporarily displayed as blank (for backspace over 0)
   const [blankingKeys, setBlankingKeys] = useState<Set<string>>(new Set());
   const makeKey = (section: 'sov' | 'nonSov', index: number, field: string) => `${section}:${index}:${field}`;
+  
+  // Drag and drop state
+  const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  const [draggedItemType, setDraggedItemType] = useState<'sov' | 'nonSov' | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  
+  // Payment term factors state
+  const [paymentTermFactors, setPaymentTermFactors] = useState({
+    net30: 1.00,
+    net60: 1.06,
+    net90: 1.09
+  });
+  
+  // Mobilization factors state (threshold-based)
+  // base: <= 100,000; over100k: > 100,000; over500k: > 500,000; over1m: > 1,000,000
+  const [mobilizationFactors, setMobilizationFactors] = useState({
+    base: 0.00,
+    over100k: 0.10,
+    over500k: 0.05,
+    over1m: 0.05
+  });
   const draftKey = `estimate-draft-${opportunityId}`;
   const [isDirty, setIsDirty] = useState<boolean>(false);
   const [draftRestored, setDraftRestored] = useState<boolean>(false);
@@ -576,7 +597,21 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed && typeof parsed === 'object') {
-            setData((prev) => ({ ...prev, ...parsed }));
+            // Extract payment term factors if they exist
+            const { paymentTermFactors: savedFactors, mobilizationFactors: savedMobilization, ...restData } = parsed;
+            
+            // Restore data
+            setData((prev) => ({ ...prev, ...restData }));
+            
+            // Restore payment term factors if they exist
+            if (savedFactors && typeof savedFactors === 'object') {
+              setPaymentTermFactors(prev => ({ ...prev, ...savedFactors }));
+            }
+            // Restore mobilization factors if they exist
+            if (savedMobilization && typeof savedMobilization === 'object') {
+              setMobilizationFactors(prev => ({ ...prev, ...savedMobilization }));
+            }
+            
             setDraftRestored(true);
           }
         }
@@ -590,11 +625,16 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     if (!opportunityId) return;
     if (isOpen && isNewQuote) {
       try {
-        localStorage.setItem(draftKey, JSON.stringify(data));
+        const draftData = {
+          ...data,
+          paymentTermFactors,
+          mobilizationFactors
+        };
+        localStorage.setItem(draftKey, JSON.stringify(draftData));
       } catch {}
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, isOpen, isNewQuote, opportunityId]);
+  }, [data, paymentTermFactors, mobilizationFactors, isOpen, isNewQuote, opportunityId]);
 
   async function fetchEstimateData() {
     try {
@@ -815,6 +855,26 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           });
         }
         
+        // Handle payment term factors
+        if (parsedData.paymentTermFactors) {
+          setPaymentTermFactors(parsedData.paymentTermFactors);
+        } else {
+          // Set default factors if not found
+          setPaymentTermFactors({
+            net30: 1.00,
+            net60: 1.06,
+            net90: 1.09
+          });
+        }
+        
+        // Handle mobilization factors
+        if (parsedData.mobilizationFactors) {
+          setMobilizationFactors(prev => ({
+            ...prev,
+            ...parsedData.mobilizationFactors
+          }));
+        }
+        
         // Set default labor hours using formula if not already set
         if (!parsedData.hoursSummary || 
             (parsedData.hoursSummary.straightTimeHours === 0 && 
@@ -918,7 +978,9 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
      const dataWithEmbeddedTravel = { 
        ...(data as any), 
        travel_data: safeTravelData,
-       hourlyRates: hourlyRates
+       hourlyRates: hourlyRates,
+       paymentTermFactors: paymentTermFactors,
+       mobilizationFactors: mobilizationFactors
      };
      
      // Debug: Log what's being saved
@@ -1293,6 +1355,66 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       [field]: value
     }));
     setIsDirty(true);
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, index: number, type: 'sov' | 'nonSov') => {
+    if (isViewMode) return;
+    setDraggedItemIndex(index);
+    setDraggedItemType(type);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', (e.currentTarget as HTMLElement).outerHTML);
+    (e.currentTarget as HTMLElement).style.opacity = '0.5';
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    (e.currentTarget as HTMLElement).style.opacity = '1';
+    setDraggedItemIndex(null);
+    setDraggedItemType(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number, dropType: 'sov' | 'nonSov') => {
+    e.preventDefault();
+    
+    if (draggedItemIndex === null || draggedItemType === null || draggedItemType !== dropType) {
+      return;
+    }
+
+    if (draggedItemIndex === dropIndex) {
+      return;
+    }
+
+    const itemsKey = dropType === 'sov' ? 'sovItems' : 'nonSovItems';
+    const items = [...data[itemsKey]];
+    const draggedItem = items[draggedItemIndex];
+    
+    // Remove the dragged item
+    items.splice(draggedItemIndex, 1);
+    
+    // Insert at the new position
+    const insertIndex = draggedItemIndex < dropIndex ? dropIndex - 1 : dropIndex;
+    items.splice(insertIndex, 0, draggedItem);
+    
+    setData(prev => ({
+      ...prev,
+      [itemsKey]: items
+    }));
+    
+    setIsDirty(true);
+    setDraggedItemIndex(null);
+    setDraggedItemType(null);
+    setDragOverIndex(null);
   };
 
 
@@ -2167,9 +2289,9 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const factor = getMobilizationFactor(finalValue);
       return formatCurrency(Math.ceil(finalValue * factor));
     })();
-    const option1 = formatCurrency(finalValue * 1);
-    const option2 = formatCurrency(Math.ceil(finalValue * 1.06));
-    const option3 = formatCurrency(Math.ceil(finalValue * 1.09));
+    const option1 = formatCurrency(Math.ceil(finalValue * paymentTermFactors.net30));
+    const option2 = formatCurrency(Math.ceil(finalValue * paymentTermFactors.net60));
+    const option3 = formatCurrency(Math.ceil(finalValue * paymentTermFactors.net90));
     const sovTableRows = sovItems && sovItems.length > 0
       ? sovItems.map((item: any) => {
           const name = (item.item || '').toString();
@@ -2380,9 +2502,9 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       return formatCurrency(Math.ceil(combinedFinalValue * factor));
     })();
     
-    const combinedOption1 = formatCurrency(combinedFinalValue * 1);
-    const combinedOption2 = formatCurrency(Math.ceil(combinedFinalValue * 1.06));
-    const combinedOption3 = formatCurrency(Math.ceil(combinedFinalValue * 1.09));
+    const combinedOption1 = formatCurrency(Math.ceil(combinedFinalValue * paymentTermFactors.net30));
+    const combinedOption2 = formatCurrency(Math.ceil(combinedFinalValue * paymentTermFactors.net60));
+    const combinedOption3 = formatCurrency(Math.ceil(combinedFinalValue * paymentTermFactors.net90));
     
     // Generate SOV tables for each quote with individual pricing
     const sovTablesHtml = processedQuotes.map((processedQuote, index) => {
@@ -2402,9 +2524,9 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         return formatCurrency(Math.ceil(processedQuote.finalValue * factor));
       })();
       
-      const scopeOption1 = formatCurrency(processedQuote.finalValue * 1);
-      const scopeOption2 = formatCurrency(Math.ceil(processedQuote.finalValue * 1.06));
-      const scopeOption3 = formatCurrency(Math.ceil(processedQuote.finalValue * 1.09));
+      const scopeOption1 = formatCurrency(Math.ceil(processedQuote.finalValue * paymentTermFactors.net30));
+      const scopeOption2 = formatCurrency(Math.ceil(processedQuote.finalValue * paymentTermFactors.net60));
+      const scopeOption3 = formatCurrency(Math.ceil(processedQuote.finalValue * paymentTermFactors.net90));
       
       return `
         <div class="amp-scope-block" style="margin-bottom: 32px; border: 1px solid #ddd; border-radius: 8px; padding: 16px; background-color: #fafafa; break-inside: avoid; page-break-inside: avoid;">
@@ -2866,12 +2988,12 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     }
   }, [opportunityData, mode, isOpen]);
 
-  // Mobilization factor based on threshold cost
+  // Mobilization factor based on threshold cost (now adjustable)
   function getMobilizationFactor(finalValue: number) {
-    if (finalValue > 1000000) return 0.05;
-    if (finalValue > 500000) return 0.05;
-    if (finalValue > 100000) return 0.10;
-    return 0.00;
+    if (finalValue > 1000000) return mobilizationFactors.over1m;
+    if (finalValue > 500000) return mobilizationFactors.over500k;
+    if (finalValue > 100000) return mobilizationFactors.over100k;
+    return mobilizationFactors.base;
   }
 
   useEffect(() => {
@@ -3039,7 +3161,53 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
 
               <div className="mt-4">
                 <div style={styles.app}>
-                  {/* New Header Layout - Project Info on Left, Page Numbering and Notes on Right */}
+                  {/* Page Numbering */}
+                  <div style={{
+                    textAlign: 'right',
+                    marginBottom: '20px'
+                  }}>
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      color: 'var(--text-color)'
+                    }}>
+                      SHEET {isNewQuote ? '1' : (selectedQuoteIndex + 1)} OF {isNewQuote ? '1' : Math.max(quotes.length, 1)}
+                    </div>
+                  </div>
+
+                  {/* Improved Header Layout */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '30px',
+                    marginBottom: '20px'
+                  }}>
+                    {/* First Row - Client and Quote Title */}
+                    <div style={styles.formGroup}>
+                      <label style={styles.formLabel}>Client:</label>
+                      <input 
+                        type="text" 
+                        style={styles.formInput}
+                        value={data.client} 
+                        onChange={(e) => handleGeneralChange('client', e.target.value)}
+                        readOnly={isViewMode}
+                      />
+                    </div>
+                    
+                    <div style={styles.formGroup}>
+                      <label style={styles.formLabel}>Quote Title (optional):</label>
+                      <input 
+                        type="text" 
+                        style={styles.formInput}
+                        value={data.title || ''}
+                        onChange={(e) => handleGeneralChange('title', e.target.value)}
+                        readOnly={isViewMode}
+                        placeholder="E.g. Switchgear Testing Scope A"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Second Row - Notes and Additional Notes */}
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr',
@@ -3047,166 +3215,47 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                     marginBottom: '20px',
                     alignItems: 'start'
                   }}>
-                    {/* Left Side - Project Information */}
+                    {/* Notes Section */}
                     <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '15px'
+                      backgroundColor: 'var(--summary-bg)',
+                      padding: '15px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--border-color)'
                     }}>
-                      <div style={styles.formGroup}>
-                        <label style={styles.formLabel}>Client:</label>
-                        <input 
-                          type="text" 
-                          style={styles.formInput}
-                          value={data.client} 
-                          onChange={(e) => handleGeneralChange('client', e.target.value)}
-                          readOnly={isViewMode}
-                        />
-                      </div>
-                      
-                      <div style={styles.formGroup}>
-                        <label style={styles.formLabel}>Job Description:</label>
-                        <input 
-                          type="text" 
-                          style={styles.formInput}
-                          value={data.jobDescription} 
-                          onChange={(e) => handleGeneralChange('jobDescription', e.target.value)}
-                          readOnly={isViewMode}
-                        />
-                      </div>
-                      
-                      <div style={styles.formGroup}>
-                        <label style={styles.formLabel}>Date Due:</label>
-                        <input 
-                          type="date" 
-                          style={styles.formInput}
-                          value={data.dateDue} 
-                          onChange={(e) => handleGeneralChange('dateDue', e.target.value)}
-                          readOnly={isViewMode}
-                        />
-                      </div>
-                      
-                      <div style={styles.formGroup}>
-                        <label style={styles.formLabel}>Location / Address:</label>
-                        <input 
-                          type="text" 
-                          style={styles.formInput}
-                          value={data.location} 
-                          onChange={(e) => handleGeneralChange('location', e.target.value)}
-                          readOnly={isViewMode}
-                        />
-                      </div>
-                      
-                      <div style={styles.formGroup}>
-                        <label style={styles.formLabel}>Period of Performance:</label>
-                        <input 
-                          type="text" 
-                          style={styles.formInput}
-                          value={data.periodOfPerformance} 
-                          onChange={(e) => handleGeneralChange('periodOfPerformance', e.target.value)}
-                          readOnly={isViewMode}
-                        />
-                      </div>
-                      
-                      <div style={styles.formGroup}>
-                        <label style={styles.formLabel}>Estimated Start Date:</label>
-                        <input 
-                          type="date" 
-                          style={styles.formInput}
-                          value={data.estimatedStartDate} 
-                          onChange={(e) => handleGeneralChange('estimatedStartDate', e.target.value)}
-                          readOnly={isViewMode}
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* Right Side - Page Numbering and Notes */}
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '20px'
-                    }}>
-                      {/* Page Numbering */}
                       <div style={{
-                        textAlign: 'right',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        color: 'var(--text-color)',
                         marginBottom: '10px'
                       }}>
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: 'bold',
-                          color: 'var(--text-color)',
-                          marginBottom: '5px'
-                        }}>
-                          SHEET {isNewQuote ? '1' : (selectedQuoteIndex + 1)} OF {isNewQuote ? '1' : Math.max(quotes.length, 1)}
-                        </div>
+                        Notes:
                       </div>
-                      
-                      {/* Quote Title (renameable) */}
-                      <div style={styles.formGroup}>
-                        <label style={styles.formLabel}>Quote Title (optional):</label>
-                        <input 
-                          type="text" 
-                          style={styles.formInput}
-                          value={data.title || ''}
-                          onChange={(e) => handleGeneralChange('title', e.target.value)}
-                          readOnly={isViewMode}
-                          placeholder="E.g. Switchgear Testing Scope A"
-                        />
-                      </div>
-
-                      {/* Notes Section */}
-                      <div style={{
-                        backgroundColor: 'var(--summary-bg)',
-                        padding: '15px',
-                        borderRadius: '4px',
-                        border: '1px solid var(--border-color)'
+                      <ul style={{
+                        margin: '0',
+                        paddingLeft: '20px',
+                        color: 'var(--text-color)',
+                        fontSize: '12px',
+                        lineHeight: '1.4'
                       }}>
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: 'bold',
-                          color: 'var(--text-color)',
-                          marginBottom: '10px'
-                        }}>
-                          Notes:
-                        </div>
-                        <ul style={{
-                          margin: '0',
-                          paddingLeft: '20px',
-                          color: 'var(--text-color)',
-                          fontSize: '12px',
-                          lineHeight: '1.4'
-                        }}>
-                          <li style={{ marginBottom: '5px' }}>• fields highlighted in light gray are calculated automatically</li>
-                          <li style={{ marginBottom: '5px' }}>• "Material" columns for costs to receive tax & mark-up</li>
-                          <li style={{ marginBottom: '5px' }}>• "Expense" columns for costs with no mark-up or different mark-up from materials</li>
-                        </ul>
-                      </div>
-                      
-                      {/* PO Number */}
-                      <div style={styles.formGroup}>
-                        <label style={styles.formLabel}>PO Number:</label>
-                        <input 
-                          type="text" 
-                          style={styles.formInput}
-                          value={data.poNumber} 
-                          onChange={(e) => handleGeneralChange('poNumber', e.target.value)}
-                        />
-                      </div>
-                      
-                      {/* Additional Notes */}
-                      <div style={styles.formGroup}>
-                        <label style={styles.formLabel}>Additional Notes:</label>
-                        <textarea 
-                          style={{
-                            ...styles.formInput,
-                            minHeight: '80px',
-                            resize: 'vertical'
-                          }}
-                          value={data.notes} 
-                          onChange={(e) => handleGeneralChange('notes', e.target.value)}
-                          placeholder="Enter any additional notes or special instructions..."
-                        />
-                      </div>
+                        <li style={{ marginBottom: '5px' }}>• fields highlighted in light gray are calculated automatically</li>
+                        <li style={{ marginBottom: '5px' }}>• "Material" columns for costs to receive tax & mark-up</li>
+                        <li style={{ marginBottom: '5px' }}>• "Expense" columns for costs with no mark-up or different mark-up from materials</li>
+                      </ul>
+                    </div>
+                    
+                    {/* Additional Notes */}
+                    <div style={styles.formGroup}>
+                      <label style={styles.formLabel}>Additional Notes:</label>
+                      <textarea 
+                        style={{
+                          ...styles.formInput,
+                          minHeight: '80px',
+                          resize: 'vertical'
+                        }}
+                        value={data.notes} 
+                        onChange={(e) => handleGeneralChange('notes', e.target.value)}
+                        placeholder="Enter any additional notes or special instructions..."
+                      />
                     </div>
                   </div>
                   
@@ -3261,15 +3310,43 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                           const sovItemPrice = calculateSOVItemPrice(materialExtension, expenseExtension, laborUnit);
                           
                           return (
-                            <tr key={index}>
+                            <tr 
+                              key={index}
+                              draggable={!isViewMode}
+                              onDragStart={(e) => handleDragStart(e, index, 'sov')}
+                              onDragEnd={handleDragEnd}
+                              onDragOver={(e) => handleDragOver(e, index)}
+                              onDragLeave={handleDragLeave}
+                              onDrop={(e) => handleDrop(e, index, 'sov')}
+                              style={{
+                                cursor: !isViewMode ? 'move' : 'default',
+                                backgroundColor: dragOverIndex === index && draggedItemType === 'sov' ? '#f3f4f6' : 'transparent',
+                                borderTop: dragOverIndex === index && draggedItemType === 'sov' ? '2px solid #f26722' : 'none'
+                              }}
+                            >
                               <td style={{...styles.tableCell, width: itemColWidth}}>
-                                <input 
-                                  type="text" 
-                                  style={styles.tableInput}
-                                  value={item.item} 
-                                  onChange={(e) => handleItemChange('sov', index, 'item', e.target.value)}
-                                  readOnly={isViewMode}
-                                />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  {!isViewMode && (
+                                    <div 
+                                      style={{ 
+                                        cursor: 'grab', 
+                                        color: '#6b7280', 
+                                        fontSize: '14px',
+                                        userSelect: 'none'
+                                      }}
+                                      title="Drag to reorder"
+                                    >
+                                      ⋮⋮
+                                    </div>
+                                  )}
+                                  <input 
+                                    type="text" 
+                                    style={{...styles.tableInput, flex: 1}}
+                                    value={item.item} 
+                                    onChange={(e) => handleItemChange('sov', index, 'item', e.target.value)}
+                                    readOnly={isViewMode}
+                                  />
+                                </div>
                               </td>
                               <td style={styles.tableCell}>
                                 <input 
@@ -3445,15 +3522,43 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                           const laborTotal = calculateLaborTotal(item.quantity, item.laborMen, item.laborHours);
                           
                           return (
-                            <tr key={index}>
+                            <tr 
+                              key={index}
+                              draggable={!isViewMode}
+                              onDragStart={(e) => handleDragStart(e, index, 'nonSov')}
+                              onDragEnd={handleDragEnd}
+                              onDragOver={(e) => handleDragOver(e, index)}
+                              onDragLeave={handleDragLeave}
+                              onDrop={(e) => handleDrop(e, index, 'nonSov')}
+                              style={{
+                                cursor: !isViewMode ? 'move' : 'default',
+                                backgroundColor: dragOverIndex === index && draggedItemType === 'nonSov' ? '#f3f4f6' : 'transparent',
+                                borderTop: dragOverIndex === index && draggedItemType === 'nonSov' ? '2px solid #f26722' : 'none'
+                              }}
+                            >
                               <td style={{...styles.tableCell, width: nonSovItemColWidth}}>
-                                <input 
-                                  type="text" 
-                                  style={styles.tableInput}
-                                  value={item.item} 
-                                  onChange={(e) => handleItemChange('nonSov', index, 'item', e.target.value)}
-                                  readOnly={isViewMode}
-                                />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  {!isViewMode && (
+                                    <div 
+                                      style={{ 
+                                        cursor: 'grab', 
+                                        color: '#6b7280', 
+                                        fontSize: '14px',
+                                        userSelect: 'none'
+                                      }}
+                                      title="Drag to reorder"
+                                    >
+                                      ⋮⋮
+                                    </div>
+                                  )}
+                                  <input 
+                                    type="text" 
+                                    style={{...styles.tableInput, flex: 1}}
+                                    value={item.item} 
+                                    onChange={(e) => handleItemChange('nonSov', index, 'item', e.target.value)}
+                                    readOnly={isViewMode}
+                                  />
+                                </div>
                               </td>
                               <td style={styles.tableCell}>
                                 <input 
@@ -4115,20 +4220,12 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                             <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.totalMaterial * 1.09 * materialMarkup)}</td>
                           </tr>
                           <tr>
-                            <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>EXPENSE TOTAL (From Sheet 1):</td>
+                            <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>EXPENSE TOTAL:</td>
                             <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.totalExpense)}</td>
                             <td style={{...styles.tableCell, padding: '12px 8px'}}>1.09</td>
                             <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.totalExpense * 1.09)}</td>
                             <td style={{...styles.tableCell, padding: '12px 8px'}}>1</td>
                             <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.totalExpense * 1.09)}</td>
-                          </tr>
-                          <tr>
-                            <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>EXPENSE TOTAL (From Sheet 2):</td>
-                            <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.nonSovExpense)}</td>
-                            <td style={{...styles.tableCell, padding: '12px 8px'}}>1.00</td>
-                            <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.nonSovExpense * 1.00)}</td>
-                            <td style={{...styles.tableCell, padding: '12px 8px'}}>1</td>
-                            <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>{formatCurrency(data.calculatedValues.nonSovExpense * 1.00)}</td>
                           </tr>
                           <tr style={{...styles.tfoot}}>
                             <td colSpan={5} style={{...styles.tableCell, textAlign: 'right', fontWeight: 'bold', padding: '12px 8px'}}>Total:</td>
@@ -4406,18 +4503,60 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                           <tbody>
                             <tr>
                               <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>NET 30</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>1</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * 1))}</td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  style={{...styles.tableInput, width: '80px', textAlign: 'center'}}
+                                  value={paymentTermFactors.net30}
+                                  onChange={(e) => {
+                                    const value = parseFloat(e.target.value) || 0;
+                                    setPaymentTermFactors(prev => ({...prev, net30: value}));
+                                    setIsDirty(true);
+                                  }}
+                                  readOnly={isViewMode}
+                                />
+                              </td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net30))}</td>
                             </tr>
                             <tr>
                               <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>NET 60</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>1.06</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * 1.06))}</td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  style={{...styles.tableInput, width: '80px', textAlign: 'center'}}
+                                  value={paymentTermFactors.net60}
+                                  onChange={(e) => {
+                                    const value = parseFloat(e.target.value) || 0;
+                                    setPaymentTermFactors(prev => ({...prev, net60: value}));
+                                    setIsDirty(true);
+                                  }}
+                                  readOnly={isViewMode}
+                                />
+                              </td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net60))}</td>
                             </tr>
                             <tr>
                               <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>NET 90</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>1.09</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * 1.09))}</td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  style={{...styles.tableInput, width: '80px', textAlign: 'center'}}
+                                  value={paymentTermFactors.net90}
+                                  onChange={(e) => {
+                                    const value = parseFloat(e.target.value) || 0;
+                                    setPaymentTermFactors(prev => ({...prev, net90: value}));
+                                    setIsDirty(true);
+                                  }}
+                                  readOnly={isViewMode}
+                                />
+                              </td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net90))}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -4437,23 +4576,79 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                           <tbody>
                             <tr>
                               <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>$0.00</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>0.00</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * 0.00))}</td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  style={{...styles.tableInput, width: '80px', textAlign: 'center'}}
+                                  value={mobilizationFactors.base}
+                                  onChange={(e) => {
+                                    const value = parseFloat(e.target.value) || 0;
+                                    setMobilizationFactors(prev => ({...prev, base: value}));
+                                    setIsDirty(true);
+                                  }}
+                                  readOnly={isViewMode}
+                                />
+                              </td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * mobilizationFactors.base))}</td>
                             </tr>
                             <tr>
                               <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>$100,000.00</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>0.10</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{(() => { const f = getFinalValue(); const factor = getMobilizationFactor(f); return formatCurrency(Math.ceil(f * factor)); })()}</td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  style={{...styles.tableInput, width: '80px', textAlign: 'center'}}
+                                  value={mobilizationFactors.over100k}
+                                  onChange={(e) => {
+                                    const value = parseFloat(e.target.value) || 0;
+                                    setMobilizationFactors(prev => ({...prev, over100k: value}));
+                                    setIsDirty(true);
+                                  }}
+                                  readOnly={isViewMode}
+                                />
+                              </td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{(() => { const f = getFinalValue(); const factor = f > 100000 ? mobilizationFactors.over100k : mobilizationFactors.base; return formatCurrency(Math.ceil(f * factor)); })()}</td>
                             </tr>
                             <tr>
                               <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>$500,000.00</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>0.05</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * 0.05))}</td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  style={{...styles.tableInput, width: '80px', textAlign: 'center'}}
+                                  value={mobilizationFactors.over500k}
+                                  onChange={(e) => {
+                                    const value = parseFloat(e.target.value) || 0;
+                                    setMobilizationFactors(prev => ({...prev, over500k: value}));
+                                    setIsDirty(true);
+                                  }}
+                                  readOnly={isViewMode}
+                                />
+                              </td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{(() => { const f = getFinalValue(); const factor = f > 500000 ? mobilizationFactors.over500k : (f > 100000 ? mobilizationFactors.over100k : mobilizationFactors.base); return formatCurrency(Math.ceil(f * factor)); })()}</td>
                             </tr>
                             <tr>
                               <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>$1,000,000.00</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>0.05</td>
-                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{formatCurrency(Math.ceil(getFinalValue() * 0.05))}</td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  style={{...styles.tableInput, width: '80px', textAlign: 'center'}}
+                                  value={mobilizationFactors.over1m}
+                                  onChange={(e) => {
+                                    const value = parseFloat(e.target.value) || 0;
+                                    setMobilizationFactors(prev => ({...prev, over1m: value}));
+                                    setIsDirty(true);
+                                  }}
+                                  readOnly={isViewMode}
+                                />
+                              </td>
+                              <td style={{...styles.tableCell, padding: '12px 8px'}}>{(() => { const f = getFinalValue(); const factor = f > 1000000 ? mobilizationFactors.over1m : (f > 500000 ? mobilizationFactors.over500k : (f > 100000 ? mobilizationFactors.over100k : mobilizationFactors.base)); return formatCurrency(Math.ceil(f * factor)); })()}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -4518,15 +4713,15 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                               <tbody>
                                 <tr>
                                   <td style={{...styles.tableCell, padding: '8px', textAlign: 'left'}}>with NET 30</td>
-                                  <td style={{...styles.tableCell, padding: '8px', textAlign: 'right'}}>{formatCurrency(Math.ceil(getFinalValue() * 1))}</td>
+                                  <td style={{...styles.tableCell, padding: '8px', textAlign: 'right'}}>{formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net30))}</td>
                                 </tr>
                                 <tr>
                                   <td style={{...styles.tableCell, padding: '8px', textAlign: 'left'}}>with NET 60</td>
-                                  <td style={{...styles.tableCell, padding: '8px', textAlign: 'right'}}>{formatCurrency(Math.ceil(getFinalValue() * 1.06))}</td>
+                                  <td style={{...styles.tableCell, padding: '8px', textAlign: 'right'}}>{formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net60))}</td>
                                 </tr>
                                 <tr>
                                   <td style={{...styles.tableCell, padding: '8px', textAlign: 'left'}}>with NET 90</td>
-                                  <td style={{...styles.tableCell, padding: '8px', textAlign: 'right'}}>{formatCurrency(Math.ceil(getFinalValue() * 1.09))}</td>
+                                  <td style={{...styles.tableCell, padding: '8px', textAlign: 'right'}}>{formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net90))}</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -4542,13 +4737,13 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                             Mobilization costs of <b>${(() => { const f = getFinalValue(); const factor = getMobilizationFactor(f); return formatCurrency(Math.ceil(f * factor)); })()}</b> shall be paid before the first day of work in addition to:
                           </div>
                           <div style={{marginBottom: '5px'}}>
-                            Option 1: Where NET 30 Terms are applicable and agreed upon: {formatCurrency(Math.ceil(getFinalValue() * 1))}
+                            Option 1: Where NET 30 Terms are applicable and agreed upon: {formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net30))}
                           </div>
                           <div style={{marginBottom: '5px'}}>
-                            Option 2: Where NET 60 Terms are applicable and agreed upon: {formatCurrency(Math.ceil(getFinalValue() * 1.06))}
+                            Option 2: Where NET 60 Terms are applicable and agreed upon: {formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net60))}
                           </div>
                           <div style={{marginBottom: '5px'}}>
-                            Option 3: Where NET 90 Terms are applicable and agreed upon: {formatCurrency(Math.ceil(getFinalValue() * 1.09))}
+                            Option 3: Where NET 90 Terms are applicable and agreed upon: {formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net90))}
                           </div>
                           {showTravel && (
                             <div style={{marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--border-color)'}}>

@@ -192,6 +192,7 @@ export default function OpportunityDetail() {
   const [showSuccessMessage, setShowSuccessMessage] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<OpportunityFormData>({
     customer_id: '',
+    contact_id: null,
     title: '',
     description: '',
     expected_value: '',
@@ -211,6 +212,8 @@ export default function OpportunityDetail() {
   const { jobDetails } = useJobDetails(jobId || undefined);
   const [showDivisionAnalytics, setShowDivisionAnalytics] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
   const [showEstimate, setShowEstimate] = useState<'new' | 'view' | 'letter' | 'letters' | 'combined-letter' | false>(false);
   
   // Function to update prepared_by field based on estimate creators
@@ -400,6 +403,36 @@ export default function OpportunityDetail() {
       setLetterProposals(data || []);
     } catch (error) {
       console.error('Error fetching letter proposals:', error);
+    }
+  }
+
+  async function fetchContactsForCustomer(customerId: string) {
+    if (!customerId) {
+      setAvailableContacts([]);
+      return;
+    }
+
+    try {
+      const { data: contactsData, error } = await supabase
+        .schema('common')
+        .from('contacts')
+        .select('id, first_name, last_name, email, phone, customer_id')
+        .eq('customer_id', customerId);
+
+      if (error) throw error;
+
+      const formattedContacts = contactsData.map(contact => ({
+        id: contact.id,
+        name: `${contact.first_name} ${contact.last_name}`,
+        email: contact.email || '',
+        phone: contact.phone,
+        customer_id: contact.customer_id
+      }));
+
+      setAvailableContacts(formattedContacts);
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+      setAvailableContacts([]);
     }
   }
 
@@ -741,6 +774,7 @@ export default function OpportunityDetail() {
 
       const updatePayload: any = {
         customer_id: editFormData.customer_id,
+        contact_id: editFormData.contact_id || null,
         title: editFormData.title,
         description: editFormData.description,
         expected_value: editFormData.expected_value ? parseFloat(editFormData.expected_value) : null,
@@ -1261,6 +1295,7 @@ export default function OpportunityDetail() {
                     if (opportunity) {
                       setEditFormData({
                         customer_id: opportunity.customer_id || '',
+                        contact_id: opportunity.contact_id || null,
                         title: opportunity.title || '',
                         description: opportunity.description || '',
                         expected_value: opportunity.expected_value?.toString() || '',
@@ -1280,6 +1315,10 @@ export default function OpportunityDetail() {
                         reviewed_by: (opportunity as any).reviewed_by || '',
                         prepared_by: (opportunity as any).prepared_by || ''
                       });
+                      // Fetch contacts for the current customer
+                      if (opportunity.customer_id) {
+                        fetchContactsForCustomer(opportunity.customer_id);
+                      }
                     }
                   }}
                   className="px-4 py-2 bg-[#f26722] text-white rounded hover:bg-[#f26722]/90 transition-colors flex items-center"
@@ -1418,21 +1457,84 @@ export default function OpportunityDetail() {
             <div className="p-6">
               <form onSubmit={handleEditSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="customer_id" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
                     Customer
                   </label>
+                  <input
+                    type="text"
+                    value={customerSearch}
+                    onChange={(e) => setCustomerSearch(e.target.value)}
+                    placeholder="Search customers (name or company)"
+                    className="mt-1 mb-2 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  />
+                  {editFormData.customer_id && (
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                      Selected: {(customers.find(c => c.id === editFormData.customer_id)?.company_name) || (customers.find(c => c.id === editFormData.customer_id)?.name) || 'Unknown'}
+                      <button
+                        type="button"
+                        className="ml-2 underline text-[#f26722] hover:text-[#f26722]/90"
+                        onClick={() => {
+                          setEditFormData(prev => ({ ...prev, customer_id: '', contact_id: null }));
+                          setAvailableContacts([]);
+                          setCustomerSearch('');
+                        }}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                  <div className="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md">
+                    {customers
+                      .filter(customer => 
+                        (customer.company_name?.toLowerCase().includes(customerSearch.toLowerCase())) ||
+                        (customer.name?.toLowerCase().includes(customerSearch.toLowerCase()))
+                      )
+                      .slice(0, 20)
+                      .map((customer) => {
+                        const isSelected = editFormData.customer_id === customer.id;
+                        return (
+                          <button
+                            type="button"
+                            key={customer.id}
+                            onClick={() => {
+                              setEditFormData(prev => ({ ...prev, customer_id: customer.id, contact_id: null }));
+                              fetchContactsForCustomer(customer.id);
+                              setCustomerSearch('');
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm ${
+                              isSelected
+                                ? 'bg-orange-50 text-gray-900 dark:bg-orange-900/20 dark:text-white'
+                                : 'hover:bg-gray-50 dark:hover:bg-dark-200 text-gray-700 dark:text-gray-200'
+                            }`}
+                          >
+                            {customer.company_name || customer.name}
+                          </button>
+                        );
+                      })}
+                    {customers.filter(customer => 
+                      (customer.company_name?.toLowerCase().includes(customerSearch.toLowerCase())) ||
+                      (customer.name?.toLowerCase().includes(customerSearch.toLowerCase()))
+                    ).length === 0 && customerSearch && (
+                      <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No matches</div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Contact
+                  </label>
                   <select
-                    id="customer_id"
-                    name="customer_id"
-                    value={editFormData.customer_id}
-                    onChange={handleInputChange}
-                    required
+                    name="contact_id"
+                    value={editFormData.contact_id || ''}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, contact_id: e.target.value || null }))}
                     className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    disabled={!editFormData.customer_id}
                   >
-                    <option value="" className="dark:bg-dark-150 dark:text-white">Select a customer</option>
-                    {customers.map((customer) => (
-                      <option key={customer.id} value={customer.id} className="dark:bg-dark-150 dark:text-white">
-                        {customer.company_name || customer.name}
+                    <option value="" className="dark:bg-dark-150 dark:text-white">No Contact</option>
+                    {availableContacts.map((contact) => (
+                      <option key={contact.id} value={contact.id} className="dark:bg-dark-150 dark:text-white">
+                        {contact.name}
                       </option>
                     ))}
                   </select>
@@ -1787,48 +1889,49 @@ export default function OpportunityDetail() {
                     <div className="mb-4">
                       <p className="text-sm text-gray-500 dark:text-dark-400">Quoted Amount (NET 30)</p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {letterProposals.length > 0 
-                          ? (() => {
-                              const letter = letterProposals[0] as any;
-                              let price = 0;
-                              
-                              // Try to extract NET 30 price from HTML content
-                              if (letter.html) {
-                                const htmlContent = letter.html;
-                                // Look for "Option 1: Where NET 30 Terms are applicable" pattern
-                                const net30Match = htmlContent.match(/Option\s*1:\s*Where\s*NET\s*30\s*Terms\s*are\s*applicable[^$]*\$([0-9,]+(?:\.[0-9]{2})?)/i);
-                                if (net30Match) {
-                                  const priceString = net30Match[1].replace(/,/g, '');
-                                  price = parseFloat(priceString);
-                                }
+                        {(() => {
+                          // Try to get NET 30 price from letter proposals first
+                          if (letterProposals.length > 0) {
+                            const letter = letterProposals[0] as any;
+                            let price = 0;
+                            
+                            // Try to extract NET 30 price from HTML content
+                            if (letter.html) {
+                              const htmlContent = letter.html;
+                              // Look for "Option 1: Where NET 30 Terms are applicable" pattern
+                              const net30Match = htmlContent.match(/Option\s*1:\s*Where\s*NET\s*30\s*Terms\s*are\s*applicable[^$]*\$([0-9,]+(?:\.[0-9]{2})?)/i);
+                              if (net30Match) {
+                                const priceString = net30Match[1].replace(/,/g, '');
+                                price = parseFloat(priceString);
                               }
-                              
-                              // Fallback to other price fields if NET 30 not found
-                              if (!price) {
-                                price = letter.net_30_price || letter.total || letter.amount || 0;
-                              }
-                              
+                            }
+                            
+                            // Fallback to other price fields if NET 30 not found
+                            if (!price) {
+                              price = letter.net_30_price || letter.total || letter.amount || 0;
+                            }
+                            
+                            // If we found a price from letter proposals, return it
+                            if (price > 0) {
                               const letterNum = letter.letter_number || letter.quote_number || `Letter ${letter.id?.slice(0, 8)}`;
-                              return price > 0 
-                                ? `$${price.toLocaleString('en-US', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })} (from ${letterNum})`
-                                : `NET 30 price not found in ${letterNum} - Debug: ${letter.html ? 'HTML content exists' : 'No HTML content'}`;
-                            })()
-                          : (() => {
-                              // Only show quoted_amount - no fallback to expected_value
-                              const quotedAmount = opportunity.quoted_amount;
-                              
-                              if (quotedAmount && Number(quotedAmount) > 0) {
-                                return `$${Number(quotedAmount).toLocaleString('en-US', {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })} (quoted amount)`;
-                              } else {
-                                return 'No quoted amount';
-                              }
-                            })()}
+                              return `$${price.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })} (from ${letterNum})`;
+                            }
+                          }
+                          
+                          // Fallback to quoted_amount field (same logic as OpportunityList)
+                          const quotedAmount = opportunity.quoted_amount;
+                          if (quotedAmount && Number(quotedAmount) > 0) {
+                            return `$${Number(quotedAmount).toLocaleString('en-US', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })} (quoted amount)`;
+                          }
+                          
+                          return 'No quoted amount';
+                        })()}
                       </p>
                     </div>
                     <div className="mb-4">

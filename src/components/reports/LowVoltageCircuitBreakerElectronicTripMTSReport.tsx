@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
@@ -58,6 +58,21 @@ const i2tOptions = ["", "Yes", "No", "N/A"];
 // Trip Unit Type options
 const tripUnitTypeOptions = ["", "On", "Off", "In", "Out", "N/A"];
 const tripTestingUnitsOptions = ["sec.", "cycles", "ms"]; // Example options
+
+// Predefined test equipment options
+const testEquipmentOptions = {
+  megohmmeter: [
+    { name: "Fluke 1587", serialNumber: "50340043", ampId: "1-131" },
+    { name: "Fluke 1587", serialNumber: "63440124", ampId: "1-153" }
+  ],
+  lowResistanceOhmmeter: [
+    { name: "AEMC 6240", serialNumber: "32172", ampId: "1-130" },
+    { name: "Megger DLRO-H200", serialNumber: "2300975", ampId: "1-51" }
+  ],
+  primaryInjectionTestSet: [
+    { name: "Megger DD-A", serialNumber: "202411040029", ampId: "" }
+  ]
+};
 
 // Normalize imported trip unit type; allow free text, only coerce common N/A variants
 const normalizeTripUnitType = (value: any): string => {
@@ -254,6 +269,116 @@ const tableStyles = {
   cell: "px-2 py-2 text-sm text-gray-900 dark:text-white whitespace-normal",
   input: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
   select: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+};
+
+// Searchable Equipment Dropdown Component
+interface EquipmentDropdownProps {
+  value: string;
+  onChange: (value: string) => void;
+  onSerialChange: (value: string) => void;
+  onAmpIdChange: (value: string) => void;
+  options: { name: string; serialNumber: string; ampId: string }[];
+  placeholder?: string;
+  readOnly?: boolean;
+  className?: string;
+}
+
+const EquipmentDropdown: React.FC<EquipmentDropdownProps> = ({
+  value,
+  onChange,
+  onSerialChange,
+  onAmpIdChange,
+  options,
+  placeholder = "Type or select equipment...",
+  readOnly = false,
+  className = ""
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(value);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Filter options based on search term
+  const filteredOptions = options.filter(option =>
+    option.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    option.serialNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    option.ampId.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Handle selection
+  const handleSelect = (option: { name: string; serialNumber: string; ampId: string }) => {
+    const displayValue = `${option.name}; SER# ${option.serialNumber}${option.ampId ? `, AMP ID: ${option.ampId}` : ''}`;
+    setSearchTerm(displayValue);
+    onChange(option.name);
+    onSerialChange(option.serialNumber);
+    onAmpIdChange(option.ampId);
+    setIsOpen(false);
+  };
+
+  // Handle manual input
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setSearchTerm(newValue);
+    onChange(newValue);
+    setIsOpen(newValue.length > 0 && filteredOptions.length > 0);
+  };
+
+  // Update search term when value changes externally
+  useEffect(() => {
+    setSearchTerm(value);
+  }, [value]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  if (readOnly) {
+    return (
+      <input
+        type="text"
+        value={searchTerm}
+        readOnly
+        className={`form-input bg-gray-100 dark:bg-dark-150 ${className}`}
+      />
+    );
+  }
+
+  return (
+    <div ref={dropdownRef} className={`relative ${className}`}>
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={handleInputChange}
+        onFocus={() => setIsOpen(filteredOptions.length > 0)}
+        placeholder={placeholder}
+        className="form-input w-full"
+      />
+      
+      {isOpen && filteredOptions.length > 0 && (
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto">
+          {filteredOptions.map((option, index) => (
+            <div
+              key={index}
+              onClick={() => handleSelect(option)}
+              className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-100 text-sm"
+            >
+              <div className="font-medium text-gray-900 dark:text-white">{option.name}</div>
+              <div className="text-gray-500 dark:text-gray-400">
+                SER# {option.serialNumber}{option.ampId && `, AMP ID: ${option.ampId}`}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 // Rename component
@@ -2399,30 +2524,54 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           <div className="grid grid-cols-1 gap-y-4">
             {/* Megohmmeter */}
             <div className="flex items-center">
-                <label className="form-label inline-block w-32">Megohmmeter:</label>
-              <input type="text" value={formData.testEquipment.megohmmeter.name} onChange={(e) => handleChange('testEquipment.megohmmeter.name', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-32 ml-4">Serial Number:</label>
-              <input type="text" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.megohmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-24 ml-4">AMP ID:</label>
-              <input type="text" value={formData.testEquipment.megohmmeter.ampId} onChange={(e) => handleChange('testEquipment.megohmmeter.ampId', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+              <label className="form-label inline-block w-32">Megohmmeter:</label>
+              <EquipmentDropdown
+                value={formData.testEquipment.megohmmeter.name}
+                onChange={(value) => handleChange('testEquipment.megohmmeter.name', value)}
+                onSerialChange={(value) => handleChange('testEquipment.megohmmeter.serialNumber', value)}
+                onAmpIdChange={(value) => handleChange('testEquipment.megohmmeter.ampId', value)}
+                options={testEquipmentOptions.megohmmeter}
+                readOnly={!isEditing}
+                className="flex-1"
+              />
+              <label className="form-label inline-block w-32 ml-4">Serial Number:</label>
+              <input type="text" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.megohmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              <label className="form-label inline-block w-24 ml-4">AMP ID:</label>
+              <input type="text" value={formData.testEquipment.megohmmeter.ampId} onChange={(e) => handleChange('testEquipment.megohmmeter.ampId', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
             </div>
             {/* Low Resistance Ohmmeter */}
             <div className="flex items-center">
-                <label className="form-label inline-block w-32">Low-Resistance Ohmmeter:</label>
-              <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.name} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.name', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-32 ml-4">Serial Number:</label>
-              <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-24 ml-4">AMP ID:</label>
-              <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.ampId} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.ampId', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+              <label className="form-label inline-block w-32">Low-Resistance Ohmmeter:</label>
+              <EquipmentDropdown
+                value={formData.testEquipment.lowResistanceOhmmeter.name}
+                onChange={(value) => handleChange('testEquipment.lowResistanceOhmmeter.name', value)}
+                onSerialChange={(value) => handleChange('testEquipment.lowResistanceOhmmeter.serialNumber', value)}
+                onAmpIdChange={(value) => handleChange('testEquipment.lowResistanceOhmmeter.ampId', value)}
+                options={testEquipmentOptions.lowResistanceOhmmeter}
+                readOnly={!isEditing}
+                className="flex-1"
+              />
+              <label className="form-label inline-block w-32 ml-4">Serial Number:</label>
+              <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              <label className="form-label inline-block w-24 ml-4">AMP ID:</label>
+              <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.ampId} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.ampId', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
             </div>
             {/* Primary Injection Test Set */}
             <div className="flex items-center">
-                <label className="form-label inline-block w-32">Primary Injection Test Set:</label>
-              <input type="text" value={formData.testEquipment.primaryInjectionTestSet.name} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.name', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-32 ml-4">Serial Number:</label>
-              <input type="text" value={formData.testEquipment.primaryInjectionTestSet.serialNumber} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.serialNumber', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
-                <label className="form-label inline-block w-24 ml-4">AMP ID:</label>
-              <input type="text" value={formData.testEquipment.primaryInjectionTestSet.ampId} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.ampId', e.target.value)} readOnly={!isEditing} className="form-input flex-1" />
+              <label className="form-label inline-block w-32">Primary Injection Test Set:</label>
+              <EquipmentDropdown
+                value={formData.testEquipment.primaryInjectionTestSet.name}
+                onChange={(value) => handleChange('testEquipment.primaryInjectionTestSet.name', value)}
+                onSerialChange={(value) => handleChange('testEquipment.primaryInjectionTestSet.serialNumber', value)}
+                onAmpIdChange={(value) => handleChange('testEquipment.primaryInjectionTestSet.ampId', value)}
+                options={testEquipmentOptions.primaryInjectionTestSet}
+                readOnly={!isEditing}
+                className="flex-1"
+              />
+              <label className="form-label inline-block w-32 ml-4">Serial Number:</label>
+              <input type="text" value={formData.testEquipment.primaryInjectionTestSet.serialNumber} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              <label className="form-label inline-block w-24 ml-4">AMP ID:</label>
+              <input type="text" value={formData.testEquipment.primaryInjectionTestSet.ampId} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.ampId', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
             </div>
           </div>
           </div>

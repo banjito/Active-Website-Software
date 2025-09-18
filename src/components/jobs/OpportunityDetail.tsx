@@ -56,7 +56,11 @@ const initialFormData: OpportunityFormData = {
   quoted_amount: '',
   selected_letter_proposal: '',
   reviewed_by: '',
-  prepared_by: ''
+  prepared_by: '',
+  jobsite_location: '',
+  estimated_start_date: '',
+  period_of_performance: '',
+  total_man_hours: '0'
 };
 
 // Add this utility function to handle date formatting consistently
@@ -106,7 +110,8 @@ async function createJobManually(
       title: opportunity.title,
       description: opportunity.description,
       status: 'pending',
-      start_date: new Date().toISOString().substring(0, 10),
+      start_date: (opportunity as any).estimated_start_date || new Date().toISOString().substring(0, 10),
+      site_address: (opportunity as any).jobsite_location || '',
       budget: opportunity.expected_value,
       notes: (opportunity.notes || '') + '\n\nConverted from opportunity: ' + opportunity.quote_number,
       priority: 'medium',
@@ -205,7 +210,11 @@ export default function OpportunityDetail() {
     quoted_amount: '',
     selected_letter_proposal: '',
     reviewed_by: '',
-    prepared_by: ''
+    prepared_by: '',
+    jobsite_location: '',
+    estimated_start_date: '',
+    period_of_performance: '',
+    total_man_hours: '0'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showJobDialog, setShowJobDialog] = useState(false);
@@ -309,6 +318,13 @@ export default function OpportunityDetail() {
     net_30_price: number;
     opportunity_id: string;
   }>>([]);
+  const [availableQuotes, setAvailableQuotes] = useState<Array<{
+    id: string;
+    title: string;
+    totalManHours: number;
+    data: any;
+  }>>([]);
+  const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
 
   // Only fetch when ID or URL params change, use user ID instead of user object to prevent unnecessary re-renders
   const userId = user?.id;
@@ -368,7 +384,13 @@ export default function OpportunityDetail() {
         quoted_amount: (opportunity as any).quoted_amount?.toString() || '',
         selected_letter_proposal: (opportunity as any).selected_letter_proposal || '',
         reviewed_by: (opportunity as any).reviewed_by || '',
-        prepared_by: (opportunity as any).prepared_by || ''
+        prepared_by: (opportunity as any).prepared_by || '',
+        jobsite_location: (opportunity as any).jobsite_location || '',
+        estimated_start_date: (opportunity as any).estimated_start_date 
+          ? (opportunity as any).estimated_start_date.substring(0, 10)
+          : '',
+        period_of_performance: (opportunity as any).period_of_performance || '',
+        total_man_hours: (opportunity as any).total_man_hours?.toString() || '0'
       });
       // Fetch letter proposals for this opportunity
       fetchLetterProposals(opportunity.id);
@@ -401,10 +423,110 @@ export default function OpportunityDetail() {
       console.log('Letter proposals fetched:', data);
       console.log('First letter proposal structure:', data?.[0]);
       setLetterProposals(data || []);
+      
+      // Also fetch quotes for man hours calculation
+      await fetchQuotesForManHours(opportunityId);
     } catch (error) {
       console.error('Error fetching letter proposals:', error);
     }
   }
+
+  // Function to calculate total man hours from quote data
+  const calculateManHoursFromQuoteData = (quoteData: any): number => {
+    if (!quoteData) return 0;
+
+    let totalHours = 0;
+
+    // Calculate from SOV items
+    if (quoteData.sovItems && Array.isArray(quoteData.sovItems)) {
+      totalHours += quoteData.sovItems.reduce((total: number, item: any) => {
+        const quantity = Number(item.quantity) || 0;
+        const laborMen = Number(item.laborMen) || 0;
+        const laborHours = Number(item.laborHours) || 0;
+        return total + (quantity * laborMen * laborHours);
+      }, 0);
+    }
+
+    // Calculate from non-SOV items
+    if (quoteData.nonSovItems && Array.isArray(quoteData.nonSovItems)) {
+      totalHours += quoteData.nonSovItems.reduce((total: number, item: any) => {
+        const quantity = Number(item.quantity) || 0;
+        const laborMen = Number(item.laborMen) || 0;
+        const laborHours = Number(item.laborHours) || 0;
+        return total + (quantity * laborMen * laborHours);
+      }, 0);
+    }
+
+    return totalHours;
+  };
+
+  async function fetchQuotesForManHours(opportunityId: string) {
+    try {
+      console.log('Fetching estimates for man hours calculation:', opportunityId);
+      const { data, error } = await supabase
+        .schema('business')
+        .from('estimates')
+        .select('id, created_at, data, travel_data')
+        .eq('opportunity_id', opportunityId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const processedQuotes = (data || []).map((estimate: any) => {
+        let estimateData = null;
+        let title = `Estimate ${estimate.id?.slice(0, 6)}`;
+        
+        try {
+          estimateData = typeof estimate.data === 'string' ? JSON.parse(estimate.data) : estimate.data;
+          if (estimateData?.title && estimateData.title.trim()) {
+            title = estimateData.title.trim();
+          }
+        } catch (error) {
+          console.error('Error parsing estimate data:', error);
+        }
+
+        const totalManHours = calculateManHoursFromQuoteData(estimateData);
+
+        return {
+          id: estimate.id,
+          title,
+          totalManHours,
+          data: estimateData
+        };
+      });
+
+      setAvailableQuotes(processedQuotes);
+      console.log('Available estimates for man hours:', processedQuotes);
+    } catch (error) {
+      console.error('Error fetching estimates for man hours:', error);
+      setAvailableQuotes([]);
+    }
+  }
+
+  // Handle quote selection changes and recalculate total man hours
+  const handleQuoteSelectionChange = (quoteId: string, isSelected: boolean) => {
+    let newSelectedIds: string[];
+    
+    if (isSelected) {
+      newSelectedIds = [...selectedQuoteIds, quoteId];
+    } else {
+      newSelectedIds = selectedQuoteIds.filter(id => id !== quoteId);
+    }
+    
+    setSelectedQuoteIds(newSelectedIds);
+    
+    // Calculate total man hours from selected quotes
+    const totalHours = newSelectedIds.reduce((total, id) => {
+      const quote = availableQuotes.find(q => q.id === id);
+      return total + (quote?.totalManHours || 0);
+    }, 0);
+    
+    // Update the form data
+    setEditFormData(prev => ({
+      ...prev,
+      total_man_hours: totalHours.toFixed(1)
+    }));
+  };
 
   async function fetchContactsForCustomer(customerId: string) {
     if (!customerId) {
@@ -441,7 +563,7 @@ export default function OpportunityDetail() {
     try {
       // Explicitly select columns to avoid implicit relationship lookups
       const opportunityColumns = 
-        'id, created_at, updated_at, customer_id, contact_id, title, description, status, expected_value, probability, expected_close_date, quote_number, notes, job_id, awarded_date, sales_person, amp_division, subcontractor_agreements, quoted_amount, selected_letter_proposal, reviewed_by, prepared_by';
+        'id, created_at, updated_at, customer_id, contact_id, title, description, status, expected_value, probability, expected_close_date, quote_number, notes, job_id, awarded_date, sales_person, amp_division, subcontractor_agreements, quoted_amount, selected_letter_proposal, reviewed_by, prepared_by, jobsite_location, estimated_start_date, period_of_performance, total_man_hours';
 
       let opportunityData: Opportunity | null = null;
       let primaryId: string | null = null;
@@ -787,7 +909,11 @@ export default function OpportunityDetail() {
         quoted_amount: editFormData.quoted_amount ? parseFloat(editFormData.quoted_amount) : null,
         selected_letter_proposal: editFormData.selected_letter_proposal || null,
         reviewed_by: editFormData.reviewed_by || null,
-        prepared_by: editFormData.prepared_by || null
+        prepared_by: editFormData.prepared_by || null,
+        jobsite_location: editFormData.jobsite_location || null,
+        estimated_start_date: editFormData.estimated_start_date || null,
+        period_of_performance: editFormData.period_of_performance || null,
+        total_man_hours: editFormData.total_man_hours ? parseFloat(editFormData.total_man_hours) : null
       };
       updatePayload.proposal_due_date = proposalDueDate;
 
@@ -814,7 +940,10 @@ export default function OpportunityDetail() {
 
       const error = updateError;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database update error:', error);
+        throw error;
+      }
 
       setIsEditing(false);
       fetchOpportunity();
@@ -926,6 +1055,10 @@ export default function OpportunityDetail() {
       
       setConfirmConvertToJobOpen(false);
       setShowSuccessMessage(`Job successfully created! Job ID: ${newJobId}`);
+      
+      // Refresh the opportunity data to show all updated fields
+      await fetchOpportunity();
+      
       // Auto-hide success message after 5 seconds
       setTimeout(() => setShowSuccessMessage(null), 5000);
     } catch (error) {
@@ -1313,7 +1446,13 @@ export default function OpportunityDetail() {
                         quoted_amount: (opportunity as any).quoted_amount?.toString() || '',
                         selected_letter_proposal: (opportunity as any).selected_letter_proposal || '',
                         reviewed_by: (opportunity as any).reviewed_by || '',
-                        prepared_by: (opportunity as any).prepared_by || ''
+                        prepared_by: (opportunity as any).prepared_by || '',
+                        jobsite_location: (opportunity as any).jobsite_location || '',
+                        estimated_start_date: (opportunity as any).estimated_start_date 
+                          ? (opportunity as any).estimated_start_date.substring(0, 10)
+                          : '',
+                        period_of_performance: (opportunity as any).period_of_performance || '',
+                        total_man_hours: (opportunity as any).total_man_hours?.toString() || '0'
                       });
                       // Fetch contacts for the current customer
                       if (opportunity.customer_id) {
@@ -1736,6 +1875,117 @@ export default function OpportunityDetail() {
                   </div>
                 </div>
 
+                {/* Job Information Section */}
+                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Job Information</h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="jobsite_location" className="block text-sm font-medium text-gray-700 dark:text-white">
+                        Jobsite Location / Address
+                      </label>
+                      <input
+                        type="text"
+                        id="jobsite_location"
+                        name="jobsite_location"
+                        value={editFormData.jobsite_location}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                        placeholder="Enter jobsite address"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="estimated_start_date" className="block text-sm font-medium text-gray-700 dark:text-white">
+                        Estimated Start Date
+                      </label>
+                      <input
+                        type="date"
+                        id="estimated_start_date"
+                        name="estimated_start_date"
+                        value={editFormData.estimated_start_date}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="period_of_performance" className="block text-sm font-medium text-gray-700 dark:text-white">
+                        Period of Performance
+                      </label>
+                      <input
+                        type="text"
+                        id="period_of_performance"
+                        name="period_of_performance"
+                        value={editFormData.period_of_performance}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                        placeholder="e.g., 2 weeks, 30 days"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                        Total Man Hours
+                      </label>
+                      <div className="space-y-3">
+                        {/* Quote Selection */}
+                        {availableQuotes.length > 0 ? (
+                          <div className="border border-gray-300 dark:border-gray-600 rounded-md p-3">
+                            <p className="text-sm font-medium text-gray-700 dark:text-white mb-2">
+                              Select Estimates to Calculate Hours:
+                            </p>
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                              {availableQuotes.map((quote) => (
+                                <label key={quote.id} className="flex items-center space-x-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedQuoteIds.includes(quote.id)}
+                                    onChange={(e) => handleQuoteSelectionChange(quote.id, e.target.checked)}
+                                    className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                                  />
+                                  <span className="text-sm text-gray-700 dark:text-white">
+                                    {quote.title} ({quote.totalManHours.toFixed(1)} hours)
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                            {selectedQuoteIds.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {selectedQuoteIds.length} estimate{selectedQuoteIds.length !== 1 ? 's' : ''} selected
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                            No estimates available. Create an estimate to calculate man hours automatically.
+                          </p>
+                        )}
+                        
+                        {/* Manual Input Field */}
+                        <div>
+                          <label htmlFor="total_man_hours" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                            Total Hours (calculated from selected estimates or enter manually):
+                          </label>
+                          <input
+                            type="number"
+                            id="total_man_hours"
+                            name="total_man_hours"
+                            value={editFormData.total_man_hours}
+                            onChange={handleInputChange}
+                            className="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                            placeholder="0"
+                            min="0"
+                            step="0.1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="mt-5 flex justify-end">
                   <button
                     type="button"
@@ -1976,6 +2226,34 @@ export default function OpportunityDetail() {
                       <p className="text-sm text-gray-500 dark:text-dark-400">Prepared By</p>
                       <p className="text-gray-900 dark:text-dark-900">
                         {(opportunity as any).prepared_by || 'Not specified'}
+                      </p>
+                    </div>
+
+                    {/* Job Information Fields */}
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Jobsite Location</p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {(opportunity as any).jobsite_location || 'Not specified'}
+                      </p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Estimated Start Date</p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {(opportunity as any).estimated_start_date 
+                          ? formatDateSafe((opportunity as any).estimated_start_date)
+                          : 'Not specified'}
+                      </p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Period of Performance</p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {(opportunity as any).period_of_performance || 'Not specified'}
+                      </p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Total Man Hours</p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {(opportunity as any).total_man_hours ? `${(opportunity as any).total_man_hours} hours` : 'Not specified'}
                       </p>
                     </div>
 

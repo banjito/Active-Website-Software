@@ -57,6 +57,10 @@ export interface Opportunity {
   amp_division?: string;
   reviewed_by?: string;
   prepared_by?: string;
+  jobsite_location?: string;
+  estimated_start_date?: string;
+  period_of_performance?: string;
+  total_man_hours?: number;
   subcontractor_agreements?: SubcontractorAgreement[];
 }
 
@@ -77,4 +81,8 @@ export interface OpportunityFormData {
   selected_letter_proposal: string;
   reviewed_by: string;
   prepared_by: string;
+  jobsite_location: string;
+  estimated_start_date: string;
+  period_of_performance: string;
+  total_man_hours: string;
 } 

@@ -505,7 +505,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     async function fetchOpportunityData() {
       try {
         // 1. Fetch Opportunity from business schema
-        const opportunityColumns = 'id, description, customer_id, quote_number';
+        const opportunityColumns = 'id, description, customer_id, contact_id, quote_number';
         const { data: oppData, error: oppError } = await supabase
           .schema('business')
           .from('opportunities')
@@ -535,19 +535,47 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           if (!custError && custData) {
             customerInfo = custData;
           }
-          // Fetch primary contact for this customer
-          const { data: contactList, error: contactError } = await supabase
-            .schema('common')
-            .from('contacts')
-            .select('first_name, last_name, is_primary')
-            .eq('customer_id', oppData.customer_id)
-            .order('is_primary', { ascending: false });
-          if (!contactError && contactList && contactList.length > 0) {
-            // Use primary if available, else first
-            const primary = contactList.find((c: any) => c.is_primary);
-            setContactData(primary || contactList[0]);
+          // Fetch the specific contact linked to the opportunity, not the customer's primary contact
+          if (oppData.contact_id) {
+            const { data: contactInfo, error: contactError } = await supabase
+              .schema('common')
+              .from('contacts')
+              .select('first_name, last_name')
+              .eq('id', oppData.contact_id)
+              .single();
+            if (!contactError && contactInfo) {
+              setContactData(contactInfo);
+            } else {
+              console.warn('Could not fetch opportunity contact, falling back to customer primary contact');
+              // Fallback to customer primary contact if opportunity contact not found
+              const { data: contactList, error: fallbackError } = await supabase
+                .schema('common')
+                .from('contacts')
+                .select('first_name, last_name, is_primary')
+                .eq('customer_id', oppData.customer_id)
+                .order('is_primary', { ascending: false });
+              if (!fallbackError && contactList && contactList.length > 0) {
+                const primary = contactList.find((c: any) => c.is_primary);
+                setContactData(primary || contactList[0]);
+              } else {
+                setContactData(null);
+              }
+            }
           } else {
-            setContactData(null);
+            console.warn('No contact_id on opportunity, using customer primary contact');
+            // No contact_id on opportunity, use customer primary contact
+            const { data: contactList, error: contactError } = await supabase
+              .schema('common')
+              .from('contacts')
+              .select('first_name, last_name, is_primary')
+              .eq('customer_id', oppData.customer_id)
+              .order('is_primary', { ascending: false });
+            if (!contactError && contactList && contactList.length > 0) {
+              const primary = contactList.find((c: any) => c.is_primary);
+              setContactData(primary || contactList[0]);
+            } else {
+              setContactData(null);
+            }
           }
         } else {
           setContactData(null);
@@ -2311,23 +2339,23 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 40px; margin-right: 12px;" />
           <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
         </div>
-        <div class="amp-section">Date: ${dateStr}</div>
+        <div class="amp-section"><b>${dateStr}</b></div>
         <div class="amp-section" style="margin-bottom: 12px;"><b>Letter # ${letterQuoteNumber}</b></div>
         <div>
           ${contactName}<br/>
           ${customer.company_name || 'Company'}<br/>
           ${formatAddressForLetter(customer.address)}<br/>
         </div>
-        <div class="amp-section amp-keep-with-next" style="margin: 16px 0;">Dear Mr./Ms. ${contactName},</div>
+        <div class="amp-section amp-keep-with-next" style="margin: 16px 0;">Dear ${contactName},</div>
         <div class="amp-section">AMP LLC is pleased to offer the following proposal for your consideration.</div>
         <div class="amp-section" style="margin: 16px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at <span style='border-bottom:1px dotted #aaa;'>_______</span></div>
-        <div class="amp-section" style="margin: 16px 0;"><b>NETA Standard:</b>
-          <span id="neta-standard-text" style="margin-left:6px;">${NETA_OPTIONS.find(o => o.value === netaStandard)?.text || '[Select NETA Standard]'}</span>
+        <div class="amp-section" style="margin: 16px 0;">
+          <span id="neta-standard-text">${NETA_OPTIONS.find(o => o.value === netaStandard)?.text || '[Select NETA Standard]'}</span>
         </div>
         <div class="amp-section amp-keep-with-next"><b>Scope</b></div>
         <table class="amp-section" style='width:100%;border-collapse:collapse;margin-bottom:16px;'>
           <thead>
-            <tr><th style='border:1px solid #ccc;padding:4px 12px;text-align:left;'>Name</th><th style='border:1px solid #ccc;padding:4px 12px;text-align:center;'>Quantity</th></tr>
+            <tr><th style='border:1px solid #ccc;padding:4px 12px;text-align:left;'>Item</th><th style='border:1px solid #ccc;padding:4px 12px;text-align:center;'>Quantity</th></tr>
           </thead>
           <tbody>
             ${sovTableRows}
@@ -2348,7 +2376,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           <li>Repairs and/or retests, if required, will be separately quoted.</li>
           <li>All site work delays beyond AMP Quality Energy Services control will be billed in accordance with AMP Quality Energy Services 2025 T&M Rate Sheet.</li>
           <li>Aerial lift for overhead work to be provided by others.</li>
-          <li>Arc flash analysis, short circuit, and coordination study to be provided by others.</li>
+          <li>Arc flash analysis, short circuit, and coordination study to be quoted separately.</li>
           <li>All work performed by AMP will be in accordance with the safety policy attached</li>
         </ol>
         <div class="amp-section-block" style="break-inside: avoid; page-break-inside: avoid;">
@@ -2356,7 +2384,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           <div class="amp-section">This proposal is valid for 120 days.</div>
           <div class="amp-section" style="margin-top: 16px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
           <div class="amp-section" style="margin-top: 16px;">Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</div>
-          <div class="amp-section">Should you have any questions please contact the undersigned.</div>
+          <div class="amp-section" style="margin-top: 16px;">Should you have any questions please contact the undersigned.</div>
         </div>
         <div class="amp-section amp-keep-with-next" style="margin-top: 20px;">Sincerely,</div>
         <div class="amp-section" style="margin: 10px 0 6px 0; min-height: 60px; break-inside: avoid; page-break-inside: avoid;">
@@ -2537,7 +2565,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           <h3 style="font-size: 1.2em; font-weight: bold; margin-bottom: 12px; color: #333; border-bottom: 2px solid #f26722; padding-bottom: 8px;">${headingText}</h3>
           <table style='width:100%;border-collapse:collapse;margin-bottom:16px;'>
             <thead>
-              <tr><th style='border:1px solid #ccc;padding:4px 12px;text-align:left;background-color:#f5f5f5;'>Name</th><th style='border:1px solid #ccc;padding:4px 12px;text-align:center;background-color:#f5f5f5;'>Quantity</th></tr>
+              <tr><th style='border:1px solid #ccc;padding:4px 12px;text-align:left;background-color:#f5f5f5;'>Item</th><th style='border:1px solid #ccc;padding:4px 12px;text-align:center;background-color:#f5f5f5;'>Quantity</th></tr>
             </thead>
             <tbody>
               ${sovTableRows}
@@ -2563,18 +2591,18 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 40px; margin-right: 12px;" />
           <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
         </div>
-        <div>Date: ${dateStr}</div>
+        <div><b>${dateStr}</b></div>
         <div style="margin-bottom: 12px;"><b>Combined Letter # ${(opportunityData as any)?.quote_number || 'Multiple'}</b></div>
         <div>
           ${contactName}<br/>
           ${customer.company_name || 'Company'}<br/>
           ${formatAddressForLetter(customer.address)}<br/>
         </div>
-        <div style="margin: 16px 0;">Dear Mr./Ms. ${contactName},</div>
+        <div style="margin: 16px 0;">Dear ${contactName},</div>
         <div>AMP LLC is pleased to offer the following combined proposal for your consideration, including ${processedQuotes.length} separate quotes.</div>
         <div style="margin: 16px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at <span style='border-bottom:1px dotted #aaa;'>_______</span></div>
-        <div style="margin: 16px 0;"><b>NETA Standard:</b>
-          <span id="neta-standard-text" style="margin-left:6px;">${NETA_OPTIONS.find(o => o.value === netaStandard)?.text || '[Select NETA Standard]'}</span>
+        <div style="margin: 16px 0;">
+          <span id="neta-standard-text">${NETA_OPTIONS.find(o => o.value === netaStandard)?.text || '[Select NETA Standard]'}</span>
         </div>
         <div><b>Combined Scope of Work</b></div>
         ${sovTablesHtml}
@@ -2602,14 +2630,14 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           <li>Repairs and/or retests, if required, will be separately quoted.</li>
           <li>All site work delays beyond AMP Quality Energy Services control will be billed in accordance with AMP Quality Energy Services 2025 T&M Rate Sheet.</li>
           <li>Aerial lift for overhead work to be provided by others.</li>
-          <li>Arc flash analysis, short circuit, and coordination study to be provided by others.</li>
+          <li>Arc flash analysis, short circuit, and coordination study to be quoted separately.</li>
           <li>All work performed by AMP will be in accordance with the safety policy attached</li>
         </ol>
         <div style="margin-top: 24px;"><b>Conclusion</b></div>
         <div>This proposal is valid for 120 days.</div>
         <div style="margin-top: 16px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
         <div style="margin-top: 16px;">Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</div>
-        <div>Should you have any questions please contact the undersigned.</div>
+        <div style="margin-top: 16px;">Should you have any questions please contact the undersigned.</div>
         <div style="margin-top: 20px;">Sincerely,</div>
         <div style="margin: 10px 0 6px 0; min-height: 60px;">
           <img src="${signatureUrl}" alt="Signature" style="height: 60px; max-width: 280px; object-fit: contain;" onerror="this.style.display='none'"/>

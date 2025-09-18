@@ -1614,6 +1614,16 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     }));
   };
 
+  const handleClearRow = (section: 'sov' | 'nonSov', index: number) => {
+    const itemsKey = section === 'sov' ? 'sovItems' : 'nonSovItems';
+    const newItems = [...data[itemsKey]];
+    newItems[index] = {...EMPTY_LINE_ITEM};
+    setData(prev => ({
+      ...prev,
+      [itemsKey]: newItems
+    }));
+  };
+
   const toggleTravel = () => {
     setShowTravel(!showTravel);
   };
@@ -2334,22 +2344,22 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
 
     const signatureUrl = (window as any)?.AMP_SIGNATURE_URL || '/img/brian-rodgers-signature.jpg';
     setLetterHtml(`
-      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; min-height: 1100px; line-height: 1.35;">
-        <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 8px; margin-bottom: 24px;">
-          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 40px; margin-right: 12px;" />
-          <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
+      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.2;">
+        <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 6px; margin-bottom: 12px;">
+          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 36px; margin-right: 10px;" />
+          <span style="font-size: 1.1em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
         </div>
         <div class="amp-section"><b>${dateStr}</b></div>
-        <div class="amp-section" style="margin-bottom: 12px;"><b>Letter # ${letterQuoteNumber}</b></div>
+        <div class="amp-section" style="margin-bottom: 8px;"><b>Letter # ${letterQuoteNumber}</b></div>
         <div>
           ${contactName}<br/>
           ${customer.company_name || 'Company'}<br/>
           ${formatAddressForLetter(customer.address)}<br/>
         </div>
-        <div class="amp-section amp-keep-with-next" style="margin: 16px 0;">Dear ${contactName},</div>
+        <div class="amp-section" style="margin: 8px 0;">Dear ${contactName},</div>
         <div class="amp-section">AMP LLC is pleased to offer the following proposal for your consideration.</div>
-        <div class="amp-section" style="margin: 16px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at <span style='border-bottom:1px dotted #aaa;'>_______</span></div>
-        <div class="amp-section" style="margin: 16px 0;">
+        <div class="amp-section" style="margin: 8px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at <span style='border-bottom:1px dotted #aaa;'>_______</span></div>
+        <div class="amp-section" style="margin: 8px 0;">
           <span id="neta-standard-text">${NETA_OPTIONS.find(o => o.value === netaStandard)?.text || '[Select NETA Standard]'}</span>
         </div>
         <div class="amp-section amp-keep-with-next"><b>Scope</b></div>
@@ -2361,16 +2371,16 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             ${sovTableRows}
           </tbody>
         </table>
-        <div class="amp-section amp-keep-with-next" style="margin-top: 24px;"><b>Pricing & Terms</b></div>
+        <div class="amp-section" style="margin-top: 12px;"><b>Pricing & Terms</b></div>
         <div class="amp-section">Mobilization costs of ${mobilization} shall be paid before the first day of work in addition to:</div>
-        <ul class="amp-section" style="margin-top: 8px;">
+        <ul class="amp-section" style="margin: 4px 0;">
           <li>Option 1: Where NET 30 Terms are applicable and agreed upon: <b>${option1}</b></li>
           <li>Option 2: Where NET 60 Terms are applicable and agreed upon: <b>${option2}</b></li>
           <li>Option 3: Where NET 90 Terms are applicable and agreed upon: <b>${option3}</b></li>
         </ul>
         <div class="amp-section">AMP LLC does not offer or accept terms greater than 90 days. No retainage is allowed. This work is subject to progress billing where applicable.</div>
-        <div class="amp-section amp-keep-with-next" style="margin-top: 12px;">This price is based upon the following:</div>
-        <ol class="amp-section" style="margin-left: 20px;">
+        <div class="amp-section" style="margin-top: 8px;">This price is based upon the following:</div>
+        <ol class="amp-section" style="margin: 4px 0 4px 20px;">
           <li>The schedule for this work will be mutually determined.</li>
           <li>Work to be performed during normal working hours, Monday through Friday.</li>
           <li>Repairs and/or retests, if required, will be separately quoted.</li>
@@ -2379,32 +2389,29 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           <li>Arc flash analysis, short circuit, and coordination study to be quoted separately.</li>
           <li>All work performed by AMP will be in accordance with the safety policy attached</li>
         </ol>
-        <div class="amp-section-block" style="break-inside: avoid; page-break-inside: avoid;">
-          <div class="amp-section amp-keep-with-next" style="margin-top: 24px;"><b>Conclusion</b></div>
-          <div class="amp-section">This proposal is valid for 120 days.</div>
-          <div class="amp-section" style="margin-top: 16px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
-          <div class="amp-section" style="margin-top: 16px;">Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</div>
-          <div class="amp-section" style="margin-top: 16px;">Should you have any questions please contact the undersigned.</div>
+        <div style="margin-top: 12px;"><b>Conclusion</b></div>
+        <div>This proposal is valid for 120 days.</div>
+        <div style="margin-top: 8px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
+        <div style="margin-top: 8px;">Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</div>
+        <div style="margin-top: 8px;">Should you have any questions please contact the undersigned.</div>
+        <div style="margin-top: 12px;">Sincerely,</div>
+        <div style="margin: 4px 0 2px 0;">
+          <img src="${signatureUrl}" alt="Signature" style="height: 40px; max-width: 280px; object-fit: contain;" onerror="this.style.display='none'"/>
         </div>
-        <div class="amp-section amp-keep-with-next" style="margin-top: 20px;">Sincerely,</div>
-        <div class="amp-section" style="margin: 10px 0 6px 0; min-height: 60px; break-inside: avoid; page-break-inside: avoid;">
-          <img src="${signatureUrl}" alt="Signature" style="height: 60px; max-width: 280px; object-fit: contain;" onerror="this.style.display='none'"/>
-        </div>
-        <div class="amp-section">Brian Rodgers</div>
-        <div class="amp-section">Chief Executive Officer</div>
-        <div style="text-align:center; margin-top: 16px; font-size: 0.95em; color: #444;">END OF LETTER</div>
-        <div class="amp-footer" style="position:absolute;left:0;right:0;bottom:0;width:100%;font-size:0.9em;color:#555;border-top:1px solid #ccc;padding:8px 0;text-align:center;background:white;">P.O. Box 526 | Huntsville, Alabama 35804 | (256) 513-8255</div>
-        <div style="page-break-after: always; margin-top: 40px;"></div>
-        <div style="margin-top: 32px;">
-          <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 8px; margin-bottom: 24px;">
-            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 40px; margin-right: 12px;" />
-            <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
+        <div>Brian Rodgers</div>
+        <div>Chief Executive Officer</div>
+        <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
+        <div style="width:100%;font-size:0.85em;color:#555;border-top:1px solid #ccc;padding:4px 0;text-align:center;margin-top:12px;">P.O. Box 526 | Huntsville, Alabama 35804 | (256) 513-8255</div>
+        <div style="margin-top: 16px;">
+          <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 4px; margin-bottom: 8px;">
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 32px; margin-right: 8px;" />
+            <span style="font-size: 1.0em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
           </div>
-          <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 16px;">Safety Policy on Jobsites</div>
-          <div style="font-weight: bold; margin-bottom: 8px;">LOCKOUT / TAGOUT</div>
+          <div style="font-size: 1.0em; font-weight: bold; margin-bottom: 6px;">Safety Policy on Jobsites</div>
+          <div style="font-weight: bold; margin-bottom: 4px;">LOCKOUT / TAGOUT</div>
           <div>On a jobsite where the customer has an established Lockout program or there is a lockout procedure already established, AMP employees will follow local Lockout program provided that it does not expose the employee to greater risk than the AMP procedure below.</div>
-          <div style="margin-top: 12px;">In the absence of a local lockout procedure, AMP employees will follow the following procedure.</div>
-          <ul style="margin-left: 20px;">
+          <div style="margin-top: 4px;">In the absence of a local lockout procedure, AMP employees will follow the following procedure.</div>
+          <ul style="margin: 4px 0 4px 16px;">
             <li>The employees shall be notified that a lockout (tagout) system is going to be implemented and the reason therefore. The qualified employee implementing the lockout (tagout) shall know the disconnecting means location for all sources of electrical energy and the location of all sources of potential energy. The qualified person shall be knowledgeable of hazards associated with all energy sources.</li>
             <li>If the electrical supply is energized, the qualified person shall deenergize and disconnect the electric supply and relieve all stored energy.</li>
             <li>Lockout (tagout) all disconnecting means with lockout (tagout) devices.</li>
@@ -2416,11 +2423,10 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             <li>Where required, install grounding equipment/conductor device on the phase conductors or circuit parts, to eliminate induced voltage or stored energy, before touching them. Where it has been determined that contact with other exposed energized conductors or circuit parts is possible, apply ground connecting devices rated for the available fault duty.</li>
             <li>The equipment and/or electrical source is now locked out (tagged out).</li>
           </ul>
-          <div class="print-page-break"></div>
-          <div style="margin-top: 12px; font-weight: bold;">Procedure Involving More Than One Person.</div>
-          <div class="procedure-section">For a simple lockout/tagout and where more than one person is involved in the job or task, each person shall install his or her own personal lockout (tagout) device.</div>
-          <div style="margin-top: 16px;" class="procedure-section">Safety is the utmost priority at AMP Quality Energy Services and we reserve the right to stop work on any project that our technicians deem as unsafe. AMP Quality Energy Services technicians follow NFPA 70E, ANSI, NETA, and OSHA safety guidelines. Lock out/Tag out of all energy sources is required prior to working on an electrical system. Any exceptions to the above-mentioned specifications will need to be made in writing prior to shut-down for our safety officer's evaluation. Drop hazard mitigation shall be implemented while working at heights.</div>
-          <div style="margin-top: 32px; font-size: 1.1em; font-weight: bold; text-align: center;">END OF SAFETY POLICY</div>
+          <div style="margin-top: 6px; font-weight: bold;">Procedure Involving More Than One Person.</div>
+          <div>For a simple lockout/tagout and where more than one person is involved in the job or task, each person shall install his or her own personal lockout (tagout) device.</div>
+          <div style="margin-top: 8px;">Safety is the utmost priority at AMP Quality Energy Services and we reserve the right to stop work on any project that our technicians deem as unsafe. AMP Quality Energy Services technicians follow NFPA 70E, ANSI, NETA, and OSHA safety guidelines. Lock out/Tag out of all energy sources is required prior to working on an electrical system. Any exceptions to the above-mentioned specifications will need to be made in writing prior to shut-down for our safety officer's evaluation. Drop hazard mitigation shall be implemented while working at heights.</div>
+          <div style="margin-top: 12px; font-size: 1.0em; font-weight: bold; text-align: center;">END OF SAFETY POLICY</div>
         </div>
       </div>
     `);
@@ -2557,7 +2563,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const scopeOption3 = formatCurrency(Math.ceil(processedQuote.finalValue * paymentTermFactors.net90));
       
       return `
-        <div class="amp-scope-block" style="margin-bottom: 32px; border: 1px solid #ddd; border-radius: 8px; padding: 16px; background-color: #fafafa; break-inside: avoid; page-break-inside: avoid;">
+        <div class="amp-scope-block" style="margin-bottom: 16px; border: 1px solid #ddd; border-radius: 6px; padding: 12px; background-color: #fafafa;">
           <div class="amp-scope-controls print-hidden" contenteditable="false" style="display:flex;gap:6px;justify-content:flex-end;margin:-8px -8px 8px -8px;padding:6px 8px;">
             <button class="move-up" aria-label="Move scope up" title="Move up" style="border:1px solid #e5e7eb;background:#fff;border-radius:6px;padding:4px 8px;cursor:pointer;">▲</button>
             <button class="move-down" aria-label="Move scope down" title="Move down" style="border:1px solid #e5e7eb;background:#fff;border-radius:6px;padding:4px 8px;cursor:pointer;">▼</button>
@@ -2586,29 +2592,29 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     const signatureUrl = (window as any)?.AMP_SIGNATURE_URL || '/img/brian-rodgers-signature.jpg';
     
     setLetterHtml(`
-      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; min-height: 1100px; line-height: 1.35;">
-        <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 8px; margin-bottom: 24px;">
-          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 40px; margin-right: 12px;" />
-          <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
+      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.2;">
+        <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 6px; margin-bottom: 12px;">
+          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 36px; margin-right: 10px;" />
+          <span style="font-size: 1.1em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
         </div>
         <div><b>${dateStr}</b></div>
-        <div style="margin-bottom: 12px;"><b>Combined Letter # ${(opportunityData as any)?.quote_number || 'Multiple'}</b></div>
+        <div style="margin-bottom: 8px;"><b>Combined Letter # ${(opportunityData as any)?.quote_number || 'Multiple'}</b></div>
         <div>
           ${contactName}<br/>
           ${customer.company_name || 'Company'}<br/>
           ${formatAddressForLetter(customer.address)}<br/>
         </div>
-        <div style="margin: 16px 0;">Dear ${contactName},</div>
+        <div style="margin: 8px 0;">Dear ${contactName},</div>
         <div>AMP LLC is pleased to offer the following combined proposal for your consideration, including ${processedQuotes.length} separate quotes.</div>
-        <div style="margin: 16px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at <span style='border-bottom:1px dotted #aaa;'>_______</span></div>
-        <div style="margin: 16px 0;">
+        <div style="margin: 8px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at <span style='border-bottom:1px dotted #aaa;'>_______</span></div>
+        <div style="margin: 8px 0;">
           <span id="neta-standard-text">${NETA_OPTIONS.find(o => o.value === netaStandard)?.text || '[Select NETA Standard]'}</span>
         </div>
         <div><b>Combined Scope of Work</b></div>
         ${sovTablesHtml}
         
-        <div class="amp-combined-summary" style="margin-top: 32px; border: 2px solid #f26722; border-radius: 8px; padding: 20px; background-color: #fff8f5; break-inside: avoid; page-break-inside: avoid;">
-          <h3 style="font-size: 1.3em; font-weight: bold; margin-bottom: 16px; color: #f26722; text-align: center;">COMBINED PRICING SUMMARY</h3>
+        <div class="amp-combined-summary" style="margin-top: 16px; border: 2px solid #f26722; border-radius: 6px; padding: 12px; background-color: #fff8f5;">
+          <h3 style="font-size: 1.1em; font-weight: bold; margin-bottom: 8px; color: #f26722; text-align: center;">COMBINED PRICING SUMMARY</h3>
           
           <div style="text-align: center;">
             <h4 style="font-size: 1.2em; font-weight: bold; margin-bottom: 16px; color: #f26722;">GRAND TOTAL COMBINED PRICING:</h4>
@@ -2639,24 +2645,22 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         <div style="margin-top: 16px;">Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</div>
         <div style="margin-top: 16px;">Should you have any questions please contact the undersigned.</div>
         <div style="margin-top: 20px;">Sincerely,</div>
-        <div style="margin: 10px 0 6px 0; min-height: 60px;">
-          <img src="${signatureUrl}" alt="Signature" style="height: 60px; max-width: 280px; object-fit: contain;" onerror="this.style.display='none'"/>
+        <div style="margin: 4px 0 2px 0;">
+          <img src="${signatureUrl}" alt="Signature" style="height: 40px; max-width: 280px; object-fit: contain;" onerror="this.style.display='none'"/>
         </div>
         <div>Brian Rodgers</div>
         <div>Chief Executive Officer</div>
-        <div style="text-align:center; margin-top: 16px; font-size: 0.95em; color: #444;">END OF LETTER</div>
-        <div class="amp-footer" style="position:absolute;left:0;right:0;bottom:0;width:100%;font-size:0.9em;color:#555;border-top:1px solid #ccc;padding:8px 0;text-align:center;background:white;">P.O. Box 526 | Huntsville, Alabama 35804 | (256) 513-8255</div>
-        <div style="page-break-after: always; margin-top: 40px;"></div>
-        <div style="margin-top: 32px;">
-          <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 8px; margin-bottom: 24px;">
-            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 40px; margin-right: 12px;" />
-            <span style="font-size: 1.2em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
+        <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
+        <div style="margin-top: 8px;">
+          <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 4px; margin-bottom: 8px;">
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 32px; margin-right: 8px;" />
+            <span style="font-size: 1.0em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
           </div>
-          <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 16px;">Safety Policy on Jobsites</div>
-          <div style="font-weight: bold; margin-bottom: 8px;">LOCKOUT / TAGOUT</div>
+          <div style="font-size: 1.0em; font-weight: bold; margin-bottom: 6px;">Safety Policy on Jobsites</div>
+          <div style="font-weight: bold; margin-bottom: 4px;">LOCKOUT / TAGOUT</div>
           <div>On a jobsite where the customer has an established Lockout program or there is a lockout procedure already established, AMP employees will follow local Lockout program provided that it does not expose the employee to greater risk than the AMP procedure below.</div>
-          <div style="margin-top: 12px;">In the absence of a local lockout procedure, AMP employees will follow the following procedure.</div>
-          <ul style="margin-left: 20px;">
+          <div style="margin-top: 4px;">In the absence of a local lockout procedure, AMP employees will follow the following procedure.</div>
+          <ul style="margin: 4px 0 4px 16px;">
             <li>The employees shall be notified that a lockout (tagout) system is going to be implemented and the reason therefore. The qualified employee implementing the lockout (tagout) shall know the disconnecting means location for all sources of electrical energy and the location of all sources of potential energy. The qualified person shall be knowledgeable of hazards associated with all energy sources.</li>
             <li>If the electrical supply is energized, the qualified person shall deenergize and disconnect the electric supply and relieve all stored energy.</li>
             <li>Lockout (tagout) all disconnecting means with lockout (tagout) devices.</li>
@@ -2668,11 +2672,10 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             <li>Where required, install grounding equipment/conductor device on the phase conductors or circuit parts, to eliminate induced voltage or stored energy, before touching them. Where it has been determined that contact with other exposed energized conductors or circuit parts is possible, apply ground connecting devices rated for the available fault duty.</li>
             <li>The equipment and/or electrical source is now locked out (tagged out).</li>
           </ul>
-          <div class="print-page-break"></div>
-          <div style="margin-top: 12px; font-weight: bold;">Procedure Involving More Than One Person.</div>
-          <div class="procedure-section">For a simple lockout/tagout and where more than one person is involved in the job or task, each person shall install his or her own personal lockout (tagout) device.</div>
-          <div style="margin-top: 16px;" class="procedure-section">Safety is the utmost priority at AMP Quality Energy Services and we reserve the right to stop work on any project that our technicians deem as unsafe. AMP Quality Energy Services technicians follow NFPA 70E, ANSI, NETA, and OSHA safety guidelines. Lock out/Tag out of all energy sources is required prior to working on an electrical system. Any exceptions to the above-mentioned specifications will need to be made in writing prior to shut-down for our safety officer's evaluation. Drop hazard mitigation shall be implemented while working at heights.</div>
-          <div style="margin-top: 32px; font-size: 1.1em; font-weight: bold; text-align: center;">END OF SAFETY POLICY</div>
+          <div style="margin-top: 6px; font-weight: bold;">Procedure Involving More Than One Person.</div>
+          <div>For a simple lockout/tagout and where more than one person is involved in the job or task, each person shall install his or her own personal lockout (tagout) device.</div>
+          <div style="margin-top: 8px;">Safety is the utmost priority at AMP Quality Energy Services and we reserve the right to stop work on any project that our technicians deem as unsafe. AMP Quality Energy Services technicians follow NFPA 70E, ANSI, NETA, and OSHA safety guidelines. Lock out/Tag out of all energy sources is required prior to working on an electrical system. Any exceptions to the above-mentioned specifications will need to be made in writing prior to shut-down for our safety officer's evaluation. Drop hazard mitigation shall be implemented while working at heights.</div>
+          <div style="margin-top: 12px; font-size: 1.0em; font-weight: bold; text-align: center;">END OF SAFETY POLICY</div>
         </div>
       </div>
     `);
@@ -2702,24 +2705,14 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             text-align: center;
             background: white;
           }
-          /* Keep the combined pricing card together */
-          .amp-combined-summary { break-inside: avoid; page-break-inside: avoid; }
           /* Hide the dropdown, keep the sentence */
           #neta-standard-select { display: none !important; }
           /* Hide scope reordering controls in print */
           .amp-scope-controls { display: none !important; }
-          /* Avoid breaking inside key blocks only */
-          .amp-scope-block,
-          .amp-section,
-          table, thead, tbody, tr, td, th,
-          .procedure-section { break-inside: avoid; page-break-inside: avoid; }
-          /* Keep headings together with the content that follows */
-          .amp-keep-with-next { break-after: avoid; page-break-after: avoid; }
           /* Reasonable widows/orphans to reduce awkward splits */
           p { orphans: 2; widows: 2; }
-          /* Ensure images scale and don't force weird breaks */
-          img { max-width: 100%; height: auto; page-break-inside: avoid; }
-          .print-page-break { page-break-before: always; break-before: page; }
+          /* Ensure images scale properly */
+          img { max-width: 100%; height: auto; }
         }
         /* Signature should render well */
         img[alt="Signature"] { max-height: 60px; }
@@ -3313,6 +3306,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                           <th style={styles.tableHeader}>LABOR TOTAL</th>
                           <th style={styles.tableHeader}>SOV ITEM PRICE</th>
                           <th style={styles.tableHeader}>NOTES</th>
+                          <th style={styles.tableHeader}>CLEAR</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -3495,6 +3489,26 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                                   readOnly={isViewMode}
                                 />
                               </td>
+                              <td style={styles.tableCell}>
+                                {!isViewMode && (
+                                  <button
+                                    onClick={() => handleClearRow('sov', index)}
+                                    style={{
+                                      backgroundColor: '#f87171',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '4px',
+                                      padding: '4px 8px',
+                                      fontSize: '12px',
+                                      cursor: 'pointer',
+                                      fontWeight: '500'
+                                    }}
+                                    title="Clear this row"
+                                  >
+                                    Clear
+                                  </button>
+                                )}
+                              </td>
                             </tr>
                           );
                         })}
@@ -3540,6 +3554,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                           <th style={styles.tableHeader}>LABOR UNIT</th>
                           <th style={styles.tableHeader}>LABOR TOTAL</th>
                           <th style={styles.tableHeader}>NOTES</th>
+                          <th style={styles.tableHeader}>CLEAR</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -3656,6 +3671,26 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                                   onChange={(e) => handleItemChange('nonSov', index, 'notes', e.target.value)}
                                   readOnly={isViewMode}
                                 />
+                              </td>
+                              <td style={styles.tableCell}>
+                                {!isViewMode && (
+                                  <button
+                                    onClick={() => handleClearRow('nonSov', index)}
+                                    style={{
+                                      backgroundColor: '#f87171',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '4px',
+                                      padding: '4px 8px',
+                                      fontSize: '12px',
+                                      cursor: 'pointer',
+                                      fontWeight: '500'
+                                    }}
+                                    title="Clear this row"
+                                  >
+                                    Clear
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           );

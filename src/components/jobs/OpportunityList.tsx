@@ -121,7 +121,7 @@ export default function OpportunityList() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
-  const [sortField, setSortField] = useState<'quote_number' | 'expected_close_date'>('quote_number');
+  const [sortField, setSortField] = useState<'quote_number' | 'expected_close_date' | 'proposal_due_date'>('quote_number');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isHeaderDraggingRef = useRef<boolean>(false);
@@ -423,6 +423,10 @@ export default function OpportunityList() {
             const an = parseInt(String(a.quote_number ?? '0'), 10) || 0;
             const bn = parseInt(String(b.quote_number ?? '0'), 10) || 0;
             return (an - bn) * dir;
+          } else if (sortField === 'proposal_due_date') {
+            const ad = a.proposal_due_date ? new Date(a.proposal_due_date).getTime() : 0;
+            const bd = b.proposal_due_date ? new Date(b.proposal_due_date).getTime() : 0;
+            return (ad - bd) * dir;
           } else {
             const ad = a.expected_close_date ? new Date(a.expected_close_date).getTime() : 0;
             const bd = b.expected_close_date ? new Date(b.expected_close_date).getTime() : 0;
@@ -473,11 +477,23 @@ export default function OpportunityList() {
           const an = parseInt(String(a.quote_number ?? '0'), 10) || 0;
           const bn = parseInt(String(b.quote_number ?? '0'), 10) || 0;
           return (an - bn) * dir;
-        } else {
-          const ad = a.expected_close_date ? new Date(a.expected_close_date).getTime() : 0;
-          const bd = b.expected_close_date ? new Date(b.expected_close_date).getTime() : 0;
-          return (ad - bd) * dir;
         }
+        if (sortField === 'proposal_due_date') {
+          const ad = a?.proposal_due_date ? new Date(a.proposal_due_date).getTime() : 0;
+          const bd = b?.proposal_due_date ? new Date(b.proposal_due_date).getTime() : 0;
+          if (ad !== bd) return (ad - bd) * dir;
+          // Tie-breaker on quote number for deterministic order
+          const an = parseInt(String(a.quote_number ?? '0'), 10) || 0;
+          const bn = parseInt(String(b.quote_number ?? '0'), 10) || 0;
+          return (an - bn) * dir;
+        }
+        // Default: sort by opportunity date (expected_close_date)
+        const ad = a?.expected_close_date ? new Date(a.expected_close_date).getTime() : 0;
+        const bd = b?.expected_close_date ? new Date(b.expected_close_date).getTime() : 0;
+        if (ad !== bd) return (ad - bd) * dir;
+        const an = parseInt(String(a.quote_number ?? '0'), 10) || 0;
+        const bn = parseInt(String(b.quote_number ?? '0'), 10) || 0;
+        return (an - bn) * dir;
       });
       return copy;
     });
@@ -870,11 +886,12 @@ export default function OpportunityList() {
               <label className="text-sm text-gray-600 dark:text-dark-400">Sort by</label>
               <select
                 value={sortField}
-                onChange={(e) => setSortField(e.target.value as 'quote_number' | 'expected_close_date')}
+                onChange={(e) => setSortField(e.target.value as 'quote_number' | 'expected_close_date' | 'proposal_due_date')}
                 className="rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               >
                 <option value="quote_number">Letter Number</option>
-                <option value="expected_close_date">Due Date</option>
+                <option value="expected_close_date">Expected Close Date</option>
+                <option value="proposal_due_date">Proposal Due Date</option>
               </select>
               <select
                 value={sortDirection}
@@ -988,7 +1005,7 @@ export default function OpportunityList() {
                     Proposal Due
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
-                    Due Date
+                    Expected Close Date
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
                     Customer
@@ -1496,8 +1513,8 @@ export default function OpportunityList() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">
-                  Opportunity Date
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Expected Close Date
                 </label>
                 <input
                   type="date"

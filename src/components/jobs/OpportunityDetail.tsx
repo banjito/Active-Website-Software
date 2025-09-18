@@ -2208,14 +2208,7 @@ export default function OpportunityDetail() {
                         </p>
                       </div>
                     )}
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Proposal Due Date</p>
-                      <p className="text-gray-900 dark:text-dark-900">
-                        {opportunity.proposal_due_date
-                          ? formatDateSafe(opportunity.proposal_due_date)
-                          : 'Not specified'}
-                      </p>
-                    </div>
+                    {/* Removed duplicate Proposal Due Date block (already shown above) */}
                     <div className="mb-4">
                       <p className="text-sm text-gray-500 dark:text-dark-400">Reviewed By</p>
                       <p className="text-gray-900 dark:text-dark-900">

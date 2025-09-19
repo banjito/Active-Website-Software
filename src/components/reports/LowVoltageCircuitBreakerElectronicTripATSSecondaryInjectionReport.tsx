@@ -973,35 +973,64 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
       <h2 className="hidden print:block text-xl font-semibold mb-2 text-black border-b border-black pb-1">Electrical Tests - Insulation Resistance</h2>
       <div className="hidden print:block mb-1">
         <div className="text-right text-xs mb-1">Test Voltage: {formData.insulationResistance.testVoltage}</div>
-        <table className="w-full border-collapse border border-gray-300 print:border-black text-xs">
+        <table className="w-full border-collapse border border-gray-300 print:border-black text-xs table-fixed insulation-resistance-print-table">
+          <colgroup>
+            <col style={{ width: '12%' }} />  {/* Pole to... - reduced */}
+            <col style={{ width: '15%' }} />  {/* Measured P1 - increased */}
+            <col style={{ width: '15%' }} />  {/* Measured P2 - increased */}
+            <col style={{ width: '15%' }} />  {/* Measured P3 - increased */}
+            <col style={{ width: '15%' }} />  {/* Corrected P1 - increased */}
+            <col style={{ width: '15%' }} />  {/* Corrected P2 - increased */}
+            <col style={{ width: '15%' }} />  {/* Corrected P3 - increased */}
+            <col style={{ width: '8%' }} />   {/* Units - reduced */}
+          </colgroup>
           <thead className="bg-gray-50">
             <tr>
-              <th className="border border-gray-300 print:border-black px-1 py-1 text-left text-xs font-medium">Test</th>
-              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium">Measured Value</th>
-              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium">Temp Corrected</th>
-              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium">Unit</th>
-              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium">Min Value</th>
-              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium">Result</th>
+              <th className="border border-gray-300 print:border-black px-1 py-1 text-left text-xs font-medium" rowSpan={2}>Pole to...</th>
+              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium" colSpan={3}>Measured Values</th>
+              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium" colSpan={3}>Temperature Corrected</th>
+              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium" rowSpan={2}>Units</th>
+            </tr>
+            <tr>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium" style={{textAlign: 'center'}}>P1</th>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium" style={{textAlign: 'center'}}>P2</th>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium" style={{textAlign: 'center'}}>P3</th>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium" style={{textAlign: 'center'}}>P1</th>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium" style={{textAlign: 'center'}}>P2</th>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium" style={{textAlign: 'center'}}>P3</th>
             </tr>
           </thead>
           <tbody className="bg-white">
-            {[
-              { label: 'Phase A to Ground', key: 'phaseAToGround' },
-              { label: 'Phase B to Ground', key: 'phaseBToGround' },
-              { label: 'Phase C to Ground', key: 'phaseCToGround' },
-              { label: 'Phase A to B', key: 'phaseAToB' },
-              { label: 'Phase B to C', key: 'phaseBToC' },
-              { label: 'Phase C to A', key: 'phaseCToA' }
-            ].map((test) => (
-              <tr key={test.key}>
-                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs">{test.label}</td>
-                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance[test.key]?.measured || ''}</td>
-                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance[test.key]?.corrected || ''}</td>
-                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance.unit || ''}</td>
-                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance[test.key]?.minValue || ''}</td>
-                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance[test.key]?.result || ''}</td>
-              </tr>
-            ))}
+            <tr>
+              <td className="border border-gray-300 print:border-black px-1 py-1 text-xs">Pole to Pole (Closed)</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.measured.poleToPole.p1p2 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.measured.poleToPole.p2p3 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.measured.poleToPole.p3p1 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.corrected.poleToPole.p1p2 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.corrected.poleToPole.p2p3 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.corrected.poleToPole.p3p1 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance.unit || ''}</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 print:border-black px-1 py-1 text-xs">Pole to Frame (Closed)</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.measured.poleToFrame.p1 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.measured.poleToFrame.p2 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.measured.poleToFrame.p3 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.corrected.poleToFrame.p1 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.corrected.poleToFrame.p2 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.corrected.poleToFrame.p3 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance.unit || ''}</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 print:border-black px-1 py-1 text-xs">Line to Load (Open)</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.measured.lineToLoad.p1 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.measured.lineToLoad.p2 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.measured.lineToLoad.p3 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.corrected.lineToLoad.p1 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.corrected.lineToLoad.p2 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.insulationResistance.corrected.lineToLoad.p3 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance.unit || ''}</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -2227,6 +2256,11 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             font-size: 6px !important;
             line-height: 1.1 !important;
             height: auto !important;
+          }
+          
+          /* Force center alignment for insulation resistance table headers */
+          .insulation-resistance-print-table th {
+            text-align: center !important;
           }
           /* Ensure last table on page doesn't get clipped by bottom margin */
           .secondary-injection-table { margin-bottom: 0 !important; }

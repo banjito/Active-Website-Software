@@ -634,54 +634,89 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
     }));
   };
   
+  // Helper function for temperature correction calculation
+  const calculateCorrectedValue = (value: string, tcf: number): string => {
+    if (value === "" || value === null || value === undefined) {
+        return "";
+    }
+    
+    // If value contains comparison operators (< or >), just copy it as-is
+    if (value.includes('<') || value.includes('>')) {
+      return value;
+    }
+    
+    // Check if it's a valid number
+    if (isNaN(Number(value))) {
+      return "";
+    }
+    
+    const numericValue = parseFloat(value);
+    // Handle cases where tcf might be zero or invalid
+    if (!tcf || tcf === 0) return numericValue.toFixed(2); 
+    return (numericValue * tcf).toFixed(2);
+  };
+
   // --- Insulation Resistance Calculation ---
   // Calculate temperature corrected values whenever measured values or temperature changes
   useEffect(() => {
-    if (!isEditing) return; // Only calculate in edit mode
-
-    const calculateCorrectedValue = (value: string): string => {
-      if (value === "" || value === null || value === undefined || isNaN(Number(value))) {
-          return "";
-      }
-      const numericValue = parseFloat(value);
-      const tcf = formData.temperature.tcf;
-      // Handle cases where tcf might be zero or invalid
-      if (!tcf || tcf === 0) return numericValue.toFixed(2); 
-      return (numericValue * tcf).toFixed(2);
-    };
-
+    // Always calculate corrected values, regardless of edit mode
     const newCorrected = {
       poleToPole: {
-        p1p2: calculateCorrectedValue(formData.insulationResistance.measured.poleToPole.p1p2),
-        p2p3: calculateCorrectedValue(formData.insulationResistance.measured.poleToPole.p2p3),
-        p3p1: calculateCorrectedValue(formData.insulationResistance.measured.poleToPole.p3p1),
+        p1p2: calculateCorrectedValue(formData.insulationResistance.measured.poleToPole.p1p2, formData.temperature.tcf),
+        p2p3: calculateCorrectedValue(formData.insulationResistance.measured.poleToPole.p2p3, formData.temperature.tcf),
+        p3p1: calculateCorrectedValue(formData.insulationResistance.measured.poleToPole.p3p1, formData.temperature.tcf),
       },
       poleToFrame: {
-        p1: calculateCorrectedValue(formData.insulationResistance.measured.poleToFrame.p1),
-        p2: calculateCorrectedValue(formData.insulationResistance.measured.poleToFrame.p2),
-        p3: calculateCorrectedValue(formData.insulationResistance.measured.poleToFrame.p3),
+        p1: calculateCorrectedValue(formData.insulationResistance.measured.poleToFrame.p1, formData.temperature.tcf),
+        p2: calculateCorrectedValue(formData.insulationResistance.measured.poleToFrame.p2, formData.temperature.tcf),
+        p3: calculateCorrectedValue(formData.insulationResistance.measured.poleToFrame.p3, formData.temperature.tcf),
       },
       lineToLoad: {
-        p1: calculateCorrectedValue(formData.insulationResistance.measured.lineToLoad.p1),
-        p2: calculateCorrectedValue(formData.insulationResistance.measured.lineToLoad.p2),
-        p3: calculateCorrectedValue(formData.insulationResistance.measured.lineToLoad.p3),
+        p1: calculateCorrectedValue(formData.insulationResistance.measured.lineToLoad.p1, formData.temperature.tcf),
+        p2: calculateCorrectedValue(formData.insulationResistance.measured.lineToLoad.p2, formData.temperature.tcf),
+        p3: calculateCorrectedValue(formData.insulationResistance.measured.lineToLoad.p3, formData.temperature.tcf),
       }
     };
 
-    setFormData(prev => ({
-      ...prev,
-      insulationResistance: {
-        ...prev.insulationResistance,
-        corrected: newCorrected
-      }
-    }));
+    // Only update if the corrected values have actually changed
+    const currentCorrected = JSON.stringify(formData.insulationResistance.corrected);
+    const newCorrectedStr = JSON.stringify(newCorrected);
+    
+    if (currentCorrected !== newCorrectedStr) {
+      setFormData(prev => ({
+        ...prev,
+        insulationResistance: {
+          ...prev.insulationResistance,
+          corrected: newCorrected
+        }
+      }));
+    }
 
   }, [
     JSON.stringify(formData.insulationResistance.measured), // Stringify to detect deep changes
     formData.temperature.tcf, // TCF changes should also trigger recalculation
-    isEditing // Only calculate when in edit mode
+    JSON.stringify(formData.insulationResistance.corrected) // Include current corrected to prevent infinite loops
   ]);
 
+  // Run temperature correction calculation on component mount
+  useEffect(() => {
+    // Trigger the calculation immediately when component mounts
+    const hasAnyMeasuredValues = 
+      formData.insulationResistance.measured.poleToPole.p1p2 ||
+      formData.insulationResistance.measured.poleToPole.p2p3 ||
+      formData.insulationResistance.measured.poleToPole.p3p1 ||
+      formData.insulationResistance.measured.poleToFrame.p1 ||
+      formData.insulationResistance.measured.poleToFrame.p2 ||
+      formData.insulationResistance.measured.poleToFrame.p3 ||
+      formData.insulationResistance.measured.lineToLoad.p1 ||
+      formData.insulationResistance.measured.lineToLoad.p2 ||
+      formData.insulationResistance.measured.lineToLoad.p3;
+
+    if (hasAnyMeasuredValues && formData.temperature.tcf) {
+      // Force recalculation by updating a dummy state
+      setFormData(prev => ({ ...prev }));
+    }
+  }, []); // Empty dependency array - runs only on mount
 
   // --- Generic Handle Change ---
   // Use lodash set for deeply nested updates
@@ -779,6 +814,198 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
         }}
       />
       
+      {/* Print-only Nameplate Data section - appears right after job info */}
+      <div className="hidden print:block w-full h-1 bg-[#f26722] mb-1 mt-2"></div>
+      <h2 className="hidden print:block text-xl font-semibold mb-2 text-black border-b border-black pb-1">Nameplate Data</h2>
+      <div className="hidden print:block">
+        <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem] mb-2">
+          <colgroup>
+            <col style={{ width: '14.2857%' }} />
+            <col style={{ width: '14.2857%' }} />
+            <col style={{ width: '14.2857%' }} />
+            <col style={{ width: '14.2857%' }} />
+            <col style={{ width: '14.2857%' }} />
+            <col style={{ width: '14.2857%' }} />
+            <col style={{ width: '14.2857%' }} />
+          </colgroup>
+          <tbody>
+            <tr>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Manufacturer:</div><div className="mt-0">{formData.manufacturer || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Catalog No.:</div><div className="mt-0">{formData.catalogNumber || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Serial Number:</div><div className="mt-0">{formData.serialNumber || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Type:</div><div className="mt-0">{formData.type || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Frame Size (A):</div><div className="mt-0">{formData.frameSize || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">I.C. Rating (kA):</div><div className="mt-0">{formData.icRating || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Trip Unit Type:</div><div className="mt-0">{formData.tripUnitType || ''}</div></td>
+            </tr>
+            <tr>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Rating Plug (A):</div><div className="mt-0">{formData.ratingPlug || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Curve No.:</div><div className="mt-0">{formData.curveNo || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Charge Motor V:</div><div className="mt-0">{formData.chargeMotorVoltage || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Operation:</div><div className="mt-0">{formData.operation || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Mounting:</div><div className="mt-0">{formData.mounting || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Zone Interlock:</div><div className="mt-0">{formData.zoneInterlock || ''}</div></td>
+              <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Thermal Memory:</div><div className="mt-0">{formData.thermalMemory || ''}</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Print-only Visual and Mechanical Inspection section */}
+      <div className="hidden print:block w-full h-1 bg-[#f26722] mb-1 mt-2"></div>
+      <h2 className="hidden print:block text-xl font-semibold mb-2 text-black border-b border-black pb-1">Visual and Mechanical Inspection</h2>
+      <div className="hidden print:block overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-300 print:border-black table-fixed visual-mechanical-table mb-2">
+          <colgroup>
+            <col style={{ width: '15%' }} />
+            <col style={{ width: '65%' }} />
+            <col style={{ width: '20%' }} />
+          </colgroup>
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="border border-gray-300 print:border-black px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">NETA Section</th>
+              <th className="border border-gray-300 print:border-black px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Description</th>
+              <th className="border border-gray-300 print:border-black px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Result</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {formData.visualInspectionItems.map((item, index) => (
+              <tr key={item.id}>
+                <td className="border border-gray-300 print:border-black px-3 py-2 text-sm break-words">{item.id}</td>
+                <td className="border border-gray-300 print:border-black px-3 py-2 text-sm whitespace-normal break-words">{item.description}</td>
+                <td className="border border-gray-300 print:border-black px-3 py-2 text-sm">{item.result}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Print-only Device Settings section */}
+      <div className="hidden print:block w-full h-1 bg-[#f26722] mb-1 mt-2"></div>
+      <h2 className="hidden print:block text-xl font-semibold mb-2 text-black border-b border-black pb-1">Device Settings</h2>
+      <div className="hidden print:block grid grid-cols-1 md:grid-cols-2 gap-x-4 mb-2">
+        {/* As Found Table */}
+        <div>
+          <h3 className="text-sm font-medium mb-1 text-center text-black">Settings As Found</h3>
+          <table className="w-full border-collapse border border-gray-300 print:border-black">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="border border-gray-300 print:border-black px-2 py-1 text-left text-xs font-medium"></th>
+                <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium">Setting</th>
+                <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium">Delay</th>
+                <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium">I²t</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white">
+              {['Long Time', 'Short Time', 'Instantaneous', 'Ground Fault'].map((settingType, index) => {
+                const key = ['longTime', 'shortTime', 'instantaneous', 'groundFault'][index];
+                return (
+                  <tr key={`found-${key}`}>
+                    <td className="border border-gray-300 print:border-black px-2 py-1 text-xs">{settingType}</td>
+                    <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.deviceSettings.asFound[key]?.setting || ''}</td>
+                    <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.deviceSettings.asFound[key]?.delay || ''}</td>
+                    <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.deviceSettings.asFound[key]?.i2t || ''}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {/* As Left Table */}
+        <div>
+          <h3 className="text-sm font-medium mb-1 text-center text-black">Settings As Left</h3>
+          <table className="w-full border-collapse border border-gray-300 print:border-black">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="border border-gray-300 print:border-black px-2 py-1 text-left text-xs font-medium"></th>
+                <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium">Setting</th>
+                <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium">Delay</th>
+                <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium">I²t</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white">
+              {['Long Time', 'Short Time', 'Instantaneous', 'Ground Fault'].map((settingType, index) => {
+                const key = ['longTime', 'shortTime', 'instantaneous', 'groundFault'][index];
+                return (
+                  <tr key={`left-${key}`}>
+                    <td className="border border-gray-300 print:border-black px-2 py-1 text-xs">{settingType}</td>
+                    <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.deviceSettings.asLeft[key]?.setting || ''}</td>
+                    <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.deviceSettings.asLeft[key]?.delay || ''}</td>
+                    <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.deviceSettings.asLeft[key]?.i2t || ''}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      {/* Print-only Contact/Pole Resistance section */}
+      <div className="hidden print:block w-full h-1 bg-[#f26722] mb-1 mt-2"></div>
+      <h2 className="hidden print:block text-xl font-semibold mb-2 text-black border-b border-black pb-1">Electrical Tests - Contact/Pole Resistance</h2>
+      <div className="hidden print:block overflow-x-auto mb-2">
+        <table className="w-full border-collapse border border-gray-300 print:border-black">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium" colSpan={3}>Contact Resistance</th>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium">Units</th>
+            </tr>
+            <tr>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium">P1</th>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium">P2</th>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium">P3</th>
+              <th className="border border-gray-300 print:border-black px-2 py-1 text-center text-xs font-medium"></th>
+            </tr>
+          </thead>
+          <tbody className="bg-white">
+            <tr>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.contactResistance.p1 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.contactResistance.p2 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.contactResistance.p3 || ''}</td>
+              <td className="border border-gray-300 print:border-black px-2 py-1 text-xs text-center">{formData.contactResistance.unit || ''}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Print-only Insulation Resistance section */}
+      <div className="hidden print:block w-full h-1 bg-[#f26722] mb-1 mt-2"></div>
+      <h2 className="hidden print:block text-xl font-semibold mb-2 text-black border-b border-black pb-1">Electrical Tests - Insulation Resistance</h2>
+      <div className="hidden print:block mb-1">
+        <div className="text-right text-xs mb-1">Test Voltage: {formData.insulationResistance.testVoltage}</div>
+        <table className="w-full border-collapse border border-gray-300 print:border-black text-xs">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="border border-gray-300 print:border-black px-1 py-1 text-left text-xs font-medium">Test</th>
+              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium">Measured Value</th>
+              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium">Temp Corrected</th>
+              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium">Unit</th>
+              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium">Min Value</th>
+              <th className="border border-gray-300 print:border-black px-1 py-1 text-center text-xs font-medium">Result</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white">
+            {[
+              { label: 'Phase A to Ground', key: 'phaseAToGround' },
+              { label: 'Phase B to Ground', key: 'phaseBToGround' },
+              { label: 'Phase C to Ground', key: 'phaseCToGround' },
+              { label: 'Phase A to B', key: 'phaseAToB' },
+              { label: 'Phase B to C', key: 'phaseBToC' },
+              { label: 'Phase C to A', key: 'phaseCToA' }
+            ].map((test) => (
+              <tr key={test.key}>
+                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs">{test.label}</td>
+                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance[test.key]?.measured || ''}</td>
+                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance[test.key]?.corrected || ''}</td>
+                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance.unit || ''}</td>
+                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance[test.key]?.minValue || ''}</td>
+                <td className="border border-gray-300 print:border-black px-1 py-1 text-xs text-center">{formData.insulationResistance[test.key]?.result || ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
       <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-150">
         <div className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
@@ -834,7 +1061,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           </div>
 
           {/* --- Job Information Section --- */}
-          <div className="mb-6">
+          <div className="mb-6 job-info-section print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden">
@@ -865,7 +1092,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                       </div>
 
           {/* --- Nameplate Data Section --- */}
-          <div className="mb-6">
+          <div className="mb-6 nameplate-section print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 print:hidden nameplate-onscreen">
@@ -921,7 +1148,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           </div>
 
           {/* --- Visual and Mechanical Inspection Section */}
-          <div className="mb-6">
+          <div className="mb-6 visual-mechanical-section print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
@@ -965,7 +1192,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           </div>
 
           {/* --- Device Settings Section */}
-          <div className="mb-6">
+          <div className="mb-6 device-settings-section print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Device Settings</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
@@ -1097,7 +1324,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           </div>
 
           {/* --- Electrical Tests - Contact/Pole Resistance Section --- */}
-          <div className="mb-6">
+          <div className="mb-6 print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Contact/Pole Resistance</h2>
             <div className="overflow-x-auto" style={{ overflow: 'visible' }}>
@@ -1160,7 +1387,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           </div>
 
           {/* --- Electrical Tests - Insulation Resistance Section --- */}
-          <div className="mb-6">
+          <div className="mb-6 insulation-resistance-section print:hidden">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance</h2>
             <div className="flex justify-end mb-4">
@@ -1649,6 +1876,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
 
           {/* Print-Only Test Equipment Used Table */}
           <div className="hidden print:block">
+            <div className="w-full h-1 bg-[#f26722] mb-1 mt-2"></div>
             <h2 className="text-xl font-semibold mb-4 text-black border-b border-black pb-2 font-bold">Test Equipment Used</h2>
             <table className="w-full border-collapse border border-black mb-6">
               <thead>
@@ -1683,6 +1911,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             </table>
 
             {/* Print-Only Comments Table (immediately under Test Equipment) */}
+            <div className="w-full h-1 bg-[#f26722] mb-1 mt-2"></div>
             <h2 className="text-xl font-semibold mb-4 text-black border-b border-black pb-2 font-bold">Comments</h2>
             <table className="w-full border-collapse border border-black mb-6">
               <tbody>
@@ -1832,21 +2061,74 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           
           .max-w-7xl {
             margin: 0 !important;
-            padding: 10px 20px 10px 20px !important;
+            padding: 5px 15px 5px 15px !important;
             min-height: auto !important;
           }
           
+          /* Remove padding from main container in print */
+          .p-6 {
+            padding: 0 !important;
+          }
+          
           /* Reduce spacing to fit more content and prevent cutoff */
-          .mb-6 { margin-bottom: 6px !important; }
-          h2 { margin-bottom: 6px !important; margin-top: 8px !important; }
-          h3 { margin-bottom: 4px !important; margin-top: 6px !important; }
-          table { width: 100% !important; margin-bottom: 4px !important; }
+          .space-y-6 > * + * { margin-top: 2px !important; }
+          .mb-6 { margin-bottom: 2px !important; }
+          .mb-4 { margin-bottom: 1px !important; }
+          .w-full.h-1 { height: 1px !important; margin-bottom: 1px !important; }
+          h2 { margin-bottom: 2px !important; margin-top: 2px !important; font-size: 14px !important; }
+          h3 { margin-bottom: 2px !important; margin-top: 2px !important; font-size: 12px !important; }
+          table { width: 100% !important; margin-bottom: 2px !important; }
           thead { display: table-header-group !important; }
           tbody { display: table-row-group !important; }
           tfoot { display: table-footer-group !important; }
 
           /* Minimize spacing around Secondary Injection */
           .secondary-injection-section { margin-bottom: 8px !important; margin-top: 4px !important; }
+          
+          /* Ensure key sections stay together on first page */
+          .job-info-section,
+          .nameplate-section,
+          .visual-mechanical-section {
+            page-break-inside: avoid !important;
+            margin-bottom: 2px !important;
+            margin-top: 1px !important;
+          }
+          
+          /* Prevent page breaks between related sections */
+          .nameplate-section {
+            page-break-before: avoid !important;
+          }
+          
+          .visual-mechanical-section {
+            page-break-before: avoid !important;
+          }
+          
+          /* Force Device Settings and subsequent sections to start immediately after Visual/Mechanical */
+          .visual-mechanical-section + * {
+            margin-top: 2px !important;
+          }
+          
+          /* Remove excessive spacing from all subsequent sections */
+          .visual-mechanical-section ~ div {
+            margin-top: 2px !important;
+            margin-bottom: 2px !important;
+          }
+          
+          /* Specifically target Device Settings to appear right after print sections */
+          .device-settings-section,
+          .insulation-resistance-section {
+            margin-top: 2px !important;
+            margin-bottom: 2px !important;
+            page-break-before: avoid !important;
+          }
+          
+          /* Target all sections after visual-mechanical to remove gaps */
+          .device-settings-section,
+          .insulation-resistance-section,
+          .secondary-injection-section {
+            margin-top: 2px !important;
+            margin-bottom: 2px !important;
+          }
           
           /* Force input boxes to stay within their cells */
           .max-w-7xl table input {
@@ -1886,6 +2168,24 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
           .max-w-7xl table td:nth-child(3) {
             font-size: 7px !important;
             padding: 2px 2px !important;
+          }
+          
+          /* Extra compact styling for visual-mechanical table to fit on first page */
+          .visual-mechanical-table {
+            font-size: 6px !important;
+            line-height: 1.0 !important;
+          }
+          
+          .visual-mechanical-table th,
+          .visual-mechanical-table td {
+            padding: 1px 2px !important;
+            font-size: 6px !important;
+            line-height: 1.0 !important;
+          }
+          
+          .visual-mechanical-table th {
+            font-size: 7px !important;
+            font-weight: bold !important;
           }
           
           .max-w-7xl table th:nth-child(3) {

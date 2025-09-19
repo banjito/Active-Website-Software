@@ -503,7 +503,7 @@ const SwitchgearReport: React.FC = () => {
       if (jobData) {
         // Then fetch customer data from common schema
         let customerName = '';
-        let customerAddress = '';
+        let customerAddress = jobData.site_address || '';
         
         if (jobData.customer_id) {
           const { data: customerData, error: customerError } = await supabase
@@ -519,7 +519,7 @@ const SwitchgearReport: React.FC = () => {
             
           if (!customerError && customerData) {
             customerName = customerData.company_name || customerData.name || '';
-            customerAddress = customerData.address || '';
+            customerAddress = jobData.site_address || customerData.address || customerAddress || '';
           }
         }
 

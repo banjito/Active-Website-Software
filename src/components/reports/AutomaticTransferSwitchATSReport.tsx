@@ -210,7 +210,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
       if (jobData) {
         let customerName = '';
-        let customerAddress = '';
+        let customerAddress = jobData.site_address || '';
         if (jobData.customer_id) {
           const { data: customerData, error: customerError } = await supabase
             .schema('common')
@@ -220,7 +220,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
             .single();
           if (!customerError && customerData) {
             customerName = customerData.company_name || customerData.name || '';
-            customerAddress = customerData.address || '';
+            customerAddress = jobData.site_address || customerData.address || customerAddress || '';
           }
         }
         setFormData(prev => ({
@@ -973,6 +973,8 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden">
             <div><label className="form-label">Customer:</label><input type="text" value={formData.customerName} readOnly className="form-input bg-gray-100 dark:bg-dark-150 w-full" /></div>
+            {/* Force Address to be visible by spanning multiple columns */}
+            <div className="md:col-span-2 lg:col-span-3"><label className="form-label">Address:</label><input type="text" value={formData.customerLocation} readOnly className="form-input bg-gray-100 dark:bg-dark-150 w-full" /></div>
             <div><label className="form-label">Job #:</label><input type="text" value={formData.jobNumber} readOnly className="form-input bg-gray-100 dark:bg-dark-150 w-full" /></div>
             <div><label htmlFor="technicians" className="form-label">Technicians:</label><input id="technicians" type="text" value={formData.technicians} onChange={(e) => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
             <div><label htmlFor="date" className="form-label">Date:</label><input id="date" type="date" value={formData.date} onChange={(e) => handleChange('date', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>

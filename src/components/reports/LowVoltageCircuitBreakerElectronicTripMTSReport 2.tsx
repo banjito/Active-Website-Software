@@ -975,18 +975,23 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
       }
       currentLevel[keys[keys.length - 1]] = value;
 
-      // Check if this is a rated amperes field and calculate related values
-      if (path.includes('ratedAmperes1')) {
+      // Check if this is a field that should trigger recalculation
+      const shouldRecalculate = path.includes('ratedAmperes1') || 
+                               path.includes('multiplier') || 
+                               path.includes('toleranceMin') || 
+                               path.includes('toleranceMax');
+
+      if (shouldRecalculate && path.includes('primaryInjection.results')) {
         const section = path.includes('longTime') ? 'longTime' 
                      : path.includes('shortTime') ? 'shortTime'
                      : path.includes('instantaneous') ? 'instantaneous'
                      : 'groundFault';
         
-        const calculated = calculateTestValues(value, section);
-        if (calculated) {
-          // Get the correct section in primaryInjection.results
-          const sectionResults = newState.primaryInjection.results[section];
-          if (sectionResults) {
+        // Get the section data after the current update
+        const sectionResults = newState.primaryInjection.results[section];
+        if (sectionResults && sectionResults.ratedAmperes1) {
+          const calculated = calculateTestValuesWithFormData(sectionResults.ratedAmperes1, section, sectionResults);
+          if (calculated) {
             sectionResults.testAmperes1 = calculated.testAmperes1;
             sectionResults.testAmperes2 = calculated.testAmperes2;
             sectionResults.toleranceMin2 = calculated.toleranceMin2;
@@ -999,7 +1004,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
     });
   };
 
-  // Add calculation function
+  // Add calculation function (legacy - uses hardcoded values)
   const calculateTestValues = (ratedAmperes: string, section: 'longTime' | 'shortTime' | 'instantaneous' | 'groundFault') => {
     if (!ratedAmperes || isNaN(Number(ratedAmperes))) return null;
     
@@ -1018,6 +1023,44 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
       testAmperes2: value.toString(),
       toleranceMin2: (value * (1 - mult.tolerance)).toFixed(1),
       toleranceMax2: (value * (1 + mult.tolerance)).toFixed(1)
+    };
+  };
+
+  // New calculation function that uses actual form data
+  const calculateTestValuesWithFormData = (ratedAmperes: string, section: 'longTime' | 'shortTime' | 'instantaneous' | 'groundFault', sectionData: any) => {
+    if (!ratedAmperes || isNaN(Number(ratedAmperes))) return null;
+    
+    const value = Number(ratedAmperes);
+    
+    // Parse multiplier from form data (e.g., "300%" -> 3.0)
+    const multiplierStr = sectionData.multiplier || '';
+    const multiplierNum = parseFloat(multiplierStr.replace('%', '')) / 100;
+    
+    // Parse tolerance values from form data (e.g., "-10%" -> 0.10, "20%" -> 0.20)
+    const toleranceMinStr = sectionData.toleranceMin || '';
+    const toleranceMaxStr = sectionData.toleranceMax || '';
+    const toleranceMinNum = Math.abs(parseFloat(toleranceMinStr.replace('%', ''))) / 100;
+    const toleranceMaxNum = Math.abs(parseFloat(toleranceMaxStr.replace('%', ''))) / 100;
+    
+    // Use form values if available, otherwise fall back to defaults
+    const testMultiplier = !isNaN(multiplierNum) ? multiplierNum : 
+                          section === 'longTime' ? 3.0 :
+                          section === 'shortTime' ? 1.1 :
+                          section === 'instantaneous' ? 1.0 : 1.1;
+                          
+    const toleranceMin = !isNaN(toleranceMinNum) ? toleranceMinNum :
+                        section === 'instantaneous' ? 0.20 :
+                        section === 'groundFault' ? 0.15 : 0.10;
+                        
+    const toleranceMax = !isNaN(toleranceMaxNum) ? toleranceMaxNum :
+                        section === 'instantaneous' ? 0.20 :
+                        section === 'groundFault' ? 0.15 : 0.10;
+    
+    return {
+      testAmperes1: section === 'instantaneous' ? '' : (value * testMultiplier).toFixed(1),
+      testAmperes2: value.toString(),
+      toleranceMin2: (value * (1 - toleranceMin)).toFixed(1),
+      toleranceMax2: (value * (1 + toleranceMax)).toFixed(1)
     };
   };
 

@@ -868,16 +868,36 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
   // --- Insulation Resistance Calculation ---
   // Calculate temperature corrected values whenever measured values or temperature changes
   useEffect(() => {
-    if (!isEditing) return; // Only calculate in edit mode
+    console.log('Temperature correction useEffect triggered:', { isEditing, tcf: formData.temperature.tcf });
+    if (!isEditing) {
+      console.log('Not in edit mode, skipping temperature correction');
+      return; // Only calculate in edit mode
+    }
 
     const calculateCorrectedValue = (value: string): string => {
-      if (value === "" || value === null || value === undefined || isNaN(Number(value))) {
+      console.log('calculateCorrectedValue called with:', value);
+      if (value === "" || value === null || value === undefined) {
+          console.log('Empty value, returning empty string');
           return "";
       }
-      const numericValue = parseFloat(value);
+      
+      // Check if the value contains non-numeric characters (like >, <, N/A, etc.)
+      const trimmedValue = value.toString().trim();
+      const numericValue = parseFloat(trimmedValue);
+      console.log('Parsed values:', { trimmedValue, numericValue, isNaN: isNaN(numericValue) });
+      
+      // If it contains any non-numeric characters OR is not a pure number, return original unchanged
+      if (isNaN(numericValue) || trimmedValue !== numericValue.toString()) {
+        console.log('Contains symbols/letters or not pure number, returning original:', trimmedValue);
+        return trimmedValue; // Return original value for >2200, <500, N/A, etc.
+      }
+      
+      // Only apply TCF to pure numbers
       const tcf = formData.temperature.tcf;
       // Handle cases where tcf might be zero or invalid
       if (!tcf || tcf === 0) return numericValue.toFixed(2);
+      
+      console.log('Pure number, applying TCF:', { numericValue, tcf, result: (numericValue * tcf).toFixed(2) });
       return (numericValue * tcf).toFixed(2);
     };
 

@@ -636,8 +636,8 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
             ...prev.temperature,
             fahrenheit: d.reportInfo?.temperature?.fahrenheit ?? prev.temperature.fahrenheit,
             celsius: d.reportInfo?.temperature?.celsius ?? prev.temperature.celsius,
-            tcf: d.reportInfo?.temperature?.correctionFactor ?? prev.temperature.tcf,
-            humidity: d.reportInfo?.humidity ?? prev.temperature.humidity,
+            tcf: d.reportInfo?.temperature?.tcf ?? prev.temperature.tcf,
+            humidity: d.reportInfo?.temperature?.humidity ?? prev.temperature.humidity,
           },
           substation: d.reportInfo?.substation ?? prev.substation,
           eqptLocation: d.reportInfo?.eqptLocation ?? prev.eqptLocation,
@@ -659,67 +659,16 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           thermalMemory: d.nameplateData?.thermalMemory ?? prev.thermalMemory,
 
           // Visual / Mechanical
-          visualInspectionItems: prev.visualInspectionItems.map(item => ({
-            ...item,
-            result: (d.visualInspection && d.visualInspection[item.id]) ? d.visualInspection[item.id] : item.result,
-          })),
+          visualInspectionItems: d.visualMechanical?.items || prev.visualInspectionItems,
 
           // Device settings
           deviceSettings: d.deviceSettings ?? prev.deviceSettings,
 
           // Contact resistance
-          contactResistance: d.breakerContactResistance ? { ...prev.contactResistance, ...d.breakerContactResistance } : prev.contactResistance,
+          contactResistance: d.contactResistance ?? prev.contactResistance,
 
-          // Insulation resistance (map contactorInsulation)
-          insulationResistance: (() => {
-            const ir = { ...prev.insulationResistance };
-            const src = d.contactorInsulation;
-            if (src) {
-              ir.testVoltage = src.testVoltage ?? ir.testVoltage;
-              const rows = Array.isArray(src.rows) ? src.rows : [];
-              const findRow = (name: string) => rows.find((r: any) => typeof r.id === 'string' && r.id.toLowerCase().includes(name));
-              const rowPTP = findRow('pole to pole');
-              const rowPTF = findRow('pole to frame');
-              const rowLTL = findRow('line to load');
-              if (rowPTP) {
-                ir.measured.poleToPole = {
-                  p1p2: rowPTP.p1 ?? ir.measured.poleToPole.p1p2,
-                  p2p3: rowPTP.p2 ?? ir.measured.poleToPole.p2p3,
-                  p3p1: rowPTP.p3 ?? ir.measured.poleToPole.p3p1,
-                };
-                ir.corrected.poleToPole = {
-                  p1p2: rowPTP.p1c ?? ir.corrected.poleToPole.p1p2,
-                  p2p3: rowPTP.p2c ?? ir.corrected.poleToPole.p2p3,
-                  p3p1: rowPTP.p3c ?? ir.corrected.poleToPole.p3p1,
-                };
-              }
-              if (rowPTF) {
-                ir.measured.poleToFrame = {
-                  p1: rowPTF.p1 ?? ir.measured.poleToFrame.p1,
-                  p2: rowPTF.p2 ?? ir.measured.poleToFrame.p2,
-                  p3: rowPTF.p3 ?? ir.measured.poleToFrame.p3,
-                };
-                ir.corrected.poleToFrame = {
-                  p1: rowPTF.p1c ?? ir.corrected.poleToFrame.p1,
-                  p2: rowPTF.p2c ?? ir.corrected.poleToFrame.p2,
-                  p3: rowPTF.p3c ?? ir.corrected.poleToFrame.p3,
-                };
-              }
-              if (rowLTL) {
-                ir.measured.lineToLoad = {
-                  p1: rowLTL.p1 ?? ir.measured.lineToLoad.p1,
-                  p2: rowLTL.p2 ?? ir.measured.lineToLoad.p2,
-                  p3: rowLTL.p3 ?? ir.measured.lineToLoad.p3,
-                };
-                ir.corrected.lineToLoad = {
-                  p1: rowLTL.p1c ?? ir.corrected.lineToLoad.p1,
-                  p2: rowLTL.p2c ?? ir.corrected.lineToLoad.p2,
-                  p3: rowLTL.p3c ?? ir.corrected.lineToLoad.p3,
-                };
-              }
-            }
-            return ir;
-          })(),
+          // Insulation resistance
+          insulationResistance: d.insulationResistance ?? prev.insulationResistance,
 
           // Primary injection
           primaryInjection: d.primaryInjection ? {
@@ -1178,11 +1127,21 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
     const multiplierStr = sectionData.multiplier || '';
     const multiplierNum = parseFloat(multiplierStr.replace('%', '')) / 100;
     
-    // Parse tolerance values from form data (e.g., "-10%" -> 0.10, "20%" -> 0.20)
+    // Parse tolerance values from form data - handle both positive and negative
+    // e.g., "-10%" -> -0.10, "5%" -> 0.05, "+5%" -> 0.05, "5" -> 5.0
     const toleranceMinStr = sectionData.toleranceMin || '';
     const toleranceMaxStr = sectionData.toleranceMax || '';
-    const toleranceMinNum = Math.abs(parseFloat(toleranceMinStr.replace('%', ''))) / 100;
-    const toleranceMaxNum = Math.abs(parseFloat(toleranceMaxStr.replace('%', ''))) / 100;
+    
+    // Smart parsing: always treat as percentage (whether % sign is present or not)
+    const parseToleranceValue = (str: string): number => {
+      const cleanStr = str.replace(/\+/g, '').replace(/%/g, '').trim(); // Remove + and % signs
+      const numValue = parseFloat(cleanStr);
+      // Always convert to decimal (5 becomes 0.05, meaning 5%)
+      return isNaN(numValue) ? 0 : numValue / 100;
+    };
+    
+    const toleranceMinNum = parseToleranceValue(toleranceMinStr);
+    const toleranceMaxNum = parseToleranceValue(toleranceMaxStr);
     
     // Use form values if available, otherwise fall back to defaults
     const testMultiplier = !isNaN(multiplierNum) ? multiplierNum : 
@@ -1191,17 +1150,28 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                           section === 'instantaneous' ? 1.0 : 1.1;
                           
     const toleranceMin = !isNaN(toleranceMinNum) ? toleranceMinNum :
-                        section === 'instantaneous' ? 0.20 :
-                        section === 'groundFault' ? 0.15 : 0.10;
+                        section === 'instantaneous' ? -0.20 :
+                        section === 'groundFault' ? -0.15 : -0.10;
                         
     const toleranceMax = !isNaN(toleranceMaxNum) ? toleranceMaxNum :
                         section === 'instantaneous' ? 0.20 :
                         section === 'groundFault' ? 0.15 : 0.10;
     
+    // Debug logging to help identify the issue
+    console.log(`Tolerance calculation for ${section}:`, {
+      value,
+      toleranceMinStr,
+      toleranceMaxStr,
+      toleranceMin,
+      toleranceMax,
+      calculatedMin: (value * (1 + toleranceMin)).toFixed(1),
+      calculatedMax: (value * (1 + toleranceMax)).toFixed(1)
+    });
+    
     return {
       testAmperes1: section === 'instantaneous' ? '' : (value * testMultiplier).toFixed(1),
       testAmperes2: value.toString(),
-      toleranceMin2: (value * (1 - toleranceMin)).toFixed(1),
+      toleranceMin2: (value * (1 + toleranceMin)).toFixed(1),
       toleranceMax2: (value * (1 + toleranceMax)).toFixed(1)
     };
   };

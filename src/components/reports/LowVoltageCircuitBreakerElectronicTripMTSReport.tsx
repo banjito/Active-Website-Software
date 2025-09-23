@@ -695,8 +695,8 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           },
 
           // Comments & status
-          comments: d.reportInfo?.comments ?? prev.comments,
-          status: d.status ?? prev.status,
+          comments: d.comments ?? prev.comments,
+          status: d.reportInfo?.status ?? prev.status,
         }));
         setIsEditing(false);
         setLoading(false);
@@ -1355,20 +1355,22 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <JobInfoPrintTable
-              data={{
-                customer: formData.customer,
-                address: formData.address,
-                jobNumber: formData.jobNumber,
-                technicians: formData.technicians,
-                date: formData.date,
-                identifier: formData.identifier,
-                user: formData.user,
-                substation: formData.substation,
-                eqptLocation: formData.eqptLocation,
-                temperature: { ...formData.temperature }
-              }}
-            />
+            <div className="hidden print:block">
+              <JobInfoPrintTable
+                data={{
+                  customer: formData.customer,
+                  address: formData.address,
+                  jobNumber: formData.jobNumber,
+                  technicians: formData.technicians,
+                  date: formData.date,
+                  identifier: formData.identifier,
+                  user: formData.user,
+                  substation: formData.substation,
+                  eqptLocation: formData.eqptLocation,
+                  temperature: { ...formData.temperature }
+                }}
+              />
+            </div>
           </div>
 
         {/* --- Nameplate Data Section --- */}
@@ -2707,50 +2709,15 @@ if (typeof document !== 'undefined') {
         box-sizing: border-box !important;
       }
       
-      /* Specific styles for Visual and Mechanical Inspection table */
-      .max-w-7xl table td:first-child {
-        word-wrap: break-word !important;
-        word-break: break-all !important;
-        max-width: 200px !important;
-        font-size: 6px !important;
-        line-height: 1.0 !important;
-        padding: 2px 4px !important;
-      }
+      /* Visual & Mechanical table widths to match panelboard (5/80/15) */
+      .visual-mechanical-table { table-layout: fixed !important; width: 100% !important; }
+      .visual-mechanical-table col:nth-child(1) { width: 5% !important; }
+      .visual-mechanical-table col:nth-child(2) { width: 80% !important; }
+      .visual-mechanical-table col:nth-child(3) { width: 15% !important; }
       
-      .max-w-7xl table th:first-child {
-        max-width: 200px !important;
-        font-size: 6px !important;
-        padding: 2px 4px !important;
-      }
-      
-      /* Ensure description column has enough space */
-      .max-w-7xl table td:nth-child(2) {
-        font-size: 6px !important;
-        line-height: 1.0 !important;
-        padding: 2px 4px !important;
-      }
-      
-      .max-w-7xl table th:nth-child(2) {
-        font-size: 6px !important;
-        padding: 2px 4px !important;
-      }
-      
-      /* Compact results column */
-      .max-w-7xl table td:nth-child(3) {
-        font-size: 7px !important;
-        padding: 2px 2px !important;
-      }
-      
-      .max-w-7xl table th:nth-child(3) {
-        font-size: 7px !important;
-        padding: 2px 2px !important;
-      }
-      
-      /* Ensure the entire report prints without cutoff */
-      .max-w-7xl {
-        max-width: none !important;
-        width: 100% !important;
-      }
+      /* Ensure full width and proper scaling for PDF */
+      .max-w-7xl { max-width: none !important; width: 100% !important; }
+      @page { size: A4; margin: 0.5in; }
       
       /* Insulation Resistance table explicit widths for PDF */
       .ins-res-table { table-layout: fixed !important; width: 100% !important; }

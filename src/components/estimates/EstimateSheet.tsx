@@ -2490,7 +2490,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         <div>Chief Executive Officer</div>
         <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
         <div style="width:100%;font-size:0.85em;color:#555;border-top:1px solid #ccc;padding:4px 0;text-align:center;margin-top:12px;">P.O. Box 526 | Huntsville, Alabama 35804 | (256) 513-8255</div>
-        <div style="margin-top: 16px;">
+        <div style="margin-top: 80px;">
           <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 4px; margin-bottom: 8px;">
             <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 32px; margin-right: 8px;" />
             <span style="font-size: 1.0em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
@@ -2743,12 +2743,25 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         <div>Brian Rodgers</div>
         <div>Chief Executive Officer</div>
         <div style="text-align:center; margin-top: 8px; font-size: 0.9em; color: #444;">END OF LETTER</div>
-        <div style="margin-top: 8px;">
-          <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 4px; margin-bottom: 8px;">
-            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 32px; margin-right: 8px;" />
-            <span style="font-size: 1.0em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
+        <div class="safety-policy-section" style="margin-top: 20px;">
+          <!-- AMP 4-Line Header -->
+          <div style="text-align: center; margin-bottom: 20px; padding-top: 20px;">
+            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+              <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 48px; margin-right: 12px;" />
+              <div style="text-align: left;">
+                <div style="font-size: 1.4em; font-weight: bold; color: #f26722; line-height: 1.2;">AMP Quality Energy Services</div>
+                <div style="font-size: 0.9em; color: #666; font-style: italic;">Electrical Testing & Maintenance Specialists</div>
+              </div>
+            </div>
+            <div style="font-size: 0.9em; line-height: 1.4; color: #333; margin-bottom: 15px;">
+              <div>2850 Highway 31 South, Suite A</div>
+              <div>Pelham, Alabama 35124</div>
+              <div>Phone: (205) 664-4470 | Email: info@ampqes.com</div>
+              <div>www.ampqes.com</div>
+            </div>
+            <div style="height: 3px; background: linear-gradient(to right, #f26722, #e55611); margin: 15px 0;"></div>
+            <div style="font-size: 1.3em; font-weight: bold; color: #333; margin-top: 10px;">Safety Policy on Jobsites</div>
           </div>
-          <div style="font-size: 1.0em; font-weight: bold; margin-bottom: 6px;">Safety Policy on Jobsites</div>
           <div style="font-weight: bold; margin-bottom: 4px;">LOCKOUT / TAGOUT</div>
           <div>On a jobsite where the customer has an established Lockout program or there is a lockout procedure already established, AMP employees will follow local Lockout program provided that it does not expose the employee to greater risk than the AMP procedure below.</div>
           <div style="margin-top: 4px;">In the absence of a local lockout procedure, AMP employees will follow the following procedure.</div>

@@ -37,6 +37,75 @@ export interface SubcontractorAgreement {
   description?: string;
 }
 
+// One-line drawing interface
+export interface OneLineDrawing {
+  id: string;
+  job_id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  file_url: string;
+  file_path: string;
+  file_type?: string;
+  file_size?: number;
+  version: string;
+  is_current: boolean;
+  upload_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// General document interface (for documents bucket)
+export interface Document {
+  id: string;
+  title: string;
+  description?: string;
+  file_path: string;
+  file_type?: string;
+  file_size?: number;
+  division?: string;
+  category?: string;
+  tags?: string[];
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  is_archived: boolean;
+}
+
+// Document upload interface
+export interface DocumentUpload {
+  title: string;
+  description?: string;
+  file: File;
+  division: string;
+  category?: string;
+  tags?: string[];
+}
+
+// One-line drawing upload interface
+export interface OneLineDrawingUpload {
+  name: string;
+  description?: string;
+  file: File;
+  job_id: string;
+  version?: string;
+}
+
+// Storage bucket types
+export type StorageBucket = 'job-documents' | 'one-line-drawings' | 'documents' | 'user-uploads';
+
+// Document categories
+export type DocumentCategory = 
+  | 'general'
+  | 'reports'
+  | 'manuals'
+  | 'forms'
+  | 'contracts'
+  | 'agreements'
+  | 'drawings'
+  | 'schematics'
+  | 'specifications';
+
 export interface Opportunity {
   id: string;
   created_at: string;

@@ -79,6 +79,7 @@ interface Contract {
   name: string;
   type: 'main' | 'subcontract' | 'amendment' | 'change_order';
   file_url: string;
+  file_path?: string;
   uploaded_date: string;
   status: 'pending' | 'signed' | 'expired' | 'cancelled';
   value?: number;
@@ -89,13 +90,19 @@ interface Contract {
 
 interface OneLineDrawing {
   id: string;
+  job_id: string;
+  user_id: string;
   name: string;
-  file_url: string;
-  thumbnail_url?: string;
-  last_modified: string;
-  version: number;
-  status: 'draft' | 'approved' | 'revision_needed';
   description?: string;
+  file_url: string;
+  file_path: string;
+  file_type?: string;
+  file_size?: number;
+  version: string;
+  is_current: boolean;
+  upload_date: string;
+  created_at: string;
+  updated_at: string;
 }
 
 const reportRoutes = {
@@ -310,6 +317,8 @@ export default function JobDetail() {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [oneLineDrawings, setOneLineDrawings] = useState<OneLineDrawing[]>([]);
   const [showContractUpload, setShowContractUpload] = useState(false);
+  const [showContractViewer, setShowContractViewer] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [showDrawingUpload, setShowDrawingUpload] = useState(false);
   const [showDrawingViewer, setShowDrawingViewer] = useState(false);
   const [selectedDrawing, setSelectedDrawing] = useState<OneLineDrawing | null>(null);
@@ -1949,16 +1958,18 @@ export default function JobDetail() {
       // Save contract record
       const contractData = {
         job_id: id,
+        user_id: user.id,
         name: contractForm.name || contractFile.name,
         type: contractForm.type,
+        description: contractForm.description || null,
         file_url: publicUrl,
-        uploaded_date: new Date().toISOString(),
+        file_path: filePath,
+        file_type: contractFile.type,
+        file_size: contractFile.size,
         status: 'pending' as const,
         value: contractForm.value ? parseFloat(contractForm.value) : null,
         start_date: contractForm.start_date || null,
-        end_date: contractForm.end_date || null,
-        description: contractForm.description || null,
-        user_id: user.id
+        end_date: contractForm.end_date || null
       };
       
       const { error: insertError } = await supabase
@@ -1995,16 +2006,16 @@ export default function JobDetail() {
     if (!id) return;
     
     try {
-      const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('job_drawings')
-        .select('*')
-        .eq('job_id', id)
-        .order('last_modified', { ascending: false });
+       const { data, error } = await supabase
+         .schema('neta_ops')
+         .from('one_line_drawings')
+         .select('*')
+         .eq('job_id', id)
+         .order('created_at', { ascending: false });
       
       if (error) {
         if ((error as any).code === '42P01') {
-          console.warn('job_drawings table not found; treating as empty.');
+          console.warn('one_line_drawings table not found; treating as empty.');
           setOneLineDrawings([]);
           return;
         }
@@ -2024,35 +2035,37 @@ export default function JobDetail() {
       // Upload file to Supabase Storage
       const fileExt = drawingFile.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `drawings/${id}/${fileName}`;
+      const filePath = `${id}/${fileName}`;
       
-      const { error: uploadError } = await supabase.storage
-        .from('job-documents')
-        .upload(filePath, drawingFile);
+       const { error: uploadError } = await supabase.storage
+         .from('one-line-drawings')
+         .upload(filePath, drawingFile);
       
       if (uploadError) throw uploadError;
       
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('job-documents')
+        .from('one-line-drawings')
         .getPublicUrl(filePath);
       
       // Save drawing record
       const drawingData = {
         job_id: id,
+        user_id: user.id,
         name: drawingForm.name || drawingFile.name,
-        file_url: publicUrl,
-        last_modified: new Date().toISOString(),
-        version: 1,
-        status: 'draft' as const,
         description: drawingForm.description || null,
-        user_id: user.id
+        file_url: publicUrl,
+        file_path: filePath,
+        file_type: drawingFile.type,
+        file_size: drawingFile.size,
+        version: '1.0',
+        is_current: true
       };
       
-      const { error: insertError } = await supabase
-        .schema('neta_ops')
-        .from('job_drawings')
-        .insert(drawingData);
+       const { error: insertError } = await supabase
+         .schema('neta_ops')
+         .from('one_line_drawings')
+         .insert(drawingData);
       
       if (insertError) throw insertError;
       
@@ -2077,6 +2090,46 @@ export default function JobDetail() {
   const handleDrawingView = (drawing: OneLineDrawing) => {
     setSelectedDrawing(drawing);
     setShowDrawingViewer(true);
+  };
+
+  const handleContractDelete = async (contractId: string) => {
+    if (!confirm('Are you sure you want to delete this contract? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      // First get the contract to know the file path for storage cleanup
+      const contractToDelete = contracts.find(c => c.id === contractId);
+      
+      // Delete from database
+      const { error: deleteError } = await supabase
+        .schema('neta_ops')
+        .from('job_contracts')
+        .delete()
+        .eq('id', contractId);
+
+      if (deleteError) throw deleteError;
+
+      // Try to delete from storage (optional - don't fail if this fails)
+      if (contractToDelete?.file_path) {
+        try {
+          await supabase.storage
+            .from('job-documents')
+            .remove([contractToDelete.file_path]);
+        } catch (storageError) {
+          console.warn('Could not delete file from storage:', storageError);
+          // Don't throw - database deletion succeeded
+        }
+      }
+
+      // Refresh the contracts list
+      await fetchContracts();
+      
+      toast({ title: 'Success', description: 'Contract deleted successfully!', variant: 'success' });
+    } catch (error) {
+      console.error('Error deleting contract:', error);
+      toast({ title: 'Error', description: 'Failed to delete contract', variant: 'destructive' });
+    }
   };
 
   // Add to useEffect to fetch contracts and drawings
@@ -2809,7 +2862,10 @@ export default function JobDetail() {
                                     <Button 
                                       variant="outline" 
                                       size="sm"
-                                      onClick={() => window.open(contract.file_url, '_blank')}
+                                      onClick={() => {
+                                        setSelectedContract(contract);
+                                        setShowContractViewer(true);
+                                      }}
                                     >
                                       <Eye className="h-4 w-4 mr-1" />
                                       View
@@ -2826,6 +2882,15 @@ export default function JobDetail() {
                                     >
                                       <Download className="h-4 w-4 mr-1" />
                                       Download
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => handleContractDelete(contract.id)}
+                                      className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-1" />
+                                      Delete
                                     </Button>
                                   </div>
                                 </div>
@@ -2864,31 +2929,22 @@ export default function JobDetail() {
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {oneLineDrawings.map((drawing) => (
                               <div key={drawing.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                <div className="aspect-video bg-gray-100 dark:bg-dark-150 rounded-lg mb-3 flex items-center justify-center">
-                                  {drawing.thumbnail_url ? (
-                                    <img 
-                                      src={drawing.thumbnail_url} 
-                                      alt={drawing.name}
-                                      className="w-full h-full object-cover rounded-lg"
-                                    />
-                                  ) : (
-                                    <Image className="h-8 w-8 text-gray-400" />
-                                  )}
-                                </div>
+                                 <div className="aspect-video bg-gray-100 dark:bg-dark-150 rounded-lg mb-3 flex items-center justify-center">
+                                   <Image className="h-8 w-8 text-gray-400" />
+                                 </div>
                                 <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="font-medium text-gray-900 dark:text-white text-sm truncate">{drawing.name}</h4>
-                                    <Badge className={
-                                      drawing.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' :
-                                      drawing.status === 'draft' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' :
-                                      'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-                                    }>
-                                      {drawing.status.replace('_', ' ')}
-                                    </Badge>
-                                  </div>
+                                   <div className="flex items-center justify-between">
+                                     <h4 className="font-medium text-gray-900 dark:text-white text-sm truncate">{drawing.name}</h4>
+                                     <Badge className={
+                                       drawing.is_current ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' :
+                                       'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+                                     }>
+                                       {drawing.is_current ? 'Current' : 'Previous'}
+                                     </Badge>
+                                   </div>
                                   <div className="text-xs text-gray-500 dark:text-white">
                                     <p>Version {drawing.version}</p>
-                                    <p>{format(new Date(drawing.last_modified), 'MMM d, yyyy')}</p>
+                                    <p>{format(new Date(drawing.created_at), 'MMM d, yyyy')}</p>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <Button 
@@ -3372,6 +3428,7 @@ export default function JobDetail() {
                         )}
                       </CardContent>
                     </Card>
+
                   </div>
                 )}
                 
@@ -3755,9 +3812,70 @@ export default function JobDetail() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+        </Dialog>
 
-      {/* Drawing Upload Dialog */}
+        {/* Contract Viewer Dialog */}
+        <Dialog open={showContractViewer} onOpenChange={() => {}}>
+          <DialogContent className="sm:max-w-[90vw] sm:max-h-[90vh] max-w-none w-full h-full [&>button]:hidden">
+            <DialogHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <DialogTitle>{selectedContract?.name}</DialogTitle>
+                  <DialogDescription>
+                    {selectedContract?.type.replace('_', ' ')} • {selectedContract?.status}
+                  </DialogDescription>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => selectedContract && window.open(selectedContract.file_url, '_blank')}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    Open in New Tab
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      if (selectedContract) {
+                        const link = document.createElement('a');
+                        link.href = selectedContract.file_url;
+                        link.download = selectedContract.name;
+                        link.click();
+                      }
+                    }}
+                  >
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowContractViewer(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </DialogHeader>
+            
+            <div className="flex-1 overflow-hidden">
+              {selectedContract && (
+                <div className="w-full h-full bg-gray-100 dark:bg-dark-150 rounded-lg">
+                  <iframe
+                    src={selectedContract.file_url}
+                    className="w-full h-full rounded-lg border-0"
+                    title={selectedContract.name}
+                    style={{ minHeight: '70vh' }}
+                  />
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Drawing Upload Dialog */}
       <Dialog open={showDrawingUpload} onOpenChange={setShowDrawingUpload}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -3830,10 +3948,10 @@ export default function JobDetail() {
           <DialogHeader>
             <div className="flex items-center justify-between">
               <div>
-                <DialogTitle>{selectedDrawing?.name}</DialogTitle>
-                <DialogDescription>
-                  Version {selectedDrawing?.version} • {selectedDrawing?.status.replace('_', ' ')}
-                </DialogDescription>
+                 <DialogTitle>{selectedDrawing?.name}</DialogTitle>
+                 <DialogDescription>
+                   Version {selectedDrawing?.version} • {selectedDrawing?.is_current ? 'Current' : 'Previous'}
+                 </DialogDescription>
               </div>
               <div className="flex items-center space-x-2">
                 <Button 

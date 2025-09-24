@@ -1392,11 +1392,23 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     setDraggedItemType(type);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/html', (e.currentTarget as HTMLElement).outerHTML);
-    (e.currentTarget as HTMLElement).style.opacity = '0.5';
+    
+    // Find the table row and set its opacity
+    const dragHandle = e.currentTarget as HTMLElement;
+    const tableRow = dragHandle.closest('tr');
+    if (tableRow) {
+      tableRow.style.opacity = '0.5';
+    }
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
-    (e.currentTarget as HTMLElement).style.opacity = '1';
+    // Find the table row and reset its opacity
+    const dragHandle = e.currentTarget as HTMLElement;
+    const tableRow = dragHandle.closest('tr');
+    if (tableRow) {
+      tableRow.style.opacity = '1';
+    }
+    
     setDraggedItemIndex(null);
     setDraggedItemType(null);
     setDragOverIndex(null);
@@ -3414,14 +3426,10 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                           return (
                             <tr 
                               key={index}
-                              draggable={!isViewMode}
-                              onDragStart={(e) => handleDragStart(e, index, 'sov')}
-                              onDragEnd={handleDragEnd}
                               onDragOver={(e) => handleDragOver(e, index)}
                               onDragLeave={handleDragLeave}
                               onDrop={(e) => handleDrop(e, index, 'sov')}
                               style={{
-                                cursor: !isViewMode ? 'move' : 'default',
                                 backgroundColor: dragOverIndex === index && draggedItemType === 'sov' ? '#f3f4f6' : 'transparent',
                                 borderTop: dragOverIndex === index && draggedItemType === 'sov' ? '2px solid #f26722' : 'none'
                               }}
@@ -3430,11 +3438,30 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                   {!isViewMode && (
                                     <div 
+                                      draggable={true}
+                                      onDragStart={(e) => handleDragStart(e, index, 'sov')}
+                                      onDragEnd={handleDragEnd}
+                                      onMouseEnter={(e) => {
+                                        (e.target as HTMLElement).style.color = '#374151';
+                                        (e.target as HTMLElement).style.cursor = 'grab';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        (e.target as HTMLElement).style.color = '#6b7280';
+                                      }}
+                                      onMouseDown={(e) => {
+                                        (e.target as HTMLElement).style.cursor = 'grabbing';
+                                      }}
+                                      onMouseUp={(e) => {
+                                        (e.target as HTMLElement).style.cursor = 'grab';
+                                      }}
                                       style={{ 
                                         cursor: 'grab', 
                                         color: '#6b7280', 
                                         fontSize: '14px',
-                                        userSelect: 'none'
+                                        userSelect: 'none',
+                                        padding: '2px',
+                                        borderRadius: '2px',
+                                        transition: 'color 0.2s ease'
                                       }}
                                       title="Drag to reorder"
                                     >
@@ -3647,14 +3674,10 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                           return (
                             <tr 
                               key={index}
-                              draggable={!isViewMode}
-                              onDragStart={(e) => handleDragStart(e, index, 'nonSov')}
-                              onDragEnd={handleDragEnd}
                               onDragOver={(e) => handleDragOver(e, index)}
                               onDragLeave={handleDragLeave}
                               onDrop={(e) => handleDrop(e, index, 'nonSov')}
                               style={{
-                                cursor: !isViewMode ? 'move' : 'default',
                                 backgroundColor: dragOverIndex === index && draggedItemType === 'nonSov' ? '#f3f4f6' : 'transparent',
                                 borderTop: dragOverIndex === index && draggedItemType === 'nonSov' ? '2px solid #f26722' : 'none'
                               }}
@@ -3663,11 +3686,30 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                   {!isViewMode && (
                                     <div 
+                                      draggable={true}
+                                      onDragStart={(e) => handleDragStart(e, index, 'nonSov')}
+                                      onDragEnd={handleDragEnd}
+                                      onMouseEnter={(e) => {
+                                        (e.target as HTMLElement).style.color = '#374151';
+                                        (e.target as HTMLElement).style.cursor = 'grab';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        (e.target as HTMLElement).style.color = '#6b7280';
+                                      }}
+                                      onMouseDown={(e) => {
+                                        (e.target as HTMLElement).style.cursor = 'grabbing';
+                                      }}
+                                      onMouseUp={(e) => {
+                                        (e.target as HTMLElement).style.cursor = 'grab';
+                                      }}
                                       style={{ 
                                         cursor: 'grab', 
                                         color: '#6b7280', 
                                         fontSize: '14px',
-                                        userSelect: 'none'
+                                        userSelect: 'none',
+                                        padding: '2px',
+                                        borderRadius: '2px',
+                                        transition: 'color 0.2s ease'
                                       }}
                                       title="Drag to reorder"
                                     >

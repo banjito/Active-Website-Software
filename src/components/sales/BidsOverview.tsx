@@ -59,7 +59,7 @@ const BidsOverview: React.FC = () => {
           endOfLastWeek: endOfLastWeek.toISOString()
         });
 
-        // Fetch opportunities data from Supabase
+        // Fetch opportunities data from Supabase - include both legacy and new letter proposals
         const { data: opportunities, error: opportunitiesError } = await supabase
           .schema('business')
           .from('opportunities')
@@ -67,15 +67,20 @@ const BidsOverview: React.FC = () => {
             id,
             title,
             created_at,
+            letter_proposal_created_date,
             quoted_amount
           `)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false }); // Order by created_at for now, we'll sort later
 
         if (opportunitiesError) throw opportunitiesError;
 
-        console.log('Opportunities fetched:', opportunities?.length);
+        console.log('All opportunities fetched:', opportunities?.length);
+        
+        // Filter to only include opportunities that have letter proposals (check both new system and legacy)
         const relevantOpps = (opportunities || []).filter(o => {
-          const d = new Date(o.created_at);
+          // For date filtering, use letter_proposal_created_date if available, otherwise use created_at for legacy data
+          const dateToUse = o.letter_proposal_created_date ? o.letter_proposal_created_date : o.created_at;
+          const d = new Date(dateToUse);
           return d >= startOfLastWeek; // anything from last week up through now
         });
         console.log('Relevant opps (last week through this week):', relevantOpps.length);
@@ -111,6 +116,11 @@ const BidsOverview: React.FC = () => {
           console.warn('Letter proposals load failed (continuing with quoted_amount):', e);
         }
 
+        // Filter to only include opportunities that have letter proposals (either new system with date or legacy with actual letter proposals)
+        opportunitiesWithLetterProposals = opportunitiesWithLetterProposals.filter((o: any) => {
+          return o.letter_proposal_created_date || (o.letter_proposals && o.letter_proposals.length > 0);
+        });
+
         const getNet30Price = (o: any): number => {
           const fallback = typeof o.quoted_amount === 'number'
             ? o.quoted_amount
@@ -131,17 +141,31 @@ const BidsOverview: React.FC = () => {
         setLastWeekRange(formatRange(startOfLastWeek, new Date(startOfThisWeek.getTime() - 1)));
 
         // Compute weekly buckets using NET 30 from letter proposals when available,
-        // otherwise fall back to quoted_amount
+        // otherwise fall back to quoted_amount - grouped by letter proposal creation date (or created_at for legacy)
         const thisWeekBids = (opportunitiesWithLetterProposals || [])
-          .filter(o => new Date(o.created_at) >= startOfThisWeek)
-          .map(o => ({ id: String(o.id), title: o.title ?? 'Untitled Opportunity', expectedValue: getNet30Price(o), created_at: o.created_at }));
+          .filter(o => {
+            const dateToUse = o.letter_proposal_created_date || o.created_at;
+            return new Date(dateToUse) >= startOfThisWeek;
+          })
+          .map(o => ({ 
+            id: String(o.id), 
+            title: o.title ?? 'Untitled Opportunity', 
+            expectedValue: getNet30Price(o), 
+            created_at: o.letter_proposal_created_date || o.created_at 
+          }));
 
         const lastWeekBids = (opportunitiesWithLetterProposals || [])
           .filter(o => {
-            const d = new Date(o.created_at);
+            const dateToUse = o.letter_proposal_created_date || o.created_at;
+            const d = new Date(dateToUse);
             return d >= startOfLastWeek && d <= endOfLastWeek;
           })
-          .map(o => ({ id: String(o.id), title: o.title ?? 'Untitled Opportunity', expectedValue: getNet30Price(o), created_at: o.created_at }));
+          .map(o => ({ 
+            id: String(o.id), 
+            title: o.title ?? 'Untitled Opportunity', 
+            expectedValue: getNet30Price(o), 
+            created_at: o.letter_proposal_created_date || o.created_at 
+          }));
 
         console.log('This week bids:', thisWeekBids.length, 'Total value:', thisWeekBids.reduce((s, b) => s + b.expectedValue, 0));
         console.log('Last week bids:', lastWeekBids.length, 'Total value:', lastWeekBids.reduce((s, b) => s + b.expectedValue, 0));
@@ -196,8 +220,8 @@ const BidsOverview: React.FC = () => {
         const { data: page, error: pageErr } = await supabase
           .schema('business')
           .from('opportunities')
-          .select('id, title, created_at, quoted_amount, expected_value')
-          .order('created_at', { ascending: false })
+          .select('id, title, created_at, opportunity_created_date, letter_proposal_created_date, quoted_amount, expected_value')
+          .order('created_at', { ascending: false }) // Order by created_at, we'll filter for letter proposals later
           .range(from, from + pageSize - 1);
         if (pageErr) throw pageErr;
         const batch = page || [];
@@ -232,6 +256,11 @@ const BidsOverview: React.FC = () => {
           byOpp[k].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         });
         withLetters = (opps || []).map((o: any) => ({ ...o, letter_proposals: byOpp[o.id] || [] }));
+        
+        // Filter to only include opportunities that have letter proposals (either new system with date or legacy with actual letter proposals)
+        withLetters = withLetters.filter((o: any) => {
+          return o.letter_proposal_created_date || (o.letter_proposals && o.letter_proposals.length > 0);
+        });
       } catch (_e) {
         // best-effort; continue with quoted_amount fallback
       }
@@ -269,13 +298,15 @@ const BidsOverview: React.FC = () => {
 
       const map: Record<string, WeekGroup> = {};
       (withLetters || []).forEach((o: any) => {
-        const d = new Date(o.created_at);
+        // Use letter_proposal_created_date if available, otherwise fall back to created_at for legacy data
+        const dateToUse = o.letter_proposal_created_date || o.created_at;
+        const d = new Date(dateToUse);
         const { key } = weekKey(d);
         const item: WeeklyBidItem = {
           id: String(o.id),
           title: o.title ?? 'Untitled Opportunity',
           expectedValue: getNet30(o),
-          created_at: o.created_at
+          created_at: dateToUse // Store the date used for grouping as the reference date
         };
         if (!map[key]) map[key] = { range: key, items: [], totalValue: 0 };
         map[key].items.push(item);

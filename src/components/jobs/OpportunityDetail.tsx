@@ -48,7 +48,7 @@ const initialFormData: OpportunityFormData = {
   status: 'awareness',
   expected_value: '',
   probability: '0',
-  expected_close_date: '',
+  opportunity_created_date: '',
   proposal_due_date: '',
   notes: '',
   sales_person: '',
@@ -202,7 +202,6 @@ export default function OpportunityDetail() {
     description: '',
     expected_value: '',
     status: 'awareness',
-    expected_close_date: '',
     sales_person: '',
     notes: '',
     probability: '0',
@@ -278,10 +277,20 @@ export default function OpportunityDetail() {
       }
     };
 
+    const handleLetterProposalGenerated = (event: CustomEvent) => {
+      const { opportunityId } = event.detail;
+      if (opportunityId === id) {
+        // Refresh the opportunity so UI shows the new letter_proposal_created_date immediately
+        fetchOpportunity();
+      }
+    };
+
     window.addEventListener('estimateSaved', handleEstimateSaved as EventListener);
+    window.addEventListener('letterProposalGenerated', handleLetterProposalGenerated as EventListener);
     
     return () => {
       window.removeEventListener('estimateSaved', handleEstimateSaved as EventListener);
+      window.removeEventListener('letterProposalGenerated', handleLetterProposalGenerated as EventListener);
     };
   }, [id]);
 
@@ -371,8 +380,8 @@ export default function OpportunityDetail() {
         description: opportunity.description || '',
         expected_value: opportunity.expected_value?.toString() || '',
         status: opportunity.status || '',
-        expected_close_date: opportunity.expected_close_date 
-          ? opportunity.expected_close_date.substring(0, 10)
+        opportunity_created_date: opportunity.opportunity_created_date 
+          ? opportunity.opportunity_created_date.substring(0, 10)
           : '',
         proposal_due_date: opportunity.proposal_due_date 
           ? opportunity.proposal_due_date.substring(0, 10)
@@ -563,7 +572,7 @@ export default function OpportunityDetail() {
     try {
       // Explicitly select columns to avoid implicit relationship lookups
       const opportunityColumns = 
-        'id, created_at, updated_at, customer_id, contact_id, title, description, status, expected_value, probability, expected_close_date, quote_number, notes, job_id, awarded_date, sales_person, amp_division, subcontractor_agreements, quoted_amount, selected_letter_proposal, reviewed_by, prepared_by, jobsite_location, estimated_start_date, period_of_performance, total_man_hours';
+        'id, created_at, updated_at, customer_id, contact_id, title, description, status, expected_value, probability, opportunity_created_date, letter_proposal_created_date, quote_number, notes, job_id, awarded_date, sales_person, amp_division, subcontractor_agreements, quoted_amount, selected_letter_proposal, reviewed_by, prepared_by, jobsite_location, estimated_start_date, period_of_performance, total_man_hours';
 
       let opportunityData: Opportunity | null = null;
       let primaryId: string | null = null;
@@ -885,14 +894,13 @@ export default function OpportunityDetail() {
     setIsSubmitting(true);
 
     try {
-      const expectedCloseDate = editFormData.expected_close_date
-        ? editFormData.expected_close_date
-        : null;
       const proposalDueDate = editFormData.proposal_due_date
-        ? editFormData.proposal_due_date
+        ? editFormData.proposal_due_date + 'T12:00:00.000Z' // Add noon UTC to prevent timezone shifts
         : null;
 
-      console.log("Submitting with expected_close_date:", expectedCloseDate);
+      const opportunityCreatedDate = editFormData.opportunity_created_date
+        ? editFormData.opportunity_created_date + 'T12:00:00.000Z' // Add noon UTC to prevent timezone shifts
+        : null;
 
       const updatePayload: any = {
         customer_id: editFormData.customer_id,
@@ -901,7 +909,6 @@ export default function OpportunityDetail() {
         description: editFormData.description,
         expected_value: editFormData.expected_value ? parseFloat(editFormData.expected_value) : null,
         status: editFormData.status,
-        expected_close_date: expectedCloseDate,
         sales_person: editFormData.sales_person,
         notes: editFormData.notes,
         probability: editFormData.probability ? parseFloat(editFormData.probability) : 0,
@@ -916,6 +923,7 @@ export default function OpportunityDetail() {
         total_man_hours: editFormData.total_man_hours ? parseFloat(editFormData.total_man_hours) : null
       };
       updatePayload.proposal_due_date = proposalDueDate;
+      updatePayload.opportunity_created_date = opportunityCreatedDate;
 
       // Try update with proposal_due_date included first
       let updateError = null as any;
@@ -1433,8 +1441,8 @@ export default function OpportunityDetail() {
                         description: opportunity.description || '',
                         expected_value: opportunity.expected_value?.toString() || '',
                         status: opportunity.status || '',
-                        expected_close_date: opportunity.expected_close_date 
-                          ? opportunity.expected_close_date.substring(0, 10)
+                        opportunity_created_date: opportunity.opportunity_created_date 
+                          ? opportunity.opportunity_created_date.substring(0, 10)
                           : '',
                         proposal_due_date: opportunity.proposal_due_date 
                           ? opportunity.proposal_due_date.substring(0, 10)
@@ -1538,7 +1546,7 @@ export default function OpportunityDetail() {
                           <span className="text-gray-500 dark:text-white">Status:</span> {m.status}
                         </div>
                         <div>
-                          <span className="text-gray-500 dark:text-white">Due:</span> {m.expected_close_date ? formatDateSafe(m.expected_close_date) : '-'}
+                          <span className="text-gray-500 dark:text-white">Created:</span> {m.opportunity_created_date ? formatDateSafe(m.opportunity_created_date) : '-'}
                         </div>
                         <div>
                           <span className="text-gray-500 dark:text-white">Value:</span> {m.expected_value ? `$${m.expected_value.toLocaleString()}` : '-'}
@@ -1766,18 +1774,19 @@ export default function OpportunityDetail() {
                   </div>
 
                   <div>
-                    <label htmlFor="expected_close_date" className="block text-sm font-medium text-gray-700 dark:text-white">
-                      Expected Close Date
+                    <label htmlFor="opportunity_created_date" className="block text-sm font-medium text-gray-700 dark:text-white">
+                      Opportunity Created Date
                     </label>
                     <input
                       type="date"
-                      id="expected_close_date"
-                      name="expected_close_date"
-                      value={editFormData.expected_close_date}
+                      id="opportunity_created_date"
+                      name="opportunity_created_date"
+                      value={editFormData.opportunity_created_date || ''}
                       onChange={handleInputChange}
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     />
                   </div>
+
                   <div>
                     <label htmlFor="proposal_due_date" className="block text-sm font-medium text-gray-700 dark:text-white">
                       Proposal Due Date
@@ -2185,11 +2194,20 @@ export default function OpportunityDetail() {
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Expected Close Date</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Opportunity Created Date</p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {opportunity.expected_close_date
-                          ? formatDateSafe(opportunity.expected_close_date)
+                        {opportunity.opportunity_created_date
+                          ? formatDateSafe(opportunity.opportunity_created_date)
                           : 'Not specified'}
+                      </p>
+                    </div>
+
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Letter Proposal Created Date</p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {opportunity.letter_proposal_created_date
+                          ? formatDateSafe(opportunity.letter_proposal_created_date)
+                          : 'Not generated yet'}
                       </p>
                     </div>
                     {opportunity.proposal_due_date && (

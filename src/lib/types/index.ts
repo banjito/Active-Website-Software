@@ -48,7 +48,8 @@ export interface Opportunity {
   status: 'awareness' | 'interest' | 'quote' | 'decision' | 'decision - forecasted win' | 'decision - forecast lose' | 'awarded' | 'lost' | 'no quote';
   expected_value?: number;
   probability?: number;
-  expected_close_date?: string;
+  opportunity_created_date?: string;
+  letter_proposal_created_date?: string;
   quote_number: string;
   notes?: string;
   job_id?: string;
@@ -72,7 +73,7 @@ export interface OpportunityFormData {
   status: 'awareness' | 'interest' | 'quote' | 'decision' | 'decision - forecasted win' | 'decision - forecast lose' | 'awarded' | 'lost' | 'no quote';
   expected_value: string;
   probability: string;
-  expected_close_date: string;
+  opportunity_created_date?: string;
   proposal_due_date?: string;
   notes: string;
   sales_person: string;

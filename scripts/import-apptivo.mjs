@@ -353,7 +353,7 @@ async function importOpportunities(csvPath, cacheByName, contactCacheByNameAndCu
 				status,
 				expected_value: expectedValue,
 				probability,
-				expected_close_date: expectedCloseDate || null,
+				// expected_close_date removed - using opportunity_created_date instead
 				notes,
 				amp_division: ampDivision || null,
 				sales_person: salesPerson || null,

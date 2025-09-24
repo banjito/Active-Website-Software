@@ -2230,7 +2230,36 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     });
   }
 
+  // Function to update letter_proposal_created_date when generating proposal
+  async function updateLetterProposalCreatedDate() {
+    try {
+      // Set letter proposal created date to today at noon UTC to prevent timezone shifts
+      const today = new Date().toISOString().substring(0, 10);
+      const letterProposalCreatedDate = today + 'T12:00:00.000Z';
+      
+      const { error: updateError } = await supabase
+        .schema('business')
+        .from('opportunities')
+        .update({ letter_proposal_created_date: letterProposalCreatedDate })
+        .eq('id', opportunityId);
+        
+      if (updateError) {
+        console.warn('Failed to update letter_proposal_created_date:', updateError);
+      } else {
+        // Notify OpportunityDetail to refresh and show the new date
+        window.dispatchEvent(new CustomEvent('letterProposalGenerated', { 
+          detail: { opportunityId } 
+        }));
+      }
+    } catch (error) {
+      console.error('Error updating letter proposal created date:', error);
+    }
+  }
+
   function generateLetterContent(index: number) {
+    // Set letter proposal created date when generating proposal
+    updateLetterProposalCreatedDate();
+    
     // Generate the letter HTML template with data from quotes[index] and opportunityData
     const quote = quotes[index];
     const today = new Date();
@@ -2439,6 +2468,9 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     if (selectedQuotesForCombined.length === 0) return;
     
     setIsCombinedQuoteSelectOpen(false);
+    
+    // Set letter proposal created date when generating proposal
+    updateLetterProposalCreatedDate();
     
     // Generate the combined letter HTML template with data from selected quotes
     const selectedQuotes = selectedQuotesForCombined.map(idx => quotes[idx]);

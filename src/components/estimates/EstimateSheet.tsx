@@ -2091,13 +2091,17 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
 
   // Restore letter proposal state from localStorage if needed (but not for fresh generation)
   useEffect(() => {
+    console.log('Restoration useEffect triggered:', { mode, isLetterProposalOpen, isQuoteSelectOpen });
     // Only restore if we're not in a fresh generation mode and there's persisted state
     // Allow restoration when mode is undefined (normal state) or other modes except 'letter'
-    if (mode !== 'letter' && !isLetterProposalOpen && !isQuoteSelectOpen) {
+    // IMPORTANT: Don't run this during active letter generation to prevent interference
+    if (mode !== 'letter' && !isLetterProposalOpen && !isQuoteSelectOpen && selectedLetterQuoteIndex === null) {
       try {
         const savedOpen = localStorage.getItem(`letter-proposal-open-${opportunityId}`);
         const savedHtml = localStorage.getItem(`letter-proposal-draft-${opportunityId}`);
         const savedQuoteIndex = localStorage.getItem(`letter-quote-index-${opportunityId}`);
+        
+        console.log('Checking restoration conditions:', { savedOpen, hasSavedHtml: !!savedHtml });
         
         if (savedOpen === 'true' && savedHtml) {
           console.log('Restoring letter proposal from localStorage');
@@ -2112,8 +2116,10 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           }
         }
       } catch {}
+    } else {
+      console.log('Skipping restoration due to conditions:', { mode, isLetterProposalOpen, isQuoteSelectOpen, selectedLetterQuoteIndex });
     }
-  }, [opportunityId, mode, isQuoteSelectOpen]);
+  }, [opportunityId, mode, isQuoteSelectOpen, selectedLetterQuoteIndex]);
 
   // When letter proposal opens and has persisted content, make sure editor is populated
   useEffect(() => {
@@ -2198,44 +2204,84 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   }
 
   function handleSelectQuoteForLetter(index: number) {
+    console.log('handleSelectQuoteForLetter called with index:', index);
     setSelectedLetterQuoteIndex(index);
     setIsQuoteSelectOpen(false);
     
-    // Add loading delay to ensure assets are loaded
-    setTimeout(() => {
-      generateLetterProposal(index);
-    }, 1500); // 1.5 second delay
+    // Prevent AuthContext refresh while letter proposal is open
+    try { localStorage.setItem('AMP_SUSPEND_REFRESH', 'true'); } catch {}
+    
+    // Generate letter immediately
+    console.log('Generating letter proposal immediately');
+    generateLetterProposal(index);
   }
 
   // Function to preload assets before generating letter
   const preloadAssets = () => {
     return new Promise((resolve) => {
+      let loadedCount = 0;
+      const totalAssets = 2;
+      
+      const checkComplete = () => {
+        loadedCount++;
+        if (loadedCount >= totalAssets) {
+          resolve(true);
+        }
+      };
+      
       const logo = new Image();
       const signature = new Image();
       
-      logo.onload = () => {
-        signature.onload = () => {
-          resolve(true);
-        };
-        signature.src = (window as any)?.AMP_SIGNATURE_URL || '/img/brian-rodgers-signature.jpg';
+      // Handle both success and error cases for logo
+      logo.onload = checkComplete;
+      logo.onerror = () => {
+        console.warn('Failed to load logo image, continuing anyway');
+        checkComplete();
       };
+      
+      // Handle both success and error cases for signature
+      signature.onload = checkComplete;
+      signature.onerror = () => {
+        console.warn('Failed to load signature image, continuing anyway');
+        checkComplete();
+      };
+      
+      // Start loading images
       logo.src = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png';
+      signature.src = (window as any)?.AMP_SIGNATURE_URL || '/img/brian-rodgers-signature.jpg';
+      
+      // Fallback timeout in case images take too long
+      setTimeout(() => {
+        console.warn('Asset preloading timed out, continuing anyway');
+        resolve(true);
+      }, 5000); // 5 second timeout
     });
   };
 
   function generateLetterProposal(index: number) {
+    console.log('generateLetterProposal called with index:', index);
     // Preload assets first, then generate the letter
     preloadAssets().then(() => {
+      console.log('Assets preloaded successfully, calling generateLetterContent');
+      generateLetterContent(index);
+    }).catch((error) => {
+      console.error('Error preloading assets:', error);
+      // Continue with letter generation even if asset loading fails
+      console.log('Continuing with letter generation despite asset loading error');
       generateLetterContent(index);
     });
   }
 
-  // Function to update letter_proposal_created_date when generating proposal
+  // Function to update letter_proposal_created_date when saving letter proposal
   async function updateLetterProposalCreatedDate() {
+    console.log('updateLetterProposalCreatedDate called - updating date and dispatching event');
+    
     try {
       // Set letter proposal created date to today at noon UTC to prevent timezone shifts
       const today = new Date().toISOString().substring(0, 10);
       const letterProposalCreatedDate = today + 'T12:00:00.000Z';
+      
+      console.log('Updating letter_proposal_date to:', letterProposalCreatedDate);
       
       const { error: updateError } = await supabase
         .schema('business')
@@ -2246,7 +2292,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       if (updateError) {
         console.warn('Failed to update letter_proposal_created_date:', updateError);
       } else {
-        // Notify OpportunityDetail to refresh and show the new date
+        console.log('Successfully updated letter_proposal_date, dispatching event');
+        // Notify OpportunityDetail after letter is saved
         window.dispatchEvent(new CustomEvent('letterProposalGenerated', { 
           detail: { opportunityId } 
         }));
@@ -2257,8 +2304,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   }
 
   function generateLetterContent(index: number) {
-    // Set letter proposal created date when generating proposal
-    updateLetterProposalCreatedDate();
+    console.log('generateLetterContent called with index:', index);
+    console.log('Current isLetterProposalOpen state:', isLetterProposalOpen);
     
     // Generate the letter HTML template with data from quotes[index] and opportunityData
     const quote = quotes[index];
@@ -2469,8 +2516,9 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     
     setIsCombinedQuoteSelectOpen(false);
     
-    // Set letter proposal created date when generating proposal
-    updateLetterProposalCreatedDate();
+    // Prevent AuthContext refresh while letter proposal is open
+    try { localStorage.setItem('AMP_SUSPEND_REFRESH', 'true'); } catch {}
+    
     
     // Generate the combined letter HTML template with data from selected quotes
     const selectedQuotes = selectedQuotesForCombined.map(idx => quotes[idx]);
@@ -5282,6 +5330,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                       }
                     }
                     
+                    // Update letter proposal date and notify parent when letter is saved
+                    updateLetterProposalCreatedDate();
                     alert('Letter updated successfully');
                   } else {
                     const { data: inserted, error } = await supabase
@@ -5305,6 +5355,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                       }
                     }
                     
+                    // Update letter proposal date and notify parent when letter is saved
+                    updateLetterProposalCreatedDate();
                     alert('Letter saved successfully');
                   }
                 } catch (e: any) {

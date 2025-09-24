@@ -49,6 +49,7 @@ const initialFormData: OpportunityFormData = {
   expected_value: '',
   probability: '0',
   opportunity_created_date: '',
+  letter_proposal_date: '',
   proposal_due_date: '',
   notes: '',
   sales_person: '',
@@ -383,6 +384,9 @@ export default function OpportunityDetail() {
         opportunity_created_date: opportunity.opportunity_created_date 
           ? opportunity.opportunity_created_date.substring(0, 10)
           : '',
+        letter_proposal_date: opportunity.letter_proposal_date 
+          ? opportunity.letter_proposal_date.substring(0, 10)
+          : '',
         proposal_due_date: opportunity.proposal_due_date 
           ? opportunity.proposal_due_date.substring(0, 10)
           : '',
@@ -572,7 +576,7 @@ export default function OpportunityDetail() {
     try {
       // Explicitly select columns to avoid implicit relationship lookups
       const opportunityColumns = 
-        'id, created_at, updated_at, customer_id, contact_id, title, description, status, expected_value, probability, opportunity_created_date, letter_proposal_created_date, quote_number, notes, job_id, awarded_date, sales_person, amp_division, subcontractor_agreements, quoted_amount, selected_letter_proposal, reviewed_by, prepared_by, jobsite_location, estimated_start_date, period_of_performance, total_man_hours';
+        'id, created_at, updated_at, customer_id, contact_id, title, description, status, expected_value, probability, opportunity_created_date, letter_proposal_date, quote_number, notes, job_id, awarded_date, sales_person, amp_division, subcontractor_agreements, quoted_amount, selected_letter_proposal, reviewed_by, prepared_by, jobsite_location, estimated_start_date, period_of_performance, total_man_hours';
 
       let opportunityData: Opportunity | null = null;
       let primaryId: string | null = null;
@@ -902,6 +906,10 @@ export default function OpportunityDetail() {
         ? editFormData.opportunity_created_date + 'T12:00:00.000Z' // Add noon UTC to prevent timezone shifts
         : null;
 
+      const letterProposalDate = editFormData.letter_proposal_date
+        ? editFormData.letter_proposal_date + 'T12:00:00.000Z' // Add noon UTC to prevent timezone shifts
+        : null;
+
       const updatePayload: any = {
         customer_id: editFormData.customer_id,
         contact_id: editFormData.contact_id || null,
@@ -924,6 +932,7 @@ export default function OpportunityDetail() {
       };
       updatePayload.proposal_due_date = proposalDueDate;
       updatePayload.opportunity_created_date = opportunityCreatedDate;
+      updatePayload.letter_proposal_date = letterProposalDate;
 
       // Try update with proposal_due_date included first
       let updateError = null as any;
@@ -1444,6 +1453,9 @@ export default function OpportunityDetail() {
                         opportunity_created_date: opportunity.opportunity_created_date 
                           ? opportunity.opportunity_created_date.substring(0, 10)
                           : '',
+                        letter_proposal_date: opportunity.letter_proposal_date 
+                          ? opportunity.letter_proposal_date.substring(0, 10)
+                          : '',
                         proposal_due_date: opportunity.proposal_due_date 
                           ? opportunity.proposal_due_date.substring(0, 10)
                           : '',
@@ -1782,6 +1794,20 @@ export default function OpportunityDetail() {
                       id="opportunity_created_date"
                       name="opportunity_created_date"
                       value={editFormData.opportunity_created_date || ''}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="letter_proposal_date" className="block text-sm font-medium text-gray-700 dark:text-white">
+                      Letter Proposal Date
+                    </label>
+                    <input
+                      type="date"
+                      id="letter_proposal_date"
+                      name="letter_proposal_date"
+                      value={editFormData.letter_proposal_date || ''}
                       onChange={handleInputChange}
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     />
@@ -2203,10 +2229,10 @@ export default function OpportunityDetail() {
                     </div>
 
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Letter Proposal Created Date</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Letter Proposal Date</p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {opportunity.letter_proposal_created_date
-                          ? formatDateSafe(opportunity.letter_proposal_created_date)
+                        {opportunity.letter_proposal_date
+                          ? formatDateSafe(opportunity.letter_proposal_date)
                           : 'Not generated yet'}
                       </p>
                     </div>

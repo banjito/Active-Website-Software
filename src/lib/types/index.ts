@@ -49,7 +49,7 @@ export interface Opportunity {
   expected_value?: number;
   probability?: number;
   opportunity_created_date?: string;
-  letter_proposal_created_date?: string;
+  letter_proposal_date?: string;
   quote_number: string;
   notes?: string;
   job_id?: string;
@@ -74,6 +74,7 @@ export interface OpportunityFormData {
   expected_value: string;
   probability: string;
   opportunity_created_date?: string;
+  letter_proposal_date?: string;
   proposal_due_date?: string;
   notes: string;
   sales_person: string;

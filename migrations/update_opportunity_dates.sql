@@ -4,7 +4,7 @@
 -- First, add the new date columns (allowing NULL for existing records)
 ALTER TABLE business.opportunities 
 ADD COLUMN IF NOT EXISTS opportunity_created_date TIMESTAMP WITH TIME ZONE,
-ADD COLUMN IF NOT EXISTS letter_proposal_created_date TIMESTAMP WITH TIME ZONE;
+ADD COLUMN IF NOT EXISTS letter_proposal_date TIMESTAMP WITH TIME ZONE;
 
 -- Don't backfill existing records - leave them blank since we don't know the actual opportunity creation date
 -- Only new opportunities will get the auto-generated date
@@ -15,7 +15,7 @@ ALTER COLUMN opportunity_created_date SET DEFAULT (CURRENT_DATE || ' 12:00:00+00
 
 -- Add comments to document the purpose of each field
 COMMENT ON COLUMN business.opportunities.opportunity_created_date IS 'Date when the opportunity was first created (auto-generated)';
-COMMENT ON COLUMN business.opportunities.letter_proposal_created_date IS 'Date when the letter proposal was created/saved (auto-generated when saving letter proposal)';
+COMMENT ON COLUMN business.opportunities.letter_proposal_date IS 'Date when the letter proposal was created/saved (auto-generated when generating letter proposal, but editable)';
 
 -- Remove the expected_close_date column
 ALTER TABLE business.opportunities 

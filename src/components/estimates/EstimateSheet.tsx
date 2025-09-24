@@ -2240,7 +2240,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const { error: updateError } = await supabase
         .schema('business')
         .from('opportunities')
-        .update({ letter_proposal_created_date: letterProposalCreatedDate })
+        .update({ letter_proposal_date: letterProposalCreatedDate })
         .eq('id', opportunityId);
         
       if (updateError) {

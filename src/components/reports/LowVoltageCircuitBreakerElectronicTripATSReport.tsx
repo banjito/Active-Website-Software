@@ -2614,7 +2614,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-150">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={3}>Function</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Function</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Rated Amperes</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={2}>Multiplier %</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Test Amperes</th>
@@ -2631,15 +2631,6 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">sec.</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">sec.</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">sec.</th>
-                  </tr>
-                  <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">A</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">A</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">A</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -4148,6 +4139,28 @@ if (typeof document !== 'undefined') {
       .primary-injection-table col:nth-child(8),
       .primary-injection-table col:nth-child(9),
       .primary-injection-table col:nth-child(10) { width: 10% !important; }
+      
+      /* Perfect centering for Tolerance Min/Max columns */
+      .primary-injection-table th:nth-child(6),
+      .primary-injection-table th:nth-child(7),
+      .primary-injection-table td:nth-child(6),
+      .primary-injection-table td:nth-child(7) {
+        text-align: center !important;
+        vertical-align: middle !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      
+      /* Center tolerance input values perfectly on the dividing line */
+      .primary-injection-table td:nth-child(6) input,
+      .primary-injection-table td:nth-child(7) input {
+        margin: 0 auto !important;
+        text-align: center !important;
+        width: 90% !important;
+        position: relative !important;
+        left: 0 !important;
+        right: 0 !important;
+      }
       
       /* Add bottom margin to prevent cutoff */
       .space-y-6 > *:last-child {

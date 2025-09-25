@@ -4143,56 +4143,65 @@ if (typeof document !== 'undefined') {
       .primary-injection-table col:nth-child(3),
       .primary-injection-table col:nth-child(4) { width: 9% !important; }
       .primary-injection-table col:nth-child(5) { width: 12% !important; }
-      .primary-injection-table col:nth-child(6),
-      .primary-injection-table col:nth-child(7) { width: 9% !important; }
+      .primary-injection-table col:nth-child(6) { width: 9.5% !important; }
+      .primary-injection-table col:nth-child(7) { width: 8.5% !important; }
       .primary-injection-table col:nth-child(8),
       .primary-injection-table col:nth-child(9),
       .primary-injection-table col:nth-child(10) { width: 10% !important; }
       
-      /* Perfect centering for Tolerance Min/Max columns - meet in the middle */
+      /* Perfect centering for Tolerance Min/Max columns - meet exactly in the middle */
       .primary-injection-table th:nth-child(6),
       .primary-injection-table th:nth-child(7),
       .primary-injection-table td:nth-child(6),
       .primary-injection-table td:nth-child(7) {
         text-align: center !important;
         vertical-align: middle !important;
-        padding: 0 !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+      }
+      
+      /* Min column - centered within its column */
+      .primary-injection-table td:nth-child(6) {
+        padding: 2px !important;
+        text-align: center !important;
+      }
+      
+      /* Max column - centered within its column */
+      .primary-injection-table td:nth-child(7) {
+        padding: 2px !important;
+        text-align: center !important;
+      }
+      
+      /* Min input - perfectly centered in Min column */
+      .primary-injection-table td:nth-child(6) input {
+        width: 90% !important;
+        text-align: center !important;
+        margin: 0 auto !important;
+        position: relative !important;
+        left: 0 !important;
         box-sizing: border-box !important;
       }
       
-      /* Min column - extend to exact center */
+      /* Max input - perfectly centered in Max column */
+      .primary-injection-table td:nth-child(7) input {
+        width: 90% !important;
+        text-align: center !important;
+        margin: 0 auto !important;
+        position: relative !important;
+        right: 0 !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* Center the vertical line between Min and Max columns */
       .primary-injection-table td:nth-child(6) {
         border-right: 1px solid black !important;
-        padding-left: 2px !important;
-        padding-right: 0 !important;
+        border-right-width: 0.5px !important;
       }
       
-      /* Max column - start from exact center */
       .primary-injection-table td:nth-child(7) {
-        border-left: none !important;
-        padding-left: 0 !important;
-        padding-right: 2px !important;
-      }
-      
-      /* Input values positioned to meet at center line */
-      .primary-injection-table td:nth-child(6) input {
-        margin: 0 !important;
-        margin-left: auto !important;
-        text-align: center !important;
-        width: 95% !important;
-        position: relative !important;
-        right: 1px !important;
-        box-sizing: border-box !important;
-      }
-      
-      .primary-injection-table td:nth-child(7) input {
-        margin: 0 !important;
-        margin-right: auto !important;
-        text-align: center !important;
-        width: 95% !important;
-        position: relative !important;
-        left: 1px !important;
-        box-sizing: border-box !important;
+        border-left: 1px solid black !important;
+        border-left-width: 0.5px !important;
+        margin-left: -0.5px !important;
       }
       
       /* Add bottom margin to prevent cutoff */

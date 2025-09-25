@@ -2638,6 +2638,7 @@ if (typeof document !== 'undefined') {
     @media print {
       body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
       * { color: black !important; }
+      html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif !important; font-size: 9px !important; background: white !important; line-height: 1 !important; }
       
       /* Hide all navigation and header elements */
       header, nav, .navigation, [class*="nav"], [class*="header"], 
@@ -2732,16 +2733,16 @@ if (typeof document !== 'undefined') {
       
       /* Primary Injection table explicit widths for PDF */
       .primary-injection-table { table-layout: fixed !important; width: 100% !important; }
-      .primary-injection-table col:nth-child(1) { width: 12% !important; }
-      .primary-injection-table col:nth-child(2) { width: 10% !important; }
+      .primary-injection-table col:nth-child(1) { width: 10% !important; }
+      .primary-injection-table col:nth-child(2) { width: 12% !important; }
       .primary-injection-table col:nth-child(3),
-      .primary-injection-table col:nth-child(4) { width: 8% !important; }
-      .primary-injection-table col:nth-child(5) { width: 10% !important; }
+      .primary-injection-table col:nth-child(4) { width: 9% !important; }
+      .primary-injection-table col:nth-child(5) { width: 12% !important; }
       .primary-injection-table col:nth-child(6),
-      .primary-injection-table col:nth-child(7) { width: 8% !important; }
+      .primary-injection-table col:nth-child(7) { width: 9% !important; }
       .primary-injection-table col:nth-child(8),
       .primary-injection-table col:nth-child(9),
-      .primary-injection-table col:nth-child(10) { width: 12% !important; }
+      .primary-injection-table col:nth-child(10) { width: 10% !important; }
       
       /* Prevent page breaks in critical sections */
       .mb-6 {

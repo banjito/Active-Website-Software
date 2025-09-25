@@ -2601,37 +2601,45 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table">
                 <colgroup>
-                  <col style={{ width: '12%' }} /> {/* Function */}
-                  <col style={{ width: '10%' }} /> {/* Rated Amperes */}
-                  <col style={{ width: '8%' }} />  {/* Multiplier % Left */}
-                  <col style={{ width: '8%' }} />  {/* Multiplier % Right */}
-                  <col style={{ width: '10%' }} /> {/* Test Amperes */}
-                  <col style={{ width: '8%' }} />  {/* Tolerance Min */}
-                  <col style={{ width: '8%' }} />  {/* Tolerance Max */}
-                  <col style={{ width: '12%' }} /> {/* Pole 1 */}
-                  <col style={{ width: '12%' }} /> {/* Pole 2 */}
-                  <col style={{ width: '12%' }} /> {/* Pole 3 */}
+                  <col style={{ width: '10%' }} /> {/* Function */}
+                  <col style={{ width: '12%' }} /> {/* Rated Amperes */}
+                  <col style={{ width: '9%' }} />  {/* Multiplier % Left */}
+                  <col style={{ width: '9%' }} />  {/* Multiplier % Right */}
+                  <col style={{ width: '12%' }} /> {/* Test Amperes */}
+                  <col style={{ width: '9%' }} />  {/* Tolerance Min */}
+                  <col style={{ width: '9%' }} />  {/* Tolerance Max */}
+                  <col style={{ width: '10%' }} /> {/* Pole 1 */}
+                  <col style={{ width: '10%' }} /> {/* Pole 2 */}
+                  <col style={{ width: '10%' }} /> {/* Pole 3 */}
                 </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-150">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Function</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Rated Amperes</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={3}>Function</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Rated Amperes</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={2}>Multiplier %</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Test Amperes</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Test Amperes</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={2}>Tolerance</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 1</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 2</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 3</th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Tolerance</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Min</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Max</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">sec.</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">sec.</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">sec.</th>
+                  </tr>
+                  <tr>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">A</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">A</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">A</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -3981,17 +3989,17 @@ if (typeof document !== 'undefined') {
         max-width: 40px !important;
         height: 12px !important;
         padding: 1px !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         border: 1px solid black !important;
         background: white !important;
-        font-size: 7px !important;
+        font-size: 8px !important;
         text-align: center !important;
         -webkit-appearance: none !important;
         -moz-appearance: none !important;
         appearance: none !important;
         position: relative !important;
         z-index: 1 !important;
-        display: inline-block !important;
+        display: block !important;
         float: none !important;
         box-sizing: border-box !important;
       }
@@ -4004,17 +4012,17 @@ if (typeof document !== 'undefined') {
         max-width: 25px !important;
         height: 10px !important;
         padding: 0px !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         border: 1px solid black !important;
         background: white !important;
-        font-size: 6px !important;
+        font-size: 7px !important;
         text-align: center !important;
         -webkit-appearance: none !important;
         -moz-appearance: none !important;
         appearance: none !important;
         position: relative !important;
         z-index: 1 !important;
-        display: inline-block !important;
+        display: block !important;
         float: none !important;
         box-sizing: border-box !important;
       }
@@ -4037,10 +4045,25 @@ if (typeof document !== 'undefined') {
       /* Ensure proper spacing between input boxes and text */
       .max-w-7xl table td input + span,
       .max-w-7xl table td span {
-        margin-left: 2px !important;
-        font-size: 7px !important;
+        margin-left: -23px !important;
+        font-size: 10px !important;
         display: inline-block !important;
         white-space: nowrap !important;
+        color: black !important;
+        font-weight: normal !important;
+      }
+      
+      /* Specifically ensure unit labels (sec., A, %, etc.) are visible */
+      .max-w-7xl table span.ml-1,
+      .max-w-7xl table span:contains('sec.'),
+      .max-w-7xl table span:contains('A'),
+      .max-w-7xl table span:contains('%') {
+        display: inline-block !important;
+        visibility: visible !important;
+        font-size: 10px !important;
+        color: black !important;
+        font-weight: normal !important;
+        margin-left: -15px !important;
       }
       
       /* Force table layout to prevent merging */
@@ -4115,16 +4138,16 @@ if (typeof document !== 'undefined') {
       
       /* Primary Injection table explicit widths for PDF */
       .primary-injection-table { table-layout: fixed !important; width: 100% !important; }
-      .primary-injection-table col:nth-child(1) { width: 12% !important; }
-      .primary-injection-table col:nth-child(2) { width: 10% !important; }
+      .primary-injection-table col:nth-child(1) { width: 10% !important; }
+      .primary-injection-table col:nth-child(2) { width: 12% !important; }
       .primary-injection-table col:nth-child(3),
-      .primary-injection-table col:nth-child(4) { width: 8% !important; }
-      .primary-injection-table col:nth-child(5) { width: 10% !important; }
+      .primary-injection-table col:nth-child(4) { width: 9% !important; }
+      .primary-injection-table col:nth-child(5) { width: 12% !important; }
       .primary-injection-table col:nth-child(6),
-      .primary-injection-table col:nth-child(7) { width: 8% !important; }
+      .primary-injection-table col:nth-child(7) { width: 9% !important; }
       .primary-injection-table col:nth-child(8),
       .primary-injection-table col:nth-child(9),
-      .primary-injection-table col:nth-child(10) { width: 12% !important; }
+      .primary-injection-table col:nth-child(10) { width: 10% !important; }
       
       /* Add bottom margin to prevent cutoff */
       .space-y-6 > *:last-child {

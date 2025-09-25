@@ -4147,19 +4147,33 @@ if (typeof document !== 'undefined') {
       .primary-injection-table td:nth-child(7) {
         text-align: center !important;
         vertical-align: middle !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+        padding: 2px !important;
+        box-sizing: border-box !important;
       }
       
-      /* Center tolerance input values perfectly on the dividing line */
+      /* Equal spacing for Min column */
+      .primary-injection-table td:nth-child(6) {
+        padding-left: 4px !important;
+        padding-right: 2px !important;
+      }
+      
+      /* Equal spacing for Max column */
+      .primary-injection-table td:nth-child(7) {
+        padding-left: 2px !important;
+        padding-right: 4px !important;
+      }
+      
+      /* Center tolerance input values with equal spacing */
       .primary-injection-table td:nth-child(6) input,
       .primary-injection-table td:nth-child(7) input {
         margin: 0 auto !important;
         text-align: center !important;
-        width: 90% !important;
+        width: 100% !important;
+        max-width: none !important;
         position: relative !important;
         left: 0 !important;
         right: 0 !important;
+        box-sizing: border-box !important;
       }
       
       /* Add bottom margin to prevent cutoff */

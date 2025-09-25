@@ -4057,6 +4057,15 @@ if (typeof document !== 'undefined') {
         margin-left: -15px !important;
       }
       
+      /* Move Pole 1, 2, 3 readings further left to prevent overlap */
+      .primary-injection-table td:nth-child(8) input,
+      .primary-injection-table td:nth-child(9) input,
+      .primary-injection-table td:nth-child(10) input {
+        margin-left: -8px !important;
+        position: relative !important;
+        left: -5px !important;
+      }
+      
       /* Force table layout to prevent merging */
       .max-w-7xl table {
         table-layout: fixed !important;
@@ -4140,39 +4149,49 @@ if (typeof document !== 'undefined') {
       .primary-injection-table col:nth-child(9),
       .primary-injection-table col:nth-child(10) { width: 10% !important; }
       
-      /* Perfect centering for Tolerance Min/Max columns */
+      /* Perfect centering for Tolerance Min/Max columns - meet in the middle */
       .primary-injection-table th:nth-child(6),
       .primary-injection-table th:nth-child(7),
       .primary-injection-table td:nth-child(6),
       .primary-injection-table td:nth-child(7) {
         text-align: center !important;
         vertical-align: middle !important;
-        padding: 2px !important;
+        padding: 0 !important;
         box-sizing: border-box !important;
       }
       
-      /* Equal spacing for Min column */
+      /* Min column - extend to exact center */
       .primary-injection-table td:nth-child(6) {
-        padding-left: 4px !important;
+        border-right: 1px solid black !important;
+        padding-left: 2px !important;
+        padding-right: 0 !important;
+      }
+      
+      /* Max column - start from exact center */
+      .primary-injection-table td:nth-child(7) {
+        border-left: none !important;
+        padding-left: 0 !important;
         padding-right: 2px !important;
       }
       
-      /* Equal spacing for Max column */
-      .primary-injection-table td:nth-child(7) {
-        padding-left: 2px !important;
-        padding-right: 4px !important;
+      /* Input values positioned to meet at center line */
+      .primary-injection-table td:nth-child(6) input {
+        margin: 0 !important;
+        margin-left: auto !important;
+        text-align: center !important;
+        width: 95% !important;
+        position: relative !important;
+        right: 1px !important;
+        box-sizing: border-box !important;
       }
       
-      /* Center tolerance input values with equal spacing */
-      .primary-injection-table td:nth-child(6) input,
       .primary-injection-table td:nth-child(7) input {
-        margin: 0 auto !important;
+        margin: 0 !important;
+        margin-right: auto !important;
         text-align: center !important;
-        width: 100% !important;
-        max-width: none !important;
+        width: 95% !important;
         position: relative !important;
-        left: 0 !important;
-        right: 0 !important;
+        left: 1px !important;
         box-sizing: border-box !important;
       }
       

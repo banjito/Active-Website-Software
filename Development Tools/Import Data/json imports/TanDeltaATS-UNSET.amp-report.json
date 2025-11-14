@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36FMAS3FSQFGY44Q81SG3RE",
+  "reportType": "TanDeltaATS.tsx",
+  "createdAt": "2025-08-21T14:12:40.202Z",
+  "updatedAt": "2025-08-21T14:13:19.628Z",
+  "version": 118,
+  "sections": [
+    {
+      "title": "Tan Delta Test Data",
+      "fields": [
+        {
+          "label": "Tan Delta",
+          "type": "table",
+          "value": {
+            "systemVoltageL2G": "14.4",
+            "values": [
+              {
+                "voltageStep": "4535",
+                "kV": "7.200",
+                "phaseA": {
+                  "stdDev": "980",
+                  "td": "0"
+                },
+                "phaseB": {
+                  "stdDev": "980",
+                  "td": "85435"
+                },
+                "phaseC": {
+                  "stdDev": "3534",
+                  "td": "355"
+                }
+              },
+              {
+                "voltageStep": "98",
+                "kV": "9",
+                "phaseA": {
+                  "stdDev": "8",
+                  "td": "889"
+                },
+                "phaseB": {
+                  "stdDev": "8",
+                  "td": "8"
+                },
+                "phaseC": {
+                  "stdDev": "890",
+                  "td": "8"
+                }
+              },
+              {
+                "voltageStep": "890",
+                "kV": "89",
+                "phaseA": {
+                  "stdDev": "89",
+                  "td": "880"
+                },
+                "phaseB": {
+                  "stdDev": "890",
+                  "td": "89"
+                },
+                "phaseC": {
+                  "stdDev": "890",
+                  "td": "89"
+                }
+              },
+              {
+                "voltageStep": "890",
+                "kV": "890",
+                "phaseA": {
+                  "stdDev": "9",
+                  "td": "89089"
+                },
+                "phaseB": {
+                  "stdDev": "089",
+                  "td": "0"
+                },
+                "phaseC": {
+                  "stdDev": "5",
+                  "td": "08908"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Test Equipment Used",
+          "type": "table",
+          "value": {
+            "megohmmeter": {
+              "name": "6",
+              "serialNumber": "6",
+              "ampId": "6"
+            },
+            "lowResistanceOhmmeter": {
+              "ampId": "6",
+              "serialNumber": "6",
+              "name": "6"
+            },
+            "primaryInjectionTestSet": {
+              "name": "6",
+              "serialNumber": "6",
+              "ampId": "6"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "UNSET",
+    "reportType": "TanDeltaATS",
+    "fields": {
+      "mvTanDelta": {
+        "systemVoltageL2G": "14.4",
+        "values": [
+          {
+            "voltageStep": "4535",
+            "kV": "7.200",
+            "phaseA": {
+              "stdDev": "980",
+              "td": "0"
+            },
+            "phaseB": {
+              "stdDev": "980",
+              "td": "85435"
+            },
+            "phaseC": {
+              "stdDev": "3534",
+              "td": "355"
+            }
+          },
+          {
+            "voltageStep": "98",
+            "kV": "9",
+            "phaseA": {
+              "stdDev": "8",
+              "td": "889"
+            },
+            "phaseB": {
+              "stdDev": "8",
+              "td": "8"
+            },
+            "phaseC": {
+              "stdDev": "890",
+              "td": "8"
+            }
+          },
+          {
+            "voltageStep": "890",
+            "kV": "89",
+            "phaseA": {
+              "stdDev": "89",
+              "td": "880"
+            },
+            "phaseB": {
+              "stdDev": "890",
+              "td": "89"
+            },
+            "phaseC": {
+              "stdDev": "890",
+              "td": "89"
+            }
+          },
+          {
+            "voltageStep": "890",
+            "kV": "890",
+            "phaseA": {
+              "stdDev": "9",
+              "td": "89089"
+            },
+            "phaseB": {
+              "stdDev": "089",
+              "td": "0"
+            },
+            "phaseC": {
+              "stdDev": "5",
+              "td": "08908"
+            }
+          }
+        ]
+      },
+      "testEquipment3": {
+        "megohmmeter": {
+          "name": "6",
+          "serialNumber": "6",
+          "ampId": "6"
+        },
+        "lowResistanceOhmmeter": {
+          "ampId": "6",
+          "serialNumber": "6",
+          "name": "6"
+        },
+        "primaryInjectionTestSet": {
+          "name": "6",
+          "serialNumber": "6",
+          "ampId": "6"
+        }
+      }
+    }
+  }
+}

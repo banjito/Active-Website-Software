@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36F5157NWCEQAVAE8T7RMYN",
+  "reportType": "MetalEnclosedBuswayReport.tsx",
+  "createdAt": "2025-08-21T14:04:27.561Z",
+  "updatedAt": "2025-08-21T14:05:00.905Z",
+  "version": 59,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "0899789"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "7"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "8907"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "0007-09-08"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "98"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "78"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "987"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "8797"
+        },
+        {
+          "label": "Equipment",
+          "type": "text",
+          "value": "89"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "7"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": "9897978"
+        }
+      ]
+    },
+    {
+      "title": "Nameplate Data",
+      "fields": [
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "798"
+        },
+        {
+          "label": "Catalog Number",
+          "type": "text",
+          "value": "789"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "7"
+        },
+        {
+          "label": "Fed From",
+          "type": "text",
+          "value": "789"
+        },
+        {
+          "label": "Conductor Material",
+          "type": "text",
+          "value": "7798"
+        },
+        {
+          "label": "Rated Voltage (kV)",
+          "type": "text",
+          "value": "897"
+        },
+        {
+          "label": "Operating Voltage (kV)",
+          "type": "text",
+          "value": "8079787"
+        },
+        {
+          "label": "Ampacity (A)",
+          "type": "text",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "title": "Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical Inspection",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.4.A.1",
+                "description": "Compare equipment nameplate data with drawings and specifications.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.4.A.2",
+                "description": "Inspect physical and mechanical condition.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.4.A.3",
+                "description": "Inspect anchorage, alignment, and grounding.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.4.A.4",
+                "description": "Verify correct connection in accordance with single-line diagram.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.4.A.5.1",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.4.B.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.4.A.6",
+                "description": "Confirm physical orientation in accordance with manufacturer's labels to insure adequate cooling.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.4.A.7",
+                "description": "Verify \"weep-hole\" plugs are in accordance with manufacturer's published data.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.4.A.8",
+                "description": "Verify correct installation of joint shield.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.4.A.9",
+                "description": "Verify ventilating openings are clean.",
+                "result": "Satisfactory"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Contact/Pole Resistance",
+      "fields": [
+        {
+          "label": "Bus Resistance",
+          "type": "table",
+          "value": {
+            "p1": "253235",
+            "p2": "52345234",
+            "p3": "5234",
+            "neutral": "52345"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Insulation Resistance",
+          "type": "table",
+          "value": {
+            "testVoltage": "500V",
+            "units": "MΩ",
+            "readings": {
+              "A-B": "3245342",
+              "B-C": "5234",
+              "C-A": "5234",
+              "A-N": "2345",
+              "B-N": "53245",
+              "C-N": "2345",
+              "A-G": "2345",
+              "B-G": "345",
+              "C-G": "2452",
+              "N-G": "5334"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Test Equipment Used",
+          "type": "table",
+          "value": {
+            "megohmmeter": {
+              "name": "5",
+              "serialNumber": "5",
+              "ampId": "5"
+            },
+            "lowResistanceOhmmeter": {
+              "ampId": "5",
+              "serialNumber": "5",
+              "name": "5"
+            },
+            "primaryInjectionTestSet": {
+              "name": "5",
+              "serialNumber": "5",
+              "ampId": "5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "34265234"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "98",
+    "reportType": "MetalEnclosedBuswayReport",
+    "fields": {
+      "customer": "0899789",
+      "address": "7",
+      "user": "8907",
+      "date": "0007-09-08",
+      "identifier": "98",
+      "jobNumber": "78",
+      "technicians": "987",
+      "substation": "8797",
+      "eqptLocation": "89",
+      "temperatureF": "7",
+      "humidity": "9897978",
+      "manufacturer": "798",
+      "catalogNumber": "789",
+      "serialNumber": "7",
+      "fedFrom": "789",
+      "conductorMaterial": "7798",
+      "ratedVoltage": "897",
+      "operatingVoltage": "8079787",
+      "ampacity": "8",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.4.A.1",
+            "description": "Compare equipment nameplate data with drawings and specifications.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.4.A.2",
+            "description": "Inspect physical and mechanical condition.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.4.A.3",
+            "description": "Inspect anchorage, alignment, and grounding.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.4.A.4",
+            "description": "Verify correct connection in accordance with single-line diagram.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.4.A.5.1",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.4.B.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.4.A.6",
+            "description": "Confirm physical orientation in accordance with manufacturer's labels to insure adequate cooling.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.4.A.7",
+            "description": "Verify \"weep-hole\" plugs are in accordance with manufacturer's published data.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.4.A.8",
+            "description": "Verify correct installation of joint shield.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.4.A.9",
+            "description": "Verify ventilating openings are clean.",
+            "result": "Satisfactory"
+          }
+        ]
+      },
+      "busResistance": {
+        "p1": "253235",
+        "p2": "52345234",
+        "p3": "5234",
+        "neutral": "52345"
+      },
+      "buswayIr": {
+        "testVoltage": "500V",
+        "units": "MΩ",
+        "readings": {
+          "A-B": "3245342",
+          "B-C": "5234",
+          "C-A": "5234",
+          "A-N": "2345",
+          "B-N": "53245",
+          "C-N": "2345",
+          "A-G": "2345",
+          "B-G": "345",
+          "C-G": "2452",
+          "N-G": "5334"
+        }
+      },
+      "testEquipment3": {
+        "megohmmeter": {
+          "name": "5",
+          "serialNumber": "5",
+          "ampId": "5"
+        },
+        "lowResistanceOhmmeter": {
+          "ampId": "5",
+          "serialNumber": "5",
+          "name": "5"
+        },
+        "primaryInjectionTestSet": {
+          "name": "5",
+          "serialNumber": "5",
+          "ampId": "5"
+        }
+      },
+      "comments": "34265234"
+    }
+  }
+}

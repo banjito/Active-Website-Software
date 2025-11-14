@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+Always document new systems that we create, or always update existing systems we have made so anyone who isnt me can read and understand the changes, purposes, and systems we add. This is super important, if you ever need to ask questions when doing so ask. NO .md files should be outside of the documentation folder, all .md files should be organized within the documentation folder.

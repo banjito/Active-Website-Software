@@ -1,0 +1,36 @@
+name: Weekly Reports
+
+on:
+  # Runs every Monday at 8:00 AM CST (14:00 UTC)
+  # CST is UTC-6, so 8am CST = 14:00 UTC
+  # During CDT (daylight saving), 8am CDT = 13:00 UTC
+  schedule:
+    - cron: '0 14 * * 1'  # Monday at 2:00 PM UTC (8:00 AM CST)
+  
+  # Allow manual triggering for testing
+  workflow_dispatch:
+
+jobs:
+  send-weekly-po-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Weekly PO Report
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/weekly-po-report"
+
+  send-weekly-jobs-status-report:
+    runs-on: ubuntu-latest
+    needs: send-weekly-po-report  # Run after PO report completes
+    steps:
+      - name: Send Weekly Jobs Status Report
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/weekly-jobs-status-report"
+

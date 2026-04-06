@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Tab, Dialog } from '@headlessui/react';
-import { X, GripHorizontal, Copy } from 'lucide-react';
+import { X, GripHorizontal, Copy, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../lib/AuthContext';
@@ -388,21 +388,33 @@ const DEFAULT_TRAVEL_DATA = {
   numMenLinked: true
 };
 
-/** Ensure loaded quote travel_data has all required arrays so .map() never runs on undefined */
+/** Ensure loaded quote travel_data has all required arrays so .map() never runs on undefined.
+ *  Always clones default arrays to avoid mutating the module-level constant. */
 function normalizeTravelData(parsed: any) {
   const d = DEFAULT_TRAVEL_DATA;
-  if (!parsed || typeof parsed !== 'object') return { ...d };
+  const cloneArr = (arr: any[]) => arr.map(item => ({ ...item }));
+  if (!parsed || typeof parsed !== 'object') return {
+    ...d,
+    travelExpense: cloneArr(d.travelExpense),
+    travelTime: cloneArr(d.travelTime),
+    perDiem: cloneArr(d.perDiem),
+    lodging: cloneArr(d.lodging),
+    localMiles: cloneArr(d.localMiles),
+    flights: cloneArr(d.flights),
+    airTravelTime: cloneArr(d.airTravelTime),
+    rentalCar: cloneArr(d.rentalCar)
+  };
   return {
     ...d,
     ...parsed,
-    travelExpense: Array.isArray(parsed.travelExpense) && parsed.travelExpense.length > 0 ? parsed.travelExpense : d.travelExpense,
-    travelTime: Array.isArray(parsed.travelTime) && parsed.travelTime.length > 0 ? parsed.travelTime : d.travelTime,
-    perDiem: Array.isArray(parsed.perDiem) && parsed.perDiem.length > 0 ? parsed.perDiem : d.perDiem,
-    lodging: Array.isArray(parsed.lodging) && parsed.lodging.length > 0 ? parsed.lodging : d.lodging,
-    localMiles: Array.isArray(parsed.localMiles) && parsed.localMiles.length > 0 ? parsed.localMiles : d.localMiles,
-    flights: Array.isArray(parsed.flights) && parsed.flights.length > 0 ? parsed.flights : d.flights,
-    airTravelTime: Array.isArray(parsed.airTravelTime) && parsed.airTravelTime.length > 0 ? parsed.airTravelTime : d.airTravelTime,
-    rentalCar: Array.isArray(parsed.rentalCar) && parsed.rentalCar.length > 0 ? parsed.rentalCar : d.rentalCar,
+    travelExpense: Array.isArray(parsed.travelExpense) && parsed.travelExpense.length > 0 ? parsed.travelExpense : cloneArr(d.travelExpense),
+    travelTime: Array.isArray(parsed.travelTime) && parsed.travelTime.length > 0 ? parsed.travelTime : cloneArr(d.travelTime),
+    perDiem: Array.isArray(parsed.perDiem) && parsed.perDiem.length > 0 ? parsed.perDiem : cloneArr(d.perDiem),
+    lodging: Array.isArray(parsed.lodging) && parsed.lodging.length > 0 ? parsed.lodging : cloneArr(d.lodging),
+    localMiles: Array.isArray(parsed.localMiles) && parsed.localMiles.length > 0 ? parsed.localMiles : cloneArr(d.localMiles),
+    flights: Array.isArray(parsed.flights) && parsed.flights.length > 0 ? parsed.flights : cloneArr(d.flights),
+    airTravelTime: Array.isArray(parsed.airTravelTime) && parsed.airTravelTime.length > 0 ? parsed.airTravelTime : cloneArr(d.airTravelTime),
+    rentalCar: Array.isArray(parsed.rentalCar) && parsed.rentalCar.length > 0 ? parsed.rentalCar : cloneArr(d.rentalCar),
     numMenLinked: parsed.numMenLinked !== false
   };
 }
@@ -1113,6 +1125,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   };
 
   const loadQuoteData = (quote: QuoteData) => {
+    // Prevent the async presets loader from overwriting saved data
+    presetsAppliedRef.current = true;
     try {
       // Parse the JSON data if it's a string
       let parsedData = quote.data;
@@ -1289,6 +1303,16 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         setShowTravel(false);
         setLinkLocalTravelToDays(false);
         setLinkOutOfTownTravelToDays(false);
+        setTravelData({ ...DEFAULT_TRAVEL_DATA,
+          travelExpense: DEFAULT_TRAVEL_DATA.travelExpense.map(item => ({ ...item })),
+          travelTime: DEFAULT_TRAVEL_DATA.travelTime.map(item => ({ ...item })),
+          perDiem: DEFAULT_TRAVEL_DATA.perDiem.map(item => ({ ...item })),
+          lodging: DEFAULT_TRAVEL_DATA.lodging.map(item => ({ ...item })),
+          localMiles: DEFAULT_TRAVEL_DATA.localMiles.map(item => ({ ...item })),
+          flights: DEFAULT_TRAVEL_DATA.flights.map(item => ({ ...item })),
+          airTravelTime: DEFAULT_TRAVEL_DATA.airTravelTime.map(item => ({ ...item })),
+          rentalCar: DEFAULT_TRAVEL_DATA.rentalCar.map(item => ({ ...item }))
+        });
       }
     } catch (error) {
       console.error('Error loading quote data:', error);
@@ -2389,7 +2413,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         travelDoubleTimeHours: isManualTravelLaborHours ? prev.hoursSummary.travelDoubleTimeHours : 0
       }
     }));
-  }, [data.sovItems, data.nonSovItems, data.hoursSummary.men, data.hoursSummary.hoursPerDay, showTravel, travelData, isManualTravelLaborHours]);
+  }, [data.sovItems, data.nonSovItems, data.hoursSummary.men, data.hoursSummary.hoursPerDay, showTravel, travelData, isManualLaborHours, isManualTravelLaborHours]);
 
   // Sync travel values with days onsite when toggles are enabled
   useEffect(() => {
@@ -2533,6 +2557,17 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             travelTimeItem.totalTravelLabor = travelTimeItem.grandTotalTravelHours * travelTimeItem.rate;
           }
           
+          // Sync numVehicles with Local Miles when linked
+          if (field === 'numVehicles' && newData.numMenLinked && newData.localMiles[index]) {
+            newData.localMiles[index] = {
+              ...newData.localMiles[index],
+              numVehicles: item.numVehicles
+            };
+            const localMilesItem = newData.localMiles[index];
+            localMilesItem.totalMiles = localMilesItem.numDays * localMilesItem.milesPerDay * localMilesItem.numVehicles;
+            localMilesItem.totalLocalMilesCost = localMilesItem.totalMiles * localMilesItem.rate;
+          }
+          
           // Sync trips with travelTime section
           if (field === 'trips' && newData.travelTime[index]) {
             newData.travelTime[index] = {
@@ -2587,11 +2622,11 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
               lodgingItem.totalAmount = lodgingItem.manNights * lodgingItem.rate;
             }
             
-            // Update local miles
-            if (newData.localMiles[index]) {
+            // Sync local miles vehicles with Travel Expense vehicles
+            if (newData.localMiles[index] && newData.travelExpense[index]) {
               newData.localMiles[index] = {
                 ...newData.localMiles[index],
-                numVehicles: item.numMen // Assuming vehicles = men for local travel
+                numVehicles: newData.travelExpense[index].numVehicles
               };
               // Recalculate local miles totals
               const localMilesItem = newData.localMiles[index];
@@ -2657,11 +2692,11 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
               lodgingItem.totalAmount = lodgingItem.manNights * lodgingItem.rate;
             }
             
-            // Update local miles
-            if (newData.localMiles[index]) {
+            // Sync local miles vehicles with Travel Expense vehicles
+            if (newData.localMiles[index] && newData.travelExpense[index]) {
               newData.localMiles[index] = {
                 ...newData.localMiles[index],
-                numVehicles: item.numMen // Assuming vehicles = men for local travel
+                numVehicles: newData.travelExpense[index].numVehicles
               };
               // Recalculate local miles totals
               const localMilesItem = newData.localMiles[index];
@@ -2728,11 +2763,11 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
               perDiemItem.totalPerDiem = perDiemItem.totalPerDiemPerMan * perDiemItem.numMen;
             }
             
-            // Update local miles
-            if (newData.localMiles[index]) {
+            // Sync local miles vehicles with Travel Expense vehicles
+            if (newData.localMiles[index] && newData.travelExpense[index]) {
               newData.localMiles[index] = {
                 ...newData.localMiles[index],
-                numVehicles: item.numMen // Assuming vehicles = men for local travel
+                numVehicles: newData.travelExpense[index].numVehicles
               };
               // Recalculate local miles totals
               const localMilesItem = newData.localMiles[index];
@@ -2984,6 +3019,9 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       
       try {
         const presets = await getEstimatingPresets();
+        
+        // Re-check after async gap — loadQuoteData may have run while we awaited
+        if (presetsAppliedRef.current) return;
         
         // Check if this is a new estimate (no existing quote selected)
         const hasExistingData = quotes.length > 0 && selectedQuoteIndex >= 0;
@@ -4718,7 +4756,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
 
           <div className="relative bg-white dark:bg-dark-150 rounded-lg w-[98%] h-[95vh] mx-auto p-6 shadow-xl my-4 estimate-form">
             <div className="absolute top-0 right-0 pt-4 pr-4 flex space-x-2">
-              {isNewQuote ? (
+              {isViewMode && quotes.length === 0 && isNewQuote ? null : isNewQuote ? (
                 <Button
                   onClick={saveQuote}
                   disabled={isSaving}
@@ -4803,9 +4841,40 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             </div>
 
             <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-dark-900 mb-6">
-              {isNewQuote ? 'New Estimate' : 'Saved Estimates'}
+              {isViewMode && quotes.length === 0 && isNewQuote ? 'Saved Estimates' : isNewQuote ? 'New Estimate' : 'Saved Estimates'}
             </Dialog.Title>
 
+            {/* Prompt when user opened "Show Estimates" but none exist */}
+            {isViewMode && quotes.length === 0 && isNewQuote ? (
+              <div className="h-[calc(95vh-120px)] flex items-center justify-center">
+                <div className="text-center max-w-md">
+                  <FileText className="mx-auto h-16 w-16 text-gray-300 dark:text-dark-400 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-700 dark:text-dark-800 mb-2">
+                    No Estimates Saved
+                  </h3>
+                  <p className="text-gray-500 dark:text-dark-500 mb-6">
+                    No estimates have been saved for this opportunity yet. Would you like to create one?
+                  </p>
+                  <div className="flex justify-center gap-3">
+                    <Button
+                      onClick={() => {
+                        setIsViewMode(false);
+                        handleGenerateNewQuote();
+                      }}
+                      className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors px-6 py-2"
+                    >
+                      Generate Estimate
+                    </Button>
+                    <Button
+                      onClick={handleClose}
+                      className="bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-dark-200 dark:text-dark-700 dark:hover:bg-dark-300 transition-colors px-6 py-2"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
             <div className="h-[calc(95vh-120px)] overflow-y-auto">
               {!isNewQuote && quotes.length > 0 ? (
                 <Tab.Group>
@@ -7059,6 +7128,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                 </div>
               </div>
             </div>
+            )}
           </div>
         </div>
       </Dialog>

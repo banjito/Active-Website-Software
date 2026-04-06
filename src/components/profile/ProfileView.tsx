@@ -639,6 +639,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const isManagerViewingReport = !!userId && userId !== user?.id && reportIds.includes(userId);
   const viewerRole = user?.user_metadata?.role;
   const isAdminViewer = viewerRole === 'Admin' || viewerRole === 'Super Admin';
+  const isHrViewer = viewerRole === 'HR' || viewerRole === 'HR Rep';
   const canViewSensitiveSection = viewingOwnProfile || isManagerViewingReport || isAdminViewer;
   const profileIdToFetch = isOpen && canViewSensitiveSection
     ? (userId || (profileUser?.id ?? user?.id))
@@ -1475,15 +1476,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           )}
                         </div>
 
-                        {/* One-on-One Check-Ins */}
-                        <OneOnOneList
-                          employeeId={profileIdToFetch!}
-                          employeeName={displayName}
-                          currentUserId={user?.id || ''}
-                          currentUserName={user?.user_metadata?.name || user?.email?.split('@')[0] || ''}
-                          canStartNew={isManagerViewingReport || isAdminViewer}
-                          canEdit={isManagerViewingReport || isAdminViewer}
-                        />
+                        {/* One-on-One Check-Ins — visible to the employee, their org-chart managers, and HR */}
+                        {(viewingOwnProfile || isManagerViewingReport || isHrViewer) && (
+                          <OneOnOneList
+                            employeeId={profileIdToFetch!}
+                            employeeName={displayName}
+                            currentUserId={user?.id || ''}
+                            currentUserName={user?.user_metadata?.name || user?.email?.split('@')[0] || ''}
+                            canStartNew={isManagerViewingReport || isHrViewer}
+                            canEdit={isManagerViewingReport || isHrViewer}
+                          />
+                        )}
 
                         {/* Career Development - placeholder */}
                         <div>

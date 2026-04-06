@@ -1,0 +1,61 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Note: QuickBooks credentials (QB_CLIENT_ID, QB_CLIENT_SECRET) are kept server-side
+# in Supabase Edge Functions and are not exposed in the frontend build.
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Cache control headers to prevent stale content issues
+[[headers]]
+  # HTML files should never be cached - always get fresh version
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+
+[[headers]]
+  # Root index.html - critical to never cache
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+
+[[headers]]
+  # index.html specifically
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+
+[[headers]]
+  # JS and CSS with hashed filenames can be cached forever (Vite adds hashes)
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  # Static images and favicons - cache for 1 day
+  for = "/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  # API/data files - never cache
+  for = "/version.json"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"

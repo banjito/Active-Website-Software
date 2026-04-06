@@ -1,0 +1,766 @@
+{
+  "schemaVersion": 1,
+  "exportId": "01K36ERT8AGGCQ8DABT50SK1V2",
+  "reportType": "MediumVoltageCableVLFTestWithTanDeltaATS.tsx",
+  "createdAt": "2025-08-21T13:57:08.876Z",
+  "updatedAt": "2025-08-21T13:58:17.286Z",
+  "version": 376,
+  "sections": [
+    {
+      "title": "Job Information",
+      "fields": [
+        {
+          "label": "Customer",
+          "type": "text",
+          "value": "798"
+        },
+        {
+          "label": "Address",
+          "type": "text",
+          "value": "789"
+        },
+        {
+          "label": "User",
+          "type": "text",
+          "value": "78978"
+        },
+        {
+          "label": "Date",
+          "type": "date",
+          "value": "5345-08-07"
+        },
+        {
+          "label": "Identifier",
+          "type": "text",
+          "value": "4324534"
+        },
+        {
+          "label": "Job #",
+          "type": "text",
+          "value": "25345"
+        },
+        {
+          "label": "Technicians",
+          "type": "text",
+          "value": "4323534"
+        },
+        {
+          "label": "Temp. °F",
+          "type": "number",
+          "value": "25345"
+        },
+        {
+          "label": "Humidity (%)",
+          "type": "number",
+          "value": "4235432"
+        },
+        {
+          "label": "Substation",
+          "type": "text",
+          "value": "5324"
+        },
+        {
+          "label": "Eqpt. Location",
+          "type": "text",
+          "value": "52345"
+        }
+      ]
+    },
+    {
+      "title": "Cable & Termination Data",
+      "fields": [
+        {
+          "label": "Tested From",
+          "type": "text",
+          "value": "2345324"
+        },
+        {
+          "label": "Manufacturer",
+          "type": "text",
+          "value": "53425"
+        },
+        {
+          "label": "Cable Rated Voltage (kV)",
+          "type": "text",
+          "value": "3245"
+        },
+        {
+          "label": "Cable Type",
+          "type": "text",
+          "value": "32453245"
+        },
+        {
+          "label": "Length (ft)",
+          "type": "text",
+          "value": "4325"
+        },
+        {
+          "label": "Conductor Size",
+          "type": "text",
+          "value": "324534"
+        },
+        {
+          "label": "Insulation Type",
+          "type": "text",
+          "value": "5234"
+        },
+        {
+          "label": "Conductor Material",
+          "type": "text",
+          "value": "52345234"
+        },
+        {
+          "label": "Insulation Thickness",
+          "type": "text",
+          "value": "45234"
+        },
+        {
+          "label": "From",
+          "type": "text",
+          "value": "2435234"
+        },
+        {
+          "label": "To",
+          "type": "text",
+          "value": "53245"
+        },
+        {
+          "label": "Termination Rated Voltage (kV)",
+          "type": "text",
+          "value": "2345324"
+        },
+        {
+          "label": "Termination Rated Voltage (kV)",
+          "type": "text",
+          "value": "5234"
+        }
+      ]
+    },
+    {
+      "title": "7.3.3.A Visual and Mechanical Inspection",
+      "fields": [
+        {
+          "label": "Visual and Mechanical",
+          "type": "table",
+          "value": {
+            "rows": [
+              {
+                "id": "7.3.3.A.1",
+                "description": "Inspect exposed sections of cables and connectors for physical damage and evidence of degradation and corona.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.3.3.A.2",
+                "description": "Inspect terminations and splices for physical damage, evidence of overheating, and corona.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.3.3.A.3.1",
+                "description": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.3.3.A.4",
+                "description": "Inspect shield grounding, cable support.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.3.3.A.5",
+                "description": "Verify bends are not less than minimum allowable radius.",
+                "result": "Satisfactory"
+              },
+              {
+                "id": "7.3.3.A.7",
+                "description": "If terminated through window-type CTs, verify neutral/ground conductors and shields are correctly placed for device operation.",
+                "result": "Satisfactory"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Shield Continuity",
+      "fields": [
+        {
+          "label": "Shield Continuity",
+          "type": "table",
+          "value": {
+            "unit": "Ω",
+            "a": "32452",
+            "b": "342534",
+            "c": "324534"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Insulation Resistance",
+      "fields": [
+        {
+          "label": "Pre/Post + Temp Corrected",
+          "type": "table",
+          "value": {
+            "testVoltage": "1000",
+            "unit": "GΩ",
+            "pre": {
+              "ag": "234523",
+              "bg": "45234",
+              "cg": "5234532"
+            },
+            "post": {
+              "ag": "42352",
+              "bg": "34523",
+              "cg": "5234"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Electrical Tests - Withstand Test",
+      "fields": [
+        {
+          "label": "Withstand",
+          "type": "table",
+          "value": {
+            "readings": [
+              {
+                "timeMinutes": "10",
+                "kVAC": "13",
+                "phaseA": {
+                  "currentUnit": "mA",
+                  "mA": "23445234",
+                  "nF": "53245"
+                },
+                "phaseB": {
+                  "currentUnit": "mA",
+                  "mA": "324",
+                  "nF": "908"
+                },
+                "phaseC": {
+                  "currentUnit": "mA",
+                  "mA": "789",
+                  "nF": "78907"
+                }
+              },
+              {
+                "timeMinutes": "89",
+                "kVAC": "7",
+                "phaseA": {
+                  "currentUnit": "mA",
+                  "mA": "9780",
+                  "nF": "78798"
+                },
+                "phaseB": {
+                  "currentUnit": "mA",
+                  "mA": "897",
+                  "nF": "890"
+                },
+                "phaseC": {
+                  "currentUnit": "mA",
+                  "mA": "87",
+                  "nF": "789"
+                }
+              },
+              {
+                "timeMinutes": "87",
+                "kVAC": "13",
+                "phaseA": {
+                  "currentUnit": "mA",
+                  "mA": "9087",
+                  "nF": "09"
+                },
+                "phaseB": {
+                  "currentUnit": "mA",
+                  "mA": "787",
+                  "nF": "98087"
+                },
+                "phaseC": {
+                  "currentUnit": "mA",
+                  "mA": "89",
+                  "nF": "78"
+                }
+              },
+              {
+                "timeMinutes": "7870",
+                "kVAC": "89",
+                "phaseA": {
+                  "currentUnit": "mA",
+                  "mA": "7",
+                  "nF": "89"
+                },
+                "phaseB": {
+                  "currentUnit": "mA",
+                  "mA": "7",
+                  "nF": "890"
+                },
+                "phaseC": {
+                  "currentUnit": "mA",
+                  "mA": "7",
+                  "nF": "987"
+                }
+              },
+              {
+                "timeMinutes": "098",
+                "kVAC": "87089",
+                "phaseA": {
+                  "currentUnit": "mA",
+                  "mA": "878907",
+                  "nF": "890"
+                },
+                "phaseB": {
+                  "currentUnit": "mA",
+                  "mA": "9708",
+                  "nF": "098"
+                },
+                "phaseC": {
+                  "currentUnit": "mA",
+                  "mA": "7"
+                }
+              },
+              {
+                "timeMinutes": "97",
+                "kVAC": "70",
+                "phaseA": {
+                  "currentUnit": "mA",
+                  "mA": "089",
+                  "nF": "7"
+                },
+                "phaseB": {
+                  "currentUnit": "mA",
+                  "mA": "0787",
+                  "nF": "80"
+                },
+                "phaseC": {
+                  "currentUnit": "mA",
+                  "mA": "708087",
+                  "nF": "9789"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Tan Delta (Power Factor) Test",
+      "fields": [
+        {
+          "label": "Tan Delta",
+          "type": "table",
+          "value": {
+            "systemVoltageL2G": "7089",
+            "values": [
+              {
+                "voltageStep": "09787",
+                "kV": "689",
+                "phaseA": {
+                  "stdDev": "9780",
+                  "td": "78"
+                },
+                "phaseB": {
+                  "stdDev": "890789",
+                  "td": "677"
+                },
+                "phaseC": {
+                  "stdDev": "0789",
+                  "td": "7890"
+                }
+              },
+              {
+                "voltageStep": "7980",
+                "kV": "8790",
+                "phaseA": {
+                  "stdDev": "879",
+                  "td": "7980"
+                },
+                "phaseB": {
+                  "stdDev": "7897",
+                  "td": "7890"
+                },
+                "phaseC": {
+                  "stdDev": "789789",
+                  "td": "890097"
+                }
+              },
+              {
+                "voltageStep": "907",
+                "kV": "7708",
+                "phaseA": {
+                  "stdDev": "0789",
+                  "td": "0879"
+                },
+                "phaseB": {
+                  "stdDev": "8907",
+                  "td": "0879"
+                },
+                "phaseC": {
+                  "stdDev": "789078",
+                  "td": "7890"
+                }
+              },
+              {
+                "voltageStep": "7",
+                "kV": "7890",
+                "phaseA": {
+                  "stdDev": "78908",
+                  "td": "8709"
+                },
+                "phaseB": {
+                  "stdDev": "07890",
+                  "td": "790879"
+                },
+                "phaseC": {
+                  "stdDev": "7809",
+                  "td": "7089"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Test Equipment Used",
+      "fields": [
+        {
+          "label": "Ohmmeter",
+          "type": "text",
+          "value": "0098"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "6768"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "9780"
+        },
+        {
+          "label": "Megohmmeter",
+          "type": "text",
+          "value": "7890"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "780"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "7890"
+        },
+        {
+          "label": "VLF Test Set",
+          "type": "text",
+          "value": "0789"
+        },
+        {
+          "label": "Serial Number",
+          "type": "text",
+          "value": "7890"
+        },
+        {
+          "label": "AMP ID",
+          "type": "text",
+          "value": "890787"
+        }
+      ]
+    },
+    {
+      "title": "Comments",
+      "fields": [
+        {
+          "label": "Comments",
+          "type": "textarea",
+          "value": "97"
+        }
+      ]
+    }
+  ],
+  "attachments": [],
+  "data": {
+    "identifier": "4324534",
+    "reportType": "MediumVoltageCableVLFTestWithTanDeltaATS",
+    "fields": {
+      "customer": "798",
+      "siteAddress": "789",
+      "user": "78978",
+      "date": "5345-08-07",
+      "identifier": "4324534",
+      "jobNumber": "25345",
+      "technicians": "4323534",
+      "temperatureF": "25345",
+      "humidity": "4235432",
+      "substation": "5324",
+      "eqptLocation": "52345",
+      "testedFrom": "2345324",
+      "manufacturer": "53425",
+      "voltageRating": "3245",
+      "cableType": "32453245",
+      "cableLength": "4325",
+      "size": "324534",
+      "insulation": "5234",
+      "conductorMaterial": "52345234",
+      "insulationThickness": "45234",
+      "from": "2435234",
+      "to": "53245",
+      "termRatedVoltage": "2345324",
+      "termRatedVoltage2": "5234",
+      "vm-table": {
+        "rows": [
+          {
+            "id": "7.3.3.A.1",
+            "description": "Inspect exposed sections of cables and connectors for physical damage and evidence of degradation and corona.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.3.3.A.2",
+            "description": "Inspect terminations and splices for physical damage, evidence of overheating, and corona.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.3.3.A.3.1",
+            "description": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.3.3.A.4",
+            "description": "Inspect shield grounding, cable support.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.3.3.A.5",
+            "description": "Verify bends are not less than minimum allowable radius.",
+            "result": "Satisfactory"
+          },
+          {
+            "id": "7.3.3.A.7",
+            "description": "If terminated through window-type CTs, verify neutral/ground conductors and shields are correctly placed for device operation.",
+            "result": "Satisfactory"
+          }
+        ]
+      },
+      "mvShieldContinuity": {
+        "unit": "Ω",
+        "a": "32452",
+        "b": "342534",
+        "c": "324534"
+      },
+      "mvIrPrePost": {
+        "testVoltage": "1000",
+        "unit": "GΩ",
+        "pre": {
+          "ag": "234523",
+          "bg": "45234",
+          "cg": "5234532"
+        },
+        "post": {
+          "ag": "42352",
+          "bg": "34523",
+          "cg": "5234"
+        }
+      },
+      "vlfWithstand": {
+        "readings": [
+          {
+            "timeMinutes": "10",
+            "kVAC": "13",
+            "phaseA": {
+              "currentUnit": "mA",
+              "mA": "23445234",
+              "nF": "53245"
+            },
+            "phaseB": {
+              "currentUnit": "mA",
+              "mA": "324",
+              "nF": "908"
+            },
+            "phaseC": {
+              "currentUnit": "mA",
+              "mA": "789",
+              "nF": "78907"
+            }
+          },
+          {
+            "timeMinutes": "89",
+            "kVAC": "7",
+            "phaseA": {
+              "currentUnit": "mA",
+              "mA": "9780",
+              "nF": "78798"
+            },
+            "phaseB": {
+              "currentUnit": "mA",
+              "mA": "897",
+              "nF": "890"
+            },
+            "phaseC": {
+              "currentUnit": "mA",
+              "mA": "87",
+              "nF": "789"
+            }
+          },
+          {
+            "timeMinutes": "87",
+            "kVAC": "13",
+            "phaseA": {
+              "currentUnit": "mA",
+              "mA": "9087",
+              "nF": "09"
+            },
+            "phaseB": {
+              "currentUnit": "mA",
+              "mA": "787",
+              "nF": "98087"
+            },
+            "phaseC": {
+              "currentUnit": "mA",
+              "mA": "89",
+              "nF": "78"
+            }
+          },
+          {
+            "timeMinutes": "7870",
+            "kVAC": "89",
+            "phaseA": {
+              "currentUnit": "mA",
+              "mA": "7",
+              "nF": "89"
+            },
+            "phaseB": {
+              "currentUnit": "mA",
+              "mA": "7",
+              "nF": "890"
+            },
+            "phaseC": {
+              "currentUnit": "mA",
+              "mA": "7",
+              "nF": "987"
+            }
+          },
+          {
+            "timeMinutes": "098",
+            "kVAC": "87089",
+            "phaseA": {
+              "currentUnit": "mA",
+              "mA": "878907",
+              "nF": "890"
+            },
+            "phaseB": {
+              "currentUnit": "mA",
+              "mA": "9708",
+              "nF": "098"
+            },
+            "phaseC": {
+              "currentUnit": "mA",
+              "mA": "7"
+            }
+          },
+          {
+            "timeMinutes": "97",
+            "kVAC": "70",
+            "phaseA": {
+              "currentUnit": "mA",
+              "mA": "089",
+              "nF": "7"
+            },
+            "phaseB": {
+              "currentUnit": "mA",
+              "mA": "0787",
+              "nF": "80"
+            },
+            "phaseC": {
+              "currentUnit": "mA",
+              "mA": "708087",
+              "nF": "9789"
+            }
+          }
+        ]
+      },
+      "mvTanDelta": {
+        "systemVoltageL2G": "7089",
+        "values": [
+          {
+            "voltageStep": "09787",
+            "kV": "689",
+            "phaseA": {
+              "stdDev": "9780",
+              "td": "78"
+            },
+            "phaseB": {
+              "stdDev": "890789",
+              "td": "677"
+            },
+            "phaseC": {
+              "stdDev": "0789",
+              "td": "7890"
+            }
+          },
+          {
+            "voltageStep": "7980",
+            "kV": "8790",
+            "phaseA": {
+              "stdDev": "879",
+              "td": "7980"
+            },
+            "phaseB": {
+              "stdDev": "7897",
+              "td": "7890"
+            },
+            "phaseC": {
+              "stdDev": "789789",
+              "td": "890097"
+            }
+          },
+          {
+            "voltageStep": "907",
+            "kV": "7708",
+            "phaseA": {
+              "stdDev": "0789",
+              "td": "0879"
+            },
+            "phaseB": {
+              "stdDev": "8907",
+              "td": "0879"
+            },
+            "phaseC": {
+              "stdDev": "789078",
+              "td": "7890"
+            }
+          },
+          {
+            "voltageStep": "7",
+            "kV": "7890",
+            "phaseA": {
+              "stdDev": "78908",
+              "td": "8709"
+            },
+            "phaseB": {
+              "stdDev": "07890",
+              "td": "790879"
+            },
+            "phaseC": {
+              "stdDev": "7809",
+              "td": "7089"
+            }
+          }
+        ]
+      },
+      "ohmmeter": "0098",
+      "ohmSerialNumber": "6768",
+      "ohmAmpId": "9780",
+      "megohmmeter": "7890",
+      "megohmSerialNumber": "780",
+      "megohmAmpId": "7890",
+      "vlfHipot": "0789",
+      "vlfSerialNumber": "7890",
+      "vlfAmpId": "890787",
+      "comments": "97"
+    }
+  }
+}

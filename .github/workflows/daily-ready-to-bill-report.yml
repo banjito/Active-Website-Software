@@ -1,0 +1,23 @@
+name: Daily Ready-to-Bill Report
+
+on:
+  schedule:
+    # Runs every day at 2:00 PM UTC (8:00 AM CST / 9:00 AM CDT)
+    - cron: '0 14 * * *'
+  workflow_dispatch: # Allow manual trigger for testing
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Daily Ready-to-Bill Report
+        run: |
+          echo "Triggering daily ready-to-bill report..."
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/daily-ready-to-bill-report"
+          
+          echo "Report sent successfully!"
+

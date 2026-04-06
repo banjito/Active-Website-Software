@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Prevent browser caching of this HTML file to ensure users always get latest version -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" type="image/svg+xml" href="/ampOS-favicon.svg?v=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>ampOS</title>
+    <script>
+      // FORCE CLEANUP - Kill old service workers and caches automatically
+      // This runs BEFORE any cached JavaScript can interfere
+      (function() {
+        var CLEANUP_KEY = 'amp_cleanup_v4'; // Increment this to force re-cleanup
+        var RELOAD_KEY = 'amp_reloading';
+        
+        // Prevent reload loops
+        if (sessionStorage.getItem(RELOAD_KEY) === 'true') {
+          sessionStorage.removeItem(RELOAD_KEY);
+          return;
+        }
+        
+        // Check if we've already done cleanup
+        if (localStorage.getItem(CLEANUP_KEY) === 'done') {
+          return; // Already cleaned, skip
+        }
+        
+        // Do the cleanup
+        var needsReload = false;
+        
+        // 1. Kill all service workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            if (registrations.length > 0) {
+              needsReload = true;
+              registrations.forEach(function(reg) {
+                reg.unregister();
+              });
+            }
+          });
+        }
+        
+        // 2. Clear all caches
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            if (names.length > 0) {
+              needsReload = true;
+              names.forEach(function(name) {
+                caches.delete(name);
+              });
+            }
+          });
+        }
+        
+        // 3. Clear potentially corrupted localStorage data
+        try {
+          var keysToRemove = [];
+          for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            if (key && (
+              key.indexOf('opportunityFilters') !== -1 ||
+              key.indexOf('customerList') !== -1 ||
+              key.indexOf('contactList') !== -1 ||
+              key.indexOf('amp_') !== -1
+            )) {
+              keysToRemove.push(key);
+            }
+          }
+          if (keysToRemove.length > 0) {
+            needsReload = true;
+            keysToRemove.forEach(function(k) {
+              localStorage.removeItem(k);
+            });
+          }
+        } catch(e) {}
+        
+        // 4. Mark cleanup as done
+        try {
+          localStorage.setItem(CLEANUP_KEY, 'done');
+        } catch(e) {}
+        
+        // 4. If we cleaned something, reload after a short delay
+        setTimeout(function() {
+          if (needsReload) {
+            sessionStorage.setItem(RELOAD_KEY, 'true');
+            window.location.reload(true);
+          }
+        }, 500);
+      })();
+    </script>
+    <script>
+      // Mobile detection and viewport management
+      (function() {
+        // Detect mobile devices
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                         window.innerWidth <= 768 || 
+                         ('ontouchstart' in window) || 
+                         (navigator.maxTouchPoints > 0);
+        
+        // Detect small screens
+        const isSmallScreen = window.innerWidth <= 640;
+        
+        // Force mobile viewport settings
+        if (isMobile || isSmallScreen) {
+          // Update viewport meta tag for mobile
+          const viewport = document.querySelector('meta[name="viewport"]');
+          if (viewport) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=0.7, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover');
+          }
+          
+          // Add mobile class to html element
+          document.documentElement.classList.add('mobile-device');
+          
+          // Force mobile styles
+          const style = document.createElement('style');
+          style.textContent = `
+            html.mobile-device {
+              font-size: 13px !important;
+            }
+            
+            @media (max-width: 768px) {
+              html {
+                font-size: 13px !important;
+              }
+              
+              body {
+                -webkit-text-size-adjust: none !important;
+                -moz-text-size-adjust: none !important;
+                -ms-text-size-adjust: none !important;
+                text-size-adjust: none !important;
+              }
+            }
+            
+            /* Force mobile styles on detected mobile devices */
+            html.mobile-device .text-xl { font-size: 1.1rem !important; }
+            html.mobile-device .text-2xl { font-size: 1.3rem !important; }
+            html.mobile-device .text-3xl { font-size: 1.5rem !important; }
+            html.mobile-device .text-lg { font-size: 1rem !important; }
+            html.mobile-device .text-base { font-size: 0.9rem !important; }
+            html.mobile-device .text-sm { font-size: 0.8rem !important; }
+            html.mobile-device .text-xs { font-size: 0.7rem !important; }
+            
+            html.mobile-device .p-6 { padding: 0.75rem !important; }
+            html.mobile-device .p-4 { padding: 0.5rem !important; }
+            html.mobile-device .p-3 { padding: 0.4rem !important; }
+            
+            html.mobile-device .gap-4 { gap: 0.5rem !important; }
+            html.mobile-device .gap-3 { gap: 0.4rem !important; }
+            html.mobile-device .gap-2 { gap: 0.3rem !important; }
+            
+            html.mobile-device .h-5 { height: 0.9rem !important; width: 0.9rem !important; }
+            html.mobile-device .h-4 { height: 0.8rem !important; width: 0.8rem !important; }
+            html.mobile-device .w-5 { width: 0.9rem !important; }
+            html.mobile-device .w-4 { width: 0.8rem !important; }
+          `;
+          document.head.appendChild(style);
+        }
+        
+        // Handle orientation changes and resize events
+        function handleResize() {
+          const currentWidth = window.innerWidth;
+          const shouldBeMobile = currentWidth <= 768;
+          
+          if (shouldBeMobile && !document.documentElement.classList.contains('mobile-device')) {
+            document.documentElement.classList.add('mobile-device');
+          } else if (!shouldBeMobile && document.documentElement.classList.contains('mobile-device') && !isMobile) {
+            document.documentElement.classList.remove('mobile-device');
+          }
+        }
+        
+        // Listen for resize and orientation changes
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', function() {
+          setTimeout(handleResize, 100);
+        });
+        
+        // Initial check
+        handleResize();
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

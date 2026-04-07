@@ -1483,8 +1483,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             employeeName={displayName}
                             currentUserId={user?.id || ''}
                             currentUserName={user?.user_metadata?.name || user?.email?.split('@')[0] || ''}
-                            canStartNew={isManagerViewingReport || isHrViewer}
-                            canEdit={isManagerViewingReport || isHrViewer}
+                            canStartNew={isManagerViewingReport || isHrViewer || isAdminViewer}
+                            canEdit={isManagerViewingReport || isHrViewer || isAdminViewer}
                           />
                         )}
 

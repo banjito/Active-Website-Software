@@ -4,7 +4,7 @@ import Card from "../../components/ui/Card"
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs"
 import { Badge } from "../../components/ui"
-import { ChevronRight, Building, MapPin, Bell, User as UserIcon, Settings, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Phone, Loader2, BookOpen, Gauge, AlertTriangle, MoreVertical } from "lucide-react"
+import { ChevronRight, Building, MapPin, Bell, User as UserIcon, Settings, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Phone, Loader2, BookOpen, Gauge, AlertTriangle, MoreVertical, Check, AlertCircle } from "lucide-react"
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react"
 import { useAuth } from "../../lib/AuthContext"
 import { useDivision } from '../../App'
@@ -136,7 +136,7 @@ export default function PortalLanding() {
   const [expandedAnnouncementId, setExpandedAnnouncementId] = useState<string | null>(null);
   const [visibleAnnouncementCount, setVisibleAnnouncementCount] = useState(3);
   /** Per-user state: acknowledged (opened) and dismissed (hidden from home). Dismissed announcements still visible under HR > Announcements. */
-  const [userAnnouncementState, setUserAnnouncementState] = useState<Record<string, { acknowledged_at: string | null; dismissed_at: string | null }>>({});
+  const [userAnnouncementState, setUserAnnouncementState] = useState<Record<string, { acknowledged_at: string | null; dismissed_at: string | null; signed_at: string | null }>>({});
   const [dismissingAnnouncementId, setDismissingAnnouncementId] = useState<string | null>(null);
   const [ackModalOpen, setAckModalOpen] = useState(false);
   const [ackModalDocUrl, setAckModalDocUrl] = useState<string | null>(null);
@@ -144,6 +144,7 @@ export default function PortalLanding() {
   const [ackFormId, setAckFormId] = useState<string | null>(null);
   const [ackFormName, setAckFormName] = useState<string>('');
   const [ackResolvingForm, setAckResolvingForm] = useState(false);
+  const [ackAnnouncementId, setAckAnnouncementId] = useState<string | null>(null);
   const [ackSignatureData, setAckSignatureData] = useState<string>('');
   const [ackSigning, setAckSigning] = useState(false);
   const ackCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -179,9 +180,10 @@ export default function PortalLanding() {
     return () => { cancelled = true; };
   }, [ackModalOpen, ackModalDocUrl]);
 
-  const openAckModal = (docUrl: string, title: string) => {
+  const openAckModal = (docUrl: string, title: string, announcementId: string) => {
     setAckModalDocUrl(docUrl);
     setAckModalTitle(title);
+    setAckAnnouncementId(announcementId);
     setAckSignatureData('');
     setAckModalOpen(true);
   };
@@ -190,6 +192,7 @@ export default function PortalLanding() {
     setAckModalOpen(false);
     setAckModalDocUrl(null);
     setAckModalTitle('');
+    setAckAnnouncementId(null);
     setAckFormId(null);
     setAckFormName('');
     setAckSignatureData('');
@@ -247,15 +250,45 @@ export default function PortalLanding() {
     try {
       const signerName = user.user_metadata?.name || user.email?.split('@')[0] || 'Unknown';
       const signerEmail = user.email || '';
+      const signedNow = new Date().toISOString();
       await onboardingService.createESignSubmission({
         form_id: ackFormId,
         signer_email: signerEmail,
         signer_name: signerName,
-        signatures: [{ field_name: 'acknowledgment', signature_image: ackSignatureData, signed_at: new Date().toISOString() }],
+        signatures: [{ field_name: 'acknowledgment', signature_image: ackSignatureData, signed_at: signedNow }],
         form_data: {},
         status: 'signed',
-        signed_at: new Date().toISOString(),
+        signed_at: signedNow,
       } as any);
+      if (ackAnnouncementId) {
+        const existing = userAnnouncementState[ackAnnouncementId];
+        const { error: stateError } = await supabase
+          .schema('common')
+          .from('user_announcement_state')
+          .upsert(
+            {
+              user_id: user.id,
+              announcement_id: ackAnnouncementId,
+              acknowledged_at: existing?.acknowledged_at ?? signedNow,
+              dismissed_at: existing?.dismissed_at ?? null,
+              signed_at: signedNow,
+              updated_at: signedNow,
+            },
+            { onConflict: 'user_id,announcement_id', ignoreDuplicates: false }
+          );
+        if (stateError) {
+          console.error('Error persisting signed_at state:', stateError);
+        } else {
+          setUserAnnouncementState((prev) => ({
+            ...prev,
+            [ackAnnouncementId]: {
+              acknowledged_at: prev[ackAnnouncementId]?.acknowledged_at ?? signedNow,
+              dismissed_at: prev[ackAnnouncementId]?.dismissed_at ?? null,
+              signed_at: signedNow,
+            },
+          }));
+        }
+      }
       toast({ title: 'Success', description: 'Acknowledgment recorded.', variant: 'success' });
       closeAckModal();
     } catch (e: any) {
@@ -486,15 +519,15 @@ export default function PortalLanding() {
         const { data, error } = await supabase
           .schema('common')
           .from('user_announcement_state')
-          .select('announcement_id, acknowledged_at, dismissed_at')
+          .select('announcement_id, acknowledged_at, dismissed_at, signed_at')
           .eq('user_id', user.id);
         if (error) {
           console.error('Error fetching user announcement state:', error);
           return;
         }
-        const byId: Record<string, { acknowledged_at: string | null; dismissed_at: string | null }> = {};
-        (data || []).forEach((row: { announcement_id: string; acknowledged_at: string | null; dismissed_at: string | null }) => {
-          byId[row.announcement_id] = { acknowledged_at: row.acknowledged_at, dismissed_at: row.dismissed_at };
+        const byId: Record<string, { acknowledged_at: string | null; dismissed_at: string | null; signed_at: string | null }> = {};
+        (data || []).forEach((row: { announcement_id: string; acknowledged_at: string | null; dismissed_at: string | null; signed_at: string | null }) => {
+          byId[row.announcement_id] = { acknowledged_at: row.acknowledged_at, dismissed_at: row.dismissed_at, signed_at: row.signed_at };
         });
         setUserAnnouncementState(byId);
       } catch (err) {
@@ -519,6 +552,7 @@ export default function PortalLanding() {
               announcement_id: expandedAnnouncementId,
               acknowledged_at: now,
               dismissed_at: existing?.dismissed_at ?? null,
+              signed_at: existing?.signed_at ?? null,
               updated_at: now,
             },
             { onConflict: 'user_id,announcement_id', ignoreDuplicates: false }
@@ -533,6 +567,7 @@ export default function PortalLanding() {
           [expandedAnnouncementId]: {
             acknowledged_at: now,
             dismissed_at: prev[expandedAnnouncementId]?.dismissed_at ?? null,
+            signed_at: prev[expandedAnnouncementId]?.signed_at ?? null,
           },
         }));
       } catch (err) {
@@ -544,7 +579,13 @@ export default function PortalLanding() {
   const dismissAnnouncement = async (announcementId: string) => {
     if (!user?.id) return;
     const existing = userAnnouncementState[announcementId];
-    if (!existing?.acknowledged_at) {
+    const announcement = portalAnnouncements.find((a) => a.id === announcementId);
+    const requiresSignature = announcement ? /📄 \[View & Acknowledge Document\]\([^)]+\)/.test(announcement.content) : false;
+    if (requiresSignature && !existing?.signed_at) {
+      toast({ title: 'Signature required', description: 'You must sign this announcement before you can dismiss it.', variant: 'destructive' });
+      return;
+    }
+    if (!requiresSignature && !existing?.acknowledged_at) {
       toast({ title: 'Open first', description: 'Open the announcement to review it before you can dismiss it.', variant: 'destructive' });
       return;
     }
@@ -557,8 +598,9 @@ export default function PortalLanding() {
           {
             user_id: user.id,
             announcement_id: announcementId,
-            acknowledged_at: existing.acknowledged_at,
+            acknowledged_at: existing?.acknowledged_at ?? new Date().toISOString(),
             dismissed_at: new Date().toISOString(),
+            signed_at: existing?.signed_at ?? null,
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'user_id,announcement_id', ignoreDuplicates: false }
@@ -566,7 +608,7 @@ export default function PortalLanding() {
       if (error) throw error;
       setUserAnnouncementState((prev) => ({
         ...prev,
-        [announcementId]: { ...prev[announcementId], acknowledged_at: existing.acknowledged_at, dismissed_at: new Date().toISOString() },
+        [announcementId]: { ...prev[announcementId], acknowledged_at: existing?.acknowledged_at ?? new Date().toISOString(), dismissed_at: new Date().toISOString(), signed_at: existing?.signed_at ?? null },
       }));
       toast({ title: 'Dismissed', description: 'Announcement hidden from home. You can still find it under HR → Announcements.', variant: 'success' });
     } catch (err) {
@@ -1843,6 +1885,10 @@ export default function PortalLanding() {
                 .slice(0, visibleAnnouncementCount)
                 .map((a) => {
                   const isAcknowledged = !!userAnnouncementState[a.id]?.acknowledged_at;
+                  const requiresSignature = /📄 \[View & Acknowledge Document\]\([^)]+\)/.test(a.content);
+                  const isSigned = !!userAnnouncementState[a.id]?.signed_at;
+                  const signedAtDate = userAnnouncementState[a.id]?.signed_at;
+                  const canDismiss = requiresSignature ? isSigned : isAcknowledged;
                   return (
                 <div
                   key={a.id}
@@ -1872,6 +1918,19 @@ export default function PortalLanding() {
                         }`}>
                           {a.category.charAt(0).toUpperCase() + a.category.slice(1)}
                         </span>
+                        {requiresSignature && (
+                          isSigned ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                              <Check className="h-3 w-3" />
+                              Signed {signedAtDate ? new Date(signedAtDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                              <AlertCircle className="h-3 w-3" />
+                              Signature required
+                            </span>
+                          )
+                        )}
                       </div>
                       {expandedAnnouncementId === a.id ? (
                         <p className="text-sm text-gray-700 dark:text-gray-300 mt-3 whitespace-pre-wrap leading-relaxed">
@@ -1910,7 +1969,7 @@ export default function PortalLanding() {
                                 className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#f26722]/90 rounded-md transition-colors shadow-sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  openAckModal(docUrl, a.title);
+                                  openAckModal(docUrl, a.title, a.id);
                                 }}
                               >
                                 <FileText className="h-4 w-4" />
@@ -1934,16 +1993,18 @@ export default function PortalLanding() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="min-w-[180px]">
                           <DropdownMenuItem
-                            disabled={!isAcknowledged || dismissingAnnouncementId === a.id}
+                            disabled={!canDismiss || dismissingAnnouncementId === a.id}
                             onClick={() => dismissAnnouncement(a.id)}
-                            className={!isAcknowledged ? 'opacity-60' : ''}
+                            className={!canDismiss ? 'opacity-60' : ''}
                           >
                             {dismissingAnnouncementId === a.id ? (
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                             ) : (
                               <EyeOff className="h-4 w-4 mr-2" />
                             )}
-                            {!isAcknowledged ? 'Open announcement first to dismiss' : (dismissingAnnouncementId === a.id ? 'Dismissing…' : 'Dismiss from home')}
+                            {!canDismiss
+                              ? (requiresSignature ? 'Sign announcement to dismiss' : 'Open announcement first to dismiss')
+                              : (dismissingAnnouncementId === a.id ? 'Dismissing…' : 'Dismiss from home')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

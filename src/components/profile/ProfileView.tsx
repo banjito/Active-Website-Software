@@ -1476,8 +1476,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           )}
                         </div>
 
-                        {/* One-on-One Check-Ins — visible to the employee, their org-chart managers, and HR */}
-                        {(viewingOwnProfile || isManagerViewingReport || isHrViewer) && (
+                        {/* One-on-One Check-Ins — visible to the employee, their org-chart managers, HR, and admins */}
+                        {(viewingOwnProfile || isManagerViewingReport || isHrViewer || isAdminViewer) && (
                           <OneOnOneList
                             employeeId={profileIdToFetch!}
                             employeeName={displayName}

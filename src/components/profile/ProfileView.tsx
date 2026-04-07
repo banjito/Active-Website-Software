@@ -640,7 +640,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const viewerRole = user?.user_metadata?.role;
   const isAdminViewer = viewerRole === 'Admin' || viewerRole === 'Super Admin';
   const isHrViewer = viewerRole === 'HR' || viewerRole === 'HR Rep';
-  const canViewSensitiveSection = viewingOwnProfile || isManagerViewingReport || isAdminViewer;
+  const canViewSensitiveSection = viewingOwnProfile || isManagerViewingReport || isAdminViewer || isHrViewer;
   const profileIdToFetch = isOpen && canViewSensitiveSection
     ? (userId || (profileUser?.id ?? user?.id))
     : null;

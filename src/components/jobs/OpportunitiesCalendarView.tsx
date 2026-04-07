@@ -151,8 +151,8 @@ export function OpportunitiesCalendarView() {
   };
 
   const handleDatesSet = (arg: DatesSetArg) => {
-    if (arg.view.type === 'dayGridMonth' && arg.start) {
-      setCurrentDate(arg.start);
+    if (arg.view.type === 'dayGridMonth' && arg.view.currentStart) {
+      setCurrentDate(arg.view.currentStart);
     }
   };
 

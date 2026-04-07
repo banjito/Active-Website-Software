@@ -1378,6 +1378,51 @@ export const onboardingService = {
     } as OnboardingTrackingRecord;
   },
 
+  /** Create onboarding tracking directly from a hired candidate (no offer required). */
+  async createOnboardingFromCandidate(candidateId: string, createdBy: string): Promise<OnboardingTrackingRecord> {
+    const { data: candidate, error: candErr } = await supabase
+      .schema('common')
+      .from('candidates')
+      .select('id, first_name, last_name, email, position_applied')
+      .eq('id', candidateId)
+      .single();
+
+    if (candErr || !candidate) throw new Error('Candidate not found');
+
+    const { data: existing } = await supabase
+      .schema('common')
+      .from('onboarding_tracking')
+      .select('id')
+      .eq('candidate_id', candidateId)
+      .limit(1);
+
+    if (existing && existing.length > 0) throw new Error('This candidate already has an onboarding record');
+
+    const { data: tracking, error: trackErr } = await supabase
+      .schema('common')
+      .from('onboarding_tracking')
+      .insert({
+        candidate_id: candidateId,
+        offer_id: null,
+        user_id: null,
+        new_hire_packet_id: null,
+        status: 'pending',
+        created_by: createdBy,
+      })
+      .select()
+      .single();
+
+    if (trackErr) {
+      console.error('Error creating onboarding tracking from candidate:', trackErr);
+      throw trackErr;
+    }
+
+    return {
+      ...tracking,
+      candidate: candidate as any,
+    } as OnboardingTrackingRecord;
+  },
+
   /** Add an ampOS user to onboarding tracking (assign person to onboarding). */
   async createOnboardingTrackingForUser(assignedUserId: string, createdBy: string): Promise<OnboardingTrackingRecord> {
     const { data: tracking, error: trackErr } = await supabase
@@ -1601,6 +1646,34 @@ export const onboardingService = {
       .delete()
       .eq('tracking_id', trackingId)
       .eq('task_id', taskId);
+  },
+
+  /** Link an ampOS user account to an onboarding tracking record so the user sees their onboarding when they log in. */
+  async linkUserToTracking(trackingId: string, userId: string): Promise<void> {
+    const { error } = await supabase
+      .schema('common')
+      .from('onboarding_tracking')
+      .update({ user_id: userId })
+      .eq('id', trackingId);
+
+    if (error) {
+      console.error('Error linking user to onboarding tracking:', error);
+      throw error;
+    }
+  },
+
+  /** Remove the linked user account from an onboarding tracking record. */
+  async unlinkUserFromTracking(trackingId: string): Promise<void> {
+    const { error } = await supabase
+      .schema('common')
+      .from('onboarding_tracking')
+      .update({ user_id: null })
+      .eq('id', trackingId);
+
+    if (error) {
+      console.error('Error unlinking user from onboarding tracking:', error);
+      throw error;
+    }
   },
 
   async updateOnboardingTrackingPacket(trackingId: string, new_hire_packet_id: string | null): Promise<OnboardingTrackingRecord> {

@@ -8,7 +8,7 @@ import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { Input } from '../../../components/ui/Input';
-import { UserPlus, Folder, Loader2, ChevronRight, ChevronLeft, Link2, User, Search, UserMinus, FileSignature, X, CheckSquare, Laptop } from 'lucide-react';
+import { UserPlus, Folder, Loader2, ChevronRight, ChevronLeft, Link2, User, Search, UserMinus, FileSignature, X, CheckSquare, Laptop, Mail, CheckCircle2 } from 'lucide-react';
 
 const PAGE_SIZE = 15;
 
@@ -37,6 +37,10 @@ export const OnboardingTracking: React.FC = () => {
   const [assigningChecklist, setAssigningChecklist] = useState(false);
   const [itTasks, setItTasks] = useState<ITEquipmentTask[]>([]);
   const [assigningITTask, setAssigningITTask] = useState(false);
+  const [linkAccountSearch, setLinkAccountSearch] = useState('');
+  const [linkAccountResults, setLinkAccountResults] = useState<AmpOSUser[]>([]);
+  const [linkAccountLoading, setLinkAccountLoading] = useState(false);
+  const [linkingAccount, setLinkingAccount] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -259,6 +263,73 @@ export const OnboardingTracking: React.FC = () => {
     }
   };
 
+  const searchWorkAccounts = async (term: string) => {
+    setLinkAccountSearch(term);
+    if (term.length < 2) {
+      setLinkAccountResults([]);
+      return;
+    }
+    try {
+      setLinkAccountLoading(true);
+      const { data, error } = await supabase.schema('common').rpc('admin_get_users');
+      let rawUsers: any[] = [];
+      if (error) {
+        const fallback = await supabase.rpc('admin_get_users');
+        rawUsers = (fallback.data || []) as any[];
+      } else {
+        rawUsers = (data || []) as any[];
+      }
+      const users: AmpOSUser[] = rawUsers
+        .filter((u: any) => {
+          const email = (u.email || '').toLowerCase();
+          const name = (u.raw_user_meta_data?.name || u.user_metadata?.name || '').toLowerCase();
+          const search = term.toLowerCase();
+          return email.includes(search) || name.includes(search);
+        })
+        .slice(0, 10)
+        .map((u: any) => ({
+          id: u.id,
+          email: u.email || '',
+          name: u.raw_user_meta_data?.name || u.user_metadata?.name || u.email?.split('@')[0] || 'Unknown',
+        }));
+      setLinkAccountResults(users);
+    } catch {
+      setLinkAccountResults([]);
+    } finally {
+      setLinkAccountLoading(false);
+    }
+  };
+
+  const handleLinkAccount = async (trackingId: string, userId: string, userEmail: string) => {
+    setLinkingAccount(true);
+    try {
+      await onboardingService.linkUserToTracking(trackingId, userId);
+      toast({ title: 'Account linked', description: `Work account ${userEmail} linked. The user will see their onboarding when they log in.`, variant: 'success' });
+      setLinkAccountSearch('');
+      setLinkAccountResults([]);
+      const data = await fetchData();
+      if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
+    } catch (e: any) {
+      toast({ title: 'Error', description: e?.message || 'Failed to link account', variant: 'destructive' });
+    } finally {
+      setLinkingAccount(false);
+    }
+  };
+
+  const handleUnlinkAccount = async (trackingId: string) => {
+    setLinkingAccount(true);
+    try {
+      await onboardingService.unlinkUserFromTracking(trackingId);
+      toast({ title: 'Account unlinked', description: 'Work account removed from this onboarding record.', variant: 'success' });
+      const data = await fetchData();
+      if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
+    } catch (e: any) {
+      toast({ title: 'Error', description: e?.message || 'Failed to unlink account', variant: 'destructive' });
+    } finally {
+      setLinkingAccount(false);
+    }
+  };
+
   const filtered = filterStatus === 'all'
     ? list
     : list.filter(r => r.status === filterStatus);
@@ -351,23 +422,38 @@ export const OnboardingTracking: React.FC = () => {
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       {record.offer
                         ? `${record.offer.position_title} – ${record.offer.department}`
+                        : record.candidate?.email
+                        ? record.candidate.email
                         : record.user
                         ? record.user.email
                         : '—'}
+                      {record.candidate?.position_applied && !record.offer && (
+                        <span className="ml-2 text-xs text-gray-400">({record.candidate.position_applied})</span>
+                      )}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      Added {new Date(record.created_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}
+                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 flex flex-wrap items-center gap-x-2">
+                      <span>Added {new Date(record.created_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}</span>
+                      {record.user ? (
+                        <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Account linked
+                        </span>
+                      ) : record.candidate && (
+                        <span className="inline-flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
+                          No account linked
+                        </span>
+                      )}
                       {(record.assigned_packets?.length ?? 0) > 0 && (
-                        <span className="ml-2">· {(record.assigned_packets?.length ?? 0)} packet(s)</span>
+                        <span>· {(record.assigned_packets?.length ?? 0)} packet(s)</span>
                       )}
                       {(record.assigned_forms?.length ?? 0) > 0 && (
-                        <span className="ml-2">· {(record.assigned_forms?.length ?? 0)} form(s)</span>
+                        <span>· {(record.assigned_forms?.length ?? 0)} form(s)</span>
                       )}
                       {(record.assigned_checklists?.length ?? 0) > 0 && (
-                        <span className="ml-2">· {(record.assigned_checklists?.length ?? 0)} checklist(s)</span>
+                        <span>· {(record.assigned_checklists?.length ?? 0)} checklist(s)</span>
                       )}
                       {(record.assigned_it_tasks?.length ?? 0) > 0 && (
-                        <span className="ml-2">· {(record.assigned_it_tasks?.length ?? 0)} IT task(s)</span>
+                        <span>· {(record.assigned_it_tasks?.length ?? 0)} IT task(s)</span>
                       )}
                     </div>
                   </button>
@@ -433,9 +519,101 @@ export const OnboardingTracking: React.FC = () => {
           </DialogHeader>
           {selectedTracking && (
             <div className="space-y-4 py-2">
+              {/* Applicant info (reference only, not a linked account) */}
+              {selectedTracking.candidate && (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <Mail className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Applicant Email</p>
+                    <p className="text-sm text-gray-900 dark:text-white truncate">{selectedTracking.candidate.email}</p>
+                  </div>
+                  {selectedTracking.candidate.position_applied && (
+                    <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full whitespace-nowrap">
+                      {selectedTracking.candidate.position_applied}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Link Work Account – search users */}
+              <div className="border-2 border-[#f26722]/30 rounded-lg p-4 bg-orange-50 dark:bg-orange-900/10">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                  <Link2 className="h-4 w-4 text-[#f26722]" />
+                  Work Account
+                </h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                  Link this onboarding to the employee's work account so they see their packets, forms, and checklists when they log in.
+                </p>
+
+                {selectedTracking.user ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-gray-900 dark:text-white">{selectedTracking.user.name || selectedTracking.user.email}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{selectedTracking.user.email}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUnlinkAccount(selectedTracking.id)}
+                        disabled={linkingAccount}
+                      >
+                        <X className="h-3.5 w-3.5 mr-1" />
+                        Unlink
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <span className="text-xs text-yellow-700 dark:text-yellow-300">No work account linked yet. Search below once the account has been created.</span>
+                    </div>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Search by name or email..."
+                        value={linkAccountSearch}
+                        onChange={(e) => searchWorkAccounts(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      />
+                      {linkAccountLoading && (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-gray-400" />
+                      )}
+                    </div>
+                    {linkAccountResults.length > 0 && (
+                      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden max-h-40 overflow-y-auto">
+                        {linkAccountResults.map(u => (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => handleLinkAccount(selectedTracking.id, u.id, u.email)}
+                            disabled={linkingAccount}
+                            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-left border-b last:border-0 border-gray-100 dark:border-gray-700"
+                          >
+                            <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{u.name}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{u.email}</p>
+                            </div>
+                            <Link2 className="h-4 w-4 text-[#f26722] flex-shrink-0" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {linkAccountSearch.length >= 2 && linkAccountResults.length === 0 && !linkAccountLoading && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                        No matching accounts found. Make sure the employee has created their account first.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  New hires see packets assigned to them at <strong>Your Onboarding</strong>: they sign in with their candidate email, then use &quot;Your Onboarding&quot; in the sidebar or profile menu to view and sign their packets.
+                  Once a work account is linked, the employee sees their onboarding at <strong>Your Onboarding</strong>.
                 </p>
                 <Button
                   variant="outline"

@@ -6,12 +6,13 @@ import { Input } from '../../../components/ui/Input';
 import { Textarea } from '../../../components/ui/Textarea';
 import { Select } from '../../../components/ui/Select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { Search, Filter, User, Mail, Phone, MapPin, Calendar, FileText, TrendingUp, Users, Plus, Edit, Eye, ArrowRight, ChevronDown, ChevronUp, Clock, Video, Phone as PhoneIcon, User as UserIcon, MapPin as MapPinIcon, Upload, X, Link2, ArrowRightLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { Search, Filter, User, Mail, Phone, MapPin, Calendar, FileText, TrendingUp, Users, Plus, Edit, Eye, ArrowRight, ChevronDown, ChevronUp, Clock, Video, Phone as PhoneIcon, User as UserIcon, MapPin as MapPinIcon, Upload, X, Link2, ArrowRightLeft, Loader2, CheckCircle2, UserPlus } from 'lucide-react';
 import { candidatesService, Candidate, CreateCandidateInput } from '../../../services/hr/candidatesService';
 import { interviewsService, Interview } from '../../../services/hr/interviewsService';
 import { offersService } from '../../../services/hr/offersService';
 import { jobRequisitionsService, JobRequisition } from '../../../services/hr/jobRequisitionsService';
 import { eeoComplianceService } from '../../../services/hr/eeoComplianceService';
+import { onboardingService } from '../../../services/hr/onboardingService';
 import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
@@ -73,6 +74,7 @@ export const CandidateTracking: React.FC = () => {
   const [assignUserLoading, setAssignUserLoading] = useState(false);
   const [linkingUser, setLinkingUser] = useState(false);
   const [transferringDocs, setTransferringDocs] = useState(false);
+  const [sendingToOnboarding, setSendingToOnboarding] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCandidates();
@@ -534,6 +536,27 @@ export const CandidateTracking: React.FC = () => {
     }
   };
 
+  const handleSendToOnboarding = async (candidate: Candidate) => {
+    if (!user?.id) return;
+    setSendingToOnboarding(candidate.id);
+    try {
+      await onboardingService.createOnboardingFromCandidate(candidate.id, user.id);
+      toast({
+        title: 'Sent to Onboarding',
+        description: `${candidate.first_name} ${candidate.last_name} has been added to onboarding. Go to Onboarding Tracking to assign packets and set up their email.`,
+        variant: 'success',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to send to onboarding',
+        variant: 'destructive',
+      });
+    } finally {
+      setSendingToOnboarding(null);
+    }
+  };
+
   const getInterviewTypeIcon = (type: Interview['interview_type']) => {
     switch (type) {
       case 'video':
@@ -789,8 +812,24 @@ export const CandidateTracking: React.FC = () => {
                       </span>
                     </CardDescription>
                   </div>
-                  <div className="ml-4">
-                    {getDisplayStatus(candidate) !== 'offer_accepted' && (
+                  <div className="ml-4 flex gap-2">
+                    {['hired', 'offer_accepted'].includes(getDisplayStatus(candidate)) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSendToOnboarding(candidate)}
+                        disabled={sendingToOnboarding === candidate.id}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600"
+                      >
+                        {sendingToOnboarding === candidate.id ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <UserPlus className="mr-2 h-4 w-4" />
+                        )}
+                        Send to Onboarding
+                      </Button>
+                    )}
+                    {!['offer_accepted', 'hired'].includes(getDisplayStatus(candidate)) && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -1740,6 +1779,34 @@ export const CandidateTracking: React.FC = () => {
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+
+              {/* Send to Onboarding – visible for offer_accepted or hired candidates */}
+              {['offer_accepted', 'hired'].includes(getDisplayStatus(selectedCandidate)) && (
+                <div className="border-2 border-emerald-500/30 rounded-lg p-5 bg-emerald-50 dark:bg-emerald-900/10">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                    <UserPlus className="h-5 w-5 text-emerald-600" />
+                    Send to Onboarding
+                  </h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    Create an onboarding record for this candidate. Once created, go to Onboarding Tracking to link their work account and assign packets.
+                  </p>
+                  <Button
+                    onClick={() => handleSendToOnboarding(selectedCandidate)}
+                    disabled={sendingToOnboarding === selectedCandidate.id}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    {sendingToOnboarding === selectedCandidate.id ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <UserPlus className="h-4 w-4 mr-2" />
+                    )}
+                    Send to Onboarding
+                  </Button>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    After sending, go to Onboarding Tracking to assign packets and manage their onboarding process.
+                  </p>
                 </div>
               )}
 

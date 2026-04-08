@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Tab, Dialog } from '@headlessui/react';
-import { X, GripHorizontal, Copy, FileText } from 'lucide-react';
+import { X, GripHorizontal, Copy, FileText, ImagePlus } from 'lucide-react';
+import { LetterImageHandler, LetterImageHandlerRef } from './LetterImageHandler';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../lib/AuthContext';
@@ -3151,6 +3152,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     
     const letterUpdateSourceRef = useRef<'user' | 'programmatic'>('programmatic');
   const letterEditorRef = useRef<HTMLDivElement | null>(null);
+  const imageHandlerRef = useRef<LetterImageHandlerRef>(null);
   const draggedScopeNotesRef = useRef<HTMLElement | null>(null);
   const [selectedLetterQuoteIndex, setSelectedLetterQuoteIndex] = useState<number | null>(null);
   const [letterHtml, setLetterHtml] = useState<string>("");
@@ -3430,10 +3432,10 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     };
 
     const handleDrop = (e: DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
       const dragged = draggedScopeNotesRef.current;
       if (!dragged || !letterEditorRef.current) return;
+      e.preventDefault();
+      e.stopPropagation();
       const dropTarget = e.target as Node;
       const dropEl = (dropTarget.nodeType === Node.TEXT_NODE ? dropTarget.parentElement : dropTarget) as HTMLElement;
       if (!dropEl) return;
@@ -7974,6 +7976,20 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
               >
                 Scope Notes
               </Button>
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  imageHandlerRef.current?.insertImage();
+                }}
+                variant="outline"
+                size="sm"
+                className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white flex items-center gap-1"
+              >
+                <ImagePlus className="w-4 h-4" />
+                Insert Image
+              </Button>
             </div>
           </div>
           <div className="flex-1 overflow-auto p-8" style={{ background: '#f9f9f9' }}>
@@ -7992,7 +8008,26 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                   }
                 }
               }}
+              onPaste={e => {
+                if (imageHandlerRef.current?.handlePaste(e)) return;
+              }}
               onBlur={() => {}}
+            />
+            <LetterImageHandler
+              ref={imageHandlerRef}
+              editorRef={letterEditorRef}
+              onContentChange={() => {
+                const editor = letterEditorRef.current;
+                if (!editor) return;
+                letterUpdateSourceRef.current = 'user';
+                const newHtml = editor.innerHTML;
+                if (newHtml !== letterHtml) {
+                  setLetterHtml(newHtml);
+                  if (newHtml.trim() !== savedLetterHtmlRef.current.trim()) {
+                    setIsLetterDirty(true);
+                  }
+                }
+              }}
             />
           </div>
 

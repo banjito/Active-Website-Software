@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Tab, Dialog } from '@headlessui/react';
-import { X, GripHorizontal, Copy, FileText, ImagePlus } from 'lucide-react';
+import { X, GripHorizontal, Copy, FileText, ImagePlus, SeparatorHorizontal } from 'lucide-react';
 import { LetterImageHandler, LetterImageHandlerRef } from './LetterImageHandler';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/Button';
@@ -4424,6 +4424,16 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           /* Ensure ul elements don't show extra bullets after the last li */
           ul { list-style-position: inside !important; }
           ul::after { content: none !important; display: none !important; }
+          /* Manual page breaks inserted by user */
+          .amp-page-break {
+            break-before: page !important;
+            page-break-before: always !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 0 !important;
+          }
+          .amp-page-break span { display: none !important; }
         }
         /* Signature should render well */
         img[alt="Signature"] { max-height: 60px; }
@@ -7989,6 +7999,30 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
               >
                 <ImagePlus className="w-4 h-4" />
                 Insert Image
+              </Button>
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const editor = letterEditorRef.current;
+                  if (!editor) return;
+                  editor.focus();
+                  const pageBreakHtml = '<div class="amp-page-break" contenteditable="false" style="page-break-before:always;break-before:page;border-top:2px dashed #9ca3af;margin:18px 0;position:relative;height:0;cursor:default;user-select:none;" title="Page Break"><span style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:white;padding:0 10px;color:#9ca3af;font-size:11px;font-weight:500;letter-spacing:0.5px;pointer-events:none;">PAGE BREAK</span></div>';
+                  document.execCommand('insertHTML', false, pageBreakHtml);
+                  letterUpdateSourceRef.current = 'user';
+                  const newHtml = editor.innerHTML;
+                  if (newHtml !== letterHtml) {
+                    setLetterHtml(newHtml);
+                    setIsLetterDirty(true);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white flex items-center gap-1"
+              >
+                <SeparatorHorizontal className="w-4 h-4" />
+                Page Break
               </Button>
             </div>
           </div>

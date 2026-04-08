@@ -35,11 +35,11 @@ enum CablePhase {
 }
 
 enum InspectionResult {
-  SELECT = 'select one',
-  SATISFACTORY = 'satisfactory',
-  UNSATISFACTORY = 'unsatisfactory',
-  CLEANED = 'cleaned',
-  SEE_COMMENTS = 'see comments',
+  SELECT = 'Select One',
+  SATISFACTORY = 'Satisfactory',
+  UNSATISFACTORY = 'Unsatisfactory',
+  CLEANED = 'Cleaned',
+  SEE_COMMENTS = 'See Comments',
   NONE = 'Not Applicable'
 }
 

@@ -452,6 +452,39 @@ function getHourlyRatesForCombinedScope(parsedData: any): {
   };
 }
 
+const DEFAULT_MOBILIZATION_FACTORS = { base: 0.00, over100k: 0.10, over500k: 0.05, over1m: 0.05 };
+
+/** Mobilization factors from each estimate's saved JSON — combined letters must not use the active tab's factors for every scope. */
+function getMobilizationFactorsForCombinedScope(parsedData: any): {
+  base: number; over100k: number; over500k: number; over1m: number;
+} {
+  const mf = parsedData?.mobilizationFactors;
+  if (mf && typeof mf === 'object') {
+    const b  = Number(mf.base);
+    const k  = Number(mf.over100k);
+    const fk = Number(mf.over500k);
+    const m  = Number(mf.over1m);
+    return {
+      base:    Number.isFinite(b)  ? b  : DEFAULT_MOBILIZATION_FACTORS.base,
+      over100k: Number.isFinite(k) ? k  : DEFAULT_MOBILIZATION_FACTORS.over100k,
+      over500k: Number.isFinite(fk) ? fk : DEFAULT_MOBILIZATION_FACTORS.over500k,
+      over1m:  Number.isFinite(m)  ? m  : DEFAULT_MOBILIZATION_FACTORS.over1m,
+    };
+  }
+  return { ...DEFAULT_MOBILIZATION_FACTORS };
+}
+
+/** Pure mobilization-factor lookup that works with any factors object (not just component state). */
+function computeMobilizationFactor(
+  finalValue: number,
+  factors: { base: number; over100k: number; over500k: number; over1m: number }
+) {
+  if (finalValue > 1000000) return factors.over1m;
+  if (finalValue > 500000) return factors.over500k;
+  if (finalValue > 100000) return factors.over100k;
+  return factors.base;
+}
+
 export default function EstimateSheet({ opportunityId, mode, openSignal }: EstimateSheetProps) {
   const theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   const [isOpen, setIsOpen] = useState(true);
@@ -1225,10 +1258,9 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         
         // Handle mobilization factors
         if (parsedData.mobilizationFactors) {
-          setMobilizationFactors(prev => ({
-            ...prev,
-            ...parsedData.mobilizationFactors
-          }));
+          setMobilizationFactors(parsedData.mobilizationFactors);
+        } else {
+          setMobilizationFactors({ ...DEFAULT_MOBILIZATION_FACTORS });
         }
         
         if (parsedData.isManualLaborHours !== undefined) {
@@ -3885,6 +3917,12 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         originalQuoteIndex === selectedQuoteIndex && selectedQuoteIndex >= 0
           ? hourlyRates
           : getHourlyRatesForCombinedScope(parsedData);
+
+      // Per-scope mobilization factors from saved quote data; use live form state only for the active tab
+      const scopeMobFactors =
+        originalQuoteIndex === selectedQuoteIndex && selectedQuoteIndex >= 0
+          ? mobilizationFactors
+          : getMobilizationFactorsForCombinedScope(parsedData);
       
       // Calculate final value for this quote
       function getFinalNumeratorWithoutTravel(parsed: any) {
@@ -3986,6 +4024,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         sunFinalValue,
         hasSat,
         hasSun,
+        scopeMobFactors,
         quoteNumber: (opportunityData as any)?.quote_number || quote.id?.slice(0,6) || (selectedQuotesForCombined[quoteIndex] + 1),
         displayTitle: (parsedData?.title && String(parsedData.title).trim()) ? String(parsedData.title).trim() : ''
       };
@@ -4007,8 +4046,13 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       return sum + (value * scopeQty);
     }, 0);
     
-    const combinedMobilizationFactor = getMobilizationFactor(combinedFinalValue);
-    const combinedMobilizationRaw = Math.ceil(combinedFinalValue * combinedMobilizationFactor);
+    // Sum per-scope mobilizations using each scope's own saved factors
+    const combinedMobilizationRaw = processedQuotes.reduce((sum, q, index) => {
+      const originalQuoteIndex = selectedQuotesForCombined[index];
+      const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
+      const factor = computeMobilizationFactor(q.finalValue, q.scopeMobFactors);
+      return sum + Math.ceil(q.finalValue * scopeQty * factor);
+    }, 0);
     const combinedMobilization = formatCurrency(combinedMobilizationRaw);
 
     // Saturday combined final value
@@ -4017,7 +4061,12 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
       return sum + ((q.satFinalValue || q.finalValue) * scopeQty);
     }, 0);
-    const combinedSatMobRaw = Math.ceil(combinedSatFinalValue * getMobilizationFactor(combinedSatFinalValue));
+    const combinedSatMobRaw = processedQuotes.reduce((sum, q, index) => {
+      const originalQuoteIndex = selectedQuotesForCombined[index];
+      const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
+      const satVal = (q.satFinalValue || q.finalValue) * scopeQty;
+      return sum + Math.ceil(satVal * computeMobilizationFactor(q.satFinalValue || q.finalValue, q.scopeMobFactors));
+    }, 0);
 
     // Sunday combined final value
     const combinedSunFinalValue = processedQuotes.reduce((sum, q, index) => {
@@ -4025,7 +4074,12 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
       return sum + ((q.sunFinalValue || q.finalValue) * scopeQty);
     }, 0);
-    const combinedSunMobRaw = Math.ceil(combinedSunFinalValue * getMobilizationFactor(combinedSunFinalValue));
+    const combinedSunMobRaw = processedQuotes.reduce((sum, q, index) => {
+      const originalQuoteIndex = selectedQuotesForCombined[index];
+      const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
+      const sunVal = (q.sunFinalValue || q.finalValue) * scopeQty;
+      return sum + Math.ceil(sunVal * computeMobilizationFactor(q.sunFinalValue || q.finalValue, q.scopeMobFactors));
+    }, 0);
 
     const anyScopeHasSat = processedQuotes.some(q => q.hasSat);
     const anyScopeHasSun = processedQuotes.some(q => q.hasSun);
@@ -4050,7 +4104,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         : `<tr><td style='padding:4px 12px;border:1px solid #ccc;'>24-hour Power Study</td><td style='padding:4px 12px;border:1px solid #ccc;text-align:center;'>1</td></tr>`;
       
       const scopeMobilizationRaw = (() => {
-        const factor = getMobilizationFactor(processedQuote.finalValue);
+        const factor = computeMobilizationFactor(processedQuote.finalValue, processedQuote.scopeMobFactors);
         return Math.ceil(processedQuote.finalValue * factor);
       })();
       const showScopeMobilization = scopeMobilizationRaw > 0 || includeMobilizationWhenZero;
@@ -4058,8 +4112,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const showScopesSat = letterIncludeSaturday && processedQuote.hasSat;
       const showScopesSun = letterIncludeSunday && processedQuote.hasSun;
 
-      const satScopeMobRaw = processedQuote.hasSat ? Math.ceil(processedQuote.satFinalValue * getMobilizationFactor(processedQuote.satFinalValue)) : scopeMobilizationRaw;
-      const sunScopeMobRaw = processedQuote.hasSun ? Math.ceil(processedQuote.sunFinalValue * getMobilizationFactor(processedQuote.sunFinalValue)) : scopeMobilizationRaw;
+      const satScopeMobRaw = processedQuote.hasSat ? Math.ceil(processedQuote.satFinalValue * computeMobilizationFactor(processedQuote.satFinalValue, processedQuote.scopeMobFactors)) : scopeMobilizationRaw;
+      const sunScopeMobRaw = processedQuote.hasSun ? Math.ceil(processedQuote.sunFinalValue * computeMobilizationFactor(processedQuote.sunFinalValue, processedQuote.scopeMobFactors)) : scopeMobilizationRaw;
 
       const scopeTermsToRender = letterShowAllTerms
         ? [

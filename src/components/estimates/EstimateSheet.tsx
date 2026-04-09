@@ -4197,7 +4197,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         ${individualPricingHtml}
         </div>
       `;
-    }).join('');
+    }).join('<p class="amp-scope-spacer" style="margin:0; padding:0; line-height:0.5;"><br></p>');
     
     const contactName = contactData ? `${contactData.first_name} ${contactData.last_name}`.trim() : (customer.name || 'Contact Name');
     const signatureUrl = (window as any)?.AMP_SIGNATURE_URL || '/img/brian-rodgers-signature.jpg';

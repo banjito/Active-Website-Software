@@ -646,6 +646,22 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             width: 100% !important;
             max-width: 100% !important;
           }
+
+          /* Force text wrapping in comment/conclusion/recommendation print boxes */
+          #report-container table.print-comment-table,
+          .is-windows #report-container table.print-comment-table {
+            table-layout: fixed !important;
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          #report-container table.print-comment-table td,
+          .is-windows #report-container table.print-comment-table td {
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            white-space: pre-wrap !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+          }
         }
 
         /* ============================================ */
@@ -1016,6 +1032,22 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           overflow: visible !important;
           width: 100% !important;
           max-width: 100% !important;
+        }
+
+        /* Force text wrapping in comment/conclusion/recommendation print boxes */
+        .force-print #report-container table.print-comment-table,
+        .force-print.is-windows #report-container table.print-comment-table {
+          table-layout: fixed !important;
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+        .force-print #report-container table.print-comment-table td,
+        .force-print.is-windows #report-container table.print-comment-table td {
+          word-wrap: break-word !important;
+          overflow-wrap: break-word !important;
+          white-space: pre-wrap !important;
+          max-width: 100% !important;
+          overflow: hidden !important;
         }
         
         /* Hide all buttons and controls in force-print mode (for embedded deliverable viewer) */

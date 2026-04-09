@@ -514,8 +514,8 @@ const GroundingSystemMaster: React.FC = () => {
                         <option value="Satisfactory">Satisfactory</option>
                         <option value="Unsatisfactory">Unsatisfactory</option>
                         <option value="Cleaned">Cleaned</option>
-                        <option value="See comments">See comments</option>
-                        <option value="Not applicable">Not applicable</option>
+                        <option value="See Comments">See Comments</option>
+                        <option value="Not Applicable">Not Applicable</option>
                       </select>
                     </td>
                   </tr>
@@ -533,8 +533,8 @@ const GroundingSystemMaster: React.FC = () => {
                         <option value="Satisfactory">Satisfactory</option>
                         <option value="Unsatisfactory">Unsatisfactory</option>
                         <option value="Cleaned">Cleaned</option>
-                        <option value="See comments">See comments</option>
-                        <option value="Not applicable">Not applicable</option>
+                        <option value="See Comments">See Comments</option>
+                        <option value="Not Applicable">Not Applicable</option>
                       </select>
                     </td>
                   </tr>
@@ -556,8 +556,8 @@ const GroundingSystemMaster: React.FC = () => {
                         <option value="Satisfactory">Satisfactory</option>
                         <option value="Unsatisfactory">Unsatisfactory</option>
                         <option value="Cleaned">Cleaned</option>
-                        <option value="See comments">See comments</option>
-                        <option value="Not applicable">Not applicable</option>
+                        <option value="See Comments">See Comments</option>
+                        <option value="Not Applicable">Not Applicable</option>
                       </select>
                     </td>
                   </tr>

@@ -1541,6 +1541,22 @@ const MediumVoltageCableVLFTest = () => {
           /* Ensure all text is black for maximum readability */
           * { color: black !important; }
 
+          /* Force text wrapping in print-only comment/conclusion/recommendation boxes */
+          #report-container table.print-comment-table,
+          .is-windows #report-container table.print-comment-table {
+            table-layout: fixed !important;
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          #report-container table.print-comment-table td,
+          .is-windows #report-container table.print-comment-table td {
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            white-space: pre-wrap !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+          }
+
           /* Force the specific status badge to use inline-provided colors even if .pass-fail-status-box has global print overrides */
           #mv-vlf-td-status {
             background-color: var(--mv-status-bg) !important;
@@ -3488,10 +3504,10 @@ const MediumVoltageCableVLFTest = () => {
             
             {/* Print-only table */}
             <div className="hidden print:block">
-              <table className="w-full border border-gray-300 print:border-black">
+              <table className="w-full border border-gray-300 print:border-black print-comment-table" style={{tableLayout: 'fixed', width: '100%'}}>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
+                    <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top" style={{wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap'}}>
                       {formData.conclusion || 'No conclusion provided'}
                     </td>
                   </tr>
@@ -3517,10 +3533,10 @@ const MediumVoltageCableVLFTest = () => {
             
             {/* Print-only table */}
             <div className="hidden print:block">
-              <table className="w-full border border-gray-300 print:border-black">
+              <table className="w-full border border-gray-300 print:border-black print-comment-table" style={{tableLayout: 'fixed', width: '100%'}}>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
+                    <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top" style={{wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap'}}>
                       {formData.recommendations || 'No recommendations provided'}
                     </td>
                   </tr>
@@ -3546,10 +3562,10 @@ const MediumVoltageCableVLFTest = () => {
             
             {/* Print-only table */}
             <div className="hidden print:block">
-              <table className="w-full border border-gray-300 print:border-black">
+              <table className="w-full border border-gray-300 print:border-black print-comment-table" style={{tableLayout: 'fixed', width: '100%'}}>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
+                    <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top" style={{wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap'}}>
                       {formData.comments || 'No additional comments'}
                     </td>
                   </tr>

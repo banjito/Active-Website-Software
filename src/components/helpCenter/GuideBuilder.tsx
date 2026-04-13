@@ -10,7 +10,7 @@
  * - Live preview
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { isSuperUser } from '@/lib/roles';
@@ -63,6 +63,9 @@ import {
   Link,
   Pencil,
   Check,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
@@ -130,61 +133,138 @@ const SortableBlock: React.FC<SortableBlockProps> = ({
     isDragging,
   } = useSortable({ id: block.id });
 
-  const style = {
+  const [isBlockResizing, setIsBlockResizing] = useState(false);
+  const blockRef = useRef<HTMLDivElement>(null);
+  const parentRef = useRef<HTMLDivElement>(null);
+  const resizeStartRef = useRef<{ startX: number; startWidth: number } | null>(null);
+
+  const isImageBlock = block.type === ContentBlockType.IMAGE;
+  const imageConfig = isImageBlock ? (block.config as ImageBlockConfig) : null;
+  const blockWidth = imageConfig?.width || '100%';
+  const blockAlignment = imageConfig?.alignment || 'center';
+
+  const handleBlockResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!blockRef.current || !parentRef.current) return;
+
+    const currentBlockWidth = blockRef.current.getBoundingClientRect().width;
+    resizeStartRef.current = { startX: e.clientX, startWidth: currentBlockWidth };
+    setIsBlockResizing(true);
+
+    const handleMove = (moveEvent: MouseEvent) => {
+      if (!resizeStartRef.current || !parentRef.current || !imageConfig) return;
+      const parentWidth = parentRef.current.getBoundingClientRect().width;
+      const deltaX = moveEvent.clientX - resizeStartRef.current.startX;
+      const newWidth = Math.max(80, resizeStartRef.current.startWidth + deltaX);
+      const pct = Math.min(100, Math.max(10, Math.round((newWidth / parentWidth) * 100)));
+      onUpdate({ ...imageConfig, width: `${pct}%` });
+    };
+
+    const handleUp = () => {
+      resizeStartRef.current = null;
+      setIsBlockResizing(false);
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+    };
+
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+  }, [imageConfig, onUpdate]);
+
+  const sortableStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const blockWrapperStyle: React.CSSProperties = isImageBlock
+    ? {
+        width: blockWidth,
+        maxWidth: '100%',
+        marginLeft: blockAlignment === 'center' ? 'auto' : blockAlignment === 'right' ? 'auto' : undefined,
+        marginRight: blockAlignment === 'center' ? 'auto' : undefined,
+      }
+    : {};
+
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`group relative bg-white dark:bg-dark-150 border rounded-lg transition-all ${
-        isSelected
-          ? 'border-[#f26722] ring-2 ring-[#f26722]/20'
-          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-      }`}
-      onClick={onSelect}
-    >
-      {/* Drag Handle & Actions */}
-      <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col items-center justify-center gap-1 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          {...listeners}
-          {...attributes}
-          className="p-1 cursor-grab hover:bg-gray-200 dark:hover:bg-dark-100 rounded"
-        >
-          <GripVertical className="w-4 h-4 text-gray-400" />
-        </button>
-      </div>
+    <div ref={parentRef} style={sortableStyle}>
+      <div
+        ref={(node) => {
+          setNodeRef(node);
+          (blockRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        }}
+        style={blockWrapperStyle}
+        className={`group relative bg-white dark:bg-dark-150 border rounded-lg transition-all ${
+          isSelected
+            ? 'border-[#f26722] ring-2 ring-[#f26722]/20'
+            : isBlockResizing
+              ? 'border-[#f26722] ring-2 ring-[#f26722]/20'
+              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+        }`}
+        onClick={onSelect}
+      >
+        {/* Drag Handle & Actions */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col items-center justify-center gap-1 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            {...listeners}
+            {...attributes}
+            className="p-1 cursor-grab hover:bg-gray-200 dark:hover:bg-dark-100 rounded"
+          >
+            <GripVertical className="w-4 h-4 text-gray-400" />
+          </button>
+        </div>
 
-      {/* Block Content */}
-      <div className="ml-8 p-4">
-        <BlockEditor block={block} onUpdate={onUpdate} />
-      </div>
+        {/* Block Content */}
+        <div className="ml-8 p-4">
+          <BlockEditor block={block} onUpdate={onUpdate} />
+        </div>
 
-      {/* Block Actions */}
-      <div className="absolute right-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDuplicate();
-          }}
-          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-dark-100"
-          title="Duplicate"
-        >
-          <Copy className="w-4 h-4 text-gray-500" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"
-          title="Delete"
-        >
-          <Trash2 className="w-4 h-4 text-red-500" />
-        </button>
+        {/* Block Actions */}
+        <div className="absolute right-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDuplicate();
+            }}
+            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-dark-100"
+            title="Duplicate"
+          >
+            <Copy className="w-4 h-4 text-gray-500" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"
+            title="Delete"
+          >
+            <Trash2 className="w-4 h-4 text-red-500" />
+          </button>
+        </div>
+
+        {/* Right-edge resize handle for image blocks */}
+        {isImageBlock && imageConfig?.url && (
+          <div
+            onMouseDown={handleBlockResizeStart}
+            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize group/resize z-10 flex items-center justify-center"
+            title="Drag to resize block"
+          >
+            <div className={`w-1 h-12 rounded-full transition-colors ${
+              isBlockResizing
+                ? 'bg-[#f26722]'
+                : 'bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-gray-500 group-hover/resize:bg-[#f26722]'
+            }`} />
+          </div>
+        )}
+
+        {/* Width badge during resize */}
+        {isBlockResizing && (
+          <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-[#f26722] text-white text-xs rounded-md font-medium pointer-events-none whitespace-nowrap shadow-md">
+            {blockWidth}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -204,6 +284,33 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ imageConfig, onUpda
   const [urlInput, setUrlInput] = useState(imageConfig.url || '');
   const [isEditingUrl, setIsEditingUrl] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [customWidthInput, setCustomWidthInput] = useState('');
+
+  const WIDTH_PRESETS = [
+    { label: '25%', value: '25%' },
+    { label: '50%', value: '50%' },
+    { label: '75%', value: '75%' },
+    { label: '100%', value: '100%' },
+  ];
+
+  const ALIGNMENT_OPTIONS: { value: ImageBlockConfig['alignment']; icon: React.ReactNode; label: string }[] = [
+    { value: 'left', icon: <AlignLeft className="w-4 h-4" />, label: 'Left' },
+    { value: 'center', icon: <AlignCenter className="w-4 h-4" />, label: 'Center' },
+    { value: 'right', icon: <AlignRight className="w-4 h-4" />, label: 'Right' },
+  ];
+
+  const currentWidth = imageConfig.width || '100%';
+
+  const handleCustomWidthSubmit = () => {
+    const trimmed = customWidthInput.trim();
+    if (!trimmed) return;
+    const numericOnly = trimmed.replace(/[^0-9]/g, '');
+    if (numericOnly) {
+      const val = Math.min(100, Math.max(10, parseInt(numericOnly, 10)));
+      onUpdate({ ...imageConfig, width: `${val}%` });
+      setCustomWidthInput('');
+    }
+  };
 
   const handleUrlSubmit = () => {
     const trimmed = urlInput.trim();
@@ -317,14 +424,14 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ imageConfig, onUpda
       <div className="text-xs text-gray-500 dark:text-gray-400">Image Block</div>
 
       {imageConfig.url && !isEditingUrl ? (
-        /* --- Image preview with edit/remove controls --- */
-        <div className="space-y-2">
+        <div className="space-y-3">
+          {/* Image fills the block -- block itself is resizable via its edge handle */}
           <div className="relative">
             <img
               src={imageConfig.url}
               alt={imageConfig.alt || 'Guide image'}
-              className="max-w-full rounded-lg border border-gray-200 dark:border-gray-700"
-              style={{ width: imageConfig.width || '100%' }}
+              className="w-full rounded-lg border border-gray-200 dark:border-gray-700"
+              draggable={false}
             />
             <div className="absolute top-2 right-2 flex gap-1">
               <button
@@ -332,7 +439,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ imageConfig, onUpda
                   setUrlInput(imageConfig.url);
                   setIsEditingUrl(true);
                 }}
-                className="p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                className="p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 shadow-sm"
                 title="Edit image URL"
               >
                 <Pencil className="w-4 h-4" />
@@ -342,11 +449,73 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ imageConfig, onUpda
                   onUpdate({ ...imageConfig, url: '' });
                   setUrlInput('');
                 }}
-                className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-sm"
                 title="Remove image"
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
+          </div>
+
+          {/* Size & Alignment Controls */}
+          <div className="bg-gray-50 dark:bg-dark-200 rounded-lg p-3 space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mr-1">Size:</span>
+              {WIDTH_PRESETS.map(({ label, value }) => (
+                <button
+                  key={value}
+                  onClick={() => onUpdate({ ...imageConfig, width: value })}
+                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                    currentWidth === value
+                      ? 'bg-[#f26722] text-white'
+                      : 'bg-white dark:bg-dark-100 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:border-[#f26722] hover:text-[#f26722]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  value={customWidthInput}
+                  onChange={(e) => setCustomWidthInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCustomWidthSubmit();
+                    }
+                  }}
+                  placeholder="Custom %"
+                  className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-l-md bg-white dark:bg-dark-100 text-gray-900 dark:text-white text-xs focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] outline-none"
+                />
+                <button
+                  onClick={handleCustomWidthSubmit}
+                  disabled={!customWidthInput.trim()}
+                  className="px-2 py-1 bg-gray-200 dark:bg-dark-100 hover:bg-gray-300 dark:hover:bg-dark-50 disabled:opacity-50 text-gray-700 dark:text-gray-300 rounded-r-md border border-l-0 border-gray-300 dark:border-gray-600 text-xs"
+                  title="Apply custom width"
+                >
+                  <Check className="w-3 h-3" />
+                </button>
+              </div>
+              <span className="text-xs text-gray-400 ml-1">Current: {currentWidth}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mr-1">Align:</span>
+              {ALIGNMENT_OPTIONS.map(({ value, icon, label }) => (
+                <button
+                  key={value}
+                  onClick={() => onUpdate({ ...imageConfig, alignment: value })}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    (imageConfig.alignment || 'center') === value
+                      ? 'bg-[#f26722] text-white'
+                      : 'bg-white dark:bg-dark-100 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:border-[#f26722] hover:text-[#f26722]'
+                  }`}
+                  title={label}
+                >
+                  {icon}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -1334,8 +1503,8 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
     case ContentBlockType.IMAGE:
       const imgConfig = config as ImageBlockConfig;
       return imgConfig.url ? (
-        <figure className={`${imgConfig.alignment === 'center' ? 'mx-auto' : imgConfig.alignment === 'right' ? 'ml-auto' : ''}`} style={{ width: imgConfig.width || '100%' }}>
-          <img src={imgConfig.url} alt={imgConfig.alt || ''} className="rounded-lg" />
+        <figure className={`${imgConfig.alignment === 'center' ? 'mx-auto' : imgConfig.alignment === 'right' ? 'ml-auto' : ''}`} style={{ width: imgConfig.width || '100%', maxWidth: '100%' }}>
+          <img src={imgConfig.url} alt={imgConfig.alt || ''} className="rounded-lg w-full" />
           {imgConfig.caption && (
             <figcaption className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
               {imgConfig.caption}

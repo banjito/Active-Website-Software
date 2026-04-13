@@ -450,7 +450,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
             imgConfig.alignment === 'center' ? 'mx-auto' : 
             imgConfig.alignment === 'right' ? 'ml-auto' : ''
           }`}
-          style={{ maxWidth: imgConfig.width || '100%' }}
+          style={{ width: imgConfig.width || '100%', maxWidth: '100%' }}
         >
           <img 
             src={imgConfig.url} 

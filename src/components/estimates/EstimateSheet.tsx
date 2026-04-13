@@ -4224,6 +4224,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         <div><b>Combined Scope of Work</b></div>
         ${sovTablesHtml}
         ${showGrandTotalPricing ? `
+        <p class="amp-scope-spacer" style="margin:0; padding:0; line-height:0.5;"><br></p>
         <div class="amp-scope-block" style="margin-bottom:12px;border:1px solid #f0c8b3;border-left:4px solid #f26722;border-radius:8px;padding:10px;background:#fff7f2;">
           <div class="amp-section amp-keep-with-next" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff0e6;padding:6px 8px;border-radius:6px;margin-bottom:6px;">
             <b>Grand Total Pricing</b>

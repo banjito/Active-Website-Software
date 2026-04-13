@@ -109,6 +109,14 @@ const COVER_ASPECT = 16 / 5; // Adjust as needed
 const COVER_MAX_WIDTH = 1600; // Example max width
 const COVER_MAX_HEIGHT = COVER_MAX_WIDTH / COVER_ASPECT; // ~640px
 
+function formatPhoneNumber(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 10);
+  if (digits.length === 0) return '';
+  if (digits.length <= 3) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
 export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   isOpen,
   onClose,
@@ -124,6 +132,8 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const [birthday, setBirthday] = useState(user?.user_metadata?.birthday || '');
   const [jobTitle, setJobTitle] = useState(user?.user_metadata?.job_title || '');
   const [department, setDepartment] = useState(user?.user_metadata?.department || '');
+  const [workPhone, setWorkPhone] = useState(user?.user_metadata?.work_phone || '');
+  const [personalPhone, setPersonalPhone] = useState(user?.user_metadata?.personal_phone || '');
   const [emergencyContactName, setEmergencyContactName] = useState(user?.user_metadata?.emergency_contact_name || '');
   const [emergencyContactPhone, setEmergencyContactPhone] = useState(user?.user_metadata?.emergency_contact_phone || '');
   const [emergencyContactRelationship, setEmergencyContactRelationship] = useState(user?.user_metadata?.emergency_contact_relationship || '');
@@ -159,6 +169,8 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       setBirthday(user.user_metadata.birthday || '');
       setJobTitle(user.user_metadata.job_title || '');
       setDepartment(user.user_metadata.department || '');
+      setWorkPhone(user.user_metadata.work_phone || '');
+      setPersonalPhone(user.user_metadata.personal_phone || '');
       setEmergencyContactName(user.user_metadata.emergency_contact_name || '');
       setEmergencyContactPhone(user.user_metadata.emergency_contact_phone || '');
       setEmergencyContactRelationship(user.user_metadata.emergency_contact_relationship || '');
@@ -633,6 +645,8 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         bio,
         division,
         birthday,
+        work_phone: workPhone || null,
+        personal_phone: personalPhone || null,
         emergency_contact_name: emergencyContactName || null,
         emergency_contact_phone: emergencyContactPhone || null,
         emergency_contact_relationship: emergencyContactRelationship || null,
@@ -660,7 +674,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       await supabase
         .schema('common')
         .from('profiles')
-        .update({ job_title: jobTitle || null, department: department || null, full_name: name || null })
+        .update({ job_title: jobTitle || null, department: department || null, full_name: name || null, work_phone: workPhone || null, personal_phone: personalPhone || null })
         .eq('id', user.id);
 
       setShowSuccess(true);
@@ -898,6 +912,34 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                           className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm bg-gray-50 dark:bg-dark-150 text-gray-500 dark:text-white cursor-not-allowed"
                         />
                       </div>
+
+                      {/* Phone Numbers */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                            Work Phone
+                          </label>
+                          <input
+                            type="tel"
+                            value={workPhone}
+                            onChange={(e) => setWorkPhone(formatPhoneNumber(e.target.value))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
+                            placeholder="(555) 123-4567"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                            Personal Phone
+                          </label>
+                          <input
+                            type="tel"
+                            value={personalPhone}
+                            onChange={(e) => setPersonalPhone(formatPhoneNumber(e.target.value))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
+                            placeholder="(555) 987-6543"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1010,8 +1052,8 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                           <input
                             type="tel"
                             value={emergencyContactPhone}
-                            onChange={(e) => setEmergencyContactPhone(e.target.value)}
-                            placeholder="Phone number"
+                            onChange={(e) => setEmergencyContactPhone(formatPhoneNumber(e.target.value))}
+                            placeholder="(555) 123-4567"
                             className="w-full max-w-xs px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
                           />
                         </div>
@@ -1060,6 +1102,18 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                             <dt className="text-gray-500 dark:text-white">Division:</dt>
                             <dd className="text-gray-900 dark:text-white">{division || 'Not set'}</dd>
                           </div>
+                          {workPhone && (
+                            <div className="flex justify-between">
+                              <dt className="text-gray-500 dark:text-white">Work phone:</dt>
+                              <dd className="text-gray-900 dark:text-white">{workPhone}</dd>
+                            </div>
+                          )}
+                          {personalPhone && (
+                            <div className="flex justify-between">
+                              <dt className="text-gray-500 dark:text-white">Personal phone:</dt>
+                              <dd className="text-gray-900 dark:text-white">{personalPhone}</dd>
+                            </div>
+                          )}
                           <div className="flex justify-between">
                             <dt className="text-gray-500 dark:text-white">Birthday:</dt>
                             <dd className="text-gray-900 dark:text-white">

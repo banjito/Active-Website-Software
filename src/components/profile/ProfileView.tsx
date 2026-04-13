@@ -64,6 +64,8 @@ interface UserData extends SupabaseUser {
     current_pay_frequency?: string | null;
     profileImage?: string;
     coverImage?: string;
+    work_phone?: string;
+    personal_phone?: string;
     emergency_contact_name?: string;
     emergency_contact_phone?: string;
     emergency_contact_relationship?: string;
@@ -218,6 +220,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 current_pay_frequency: profileData.current_pay_frequency || userMetadata.current_pay_frequency,
                 profileImage: profileData.avatar_url || profileData.profile_image || userMetadata.profileImage,
                 coverImage: profileData.cover_image || profileData.coverImage || userMetadata.coverImage,
+                work_phone: (profileData as any).work_phone ?? userMetadata.work_phone,
+                personal_phone: (profileData as any).personal_phone ?? userMetadata.personal_phone,
                 emergency_contact_name: (profileData as any).emergency_contact_name ?? userMetadata.emergency_contact_name,
                 emergency_contact_phone: (profileData as any).emergency_contact_phone ?? userMetadata.emergency_contact_phone,
                 emergency_contact_relationship: (profileData as any).emergency_contact_relationship ?? userMetadata.emergency_contact_relationship,
@@ -304,6 +308,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       current_pay_frequency: profileData.current_pay_frequency,
                       profileImage: profileData.avatar_url || profileData.profile_image || userMetadata.profileImage,
                       coverImage: profileData.cover_image || profileData.coverImage || userMetadata.coverImage,
+                      work_phone: (profileData as any).work_phone ?? userMetadata.work_phone,
+                      personal_phone: (profileData as any).personal_phone ?? userMetadata.personal_phone,
                       emergency_contact_name: (profileData as any).emergency_contact_name ?? userMetadata.emergency_contact_name,
                       emergency_contact_phone: (profileData as any).emergency_contact_phone ?? userMetadata.emergency_contact_phone,
                       emergency_contact_relationship: (profileData as any).emergency_contact_relationship ?? userMetadata.emergency_contact_relationship,
@@ -355,6 +361,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   birthday: userData_rpc.birthday,
                   profileImage: userData_rpc.profile_image || userData_rpc.avatar_url,
                   coverImage: userData_rpc.cover_image,
+                  work_phone: (userData_rpc as any).work_phone,
+                  personal_phone: (userData_rpc as any).personal_phone,
                   emergency_contact_name: (userData_rpc as any).emergency_contact_name,
                   emergency_contact_phone: (userData_rpc as any).emergency_contact_phone,
                   emergency_contact_relationship: (userData_rpc as any).emergency_contact_relationship,
@@ -398,6 +406,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         birthday: directUserData.birthday,
                         profileImage: directUserData.profile_image || directUserData.avatar_url,
                         coverImage: directUserData.cover_image,
+                        work_phone: (directUserData as any).work_phone,
+                        personal_phone: (directUserData as any).personal_phone,
                         emergency_contact_name: (directUserData as any).emergency_contact_name,
                         emergency_contact_phone: (directUserData as any).emergency_contact_phone,
                         emergency_contact_relationship: (directUserData as any).emergency_contact_relationship,
@@ -448,6 +458,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   department: metaData.department,
                   profileImage: metaData.profile_image || metaData.avatar_url || metaData.profileImage,
                   coverImage: metaData.cover_image || metaData.coverImage,
+                  work_phone: (metaData as any).work_phone,
+                  personal_phone: (metaData as any).personal_phone,
                   emergency_contact_name: (metaData as any).emergency_contact_name,
                   emergency_contact_phone: (metaData as any).emergency_contact_phone,
                   emergency_contact_relationship: (metaData as any).emergency_contact_relationship,
@@ -491,6 +503,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         department: directData.department,
                         profileImage: directData.profile_image || directData.avatar_url,
                         coverImage: directData.cover_image,
+                        work_phone: (directData as any).work_phone,
+                        personal_phone: (directData as any).personal_phone,
                         emergency_contact_name: (directData as any).emergency_contact_name,
                         emergency_contact_phone: (directData as any).emergency_contact_phone,
                         emergency_contact_relationship: (directData as any).emergency_contact_relationship,
@@ -987,6 +1001,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     current_pay_frequency: payFrequency,
     profileImage,
     coverImage,
+    work_phone: workPhone,
+    personal_phone: personalPhone,
     emergency_contact_name: emergencyContactName,
     emergency_contact_phone: emergencyContactPhone,
     emergency_contact_relationship: emergencyContactRelationship,
@@ -1226,6 +1242,28 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <p className="text-sm text-gray-500 dark:text-white">Email</p>
                         <a href={`mailto:${profileUser.email}`} className="text-[#f26722] hover:underline">
                           {profileUser.email}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {workPhone && (
+                    <div className="flex items-center text-gray-700 dark:text-white">
+                      <Phone className="mr-2 h-4 w-4 text-gray-500 dark:text-white flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-white">Work Phone</p>
+                        <a href={`tel:${workPhone}`} className="text-[#f26722] hover:underline">
+                          {workPhone}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {personalPhone && (
+                    <div className="flex items-center text-gray-700 dark:text-white">
+                      <Phone className="mr-2 h-4 w-4 text-gray-500 dark:text-white flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-white">Personal Phone</p>
+                        <a href={`tel:${personalPhone}`} className="text-[#f26722] hover:underline">
+                          {personalPhone}
                         </a>
                       </div>
                     </div>

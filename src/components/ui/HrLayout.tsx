@@ -164,7 +164,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
 
   // All authenticated users get limited HR access (employee files, profiles, doc acknowledgment, manager portal).
   // Only Admin/Super Admin get the full HR portal.
-  const HR_LIMITED_ALLOWED_PATHS = ['/hr/employee-files', '/hr/data/employee-profiles', '/hr/compliance/document-acknowledgment', '/hr/self-service/manager-portal'];
+  const HR_LIMITED_ALLOWED_PATHS = ['/hr/employee-files', '/hr/data/employee-profiles', '/hr/data/org-chart', '/hr/compliance/document-acknowledgment', '/hr/self-service/manager-portal'];
   const isPathAllowedForLimited = HR_LIMITED_ALLOWED_PATHS.some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
   if (!isHrFullAccess && !isPathAllowedForLimited) {
     return <Navigate to="/hr/employee-files" replace />;
@@ -450,6 +450,17 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                 >
                   <UserCircle className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
                   Employee Profiles
+                </Button>
+              </Link>
+              <Link to="/hr/data/org-chart">
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start pl-0 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
+                    location.pathname.startsWith('/hr/data/org-chart') ? 'bg-black/5 dark:bg-dark-50' : ''
+                  }`}
+                >
+                  <Network className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
+                  Org Chart
                 </Button>
               </Link>
               <Link to="/hr/compliance/document-acknowledgment">

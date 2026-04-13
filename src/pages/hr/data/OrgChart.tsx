@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from '@/components/ui/Dialog';
 import { ProfileView } from '../../../components/profile/ProfileView';
+import { useAuth } from '../../../lib/AuthContext';
 
 // Types
 interface OrgPerson {
@@ -207,7 +208,8 @@ const FlowchartNode: React.FC<{
   dataVersion?: number;
   orgLevels?: Array<{ id: string; label: string; color?: string }>;
   orgRoles?: Array<{ id: string; value: string; label: string; color: string; display_order: number }>;
-}> = ({ node, orgTree, onSelect, onEdit, onDelete, onAddUnder, onDrop, collapsedNodes, toggleCollapse, draggedId, setDraggedId, dataVersion = 0, orgLevels, orgRoles }) => {
+  canEdit?: boolean;
+}> = ({ node, orgTree, onSelect, onEdit, onDelete, onAddUnder, onDrop, collapsedNodes, toggleCollapse, draggedId, setDraggedId, dataVersion = 0, orgLevels, orgRoles, canEdit = true }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   // Use assigned level color if set, otherwise depth-based
   const assignedLevel = node.level_id && orgLevels ? orgLevels.find(l => l.id === node.level_id) : null;
@@ -298,19 +300,19 @@ const FlowchartNode: React.FC<{
 
       {/* Node Card - Draggable */}
       <div
-        draggable="true"
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        draggable={canEdit ? "true" : "false"}
+        onDragStart={canEdit ? handleDragStart : undefined}
+        onDragEnd={canEdit ? handleDragEnd : undefined}
+        onDragOver={canEdit ? handleDragOver : undefined}
+        onDragLeave={canEdit ? handleDragLeave : undefined}
+        onDrop={canEdit ? handleDrop : undefined}
         style={{ userSelect: 'none' }}
         className={`
           relative group rounded-lg border-2 shadow-sm select-none
           transition-all duration-200
           ${colors.bg} ${colors.border}
           min-w-[160px] max-w-[200px]
-          ${isDragging ? 'opacity-50 scale-95 cursor-grabbing' : 'cursor-grab hover:shadow-md hover:scale-[1.02]'}
+          ${isDragging ? 'opacity-50 scale-95 cursor-grabbing' : canEdit ? 'cursor-grab hover:shadow-md hover:scale-[1.02]' : 'cursor-pointer hover:shadow-md hover:scale-[1.02]'}
           ${isDragOver && isValidDropTarget ? `ring-4 ${colors.ring} ring-opacity-60 scale-105` : ''}
           ${draggedId && !isValidDropTarget && draggedId !== node.id ? 'opacity-40' : ''}
         `}
@@ -322,31 +324,35 @@ const FlowchartNode: React.FC<{
         }}
       >
         {/* Drag handle indicator */}
-        <div className="absolute top-1 left-1 opacity-40 group-hover:opacity-70 transition-opacity pointer-events-none">
-          <GripVertical className="h-4 w-4 text-gray-500" />
-        </div>
+        {canEdit && (
+          <div className="absolute top-1 left-1 opacity-40 group-hover:opacity-70 transition-opacity pointer-events-none">
+            <GripVertical className="h-4 w-4 text-gray-500" />
+          </div>
+        )}
 
         {/* Edit & Delete buttons */}
-        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-auto flex gap-1">
-          <button
-            draggable="false"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEdit(node); }}
-            className="p-1.5 rounded-full bg-white shadow-md border border-gray-200 hover:bg-blue-50"
-            title="Edit title"
-          >
-            <Edit2 className="h-3 w-3 text-gray-600 hover:text-blue-500" />
-          </button>
-          <button
-            draggable="false"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(node.id); }}
-            className="p-1.5 rounded-full bg-white shadow-md border border-gray-200 hover:bg-red-50"
-            title="Remove from chart"
-          >
-            <Trash2 className="h-3 w-3 text-gray-600 hover:text-red-500" />
-          </button>
-        </div>
+        {canEdit && (
+          <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-auto flex gap-1">
+            <button
+              draggable="false"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEdit(node); }}
+              className="p-1.5 rounded-full bg-white shadow-md border border-gray-200 hover:bg-blue-50"
+              title="Edit title"
+            >
+              <Edit2 className="h-3 w-3 text-gray-600 hover:text-blue-500" />
+            </button>
+            <button
+              draggable="false"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(node.id); }}
+              className="p-1.5 rounded-full bg-white shadow-md border border-gray-200 hover:bg-red-50"
+              title="Remove from chart"
+            >
+              <Trash2 className="h-3 w-3 text-gray-600 hover:text-red-500" />
+            </button>
+          </div>
+        )}
 
         {/* Drop indicator */}
         {isDragOver && isValidDropTarget && (
@@ -412,18 +418,20 @@ const FlowchartNode: React.FC<{
       </div>
 
       {/* Add subordinate */}
-      <button
-        draggable="false"
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={(e) => { 
-          e.stopPropagation(); 
-          onAddUnder(node.id); 
-        }}
-        className="mt-4 text-xs text-gray-400 hover:text-[#f26722] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-      >
-        <Plus className="h-3 w-3" />
-        Add
-      </button>
+      {canEdit && (
+        <button
+          draggable="false"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            onAddUnder(node.id); 
+          }}
+          className="mt-4 text-xs text-gray-400 hover:text-[#f26722] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <Plus className="h-3 w-3" />
+          Add
+        </button>
+      )}
 
       {/* Connector line down */}
       {hasChildren && !isCollapsed && (
@@ -462,6 +470,7 @@ const FlowchartNode: React.FC<{
                   dataVersion={dataVersion}
                   orgLevels={orgLevels}
                   orgRoles={orgRoles}
+                  canEdit={canEdit}
                 />
               </div>
             ))}
@@ -513,6 +522,10 @@ async function getOrCreateDefaultLevel(): Promise<string> {
 }
 
 export const OrgChart: React.FC = () => {
+  const { user } = useAuth();
+  const userRole = user?.user_metadata?.role || '';
+  const canEdit = ['Admin', 'Super Admin', 'HR Representative', 'HR Rep'].includes(userRole);
+
   const [people, setPeople] = useState<OrgPerson[]>([]);
   const [allEmployees, setAllEmployees] = useState<OrgPerson[]>([]);
   const [loading, setLoading] = useState(true);
@@ -696,25 +709,37 @@ export const OrgChart: React.FC = () => {
       });
 
       // Build allEmployees list (for add modal)
-      const employees: OrgPerson[] = allUsers
-        .filter((u: any) => {
-          const email = (u.email || '').toLowerCase();
-          return email.endsWith('@ampqes.com') || profilesMap[u.id];
-        })
-        .map((u: any) => {
-          const profile = profilesMap[u.id];
-          const avatarUrl = profile?.avatar_url || profile?.profile_image
-            || u?.raw_user_meta_data?.profileImage || u?.user_metadata?.profileImage
-            || u?.raw_user_meta_data?.avatar_url || u?.user_metadata?.avatar_url || null;
-          return {
-            id: u.id,
-            full_name: profile?.full_name || u.raw_user_meta_data?.name || u.user_metadata?.name || u.email?.split('@')[0] || 'Unknown',
-            job_title: profile?.job_title || '',
-            avatar_url: avatarUrl,
-            reports_to: assignmentsMap[u.id] ?? null,
-          };
-        })
-        .sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+      // If admin_get_users returned data, merge with profiles; otherwise fall back to profiles only
+      let employees: OrgPerson[];
+      if (allUsers.length > 0) {
+        employees = allUsers
+          .filter((u: any) => {
+            const email = (u.email || '').toLowerCase();
+            return email.endsWith('@ampqes.com') || profilesMap[u.id];
+          })
+          .map((u: any) => {
+            const profile = profilesMap[u.id];
+            const avatarUrl = profile?.avatar_url || profile?.profile_image
+              || u?.raw_user_meta_data?.profileImage || u?.user_metadata?.profileImage
+              || u?.raw_user_meta_data?.avatar_url || u?.user_metadata?.avatar_url || null;
+            return {
+              id: u.id,
+              full_name: profile?.full_name || u.raw_user_meta_data?.name || u.user_metadata?.name || u.email?.split('@')[0] || 'Unknown',
+              job_title: profile?.job_title || '',
+              avatar_url: avatarUrl,
+              reports_to: assignmentsMap[u.id] ?? null,
+            };
+          });
+      } else {
+        employees = (profilesData || []).map((p: any) => ({
+          id: p.id,
+          full_name: p.full_name || 'Unknown',
+          job_title: p.job_title || '',
+          avatar_url: p.avatar_url || p.profile_image || null,
+          reports_to: assignmentsMap[p.id] ?? null,
+        }));
+      }
+      employees.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
 
       setAllEmployees([...employees]);
 
@@ -732,29 +757,38 @@ export const OrgChart: React.FC = () => {
         }
       });
 
-      // Build people on chart - FETCH FRESH from profiles for each person
+      // Build people on chart using profiles data first, then fill gaps from user metadata
       const chartPeople: OrgPerson[] = [];
+      // For people whose name is missing from profiles, fetch from auth metadata via RPC
+      const metadataMap: Record<string, any> = {};
+      const idsNeedingMetadata = onChartIds.filter(id => {
+        const p = profilesMap[id];
+        return !p?.full_name;
+      });
+      // Batch fetch metadata for people missing names (only if admin_get_users didn't already provide it)
+      if (idsNeedingMetadata.length > 0 && allUsers.length === 0) {
+        const metaResults = await Promise.all(
+          idsNeedingMetadata.map(id =>
+            supabase.schema('common').rpc('get_user_metadata', { p_user_id: id }).then(({ data }) => ({ id, data })).catch(() => ({ id, data: null }))
+          )
+        );
+        metaResults.forEach(({ id, data }) => { if (data) metadataMap[id] = data; });
+      }
+
       for (const profileId of onChartIds) {
-        // Fetch this specific profile fresh
-        const { data: freshProfile } = await supabase
-          .schema('common')
-          .from('profiles')
-          .select('id, full_name, job_title, avatar_url, profile_image')
-          .eq('id', profileId)
-          .single();
-        
+        const profile = profilesMap[profileId];
         const user = usersMap[profileId];
-        const fallbackName = user?.raw_user_meta_data?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Unknown';
-        // Job title: prefer latest from employee history, fallback to profiles.job_title
-        const jobTitle = latestJobTitleByProfile[profileId] || freshProfile?.job_title || '';
-        // Profile picture: profiles first, then user_metadata (where users set it in Edit Profile)
-        const avatarUrl = freshProfile?.avatar_url || freshProfile?.profile_image
+        const meta = metadataMap[profileId];
+        const resolvedName = profile?.full_name || user?.raw_user_meta_data?.name || user?.user_metadata?.name || meta?.name || meta?.full_name || user?.email?.split('@')[0] || 'Unknown';
+        const jobTitle = latestJobTitleByProfile[profileId] || profile?.job_title || '';
+        const avatarUrl = profile?.avatar_url || profile?.profile_image
           || user?.raw_user_meta_data?.profileImage || user?.user_metadata?.profileImage
+          || meta?.profile_image || meta?.avatar_url
           || user?.raw_user_meta_data?.avatar_url || user?.user_metadata?.avatar_url || null;
         
         chartPeople.push({
           id: profileId,
-          full_name: freshProfile?.full_name || fallbackName,
+          full_name: resolvedName,
           job_title: jobTitle,
           avatar_url: avatarUrl,
           reports_to: assignmentsMap[profileId] ?? null,
@@ -1143,19 +1177,21 @@ export const OrgChart: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Organization Chart</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Drag and drop people to rearrange the hierarchy
+            {canEdit ? 'Drag and drop people to rearrange the hierarchy' : 'View your organization\'s structure'}
           </p>
         </div>
-        <Button onClick={() => openAddModal()}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Add Person
-        </Button>
+        {canEdit && (
+          <Button onClick={() => openAddModal()}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Person
+          </Button>
+        )}
       </div>
 
       {/* Instructions */}
       <div className="flex items-center gap-2 text-xs text-gray-500">
-        <GripVertical className="h-4 w-4" />
-        <span>Drag cards to rearrange · Click &amp; drag background to pan</span>
+        {canEdit && <GripVertical className="h-4 w-4" />}
+        <span>{canEdit ? 'Drag cards to rearrange · Click & drag background to pan' : 'Click a person to view their profile · Click & drag background to pan'}</span>
       </div>
 
       {/* Chart Card */}
@@ -1175,10 +1211,14 @@ export const OrgChart: React.FC = () => {
             <Button variant="outline" size="sm" onClick={resetView} title="Reset view">
               Reset
             </Button>
-            <div className="w-px h-6 bg-gray-200 mx-1" />
-            <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)} title="Manage levels & colors">
-              <Settings className="h-4 w-4" />
-            </Button>
+            {canEdit && (
+              <>
+                <div className="w-px h-6 bg-gray-200 mx-1" />
+                <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)} title="Manage levels & colors">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </CardHeader>
 
@@ -1213,7 +1253,7 @@ export const OrgChart: React.FC = () => {
         </div>
 
         {/* Top level drop zone */}
-        {draggedId && (
+        {canEdit && draggedId && (
           <div
             onDragOver={handleTopLevelDragOver}
             onDragLeave={handleTopLevelDragLeave}
@@ -1255,12 +1295,14 @@ export const OrgChart: React.FC = () => {
                 No one on the org chart yet
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Start by adding people to build your organization's structure
+                {canEdit ? 'Start by adding people to build your organization\'s structure' : 'The organization chart has not been set up yet'}
               </p>
-              <Button onClick={() => openAddModal()}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add First Person
-              </Button>
+              {canEdit && (
+                <Button onClick={() => openAddModal()}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add First Person
+                </Button>
+              )}
             </div>
           ) : (
             <div 
@@ -1286,6 +1328,7 @@ export const OrgChart: React.FC = () => {
                     dataVersion={dataVersion}
                     orgLevels={orgLevels}
                     orgRoles={orgRoles}
+                    canEdit={canEdit}
                   />
                 ))}
               </div>

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, ClipboardCheck, Calendar, DollarSign, Building, User, Phone, Mail, MapPin, Clock, AlertTriangle, CheckCircle, Image, Maximize2, Minimize2, Save, Edit3, Download, Eye, Star, StarOff, MessageCircle } from 'lucide-react';
 import { supabase, isConnectionError } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
+import { isSuperUser } from '../../lib/roles';
 import { useDemoMode } from '../../lib/DemoModeContext';
 import { useJobDetails } from '../../lib/hooks';
 import { format } from 'date-fns';
@@ -212,10 +213,10 @@ export default function JobDetail() {
   
   // Cache admin status to prevent unmounting ReportApprovalWorkflow during auth flickers
   const isAdminRef = useRef<boolean>(false);
-  if (user?.user_metadata?.role === 'Admin') {
+  if (user?.user_metadata?.role === 'Admin' || isSuperUser(user?.email)) {
     isAdminRef.current = true;
   }
-  const isAdmin = isAdminRef.current || user?.user_metadata?.role === 'Admin';
+  const isAdmin = isAdminRef.current || user?.user_metadata?.role === 'Admin' || isSuperUser(user?.email);
   
   const [job, setJob] = useState<Job | null>(null);
   const [customer, setCustomer] = useState<Customer | null>(null);

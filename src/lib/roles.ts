@@ -82,6 +82,16 @@ export interface RolePermissions {
   priority?: number; // Added priority for conflict resolution in permission inheritance
 }
 
+// Superuser emails that always have full admin access regardless of assigned role.
+const SUPERUSER_EMAILS: string[] = [
+  'john.chambers@ampqes.com',
+];
+
+export const isSuperUser = (email: string | undefined | null): boolean => {
+  if (!email) return false;
+  return SUPERUSER_EMAILS.includes(email.toLowerCase());
+};
+
 export const ROLES: Record<Role, RolePermissions> = {
   'NETA Technician': {
     portals: ['neta', 'field_tech', 'hr'],

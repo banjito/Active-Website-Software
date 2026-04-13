@@ -10,6 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
+import { isSuperUser } from '@/lib/roles';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import {
@@ -60,7 +61,7 @@ export const GuideViewer: React.FC = () => {
   const [showToc, setShowToc] = useState(true);
 
   // Check if user is admin
-  const isAdmin = user?.user_metadata?.role === 'Admin' || user?.user_metadata?.role === 'Super Admin';
+  const isAdmin = user?.user_metadata?.role === 'Admin' || user?.user_metadata?.role === 'Super Admin' || isSuperUser(user?.email);
 
   // Load guide
   useEffect(() => {

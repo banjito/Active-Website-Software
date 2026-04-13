@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { isSuperUser } from '@/lib/roles';
 import { UserPlus, UserMinus, ShieldCheck, Settings, Users, ArrowLeft, FileText, Database, Sliders, LockKeyhole, Shield, Bell, Clock, Link2, DollarSign, ClipboardList } from 'lucide-react';
 import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -36,14 +37,16 @@ export const AdminDashboard: React.FC = () => {
     'quickbooks'
   >('dashboard');
 
+  const hasAdminAccess = user?.user_metadata?.role === 'Admin' || isSuperUser(user?.email);
+
   // Redirect non-admin users
   React.useEffect(() => {
-    if (user && user.user_metadata?.role !== 'Admin') {
+    if (user && !hasAdminAccess) {
       navigate('/portal');
     }
-  }, [user, navigate]);
+  }, [user, hasAdminAccess, navigate]);
 
-  if (!user || user.user_metadata?.role !== 'Admin') {
+  if (!user || !hasAdminAccess) {
     return <div className="p-10">Loading or unauthorized access...</div>;
   }
 

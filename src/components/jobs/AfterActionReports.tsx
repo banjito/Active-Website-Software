@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
+import { isSuperUser } from '@/lib/roles';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -95,7 +96,7 @@ const DEFAULT_TIME_CATEGORIES = [
 const AfterActionReports: React.FC<AfterActionReportsProps> = ({ jobId, jobNumber, clientName }) => {
   const { user } = useAuth();
   const { maskCustomerName } = useDemoMode();
-  const isAdmin = user?.user_metadata?.role === 'Admin';
+  const isAdmin = user?.user_metadata?.role === 'Admin' || isSuperUser(user?.email);
   
   const [reports, setReports] = useState<AfterActionReport[]>([]);
   const [loading, setLoading] = useState(true);

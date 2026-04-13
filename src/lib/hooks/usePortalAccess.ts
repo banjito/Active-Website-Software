@@ -1,5 +1,5 @@
 import { useAuth } from '../AuthContext';
-import { hasPortalAccess, Portal } from '../roles';
+import { hasPortalAccess, Portal, isSuperUser } from '../roles';
 
 interface PortalAccessControls {
   canView: boolean;
@@ -17,6 +17,12 @@ interface PortalAccessControls {
 export function usePortalAccess(portalType: Portal | string): PortalAccessControls {
   const { user } = useAuth();
   const userRole = user?.user_metadata?.role;
+  const superUser = isSuperUser(user?.email);
+
+  // Superusers always get full access
+  if (superUser) {
+    return { canView: true, canEdit: true, canDelete: true, canCreate: true, isAdmin: true };
+  }
   
   // Default to no access if user or role is undefined
   if (!user || !userRole) {

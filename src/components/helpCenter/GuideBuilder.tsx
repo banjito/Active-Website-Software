@@ -13,6 +13,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
+import { isSuperUser } from '@/lib/roles';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import {
@@ -58,6 +59,10 @@ import {
   Upload,
   X,
   Settings,
+  Loader2,
+  Link,
+  Pencil,
+  Check,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
@@ -185,6 +190,275 @@ const SortableBlock: React.FC<SortableBlockProps> = ({
   );
 };
 
+// Image Block Editor - handles file upload, URL entry, and editing
+const MAX_IMAGE_MB = 10;
+const MAX_IMAGE_BYTES = MAX_IMAGE_MB * 1024 * 1024;
+const ACCEPTED_IMAGES = 'image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.png,.jpg,.jpeg,.gif,.webp,.svg';
+
+interface ImageBlockEditorProps {
+  imageConfig: ImageBlockConfig;
+  onUpdate: (config: ContentBlock['config']) => void;
+}
+
+const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ imageConfig, onUpdate }) => {
+  const [urlInput, setUrlInput] = useState(imageConfig.url || '');
+  const [isEditingUrl, setIsEditingUrl] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleUrlSubmit = () => {
+    const trimmed = urlInput.trim();
+    if (trimmed) {
+      onUpdate({ ...imageConfig, url: trimmed });
+      setIsEditingUrl(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file (PNG, JPG, GIF, WebP, or SVG)');
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error(`Image must be less than ${MAX_IMAGE_MB}MB`);
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `guide-images/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('help-center-documents')
+        .upload(fileName, file, { cacheControl: '3600', upsert: false });
+
+      if (uploadError) {
+        if (uploadError.message.includes('Bucket not found') || uploadError.message.includes('does not exist')) {
+          toast.error('Storage bucket "help-center-documents" not found. Please create it in Supabase Storage first.');
+        } else {
+          toast.error(`Upload failed: ${uploadError.message}`);
+        }
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('help-center-documents')
+        .getPublicUrl(fileName);
+
+      onUpdate({ ...imageConfig, url: publicUrl });
+      setUrlInput(publicUrl);
+      toast.success('Image uploaded successfully!');
+    } catch (err: any) {
+      toast.error(`Upload failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please drop an image file (PNG, JPG, GIF, WebP, or SVG)');
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error(`Image must be less than ${MAX_IMAGE_MB}MB`);
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `guide-images/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('help-center-documents')
+        .upload(fileName, file, { cacheControl: '3600', upsert: false });
+
+      if (uploadError) {
+        if (uploadError.message.includes('Bucket not found') || uploadError.message.includes('does not exist')) {
+          toast.error('Storage bucket "help-center-documents" not found. Please create it in Supabase Storage first.');
+        } else {
+          toast.error(`Upload failed: ${uploadError.message}`);
+        }
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('help-center-documents')
+        .getPublicUrl(fileName);
+
+      onUpdate({ ...imageConfig, url: publicUrl });
+      setUrlInput(publicUrl);
+      toast.success('Image uploaded successfully!');
+    } catch (err: any) {
+      toast.error(`Upload failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="text-xs text-gray-500 dark:text-gray-400">Image Block</div>
+
+      {imageConfig.url && !isEditingUrl ? (
+        /* --- Image preview with edit/remove controls --- */
+        <div className="space-y-2">
+          <div className="relative">
+            <img
+              src={imageConfig.url}
+              alt={imageConfig.alt || 'Guide image'}
+              className="max-w-full rounded-lg border border-gray-200 dark:border-gray-700"
+              style={{ width: imageConfig.width || '100%' }}
+            />
+            <div className="absolute top-2 right-2 flex gap-1">
+              <button
+                onClick={() => {
+                  setUrlInput(imageConfig.url);
+                  setIsEditingUrl(true);
+                }}
+                className="p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                title="Edit image URL"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  onUpdate({ ...imageConfig, url: '' });
+                  setUrlInput('');
+                }}
+                className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                title="Remove image"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Alt text & caption fields */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-gray-500 dark:text-gray-400">Alt Text</label>
+              <input
+                type="text"
+                value={imageConfig.alt || ''}
+                onChange={(e) => onUpdate({ ...imageConfig, alt: e.target.value })}
+                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-dark-100 text-gray-900 dark:text-white text-sm"
+                placeholder="Describe the image"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 dark:text-gray-400">Caption</label>
+              <input
+                type="text"
+                value={imageConfig.caption || ''}
+                onChange={(e) => onUpdate({ ...imageConfig, caption: e.target.value })}
+                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-dark-100 text-gray-900 dark:text-white text-sm"
+                placeholder="Optional caption"
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* --- Upload / URL entry area --- */
+        <div
+          className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+        >
+          {isUploading ? (
+            <div className="flex flex-col items-center gap-2 py-4">
+              <Loader2 className="w-8 h-8 text-[#f26722] animate-spin" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">Uploading image...</p>
+            </div>
+          ) : (
+            <>
+              <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                Drag & drop an image, browse your computer, or enter a URL
+              </p>
+
+              {/* Browse button */}
+              <div className="mb-4">
+                <label className="inline-flex items-center gap-2 px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-lg cursor-pointer transition-colors text-sm">
+                  <Upload className="w-4 h-4" />
+                  Browse Files
+                  <input
+                    type="file"
+                    accept={ACCEPTED_IMAGES}
+                    className="sr-only"
+                    onChange={handleFileUpload}
+                  />
+                </label>
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 max-w-md mx-auto mb-3">
+                <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+                <span className="text-xs text-gray-400">or enter URL</span>
+                <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+              </div>
+
+              {/* URL input with submit button */}
+              <div className="flex items-center gap-2 max-w-md mx-auto">
+                <div className="relative flex-1">
+                  <Link className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="url"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleUrlSubmit();
+                      }
+                    }}
+                    placeholder="https://example.com/image.jpg"
+                    className="w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg bg-white dark:bg-dark-100 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] outline-none"
+                  />
+                </div>
+                <button
+                  onClick={handleUrlSubmit}
+                  disabled={!urlInput.trim()}
+                  className="px-3 py-2 bg-[#f26722] hover:bg-[#e55611] disabled:bg-gray-300 disabled:dark:bg-gray-600 text-white rounded-r-lg transition-colors text-sm font-medium flex items-center gap-1"
+                  title="Set image URL"
+                >
+                  <Check className="w-4 h-4" />
+                  Enter
+                </button>
+              </div>
+
+              {isEditingUrl && (
+                <button
+                  onClick={() => setIsEditingUrl(false)}
+                  className="mt-3 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 underline"
+                >
+                  Cancel
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Block Editor - renders the appropriate editor for each block type
 interface BlockEditorProps {
   block: ContentBlock;
@@ -289,68 +563,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
 
     case ContentBlockType.IMAGE:
       const imageConfig = config as ImageBlockConfig;
-      return (
-        <div className="space-y-3">
-          <div className="text-xs text-gray-500 dark:text-gray-400">Image Block</div>
-          {imageConfig.url ? (
-            <div className="relative">
-              <img
-                src={imageConfig.url}
-                alt={imageConfig.alt || 'Guide image'}
-                className="max-w-full rounded-lg border border-gray-200 dark:border-gray-700"
-                style={{ width: imageConfig.width || '100%' }}
-              />
-              <button
-                onClick={() => onUpdate({ ...imageConfig, url: '' })}
-                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-              <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                Paste image URL or upload
-              </p>
-              <input
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                className="w-full max-w-md mx-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-dark-100 text-gray-900 dark:text-white text-sm"
-                onBlur={(e) => {
-                  if (e.target.value) {
-                    onUpdate({ ...imageConfig, url: e.target.value });
-                  }
-                }}
-              />
-            </div>
-          )}
-          {imageConfig.url && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-gray-500 dark:text-gray-400">Alt Text</label>
-                <input
-                  type="text"
-                  value={imageConfig.alt || ''}
-                  onChange={(e) => onUpdate({ ...imageConfig, alt: e.target.value })}
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-dark-100 text-gray-900 dark:text-white text-sm"
-                  placeholder="Describe the image"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 dark:text-gray-400">Caption</label>
-                <input
-                  type="text"
-                  value={imageConfig.caption || ''}
-                  onChange={(e) => onUpdate({ ...imageConfig, caption: e.target.value })}
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-dark-100 text-gray-900 dark:text-white text-sm"
-                  placeholder="Optional caption"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      );
+      return <ImageBlockEditor imageConfig={imageConfig} onUpdate={onUpdate} />;
 
     case ContentBlockType.CALLOUT:
       const calloutConfig = config as CalloutBlockConfig;
@@ -565,7 +778,7 @@ export const GuideBuilder: React.FC = () => {
   const { user } = useAuth();
 
   // Check if user is admin
-  const isAdmin = user?.user_metadata?.role === 'Admin' || user?.user_metadata?.role === 'Super Admin';
+  const isAdmin = user?.user_metadata?.role === 'Admin' || user?.user_metadata?.role === 'Super Admin' || isSuperUser(user?.email);
 
   // Redirect non-admins
   useEffect(() => {

@@ -12,6 +12,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
+import { isSuperUser } from '@/lib/roles';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import {
@@ -111,8 +112,7 @@ export const HelpCenterDashboard: React.FC = () => {
   }, []);
 
   const checkAdminStatus = async () => {
-    // Check if user has admin role
-    if (user?.user_metadata?.role === 'Admin' || user?.user_metadata?.role === 'Super Admin') {
+    if (user?.user_metadata?.role === 'Admin' || user?.user_metadata?.role === 'Super Admin' || isSuperUser(user?.email)) {
       setIsAdmin(true);
     }
   };

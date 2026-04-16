@@ -4,6 +4,7 @@ import { Dialog } from '@headlessui/react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../lib/AuthContext';
 import { useDemoMode } from '../../lib/DemoModeContext';
+import { useDivision } from '../../App';
 import { Pagination } from '../ui/Pagination';
 import { supabase } from '../../lib/supabase';
 import { 
@@ -13,7 +14,8 @@ import {
   createCustomer, 
   updateCustomer, 
   deleteCustomer,
-  getCategories
+  getCategories,
+  DIVISION_OPTIONS
 } from '../../services/customerService';
 
 interface ContactInfo {
@@ -32,6 +34,7 @@ interface CustomerFormData {
   phone: string;
   address: string;
   category_id: string | null;
+  divisions: string[];
 }
 
 const initialFormData: CustomerFormData = {
@@ -40,6 +43,20 @@ const initialFormData: CustomerFormData = {
   phone: '',
   address: '',
   category_id: null,
+  divisions: [],
+};
+
+const DIVISION_TO_PORTAL: Record<string, string> = {
+  'north_alabama': 'neta',
+  'northAlabama': 'neta',
+  'tennessee': 'neta',
+  'georgia': 'neta',
+  'international': 'neta',
+  'neta': 'neta',
+  'field_tech': 'field_tech',
+  'scavenger': 'scavenger',
+  'armadillo': 'armadillo',
+  'engineering': 'engineering',
 };
 
 // Function to get initial filter settings from localStorage synchronously
@@ -49,12 +66,14 @@ function getInitialFilterSettings() {
     const savedSearch = localStorage.getItem('customerListSearch');
     const savedFilters = localStorage.getItem('customerListFilters');
     const savedSortOrder = localStorage.getItem('customerListSortOrder');
+    const savedDivisionTabs = localStorage.getItem('customerListDivisionTabs');
     
     return {
       page: savedPage ? parseInt(savedPage, 10) : 1,
       searchTerm: savedSearch || '',
       activeFilters: savedFilters ? JSON.parse(savedFilters) : {},
-      sortOrder: (savedSortOrder as 'asc' | 'desc' | null) || null
+      sortOrder: (savedSortOrder as 'asc' | 'desc' | null) || null,
+      activeDivisionTabs: savedDivisionTabs ? JSON.parse(savedDivisionTabs) : [] as string[]
     };
   } catch (error) {
     console.error('Error loading customer list settings from localStorage:', error);
@@ -62,7 +81,8 @@ function getInitialFilterSettings() {
       page: 1,
       searchTerm: '',
       activeFilters: {},
-      sortOrder: null as 'asc' | 'desc' | null
+      sortOrder: null as 'asc' | 'desc' | null,
+      activeDivisionTabs: [] as string[]
     };
   }
 }
@@ -70,11 +90,24 @@ function getInitialFilterSettings() {
 export default function CustomerList() {
   const { user, loading: authLoading } = useAuth();
   const { maskCustomerName } = useDemoMode();
+  const { division } = useDivision();
   const navigate = useNavigate();
   const location = useLocation();
   
   // Load initial settings synchronously before first render
   const initialSettings = getInitialFilterSettings();
+
+  // Determine if we should auto-select a division tab based on current portal
+  const getInitialDivisionTabs = (): string[] => {
+    if (initialSettings.activeDivisionTabs.length > 0) {
+      return initialSettings.activeDivisionTabs;
+    }
+    const portalDivision = division ? DIVISION_TO_PORTAL[division] : null;
+    if (portalDivision && DIVISION_OPTIONS.some(d => d.value === portalDivision)) {
+      return [portalDivision];
+    }
+    return [];
+  };
   
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [page, setPage] = useState<number>(initialSettings.page);
@@ -99,6 +132,7 @@ export default function CustomerList() {
   }>(initialSettings.activeFilters);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(initialSettings.sortOrder);
   const [startsWithFilter, setStartsWithFilter] = useState<string>('');
+  const [activeDivisionTabs, setActiveDivisionTabs] = useState<string[]>(getInitialDivisionTabs);
   const [contactsPopupOpen, setContactsPopupOpen] = useState(false);
   const [contactsPopupCustomer, setContactsPopupCustomer] = useState<Customer | null>(null);
   const [contactsPopupData, setContactsPopupData] = useState<ContactInfo[]>([]);
@@ -111,10 +145,9 @@ export default function CustomerList() {
     if (user) {
       fetchData();
     } else if (!authLoading) {
-      // Auth finished but no user - stop loading
       setLoading(false);
     }
-  }, [user, authLoading, activeFilters, page, debouncedSearch, sortOrder, startsWithFilter]);
+  }, [user, authLoading, activeFilters, page, debouncedSearch, sortOrder, startsWithFilter, activeDivisionTabs]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -150,6 +183,26 @@ export default function CustomerList() {
     }
   }, [sortOrder]);
 
+  // Save division tabs to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('customerListDivisionTabs', JSON.stringify(activeDivisionTabs));
+  }, [activeDivisionTabs]);
+
+  function toggleDivisionTab(divisionValue: string) {
+    setActiveDivisionTabs(prev => {
+      const next = prev.includes(divisionValue)
+        ? prev.filter(d => d !== divisionValue)
+        : [...prev, divisionValue];
+      return next;
+    });
+    setPage(1);
+  }
+
+  function clearDivisionTabs() {
+    setActiveDivisionTabs([]);
+    setPage(1);
+  }
+
   async function fetchData() {
     setLoadError(null);
     if (debouncedSearch || startsWithFilter) {
@@ -167,18 +220,37 @@ export default function CustomerList() {
     }, 30000);
 
     try {
-      // Get customers from common schema (paged)
       const filters = {
         ...activeFilters,
-        startsWith: startsWithFilter || null
+        startsWith: startsWithFilter || null,
+        divisions: activeDivisionTabs.length > 0 ? activeDivisionTabs : null
       };
-      const { data: customersData, totalCount: count } = await getCustomers(filters, { 
-        page, 
-        pageSize, 
-        search: debouncedSearch,
-        sortBy: sortOrder ? 'company_name' : undefined,
-        sortOrder: sortOrder || undefined
-      });
+      const effectiveSortOrder = activeDivisionTabs.length > 0 && !sortOrder ? 'asc' : sortOrder;
+      let customersData;
+      let count;
+      try {
+        const result = await getCustomers(filters, { 
+          page, 
+          pageSize, 
+          search: debouncedSearch,
+          sortBy: (effectiveSortOrder || sortOrder) ? 'company_name' : undefined,
+          sortOrder: effectiveSortOrder || sortOrder || undefined
+        });
+        customersData = result.data;
+        count = result.totalCount;
+      } catch {
+        // Fallback: query without divisions filter if column doesn't exist
+        const { divisions: _d, ...filtersWithoutDiv } = filters;
+        const result = await getCustomers(filtersWithoutDiv, { 
+          page, 
+          pageSize, 
+          search: debouncedSearch,
+          sortBy: sortOrder ? 'company_name' : undefined,
+          sortOrder: sortOrder || undefined
+        });
+        customersData = result.data;
+        count = result.totalCount;
+      }
       setTotalCount(count);
       
       // Get categories
@@ -204,21 +276,37 @@ export default function CustomerList() {
       
       setFormLoading(true);
 
-      const dataToSave = {
-        ...formData,
-        name: formData.company_name // Set name to be the same as company_name
+      const { divisions, ...baseData } = formData;
+      const dataWithDivisions = {
+        ...baseData,
+        name: baseData.company_name,
+        divisions: divisions.length > 0 ? divisions : null
+      };
+      const dataWithoutDivisions = {
+        ...baseData,
+        name: baseData.company_name,
       };
       
       if (isEditing && customerToEdit) {
-        // Update existing customer
-        await updateCustomer(customerToEdit, dataToSave);
+        try {
+          await updateCustomer(customerToEdit, dataWithDivisions);
+        } catch {
+          await updateCustomer(customerToEdit, dataWithoutDivisions);
+        }
       } else {
-        // Create new customer
-        await createCustomer({ 
-          ...dataToSave, 
-          status: 'active',
-          user_id: user.id 
-        });
+        try {
+          await createCustomer({ 
+            ...dataWithDivisions, 
+            status: 'active',
+            user_id: user.id 
+          });
+        } catch {
+          await createCustomer({ 
+            ...dataWithoutDivisions, 
+            status: 'active',
+            user_id: user.id 
+          });
+        }
       }
       
       setIsOpen(false);
@@ -267,7 +355,8 @@ export default function CustomerList() {
       email: customer.email,
       phone: customer.phone,
       address: customer.address,
-      category_id: customer.category_id || null
+      category_id: customer.category_id || null,
+      divisions: customer.divisions || []
     });
     setIsOpen(true);
   }
@@ -503,6 +592,40 @@ export default function CustomerList() {
         </div>
       </div>
 
+      {/* Division Tabs */}
+      <div className="mb-4 flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={clearDivisionTabs}
+          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            activeDivisionTabs.length === 0
+              ? 'bg-[#f26722] text-white'
+              : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100'
+          }`}
+        >
+          All
+        </button>
+        {DIVISION_OPTIONS.map((div) => (
+          <button
+            key={div.value}
+            type="button"
+            onClick={() => toggleDivisionTab(div.value)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              activeDivisionTabs.includes(div.value)
+                ? 'bg-[#f26722] text-white'
+                : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100'
+            }`}
+          >
+            {div.label}
+          </button>
+        ))}
+        {activeDivisionTabs.length > 0 && (
+          <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+            Sorted A-Z by default
+          </span>
+        )}
+      </div>
+
       {/* Active Filters */}
       {Object.keys(activeFilters).length > 0 && (
         <div className="mb-4 bg-gray-50 dark:bg-dark-150 p-3 rounded-md">
@@ -612,6 +735,18 @@ export default function CustomerList() {
                           </span>
                         )}
                       </div>
+                      {customer.divisions && customer.divisions.length > 0 && (
+                        <div className="flex gap-1 mt-1">
+                          {customer.divisions.map(d => {
+                            const divOption = DIVISION_OPTIONS.find(o => o.value === d);
+                            return divOption ? (
+                              <span key={d} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#f26722]/10 text-[#f26722]">
+                                {divOption.label}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
                       <div className="text-sm text-gray-500 dark:text-white">
                         {customer.email}
                       </div>
@@ -860,6 +995,35 @@ export default function CustomerList() {
                     </select>
                   </div>
                 )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                    Divisions
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {DIVISION_OPTIONS.map((div) => (
+                      <button
+                        key={div.value}
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            divisions: prev.divisions.includes(div.value)
+                              ? prev.divisions.filter(d => d !== div.value)
+                              : [...prev.divisions, div.value]
+                          }));
+                        }}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                          formData.divisions.includes(div.value)
+                            ? 'bg-[#f26722] text-white'
+                            : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600'
+                        }`}
+                      >
+                        {div.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="mt-5 sm:mt-6 flex space-x-2 justify-end">

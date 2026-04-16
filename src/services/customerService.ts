@@ -26,9 +26,19 @@ export interface Customer {
   status: string;
   category_id?: string | null;
   category?: CustomerCategory;
+  divisions?: string[];
   created_at: string;
   user_id?: string;
 }
+
+export const DIVISION_OPTIONS = [
+  { value: 'field_tech', label: 'Field' },
+  { value: 'scavenger', label: 'Scavenger' },
+  { value: 'armadillo', label: 'Armadillo' },
+  { value: 'engineering', label: 'Engineering' },
+] as const;
+
+export type DivisionValue = typeof DIVISION_OPTIONS[number]['value'];
 
 export interface CustomerDocument {
   id: string;
@@ -452,7 +462,7 @@ export async function syncGoogleDriveDocuments(customerId: string) {
 
 // Customer Functions
 export async function getCustomers(
-  filters?: { category_id?: string | null; status?: string | null; startsWith?: string | null },
+  filters?: { category_id?: string | null; status?: string | null; startsWith?: string | null; divisions?: string[] | null },
   options?: { page?: number; pageSize?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }
 ): Promise<{ data: Customer[]; totalCount: number }> {
   try {
@@ -470,6 +480,10 @@ export async function getCustomers(
     
     if (filters?.status) {
       countQuery = countQuery.eq('status', filters.status);
+    }
+
+    if (filters?.divisions && filters.divisions.length > 0) {
+      countQuery = countQuery.overlaps('divisions', filters.divisions);
     }
 
     // Apply search (name/company/email) - substring search
@@ -504,6 +518,10 @@ export async function getCustomers(
     
     if (filters?.status) {
       query = query.eq('status', filters.status);
+    }
+
+    if (filters?.divisions && filters.divisions.length > 0) {
+      query = query.overlaps('divisions', filters.divisions);
     }
 
     // Apply search (name/company/email) - substring search
@@ -598,10 +616,13 @@ export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at
 }
 
 export async function updateCustomer(id: string, customer: Partial<Customer>) {
+  // Strip fields that don't exist in the DB table
+  const { category_id, category, ...dbFields } = customer as any;
+
   const { data, error } = await supabase
     .schema('common')
     .from('customers')
-    .update(customer)
+    .update(dbFields)
     .eq('id', id)
     .select()
     .single();

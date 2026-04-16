@@ -6,7 +6,7 @@ import { useAuth } from '../../lib/AuthContext';
 import { useDemoMode } from '../../lib/DemoModeContext';
 import { format } from 'date-fns';
 import { Dialog } from '@headlessui/react';
-import { Customer, CustomerCategory, getCustomerById, updateCustomer, getCategories } from '../../services/customerService';
+import { Customer, CustomerCategory, getCustomerById, updateCustomer, getCategories, DIVISION_OPTIONS } from '../../services/customerService';
 import CustomerDocumentManagement from './CustomerDocumentManagement';
 import CustomerHealthMonitoring from './CustomerHealth';
 import { toast } from '../../components/ui/toast';
@@ -78,8 +78,9 @@ export default function CustomerDetail() {
   const [activeTab, setActiveTab] = useState('overview');
   const [contactsExpanded, setContactsExpanded] = useState(false);
   const [isCustomerEditOpen, setIsCustomerEditOpen] = useState(false);
-  const [customerEditForm, setCustomerEditForm] = useState<{ company_name: string; email: string; phone: string; address: string; status: string }>({ company_name: '', email: '', phone: '', address: '', status: 'active' });
+  const [customerEditForm, setCustomerEditForm] = useState<{ company_name: string; email: string; phone: string; address: string; status: string; divisions: string[] }>({ company_name: '', email: '', phone: '', address: '', status: 'active', divisions: [] });
   const [isSavingCustomer, setIsSavingCustomer] = useState(false);
+  const [isSavingDivisions, setIsSavingDivisions] = useState(false);
   const [contactPopupOpen, setContactPopupOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
@@ -196,6 +197,7 @@ export default function CustomerDetail() {
         phone: customerData.phone || '',
         address: customerData.address || '',
         status: customerData.status || 'active',
+        divisions: customerData.divisions || [],
       });
 
       // Set the selected category from the customer data
@@ -243,7 +245,11 @@ export default function CustomerDetail() {
     if (!customer) return;
     try {
       setIsSavingCustomer(true);
-      await updateCustomer(customer.id, { ...customerEditForm });
+      const { divisions, ...rest } = customerEditForm;
+      await updateCustomer(customer.id, {
+        ...rest,
+        divisions: divisions.length > 0 ? divisions : null as any
+      });
       setIsCustomerEditOpen(false);
       await fetchCustomerData();
       toast({ title: 'Saved', description: 'Customer updated successfully', variant: 'success' });
@@ -252,6 +258,27 @@ export default function CustomerDetail() {
       toast({ title: 'Error', description: 'Failed to update customer', variant: 'destructive' });
     } finally {
       setIsSavingCustomer(false);
+    }
+  }
+
+  async function handleToggleDivision(divisionValue: string) {
+    if (!customer || !id) return;
+    const currentDivisions = customer.divisions || [];
+    const newDivisions = currentDivisions.includes(divisionValue)
+      ? currentDivisions.filter(d => d !== divisionValue)
+      : [...currentDivisions, divisionValue];
+    
+    try {
+      setIsSavingDivisions(true);
+      await updateCustomer(id, {
+        divisions: newDivisions.length > 0 ? newDivisions : null as any
+      });
+      await fetchCustomerData();
+    } catch (error) {
+      console.error('Error updating divisions:', error);
+      toast({ title: 'Error', description: 'Failed to update divisions. Run the database migration to add the divisions column.', variant: 'destructive' });
+    } finally {
+      setIsSavingDivisions(false);
     }
   }
 
@@ -412,6 +439,35 @@ export default function CustomerDetail() {
                     </span>
                   )}
                 </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center mb-2">
+                  <Tag className="h-4 w-4 text-gray-400 mr-2" />
+                  Divisions
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {DIVISION_OPTIONS.map((div) => {
+                    const isActive = (customer.divisions || []).includes(div.value);
+                    return (
+                      <button
+                        key={div.value}
+                        type="button"
+                        onClick={() => handleToggleDivision(div.value)}
+                        disabled={isSavingDivisions}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors disabled:opacity-50 ${
+                          isActive
+                            ? 'bg-[#f26722] text-white'
+                            : 'bg-gray-100 dark:bg-dark-200 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600'
+                        }`}
+                      >
+                        {div.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {(!customer.divisions || customer.divisions.length === 0) && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Click to assign divisions</p>
+                )}
               </div>
               <div className="flex items-start">
                 <Mail className="h-5 w-5 text-[#f26722] mt-0.5" />
@@ -1454,6 +1510,32 @@ export default function CustomerDetail() {
                 <option value="active">active</option>
                 <option value="inactive">inactive</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">Divisions</label>
+              <div className="flex flex-wrap gap-2">
+                {DIVISION_OPTIONS.map((div) => (
+                  <button
+                    key={div.value}
+                    type="button"
+                    onClick={() => {
+                      setCustomerEditForm(prev => ({
+                        ...prev,
+                        divisions: prev.divisions.includes(div.value)
+                          ? prev.divisions.filter(d => d !== div.value)
+                          : [...prev.divisions, div.value]
+                      }));
+                    }}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      customerEditForm.divisions.includes(div.value)
+                        ? 'bg-[#f26722] text-white'
+                        : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600'
+                    }`}
+                  >
+                    {div.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
               <button type="submit" disabled={isSavingCustomer} className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-50">

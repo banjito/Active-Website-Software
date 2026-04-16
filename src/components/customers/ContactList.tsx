@@ -3,8 +3,10 @@ import { Plus, Pencil, Trash2, X, ArrowUpAZ, ArrowDownAZ } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
+import { useDivision } from '../../App';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Pagination } from '../ui/Pagination';
+import { DIVISION_OPTIONS } from '../../services/customerService';
 
 interface Contact {
   id: string;
@@ -47,35 +49,63 @@ const initialFormData: ContactFormData = {
   is_primary: false,
 };
 
+const DIVISION_TO_PORTAL: Record<string, string> = {
+  'north_alabama': 'neta',
+  'northAlabama': 'neta',
+  'tennessee': 'neta',
+  'georgia': 'neta',
+  'international': 'neta',
+  'neta': 'neta',
+  'field_tech': 'field_tech',
+  'scavenger': 'scavenger',
+  'armadillo': 'armadillo',
+  'engineering': 'engineering',
+};
+
 // Function to get initial filter settings from localStorage synchronously
 function getInitialFilterSettings() {
   try {
     const savedPage = localStorage.getItem('contactListPage');
     const savedSearch = localStorage.getItem('contactListSearch');
     const savedSortOrder = localStorage.getItem('contactListSortOrder');
+    const savedDivisionTabs = localStorage.getItem('contactListDivisionTabs');
     
     return {
       page: savedPage ? parseInt(savedPage, 10) : 1,
       searchTerm: savedSearch || '',
-      sortOrder: (savedSortOrder as 'asc' | 'desc' | null) || null
+      sortOrder: (savedSortOrder as 'asc' | 'desc' | null) || null,
+      activeDivisionTabs: savedDivisionTabs ? JSON.parse(savedDivisionTabs) : [] as string[]
     };
   } catch (error) {
     console.error('Error loading contact list settings from localStorage:', error);
     return {
       page: 1,
       searchTerm: '',
-      sortOrder: null as 'asc' | 'desc' | null
+      sortOrder: null as 'asc' | 'desc' | null,
+      activeDivisionTabs: [] as string[]
     };
   }
 }
 
 export default function ContactList() {
   const { user, loading: authLoading } = useAuth();
+  const { division } = useDivision();
   const navigate = useNavigate();
   const location = useLocation();
   
   // Load initial settings synchronously before first render
   const initialSettings = getInitialFilterSettings();
+
+  const getInitialDivisionTabs = (): string[] => {
+    if (initialSettings.activeDivisionTabs.length > 0) {
+      return initialSettings.activeDivisionTabs;
+    }
+    const portalDivision = division ? DIVISION_TO_PORTAL[division] : null;
+    if (portalDivision && DIVISION_OPTIONS.some(d => d.value === portalDivision)) {
+      return [portalDivision];
+    }
+    return [];
+  };
   
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [page, setPage] = useState<number>(initialSettings.page);
@@ -97,6 +127,7 @@ export default function ContactList() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(initialSettings.sortOrder);
   const [startsWithFilter, setStartsWithFilter] = useState<string>('');
+  const [activeDivisionTabs, setActiveDivisionTabs] = useState<string[]>(getInitialDivisionTabs);
   
   const pageSize = 50;
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -111,10 +142,9 @@ export default function ContactList() {
       fetchContacts(sortOrder);
       fetchCustomers();
     } else if (!authLoading) {
-      // Auth finished but no user - stop loading
       setLoading(false);
     }
-  }, [user, authLoading, page, debouncedSearch, sortOrder, startsWithFilter]);
+  }, [user, authLoading, page, debouncedSearch, sortOrder, startsWithFilter, activeDivisionTabs]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -145,6 +175,26 @@ export default function ContactList() {
     }
   }, [sortOrder]);
 
+  // Save division tabs to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('contactListDivisionTabs', JSON.stringify(activeDivisionTabs));
+  }, [activeDivisionTabs]);
+
+  function toggleDivisionTab(divisionValue: string) {
+    setActiveDivisionTabs(prev => {
+      const next = prev.includes(divisionValue)
+        ? prev.filter(d => d !== divisionValue)
+        : [...prev, divisionValue];
+      return next;
+    });
+    setPage(1);
+  }
+
+  function clearDivisionTabs() {
+    setActiveDivisionTabs([]);
+    setPage(1);
+  }
+
   useEffect(() => {
     if (customerSearch.trim()) {
       const filtered = customers.filter(customer => 
@@ -166,7 +216,6 @@ export default function ContactList() {
       setLoading(true);
     }
 
-    // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       console.error('ContactList: fetchContacts timed out after 30 seconds');
       setLoadError('Loading is taking longer than expected. Please try again.');
@@ -175,19 +224,44 @@ export default function ContactList() {
     }, 30000);
 
     try {
+      // If division filter is active, first get the customer IDs that match
+      let divisionCustomerIds: string[] | null = null;
+      if (activeDivisionTabs.length > 0) {
+        try {
+          const { data: divCustomers, error: divError } = await supabase
+            .schema('common')
+            .from('customers')
+            .select('id')
+            .overlaps('divisions', activeDivisionTabs);
+
+          if (divError) throw divError;
+          divisionCustomerIds = (divCustomers || []).map(c => c.id);
+          if (divisionCustomerIds.length === 0) {
+            setContacts([]);
+            setTotalCount(0);
+            return;
+          }
+        } catch {
+          // divisions column may not exist yet -- skip filter
+          divisionCustomerIds = null;
+        }
+      }
+
       // 1. First get total count with filters applied
       let countQuery = supabase
         .schema('common')
         .from('contacts')
         .select('*', { count: 'exact', head: true });
 
-      // Apply search filter
+      if (divisionCustomerIds) {
+        countQuery = countQuery.in('customer_id', divisionCustomerIds);
+      }
+
       if (debouncedSearch) {
         const like = `%${debouncedSearch}%`;
         countQuery = countQuery.or(`first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`);
       }
 
-      // Apply "starts with" filter for first letter(s) search on last_name
       if (startsWithFilter) {
         const startsWithLike = `${startsWithFilter}%`;
         countQuery = countQuery.ilike('last_name', startsWithLike);
@@ -204,30 +278,33 @@ export default function ContactList() {
       let query = supabase
         .schema('common')
         .from('contacts')
-        .select('*'); // Select all contact fields
+        .select('*');
 
-      // Apply search filter first
+      if (divisionCustomerIds) {
+        query = query.in('customer_id', divisionCustomerIds);
+      }
+
       if (debouncedSearch) {
         const like = `%${debouncedSearch}%`;
         query = query.or(`first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`);
       }
 
-      // Apply "starts with" filter for first letter(s) search on last_name
       if (startsWithFilter) {
         const startsWithLike = `${startsWithFilter}%`;
         query = query.ilike('last_name', startsWithLike);
       }
+
+      // When division tabs are active, default to alphabetical sort
+      const effectiveSortOrder = activeDivisionTabs.length > 0 && !currentSortOrder ? 'asc' : currentSortOrder;
       
-      // Apply sorting - if sortOrder is set, sort by last_name then first_name
-      if (currentSortOrder) {
+      if (effectiveSortOrder) {
         query = query
-          .order('last_name', { ascending: currentSortOrder === 'asc' })
-          .order('first_name', { ascending: currentSortOrder === 'asc' });
+          .order('last_name', { ascending: effectiveSortOrder === 'asc' })
+          .order('first_name', { ascending: effectiveSortOrder === 'asc' });
       } else {
         query = query.order('created_at', { ascending: false });
       }
       
-      // Apply pagination last
       query = query.range(from, to);
 
       const { data: contactData, error: contactError } = await query;
@@ -235,10 +312,9 @@ export default function ContactList() {
       if (contactError) throw contactError;
       if (!contactData) {
         setContacts([]);
-        return; // No contacts found
+        return;
       }
 
-      // 2. Fetch customer data for each contact
       const contactsWithCustomers = await Promise.all(contactData.map(async (contact) => {
         if (!contact.customer_id) {
           return { ...contact, customers: null };
@@ -257,7 +333,6 @@ export default function ContactList() {
             return { ...contact, customers: null };
           }
           
-          // Use the `customers` key to match the existing Contact interface
           return { ...contact, customers: customerData };
         } catch (err) {
           console.warn(`Error processing customer for contact ${contact.id}:`, err);
@@ -272,7 +347,6 @@ export default function ContactList() {
       setLoadError('Failed to load contacts. Please try again.');
     } finally {
       clearTimeout(timeoutId);
-      // Always clear loading state - BOTH states to handle all scenarios
       setLoading(false);
       setSearchLoading(false);
     }
@@ -538,7 +612,41 @@ export default function ContactList() {
         </div>
       </div>
 
-      <div className="mt-8">
+      {/* Division Tabs */}
+      <div className="mb-4 flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={clearDivisionTabs}
+          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            activeDivisionTabs.length === 0
+              ? 'bg-[#f26722] text-white'
+              : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100'
+          }`}
+        >
+          All
+        </button>
+        {DIVISION_OPTIONS.map((div) => (
+          <button
+            key={div.value}
+            type="button"
+            onClick={() => toggleDivisionTab(div.value)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              activeDivisionTabs.includes(div.value)
+                ? 'bg-[#f26722] text-white'
+                : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100'
+            }`}
+          >
+            {div.label}
+          </button>
+        ))}
+        {activeDivisionTabs.length > 0 && (
+          <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+            Sorted A-Z by default
+          </span>
+        )}
+      </div>
+
+      <div className="mt-4">
         <div className="-mx-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
           <table className="min-w-full divide-y divide-gray-300">
             <thead className="bg-gray-50 dark:bg-dark-150">

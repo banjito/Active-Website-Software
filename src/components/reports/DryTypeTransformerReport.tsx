@@ -585,7 +585,8 @@ const DryTypeTransformerReport: React.FC = () => {
         .select(`
           title,
           job_number,
-          customer_id
+          customer_id,
+          site_address
         `)
         .eq('id', jobId)
         .single();
@@ -593,9 +594,8 @@ const DryTypeTransformerReport: React.FC = () => {
       if (jobError) throw jobError;
 
       if (jobData) {
-        // Then fetch customer data from common schema
         let customerName = '';
-        let customerAddress = '';
+        let customerAddress = (jobData as any).site_address || '';
         
         if (jobData.customer_id) {
           const { data: customerData, error: customerError } = await supabase
@@ -611,7 +611,7 @@ const DryTypeTransformerReport: React.FC = () => {
             
           if (!customerError && customerData) {
             customerName = customerData.company_name || customerData.name || '';
-            customerAddress = customerData.address || '';
+            if (!customerAddress) customerAddress = customerData.address || '';
           }
         }
 

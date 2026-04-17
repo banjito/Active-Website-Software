@@ -34,10 +34,10 @@ export async function addDefaultFilesToJob(
       filesToAdd.push(...DIVISION_DEFAULT_FILES[division]);
     }
 
-    // Create asset records for each default file
-    const assetInserts = filesToAdd.map(file => ({
+    // Create asset records — match neta_ops.assets columns used elsewhere (reports);
+    // there is no `description` column on assets in production schema.
+    const assetInserts = filesToAdd.map((file) => ({
       name: file.name,
-      description: file.description,
       file_url: file.file_url,
       template_type: file.template_type,
       status: file.status,
@@ -45,7 +45,6 @@ export async function addDefaultFilesToJob(
       created_at: new Date().toISOString()
     }));
 
-    // Insert assets into database
     const { data: insertedAssets, error: assetError } = await supabase
       .schema('neta_ops')
       .from('assets')
@@ -54,12 +53,12 @@ export async function addDefaultFilesToJob(
 
     if (assetError) {
       console.error('Error creating default assets:', assetError);
-      throw assetError;
+      if (DEFAULT_FILE_SETTINGS.FAIL_ON_DEFAULT_FILE_ERROR) throw assetError;
+      return;
     }
 
-    // Link assets to the job
     if (insertedAssets && insertedAssets.length > 0) {
-      const jobAssetLinks = insertedAssets.map(asset => ({
+      const jobAssetLinks = insertedAssets.map((asset) => ({
         job_id: jobId,
         asset_id: asset.id,
         user_id: userId
@@ -72,14 +71,15 @@ export async function addDefaultFilesToJob(
 
       if (linkError) {
         console.error('Error linking assets to job:', linkError);
-        throw linkError;
+        if (DEFAULT_FILE_SETTINGS.FAIL_ON_DEFAULT_FILE_ERROR) throw linkError;
+        return;
       }
     }
 
     console.log(`Successfully added ${filesToAdd.length} default files to job ${jobId}`);
   } catch (error) {
     console.error('Error adding default files to job:', error);
-    throw error;
+    if (DEFAULT_FILE_SETTINGS.FAIL_ON_DEFAULT_FILE_ERROR) throw error;
   }
 }
 

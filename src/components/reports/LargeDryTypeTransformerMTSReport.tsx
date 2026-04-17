@@ -461,14 +461,15 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
       }
   }, [formData.insulationResistance?.primaryToGround?.readings, formData.insulationResistance?.secondaryToGround?.readings, formData.insulationResistance?.primaryToSecondary?.readings, formData.temperature.correctionFactor]);
 
-  const loadJobInfo = async () => {
-    if (!jobId) return;
+  const loadJobInfo = async (): Promise<string> => {
+    if (!jobId) return '';
     try {
       setLoading(true);
       const { data: jobData, error: jobError } = await supabase.schema('neta_ops').from('jobs').select(`title, job_number, customer_id, site_address`).eq('id', jobId).single();
       if (jobError) throw jobError;
       if (jobData) {
-        let customerName = ''; let customerAddress = (jobData as any).site_address || '';
+        const siteAddress = (jobData as any).site_address || '';
+        let customerName = ''; let customerAddress = siteAddress;
         if (jobData.customer_id) {
           const { data: customerData, error: customerError } = await supabase.schema('common').from('customers').select(`name, company_name, address`).eq('id', jobData.customer_id).single();
           if (!customerError && customerData) {
@@ -477,9 +478,11 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
           }
         }
         setFormData(prev => ({ ...prev, jobNumber: jobData.job_number || '', customer: maskCustomerName(customerName), address: maskCustomerAddress(customerAddress) }));
+        return siteAddress;
       }
     } catch (error) { const err = error as SupabaseError; console.error('Error loading job info:', err); alert(`Failed to load job info: ${err.message}`);
     } finally { /* setLoading(false); */ }
+    return '';
   };
 
   const loadReport = async () => {
@@ -545,7 +548,7 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
        } finally { setLoading(false); }
    };
 
-  useEffect(() => { const fetchData = async () => { await loadJobInfo(); await loadReport(); }; fetchData(); }, [jobId, reportId]);
+  useEffect(() => { const fetchData = async () => { const siteAddress = await loadJobInfo(); await loadReport(); if (siteAddress) { setFormData(prev => ({ ...prev, address: maskCustomerAddress(siteAddress) })); } }; fetchData(); }, [jobId, reportId]);
 
   if (loading) return <div className="p-4">Loading Report Data...</div>;
 

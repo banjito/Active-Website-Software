@@ -7,6 +7,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BriefcaseIcon, Plus, X } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { addDefaultFilesToJob } from '@/lib/services/defaultJobFiles';
+import { withPgTimeoutRetry } from '@/lib/retryPgTimeout';
 
 interface Customer {
   id?: string;
@@ -310,7 +311,7 @@ export default function FieldTechJobsPage() {
       let nextJobNumberNumeric = 26001;
       let gotFromRpc = false;
       try {
-        const { data: fnResult } = await supabase.rpc('get_max_job_number');
+        const { data: fnResult } = await withPgTimeoutRetry(() => supabase.rpc('get_max_job_number'));
         const raw = Array.isArray(fnResult) ? (fnResult[0] as any) : fnResult;
         const value =
           typeof raw === 'number' && Number.isFinite(raw)
@@ -367,40 +368,40 @@ export default function FieldTechJobsPage() {
         opportunity_type: 'time_materials' // Mark as T&M opportunity
       };
 
-      const { data: newOpportunity, error: opportunityError } = await supabase
-        .schema('business')
-        .from('opportunities')
-        .insert(opportunityData)
-        .select()
-        .single();
+      const { data: newOpportunity, error: opportunityError } = await withPgTimeoutRetry(() =>
+        supabase
+          .schema('business')
+          .from('opportunities')
+          .insert(opportunityData)
+          .select('id')
+          .single()
+      );
 
-      if (opportunityError) {
-        throw opportunityError;
+      if (opportunityError || !newOpportunity) {
+        throw opportunityError || new Error('Opportunity insert returned no row');
       }
 
-      // Create the job
-      const { data: newJob, error: jobError } = await supabase
-        .schema('neta_ops')
-        .from('jobs')
-        .insert({
-          user_id: user.id,
-          customer_id: TMFormData.customer_id,
-          title: TMFormData.title,
-          description: TMFormData.description || '',
-          status: 'pending',
-          start_date: new Date().toISOString().substring(0, 10),
-          budget: null,
-          notes: 'Created from T&M opportunity',
-          priority: 'medium',
-          division: TMFormData.division,
-          job_number: nextJobNumberStr,
-          opportunity_id: newOpportunity.id
-        })
-        .select()
-        .single();
+      const jobPayload = {
+        user_id: user.id,
+        customer_id: TMFormData.customer_id,
+        title: TMFormData.title,
+        description: TMFormData.description || '',
+        status: 'pending',
+        start_date: new Date().toISOString().substring(0, 10),
+        budget: null,
+        notes: 'Created from T&M opportunity',
+        priority: 'medium',
+        division: TMFormData.division,
+        job_number: nextJobNumberStr,
+        opportunity_id: newOpportunity.id
+      };
 
-      if (jobError) {
-        throw jobError;
+      const { data: newJob, error: jobError } = await withPgTimeoutRetry(() =>
+        supabase.schema('neta_ops').from('jobs').insert(jobPayload).select('id').single()
+      );
+
+      if (jobError || !newJob) {
+        throw jobError || new Error('Job insert returned no row');
       }
 
       // Link the opportunity to the job

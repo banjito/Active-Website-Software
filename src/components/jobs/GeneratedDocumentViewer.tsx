@@ -137,12 +137,57 @@ export default function GeneratedDocumentViewer() {
 
   const isPrintMode = searchParams.get('print') === 'true';
 
-  // Patch saved HTML to fix multi-page printing: old documents may have
-  // html/body { height: 11in } and .amp-page { overflow: hidden } in their
-  // @media print styles, which clips everything to the first page.
+  // Patch saved HTML to fix multi-page printing and footer overlap.
+  // Old documents may have absolute-positioned footers that overlap content
+  // when the executive summary text + signatures grow too long.
+  // Fix: convert .amp-page to flex layout for print so footer flows naturally.
   const patchedHtml = (() => {
     if (!html) return html;
-    const printFix = `<style>@media print { html, body { height: auto !important; overflow: visible !important; } .amp-page { overflow: visible !important; } }</style>`;
+    const printFix = `<style>
+@media print {
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .amp-page {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 11in !important;
+    width: 8.5in !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    page-break-after: always !important;
+  }
+  .amp-page:last-child {
+    page-break-after: auto !important;
+  }
+  .amp-stripe {
+    position: absolute !important;
+  }
+  .amp-header {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    flex-shrink: 0 !important;
+  }
+  .amp-page-content {
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
+  }
+  .amp-footer {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+  }
+}
+</style>`;
     // Insert just before </head> if present, otherwise before </html> or at end
     if (html.includes('</head>')) {
       return html.replace('</head>', `${printFix}</head>`);

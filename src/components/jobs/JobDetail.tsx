@@ -449,25 +449,37 @@ export default function JobDetail() {
             padding: 0.9in 0.9in 0.9in 1.25in !important;
             height: 11in !important;
             width: 8.5in !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-            overflow: visible !important;
-          }
-          .amp-page:not(:last-child) {
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
             page-break-after: always !important;
-            break-after: page !important;
+          }
+          .amp-page:last-child {
+            page-break-after: auto !important;
+          }
+          .amp-stripe {
+            position: absolute !important;
           }
           .amp-header {
-            position: absolute !important;
-            top: 0.9in !important;
-            left: 1.25in !important;
-            right: 0.9in !important;
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            right: auto !important;
+            flex-shrink: 0 !important;
+          }
+          .amp-page-content {
+            flex: 1 1 auto !important;
+            overflow: hidden !important;
+            min-height: 0 !important;
           }
           .amp-footer {
-            position: absolute !important;
-            bottom: 0.9in !important;
-            left: 1.25in !important;
-            right: 0.9in !important;
+            position: relative !important;
+            bottom: auto !important;
+            left: auto !important;
+            right: auto !important;
+            flex-shrink: 0 !important;
+            margin-top: auto !important;
           }
           .toc-page {
             page-break-before: always !important;
@@ -4740,7 +4752,16 @@ export default function JobDetail() {
               ensureFixedElements();
               const fullDoc = buildFullDocumentHTML();
               // Ensure print helper - allow multi-page printing
-              const patched = fullDoc.replace('</head>', '<style>@media print { .print-hidden { display: none !important; } html, body { height: auto !important; overflow: visible !important; } .amp-page { overflow: visible !important; } }</style></head>');
+              const patched = fullDoc.replace('</head>', `<style>@media print {
+  .print-hidden { display: none !important; }
+  html, body { height: auto !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; }
+  .amp-page { display: flex !important; flex-direction: column !important; height: 11in !important; overflow: hidden !important; box-sizing: border-box !important; page-break-after: always !important; }
+  .amp-page:last-child { page-break-after: auto !important; }
+  .amp-stripe { position: absolute !important; }
+  .amp-header { position: relative !important; top: auto !important; left: auto !important; right: auto !important; flex-shrink: 0 !important; }
+  .amp-page-content { flex: 1 1 auto !important; overflow: hidden !important; min-height: 0 !important; }
+  .amp-footer { position: relative !important; bottom: auto !important; left: auto !important; right: auto !important; flex-shrink: 0 !important; margin-top: auto !important; }
+}</style></head>`);
               printWindow.document.write(patched);
               printWindow.document.close();
 
@@ -5090,7 +5111,8 @@ ${newBodyHtml}
       
       if (error) throw error;
       
-      setViewerHtml((data as any)?.html || '');
+      const loadedHtml = (data as any)?.html || '';
+      setViewerHtml(loadedHtml);
       setViewerDocId(docId);
       setViewerTitle(
         (data as any)?.name || 
@@ -5100,6 +5122,20 @@ ${newBodyHtml}
       );
       setIsViewerDocLocked(false);
       setIsEditingViewer(false); // Start in view-only mode
+
+      // Restore saved font size from the persisted style block if it exists
+      try {
+        const match = loadedHtml.match(/id="amp-saved-font-sizes"[^>]*>[\s\S]*?\.exec-section\s*\{\s*font-size:\s*([\d.]+)px/);
+        if (match) {
+          const savedExecSize = parseFloat(match[1]);
+          const restoredFontSize = Math.round((savedExecSize / 14) * 16);
+          setViewerFontSize(Math.max(8, Math.min(32, restoredFontSize)));
+        } else {
+          setViewerFontSize(16);
+        }
+      } catch {
+        setViewerFontSize(16);
+      }
       
       // Load selected signature profile IDs if present
       const profileIds = (data as any)?.selected_signature_profile_ids;
@@ -5155,49 +5191,43 @@ ${newBodyHtml}
         const targetWidth = 816; // 8.5in at 96dpi
         const scale = Math.min(1, iframeWidth / targetWidth);
         
-        // Override fixed print widths to scale properly in the iframe
+        // Viewport-only styles (transform/scaling) go in @media screen;
+        // font size scaling applies to both screen and print so the user's
+        // font size adjustment is reflected when printing.
         styleEl.textContent = `
-          /* Fix smushed appearance - override print-specific fixed widths */
-          html, body {
-            width: 100% !important;
-            max-width: 100% !important;
-            overflow-x: auto !important;
-            margin: 0 !important;
-            padding: 0 !important;
+          @media screen {
+            html, body {
+              width: 100% !important;
+              max-width: 100% !important;
+              overflow-x: auto !important;
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+            .amp-page {
+              width: ${targetWidth}px !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              margin: 0 auto !important;
+              box-sizing: border-box !important;
+              transform: scale(${scale}) !important;
+              transform-origin: top center !important;
+            }
+            .amp-page-content {
+              width: 100% !important;
+              max-width: 100% !important;
+              box-sizing: border-box !important;
+            }
+            .amp-page img, .amp-page svg {
+              max-width: 100% !important;
+              height: auto !important;
+            }
+            .amp-stripe {
+              width: 36px !important;
+              height: 100% !important;
+            }
           }
-          
-          /* Scale amp-page to fit viewport while maintaining aspect ratio */
-          .amp-page {
-            width: ${targetWidth}px !important;
-            max-width: 100% !important;
-            min-width: 0 !important;
-            margin: 0 auto !important;
-            box-sizing: border-box !important;
-            transform: scale(${scale}) !important;
-            transform-origin: top center !important;
-          }
-          
-          /* Ensure content scales properly */
-          .amp-page-content {
-            width: 100% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-          }
-          
-          /* Scale images and other content */
-          .amp-page img,
-          .amp-page svg {
-            max-width: 100% !important;
-            height: auto !important;
-          }
-          
-          /* Ensure orange stripe scales properly */
-          .amp-stripe {
-            width: 36px !important;
-            height: 100% !important;
-          }
-          
-          /* Apply font size scaling only to executive summary section */
+
+          /* Font size scaling applies to both screen AND print */
           .exec-title {
             font-size: ${28 * scaleFactor}px !important;
           }
@@ -5228,6 +5258,47 @@ ${newBodyHtml}
             font-size: ${14 * scaleFactor}px !important;
             line-height: 1.5 !important;
           }
+
+          @media print {
+            html, body {
+              height: auto !important;
+              overflow: visible !important;
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+            .amp-page {
+              display: flex !important;
+              flex-direction: column !important;
+              height: 11in !important;
+              width: 8.5in !important;
+              overflow: hidden !important;
+              box-sizing: border-box !important;
+              transform: none !important;
+              page-break-after: always !important;
+            }
+            .amp-page:last-child { page-break-after: auto !important; }
+            .amp-stripe { position: absolute !important; }
+            .amp-header {
+              position: relative !important;
+              top: auto !important;
+              left: auto !important;
+              right: auto !important;
+              flex-shrink: 0 !important;
+            }
+            .amp-page-content {
+              flex: 1 1 auto !important;
+              overflow: hidden !important;
+              min-height: 0 !important;
+            }
+            .amp-footer {
+              position: relative !important;
+              bottom: auto !important;
+              left: auto !important;
+              right: auto !important;
+              flex-shrink: 0 !important;
+              margin-top: auto !important;
+            }
+          }
         `;
       }
     }, 100);
@@ -5257,25 +5328,60 @@ ${newBodyHtml}
         throw new Error('Could not access document content');
       }
       
+      // Remove the runtime viewer-override styles (viewport transform/scaling)
+      const viewerOverride = iframeDoc.getElementById('amp-viewer-override');
+      if (viewerOverride) viewerOverride.remove();
+
+      // Persist font size adjustments: if the user changed the font size,
+      // bake the computed font rules into a saved style block so they survive reload.
+      const scaleFactor = viewerFontSize / 16;
+      let fontStyleEl = iframeDoc.getElementById('amp-saved-font-sizes');
+      if (scaleFactor !== 1) {
+        if (!fontStyleEl) {
+          fontStyleEl = iframeDoc.createElement('style');
+          fontStyleEl.id = 'amp-saved-font-sizes';
+          iframeDoc.head.appendChild(fontStyleEl);
+        }
+        fontStyleEl.textContent = `
+          .exec-title { font-size: ${28 * scaleFactor}px !important; }
+          .exec-title-rule { height: ${3 * scaleFactor}px !important; margin: ${4 * scaleFactor}px 0 ${14 * scaleFactor}px !important; }
+          .exec-meta { font-size: ${14 * scaleFactor}px !important; margin: ${6 * scaleFactor}px 0 ${12 * scaleFactor}px !important; }
+          .exec-section { font-size: ${14 * scaleFactor}px !important; margin: ${12 * scaleFactor}px 0 !important; }
+          .exec-section b { margin-bottom: ${6 * scaleFactor}px !important; }
+          .sig-grid { gap: ${28 * scaleFactor}px !important; margin-top: ${18 * scaleFactor}px !important; font-size: ${14 * scaleFactor}px !important; }
+          .sig-col b { margin-bottom: ${6 * scaleFactor}px !important; }
+          .sig-col { font-size: ${14 * scaleFactor}px !important; line-height: 1.5 !important; }
+        `;
+      } else if (fontStyleEl) {
+        fontStyleEl.remove();
+      }
+
+      // Remove contentEditable artifacts before persisting
+      iframeDoc.body.contentEditable = 'false';
+      iframeDoc.body.querySelectorAll('[contenteditable]').forEach(el => {
+        el.removeAttribute('contenteditable');
+      });
+
+      // Remove any browser-injected elements/attributes that inflate payload
+      iframeDoc.querySelectorAll('style:empty, script:empty').forEach(el => el.remove());
+
       const editedHtml = iframeDoc.documentElement.outerHTML;
-      console.log('Saving document HTML:', { docId: viewerDocId });
+      console.log('Saving document HTML:', { docId: viewerDocId, length: editedHtml.length });
       
-      const { data, error } = await supabase
+      // Skip .select() to reduce query cost and avoid statement timeout on large HTML payloads
+      const { error } = await supabase
         .schema('neta_ops')
         .from('generated_documents')
         .update({ 
           html: editedHtml,
           selected_signature_profile_ids: selectedSignatureProfileIds.size > 0 ? Array.from(selectedSignatureProfileIds) : null
         })
-        .eq('id', viewerDocId)
-        .select();
+        .eq('id', viewerDocId);
       
       if (error) {
         console.error('Error updating document:', error);
         throw error;
       }
-      
-      console.log('Document update response:', data);
       
       // Update local state and exit edit mode
       setViewerHtml(editedHtml);
@@ -5597,7 +5703,15 @@ ${newBodyHtml}
               </Button>
             )}
             <Button
-              onClick={() => window.open(`/jobs/${id}/generated-document/${viewerDocId}?print=true`, '_blank')}
+              onClick={() => {
+                const iframe = viewerIframeRef.current;
+                if (iframe?.contentWindow) {
+                  iframe.contentWindow.focus();
+                  iframe.contentWindow.print();
+                } else {
+                  window.open(`/jobs/${id}/generated-document/${viewerDocId}?print=true`, '_blank');
+                }
+              }}
               className="bg-[#f26722] hover:bg-[#e55611] text-white"
             >
               Print

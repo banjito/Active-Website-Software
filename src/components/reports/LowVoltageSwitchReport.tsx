@@ -738,28 +738,36 @@ export default function LowVoltageSwitchReport() {
         const { data: jobData, error: jobError } = await supabase
           .schema('neta_ops')
           .from('jobs')
-          .select(`title, job_number, customer_id`)
+          .select(`title, job_number, customer_id, site_address`)
           .eq('id', jobId)
           .single();
 
         if (jobError) throw jobError;
 
-        if (jobData?.customer_id) {
-          const { data: customerData, error: customerError } = await supabase
-            .schema('common')
-            .from('customers')
-            .select(`name, company_name, address`)
-            .eq('id', jobData.customer_id)
-            .single();
-            
-          if (!customerError && customerData) {
-            setFormData(currentData => ({
-              ...currentData,
-              customer: maskCustomerName(customerData.company_name || customerData.name || ''),
-              address: maskCustomerAddress(customerData.address || ''),
-              jobNumber: jobData.job_number || ''
-            }));
+        if (jobData) {
+          let customerName = '';
+          let customerAddress = (jobData as any).site_address || '';
+
+          if (jobData.customer_id) {
+            const { data: customerData, error: customerError } = await supabase
+              .schema('common')
+              .from('customers')
+              .select(`name, company_name, address`)
+              .eq('id', jobData.customer_id)
+              .single();
+              
+            if (!customerError && customerData) {
+              customerName = customerData.company_name || customerData.name || '';
+              if (!customerAddress) customerAddress = customerData.address || '';
+            }
           }
+
+          setFormData(currentData => ({
+            ...currentData,
+            customer: maskCustomerName(customerName),
+            address: maskCustomerAddress(customerAddress),
+            jobNumber: jobData.job_number || ''
+          }));
         }
       } catch (error) {
         console.error('Error loading job info:', error);

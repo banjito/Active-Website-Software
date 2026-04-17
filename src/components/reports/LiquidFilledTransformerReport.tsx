@@ -670,12 +670,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
 
 
   // Load job information (same logic as DryTypeTransformer)
-  const loadJobInfo = async () => {
-    if (!jobId) return;
+  const loadJobInfo = async (): Promise<string> => {
+    if (!jobId) return '';
 
     try {
       setLoading(true);
-      // First fetch job data from neta_ops schema
       const { data: jobData, error: jobError } = await supabase
         .schema('neta_ops')
         .from('jobs')
@@ -691,9 +690,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
       if (jobError) throw jobError;
 
       if (jobData) {
-        // Then fetch customer data from common schema
+        const siteAddress = (jobData as any).site_address || '';
         let customerName = '';
-        let customerAddress = (jobData as any).site_address || '';
+        let customerAddress = siteAddress;
         
         if (jobData.customer_id) {
           const { data: customerData, error: customerError } = await supabase
@@ -719,14 +718,17 @@ const LiquidFilledTransformerReport: React.FC = () => {
           customer: maskCustomerName(customerName),
           address: maskCustomerAddress(customerAddress),
         }));
+
+        return siteAddress;
       }
     } catch (error) {
       const err = error as SupabaseError;
       console.error('Error loading job info:', err);
       alert(`Failed to load job info: ${err.message}`);
     } finally {
-      // setLoading(false); // Loading finishes in loadReport or useEffect
+      // setLoading(false);
     }
+    return '';
   };
 
   // Load existing report
@@ -830,10 +832,11 @@ const LiquidFilledTransformerReport: React.FC = () => {
           return;
       }
 
-       // Target ATS table
-       const tableName = 'liquid_filled_transformer_reports';
-       const baseData = {
-           reportInfo: {
+       const tableName = LIQUID_TRANSFORMER_TABLE;
+       const reportData = {
+           job_id: jobId,
+           user_id: user.id,
+           report_info: {
                customer: maskCustomerName(formData.customer),
                address: maskCustomerAddress(formData.address),
                date: formData.date,
@@ -849,71 +852,47 @@ const LiquidFilledTransformerReport: React.FC = () => {
                  indicatorGauges: {
                    ...(formData.nameplateData.indicatorGauges as any)
                  }
-               }
+               },
+               status: formData.status,
+               isLiquidType: true,
+               reportType: 'liquid_filled_transformer_ats'
            },
-           visualInspection: formData.visualInspection,
-           insulationResistance: formData.insulationResistance,
-           testEquipment: formData.testEquipment,
-           comments: formData.comments,
-           status: formData.status
+           visual_inspection: formData.visualInspection,
+           insulation_resistance: formData.insulationResistance,
+           test_equipment: formData.testEquipment,
+           comments: formData.comments
        };
-
-       const reportData = { job_id: jobId, user_id: user.id, data: baseData } as const;
-       const reportDataReportData = { job_id: jobId, user_id: user.id, report_data: baseData } as const;
-       const reportDataSplit = {
-           job_id: jobId,
-           user_id: user.id,
-           report_info: baseData.reportInfo,
-           visual_inspection: baseData.visualInspection,
-           insulation_resistance: baseData.insulationResistance,
-           test_equipment: baseData.testEquipment,
-           comments: baseData.comments
-       } as const;
 
        console.log(`Saving data to ${tableName}:`, reportData);
 
        try {
-           setLoading(true); // Indicate saving process
+           setLoading(true);
            let result;
-           let currentReportId = reportId; // Use ID from URL for updates
-
-           const upsert = async (payload: any) => {
-               if (currentReportId) {
-                   return await supabase.schema('neta_ops').from(tableName).update(payload).eq('id', currentReportId).select().single();
-               }
-               return await supabase.schema('neta_ops').from(tableName).insert(payload).select().single();
-           };
+           let currentReportId = reportId;
 
            if (currentReportId) {
                console.log(`Updating ${tableName} with ID: ${currentReportId}`);
-               result = await upsert(reportData);
-               if (result.error && /data.*(does not exist|schema cache)/i.test(result.error.message)) {
-                   console.warn('Column "data" missing; retrying with report_data...');
-                   result = await upsert(reportDataReportData);
-                   if (result.error && /report_data.*(does not exist|schema cache)/i.test(result.error.message)) {
-                       console.warn('Column "report_data" missing; retrying with split columns...');
-                       result = await upsert(reportDataSplit);
-                   }
-               }
+               result = await supabase
+                   .schema('neta_ops')
+                   .from(tableName)
+                   .update(reportData)
+                   .eq('id', currentReportId)
+                   .select()
+                   .single();
            } else {
                console.log(`Inserting into ${tableName} for job ID: ${jobId}`);
-               result = await upsert(reportData);
-               if (result.error && /data.*(does not exist|schema cache)/i.test(result.error.message)) {
-                   console.warn('Column "data" missing; retrying with report_data...');
-                   result = await upsert(reportDataReportData);
-                   if (result.error && /report_data.*(does not exist|schema cache)/i.test(result.error.message)) {
-                       console.warn('Column "report_data" missing; retrying with split columns...');
-                       result = await upsert(reportDataSplit);
-                   }
-               }
+               result = await supabase
+                   .schema('neta_ops')
+                   .from(tableName)
+                   .insert(reportData)
+                   .select()
+                   .single();
 
                if (result.data?.id) {
-                   currentReportId = result.data.id; // Get the new report ID
+                   currentReportId = result.data.id;
                    console.log(`New report created with ID: ${currentReportId}`);
 
-                   // --- Create corresponding asset entry (like DryType) ---
                    const assetName = getAssetName(reportSlug, formData.identifier || formData.eqptLocation || '');
-                   // Update the URL path to match the new route
                    const assetUrl = `report:/jobs/${jobId}/liquid-filled-transformer/${currentReportId}`;
 
                    const assetData = {
@@ -924,19 +903,18 @@ const LiquidFilledTransformerReport: React.FC = () => {
                    console.log("Creating asset:", assetData);
 
                    const { data: assetResult, error: assetError } = await supabase
-                       .schema('neta_ops') // Use schema
+                       .schema('neta_ops')
                        .from('assets')
                        .insert(assetData)
-                       .select('id') // Only select the ID
+                       .select('id')
                        .single();
 
                    if (assetError) throw assetError;
                    console.log("Asset created:", assetResult);
 
-                   // Link asset to job
                    console.log(`Linking asset ${assetResult.id} to job ${jobId}`);
                    const { error: linkError } = await supabase
-                       .schema('neta_ops') // Use schema
+                       .schema('neta_ops')
                        .from('job_assets')
                        .insert({
                            job_id: jobId,
@@ -945,25 +923,20 @@ const LiquidFilledTransformerReport: React.FC = () => {
                        });
                    if (linkError) throw linkError;
                    console.log("Asset linked.");
-
-                   // Optionally navigate to the new report URL after creation
-                   // navigate(`/jobs/${jobId}/liquid-filled-transformer/${currentReportId}`, { replace: true }); // <<< ADJUST ROUTE AS NEEDED
                }
            }
 
            if (result.error) throw result.error;
 
            console.log(`${tableName} saved/updated successfully. Result:`, result.data);
-           setIsEditing(false); // Exit editing mode
+           setIsEditing(false);
            alert(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
            navigateAfterSave(navigate, jobId, location);
-            
-            // Remove or comment out the URL history update since we're navigating away
        } catch (error: any) {
            console.error(`Error saving to ${tableName}:`, error);
            alert(`Failed to save report: ${error?.message || 'Unknown error'}`);
        } finally {
-           setLoading(false); // Finish loading indicator
+           setLoading(false);
        }
    };
 
@@ -971,11 +944,14 @@ const LiquidFilledTransformerReport: React.FC = () => {
   // useEffect to load data on initial mount or when jobId/reportId changes
   useEffect(() => {
       const fetchData = async () => {
-          await loadJobInfo(); // Load job info first
-          await loadReport(); // Then attempt to load the report
+          const siteAddress = await loadJobInfo();
+          await loadReport();
+          if (siteAddress) {
+              setFormData(prev => ({ ...prev, address: maskCustomerAddress(siteAddress) }));
+          }
       }
       fetchData();
-  }, [jobId, reportId]); // Dependencies for loading data
+  }, [jobId, reportId]);
 
   // Create header function
   const renderHeader = () => (
@@ -2239,9 +2215,9 @@ if (typeof document !== 'undefined') {
       /* Hide interactive elements */
       button:not(.print-visible) { display: none !important; }
       
-      /* Section styling */
+      /* Section styling - allow page breaks inside large sections */
       section { 
-        break-inside: avoid !important; 
+        break-inside: auto !important; 
         margin-bottom: 20px !important; 
       }
       
@@ -2255,9 +2231,9 @@ if (typeof document !== 'undefined') {
       .print\\:font-bold { font-weight: bold !important; }
       .print\\:text-center { text-align: center !important; }
       
-      /* Grid and flexbox adjustments */
-      .grid { display: block !important; }
-      .flex { display: block !important; }
+      /* Grid and flexbox adjustments - only target on-screen form grids, not the print header or main wrapper */
+      section .grid:not(.print\\:block):not([class*="print"]) { display: block !important; }
+      section .flex:not([class*="print"]) { display: block !important; }
       
       /* Ensure proper spacing */
       .space-y-8 > * + * { margin-top: 2rem !important; }
@@ -2272,8 +2248,8 @@ if (typeof document !== 'undefined') {
         margin-right: 4px !important;
       }
       
-      /* Prevent page breaks in critical sections */
-      .bg-white, .dark\\:bg-dark-150 {
+      /* Prevent page breaks in small card sections only, NOT the main content wrapper */
+      section.bg-white, section.dark\\:bg-dark-150 {
         page-break-inside: avoid !important;
         margin-bottom: 1rem !important;
       }

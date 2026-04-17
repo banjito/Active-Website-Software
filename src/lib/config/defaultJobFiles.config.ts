@@ -127,8 +127,8 @@ export const DIVISION_DEFAULT_FILES: Record<string, DefaultJobFile[]> = {
 
 // Settings for default file behavior
 export const DEFAULT_FILE_SETTINGS = {
-  // Whether to add default files to new jobs
-  ENABLE_DEFAULT_FILES: true,
+  // Whether to add default files to new jobs (off by default — most flows use real reports only)
+  ENABLE_DEFAULT_FILES: false,
   
   // Whether to allow users to disable default files per job
   ALLOW_DISABLE_PER_JOB: false,

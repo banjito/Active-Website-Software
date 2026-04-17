@@ -352,23 +352,21 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
     };
 
 
-  const loadJobInfo = async () => {
-    if (!jobId) return;
+  const loadJobInfo = async (): Promise<string> => {
+    if (!jobId) return '';
     try {
       const { data: jobData, error: jobError } = await supabase
         .schema('neta_ops')
         .from('jobs')
-        .select('title, job_number, customer_id')
+        .select('title, job_number, customer_id, site_address')
         .eq('id', jobId)
         .single();
 
       if (jobError) throw jobError;
       if (jobData) {
-        setFormData(prev => ({
-          ...prev,
-          jobNumber: jobData.job_number || '',
-          customer: jobData.customer_id || '', // Will be replaced by customer name
-        }));
+        const siteAddress = (jobData as any).site_address || '';
+        let customerName = '';
+        let customerAddress = siteAddress;
 
         if (jobData.customer_id) {
           const { data: customerData, error: customerError } = await supabase
@@ -378,21 +376,27 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
             .eq('id', jobData.customer_id)
             .single();
 
-          if (customerError) throw customerError;
-          if (customerData) {
-            setFormData(prev => ({
-              ...prev,
-              customer: maskCustomerName(customerData.company_name || customerData.name || ''),
-              address: maskCustomerAddress(customerData.address || ''),
-            }));
+          if (!customerError && customerData) {
+            customerName = customerData.company_name || customerData.name || '';
+            if (!customerAddress) customerAddress = customerData.address || '';
           }
         }
+
+        setFormData(prev => ({
+          ...prev,
+          jobNumber: jobData.job_number || '',
+          customer: maskCustomerName(customerName),
+          address: maskCustomerAddress(customerAddress),
+        }));
+
+        return siteAddress;
       }
     } catch (err) {
       console.error("Error loading job info:", err);
       const supabaseErr = err as SupabaseError;
       setError(`Failed to load job info: ${supabaseErr.message}`);
     }
+    return '';
   };
 
   const loadReport = async () => {
@@ -583,7 +587,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
        }
    };
 
-  useEffect(() => { const fetchData = async () => { await loadJobInfo(); await loadReport(); }; fetchData(); }, [jobId, reportId]);
+  useEffect(() => { const fetchData = async () => { const siteAddress = await loadJobInfo(); await loadReport(); if (siteAddress) { setFormData(prev => ({ ...prev, address: maskCustomerAddress(siteAddress) })); } }; fetchData(); }, [jobId, reportId]);
   
   // Effect to re-calculate corrected values when temperature or readings change
    useEffect(() => {

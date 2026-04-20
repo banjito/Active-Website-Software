@@ -42,6 +42,7 @@ interface ContactFormData {
   position: string;
   is_primary: boolean;
   customer_id: string;
+  divisions: string[];
 }
 
 const initialFormData: CustomerFormData = {
@@ -56,6 +57,7 @@ const initialContactFormData: ContactFormData = {
   position: '',
   is_primary: false,
   customer_id: '',
+  divisions: [],
 };
 
 export default function CustomerDetail() {
@@ -73,6 +75,7 @@ export default function CustomerDetail() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [isContactFormOpen, setIsContactFormOpen] = useState(false);
   const [contactFormData, setContactFormData] = useState<ContactFormData>(initialContactFormData);
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [isCategorySelectOpen, setIsCategorySelectOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -294,22 +297,35 @@ export default function CustomerDetail() {
 
   async function handleContactSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user || !customer) return;
+    if (!user || !customer || isSubmittingContact) return;
 
     try {
-      // Add the new contact
-      const { error } = await supabase
+      setIsSubmittingContact(true);
+      const payload: Record<string, any> = { ...contactFormData, user_id: user.id };
+      if (!payload.divisions || payload.divisions.length === 0) {
+        payload.divisions = null;
+      }
+
+      let { error } = await supabase
         .schema('common')
         .from('contacts')
-        .insert([{ ...contactFormData, user_id: user.id }]);
+        .insert([payload]);
+
+      // Retry without divisions if column doesn't exist yet
+      if (error && ((error as any).code === '42703' || /divisions/i.test(error.message || ''))) {
+        const { divisions: _d, ...rest } = payload;
+        const retry = await supabase
+          .schema('common')
+          .from('contacts')
+          .insert([rest]);
+        error = retry.error as any;
+      }
 
       if (error) throw error;
 
-      // Close the form and reset
       setIsContactFormOpen(false);
       setContactFormData(initialContactFormData);
-      
-      // Refresh the contacts list
+
       fetchCustomerData();
       toast({
         title: 'Success',
@@ -323,6 +339,8 @@ export default function CustomerDetail() {
         description: 'Failed to add contact',
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmittingContact(false);
     }
   }
 
@@ -1454,12 +1472,47 @@ export default function CustomerDetail() {
                   Primary Contact
                 </label>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                  Divisions
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {DIVISION_OPTIONS.map((div) => {
+                    const isActive = contactFormData.divisions.includes(div.value);
+                    return (
+                      <button
+                        key={div.value}
+                        type="button"
+                        onClick={() => {
+                          setContactFormData(prev => ({
+                            ...prev,
+                            divisions: isActive
+                              ? prev.divisions.filter(d => d !== div.value)
+                              : [...prev.divisions, div.value]
+                          }));
+                        }}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'bg-[#f26722] text-white'
+                            : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600'
+                        }`}
+                      >
+                        {div.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Leave empty to inherit from the customer's divisions.
+                </p>
+              </div>
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                 <button
                   type="submit"
-                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm"
+                  disabled={isSubmittingContact}
+                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Add Contact
+                  {isSubmittingContact ? 'Adding...' : 'Add Contact'}
                 </button>
                 <button
                   type="button"

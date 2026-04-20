@@ -17,9 +17,11 @@ interface Contact {
   phone: string;
   position: string;
   is_primary: boolean;
+  divisions?: string[] | null;
   customers?: {
     name: string;
     company_name: string;
+    divisions?: string[] | null;
   };
 }
 
@@ -37,6 +39,7 @@ interface ContactFormData {
   phone: string;
   position: string;
   is_primary: boolean;
+  divisions: string[];
 }
 
 const initialFormData: ContactFormData = {
@@ -47,6 +50,7 @@ const initialFormData: ContactFormData = {
   phone: '',
   position: '',
   is_primary: false,
+  divisions: [],
 };
 
 const DIVISION_TO_PORTAL: Record<string, string> = {
@@ -118,6 +122,10 @@ export default function ContactList() {
   const [formData, setFormData] = useState<ContactFormData>(initialFormData);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [contactToDelete, setContactToDelete] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Tracks whether the `contacts.divisions` column exists. If a prior query
+  // failed with 42703 we skip contact-level division matching on subsequent calls.
+  const [contactsDivisionsMissing, setContactsDivisionsMissing] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [showCustomerResults, setShowCustomerResults] = useState(false);
@@ -236,38 +244,71 @@ export default function ContactList() {
 
           if (divError) throw divError;
           divisionCustomerIds = (divCustomers || []).map(c => c.id);
-          if (divisionCustomerIds.length === 0) {
-            setContacts([]);
-            setTotalCount(0);
-            return;
-          }
         } catch {
           // divisions column may not exist yet -- skip filter
           divisionCustomerIds = null;
         }
       }
 
+      // Build a shared clause that matches contacts whose OWN divisions tag
+      // matches any selected division, OR whose customer's divisions match.
+      // Only includes contact-level match if the column is known to exist.
+      const buildDivisionOrClause = (includeContactLevel: boolean): string | null => {
+        if (activeDivisionTabs.length === 0) return null;
+        const parts: string[] = [];
+        if (includeContactLevel) {
+          parts.push(`divisions.ov.{${activeDivisionTabs.join(',')}}`);
+        }
+        if (divisionCustomerIds && divisionCustomerIds.length > 0) {
+          parts.push(`customer_id.in.(${divisionCustomerIds.join(',')})`);
+        }
+        return parts.length > 0 ? parts.join(',') : null;
+      };
+
+      const applyCommonFilters = <T extends { or: (s: string) => T; ilike: (c: string, v: string) => T }>(q: T): T => {
+        if (debouncedSearch) {
+          const like = `%${debouncedSearch}%`;
+          q = q.or(`first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`);
+        }
+        if (startsWithFilter) {
+          q = q.ilike('last_name', `${startsWithFilter}%`);
+        }
+        return q;
+      };
+
+      let useContactLevelDivisions = !contactsDivisionsMissing;
+
+      // If division filter is active but neither the contacts.divisions column
+      // exists nor any customers match, there is nothing to show.
+      if (
+        activeDivisionTabs.length > 0 &&
+        !useContactLevelDivisions &&
+        (!divisionCustomerIds || divisionCustomerIds.length === 0)
+      ) {
+        setContacts([]);
+        setTotalCount(0);
+        return;
+      }
+
       // 1. First get total count with filters applied
-      let countQuery = supabase
-        .schema('common')
-        .from('contacts')
-        .select('*', { count: 'exact', head: true });
+      const runCountQuery = async (includeContactLevel: boolean) => {
+        let q = supabase
+          .schema('common')
+          .from('contacts')
+          .select('*', { count: 'exact', head: true });
+        const divOr = buildDivisionOrClause(includeContactLevel);
+        if (divOr) q = q.or(divOr);
+        q = applyCommonFilters(q as any) as any;
+        return await q;
+      };
 
-      if (divisionCustomerIds) {
-        countQuery = countQuery.in('customer_id', divisionCustomerIds);
+      let { count, error: countError } = await runCountQuery(useContactLevelDivisions);
+      if (countError && (countError as any).code === '42703' && useContactLevelDivisions) {
+        // contacts.divisions column doesn't exist yet -- fall back for this and future queries
+        setContactsDivisionsMissing(true);
+        useContactLevelDivisions = false;
+        ({ count, error: countError } = await runCountQuery(false));
       }
-
-      if (debouncedSearch) {
-        const like = `%${debouncedSearch}%`;
-        countQuery = countQuery.or(`first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`);
-      }
-
-      if (startsWithFilter) {
-        const startsWithLike = `${startsWithFilter}%`;
-        countQuery = countQuery.ilike('last_name', startsWithLike);
-      }
-
-      const { count, error: countError } = await countQuery;
       if (countError) throw countError;
       setTotalCount(count || 0);
 
@@ -280,19 +321,12 @@ export default function ContactList() {
         .from('contacts')
         .select('*');
 
-      if (divisionCustomerIds) {
-        query = query.in('customer_id', divisionCustomerIds);
+      const divOrData = buildDivisionOrClause(useContactLevelDivisions);
+      if (divOrData) {
+        query = query.or(divOrData);
       }
 
-      if (debouncedSearch) {
-        const like = `%${debouncedSearch}%`;
-        query = query.or(`first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`);
-      }
-
-      if (startsWithFilter) {
-        const startsWithLike = `${startsWithFilter}%`;
-        query = query.ilike('last_name', startsWithLike);
-      }
+      query = applyCommonFilters(query as any) as any;
 
       // When division tabs are active, default to alphabetical sort
       const effectiveSortOrder = activeDivisionTabs.length > 0 && !currentSortOrder ? 'asc' : currentSortOrder;
@@ -369,24 +403,55 @@ export default function ContactList() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    if (!user || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
+      // Only send divisions if it's a non-empty array (graceful fallback if column is missing)
+      const payload: Record<string, any> = { ...formData };
+      if (!payload.divisions || payload.divisions.length === 0) {
+        payload.divisions = null;
+      }
+
       if (isEditMode && editingContactId) {
         const { error } = await supabase
           .schema('common')
           .from('contacts')
-          .update({ ...formData })
+          .update(payload)
           .eq('id', editingContactId);
 
-        if (error) throw error;
+        if (error) {
+          // If divisions column doesn't exist yet, retry without it
+          if ((error as any).code === '42703' || /divisions/i.test(error.message || '')) {
+            const { divisions: _d, ...rest } = payload;
+            const retry = await supabase
+              .schema('common')
+              .from('contacts')
+              .update(rest)
+              .eq('id', editingContactId);
+            if (retry.error) throw retry.error;
+          } else {
+            throw error;
+          }
+        }
       } else {
         const { error } = await supabase
           .schema('common')
           .from('contacts')
-          .insert([{ ...formData, user_id: user.id }]);
+          .insert([{ ...payload, user_id: user.id }]);
 
-        if (error) throw error;
+        if (error) {
+          if ((error as any).code === '42703' || /divisions/i.test(error.message || '')) {
+            const { divisions: _d, ...rest } = payload;
+            const retry = await supabase
+              .schema('common')
+              .from('contacts')
+              .insert([{ ...rest, user_id: user.id }]);
+            if (retry.error) throw retry.error;
+          } else {
+            throw error;
+          }
+        }
       }
 
       setIsOpen(false);
@@ -396,6 +461,8 @@ export default function ContactList() {
       fetchContacts();
     } catch (error) {
       console.error('Error saving contact:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -419,6 +486,7 @@ export default function ContactList() {
       phone: contact.phone || '',
       position: contact.position || '',
       is_primary: contact.is_primary,
+      divisions: contact.divisions || [],
     });
     setCustomerSearch(customerName);
     setIsEditMode(true);
@@ -899,12 +967,47 @@ export default function ContactList() {
                   Primary Contact
                 </label>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                  Divisions
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {DIVISION_OPTIONS.map((div) => {
+                    const isActive = formData.divisions.includes(div.value);
+                    return (
+                      <button
+                        key={div.value}
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            divisions: isActive
+                              ? prev.divisions.filter(d => d !== div.value)
+                              : [...prev.divisions, div.value]
+                          }));
+                        }}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'bg-[#f26722] text-white'
+                            : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600'
+                        }`}
+                      >
+                        {div.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Tag this contact with the divisions they serve. Leave empty to inherit from the customer.
+                </p>
+              </div>
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                 <button
                   type="submit"
-                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm"
+                  disabled={isSubmitting}
+                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {isEditMode ? 'Save Changes' : 'Add Contact'}
+                  {isSubmitting ? 'Saving...' : isEditMode ? 'Save Changes' : 'Add Contact'}
                 </button>
                 <button
                   type="button"

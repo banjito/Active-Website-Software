@@ -46,6 +46,9 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
 };
 
 // Get user notification preferences
+// Gracefully degrades to DEFAULT_PREFERENCES when the table doesn't exist or
+// when RLS/ownership denies access. Errors known to be "benign" are swallowed
+// silently to avoid polluting the console on every page load.
 export const getUserNotificationPreferences = async (userId: string): Promise<NotificationPreferences> => {
   try {
     const { data, error } = await supabase
@@ -54,19 +57,24 @@ export const getUserNotificationPreferences = async (userId: string): Promise<No
       .select('notification_preferences')
       .eq('user_id', userId)
       .maybeSingle();
-      
+
     if (error) {
-      // Gracefully degrade on RLS 403 or missing table/row
       const code = (error as any).code;
-      if (code === 'PGRST301' || code === '42P01') {
+      // PGRST301 = RLS denied, 42P01 = table missing, 42501 = permission denied
+      // (usually a trigger/policy referencing the `users` table)
+      if (code === 'PGRST301' || code === '42P01' || code === '42501') {
         return DEFAULT_PREFERENCES;
       }
       throw error;
     }
-    
+
     return data?.notification_preferences || DEFAULT_PREFERENCES;
   } catch (error) {
-    console.error('Error getting notification preferences:', error);
+    // Don't log benign permission/missing-table errors -- just fall back.
+    const code = (error as any)?.code;
+    if (code !== 'PGRST301' && code !== '42P01' && code !== '42501') {
+      console.error('Error getting notification preferences:', error);
+    }
     return DEFAULT_PREFERENCES;
   }
 };
@@ -96,7 +104,11 @@ export const updateUserNotificationPreferences = async (
 };
 
 // Get user notifications with optional filtering
-// Note: This function automatically filters out notifications for deleted jobs
+// Note: This function automatically filters out notifications for deleted jobs.
+// The `jobs` table lives in the `neta_ops` schema while `job_notifications`
+// lives in `common`, so PostgREST cannot resolve a foreign-key embed across
+// schemas. Instead we fetch notifications first, then look up deleted job
+// IDs from `neta_ops.jobs` in a separate, bounded query.
 export const getUserNotifications = async (
   userId: string,
   options: {
@@ -108,45 +120,63 @@ export const getUserNotifications = async (
 ): Promise<{ data: JobNotification[], error: any }> => {
   try {
     const { limit = 50, unreadOnly = false, types, jobId } = options;
-    
+
     let query = supabase
       .schema('common')
       .from('job_notifications')
-      .select(`
-        *,
-        job:job_id(
-          id,
-          deleted_at
-        )
-      `)
-      .or(`user_id.eq.${userId},user_id.is.null`) // Get user's notifications and global ones
+      .select('*')
+      .or(`user_id.eq.${userId},user_id.is.null`)
       .order('created_at', { ascending: false })
       .limit(limit);
-      
+
     if (unreadOnly) {
       query = query.eq('is_read', false);
     }
-    
+
     if (types && types.length > 0) {
       query = query.in('type', types);
     }
-    
+
     if (jobId) {
       query = query.eq('job_id', jobId);
     }
-    
+
     const { data, error } = await query;
-    
+
     if (error) throw error;
-    
-    // Filter out notifications for deleted jobs
-    const filteredData = (data || []).filter((notification: any) => {
-      // If there's no job data, include the notification (edge case)
-      if (!notification.job) return true;
-      // If the job is not deleted (deleted_at is null), include the notification
-      return !notification.job.deleted_at;
-    });
-    
+
+    const notifications = (data || []) as JobNotification[];
+    if (notifications.length === 0) {
+      return { data: notifications, error: null };
+    }
+
+    // Collect unique job IDs and look up deletion state in neta_ops.jobs.
+    const jobIds = Array.from(
+      new Set(notifications.map(n => n.job_id).filter((id): id is string => !!id))
+    );
+
+    let deletedJobIds = new Set<string>();
+    if (jobIds.length > 0) {
+      try {
+        const { data: jobRows, error: jobError } = await supabase
+          .schema('neta_ops')
+          .from('jobs')
+          .select('id, deleted_at')
+          .in('id', jobIds);
+
+        if (!jobError && jobRows) {
+          deletedJobIds = new Set(
+            jobRows.filter((j: any) => j.deleted_at).map((j: any) => j.id)
+          );
+        }
+      } catch {
+        // If the cross-schema lookup fails (permissions, etc.), don't fail
+        // the whole notifications load -- just skip the deleted-job filter.
+      }
+    }
+
+    const filteredData = notifications.filter(n => !n.job_id || !deletedJobIds.has(n.job_id));
+
     return { data: filteredData, error: null };
   } catch (error) {
     console.error('Error getting notifications:', error);
@@ -282,36 +312,49 @@ const getVariantForNotificationType = (type: string): 'default' | 'success' | 'w
 };
 
 // Get unread notification count for a user
-// Note: This function automatically filters out notifications for deleted jobs
+// Note: This function automatically filters out notifications for deleted jobs.
+// See the comment on getUserNotifications for why we don't use a PostgREST embed.
 export const getUnreadNotificationCount = async (userId: string): Promise<number> => {
   try {
     const { data, error } = await supabase
       .schema('common')
       .from('job_notifications')
-      .select(`
-        id,
-        job:job_id(
-          id,
-          deleted_at
-        )
-      `)
+      .select('id, job_id')
       .or(`user_id.eq.${userId},user_id.is.null`)
       .eq('is_read', false)
       .eq('is_dismissed', false);
-      
+
     if (error) throw error;
-    
-    // Filter out notifications for deleted jobs and count
-    const filteredData = (data || []).filter((notification: any) => {
-      // If there's no job data, include the notification (edge case)
-      if (!notification.job) return true;
-      // If the job is not deleted (deleted_at is null), include the notification
-      return !notification.job.deleted_at;
-    });
-    
-    return filteredData.length;
+
+    const notifications = (data || []) as Array<{ id: string; job_id: string | null }>;
+    if (notifications.length === 0) return 0;
+
+    const jobIds = Array.from(
+      new Set(notifications.map(n => n.job_id).filter((id): id is string => !!id))
+    );
+
+    let deletedJobIds = new Set<string>();
+    if (jobIds.length > 0) {
+      try {
+        const { data: jobRows, error: jobError } = await supabase
+          .schema('neta_ops')
+          .from('jobs')
+          .select('id, deleted_at')
+          .in('id', jobIds);
+
+        if (!jobError && jobRows) {
+          deletedJobIds = new Set(
+            jobRows.filter((j: any) => j.deleted_at).map((j: any) => j.id)
+          );
+        }
+      } catch {
+        // Skip deletion filter on error
+      }
+    }
+
+    return notifications.filter(n => !n.job_id || !deletedJobIds.has(n.job_id)).length;
   } catch (error) {
     console.error('Error getting unread notification count:', error);
     return 0;
   }
-}; 
+};

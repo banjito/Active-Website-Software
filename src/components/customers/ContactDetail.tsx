@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import { format } from 'date-fns';
 import { toast } from '../ui/toast';
+import { DIVISION_OPTIONS } from '../../services/customerService';
 
 interface ContactNote {
   id: string;
@@ -27,6 +28,7 @@ interface Contact {
   phone: string;
   position: string;
   is_primary: boolean;
+  divisions?: string[] | null;
   created_at: string;
 }
 
@@ -43,6 +45,7 @@ interface ContactFormData {
   phone: string;
   position: string;
   is_primary: boolean;
+  divisions: string[];
 }
 
 export default function ContactDetail() {
@@ -63,6 +66,7 @@ export default function ContactDetail() {
     phone: '',
     position: '',
     is_primary: false,
+    divisions: [],
   });
   const [activeTab, setActiveTab] = useState<'info' | 'interactions'>('info');
   const [notes, setNotes] = useState<ContactNote[]>([]);
@@ -215,15 +219,31 @@ export default function ContactDetail() {
   }
 
   async function handleSave() {
-    if (!contact || !user) return;
+    if (!contact || !user || isSaving) return;
 
     try {
       setIsSaving(true);
-      const { error } = await supabase
+      const payload: Record<string, any> = { ...editFormData };
+      if (!payload.divisions || payload.divisions.length === 0) {
+        payload.divisions = null;
+      }
+
+      let { error } = await supabase
         .schema('common')
         .from('contacts')
-        .update(editFormData)
+        .update(payload)
         .eq('id', contact.id);
+
+      // If divisions column doesn't exist yet, retry without it so the rest still saves.
+      if (error && ((error as any).code === '42703' || /divisions/i.test(error.message || ''))) {
+        const { divisions: _d, ...rest } = payload;
+        const retry = await supabase
+          .schema('common')
+          .from('contacts')
+          .update(rest)
+          .eq('id', contact.id);
+        error = retry.error as any;
+      }
 
       if (error) throw error;
 
@@ -341,6 +361,7 @@ export default function ContactDetail() {
                     phone: contact.phone || '',
                     position: contact.position || '',
                     is_primary: contact.is_primary,
+                    divisions: contact.divisions || [],
                   });
                 }}
                 className="px-4 py-2 bg-[#f26722] text-white rounded hover:bg-[#f26722]/90 transition-colors flex items-center"
@@ -479,6 +500,40 @@ export default function ContactDetail() {
                   Primary Contact
                 </label>
               </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Divisions
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {DIVISION_OPTIONS.map((div) => {
+                    const isActive = editFormData.divisions.includes(div.value);
+                    return (
+                      <button
+                        key={div.value}
+                        type="button"
+                        onClick={() => {
+                          setEditFormData(prev => ({
+                            ...prev,
+                            divisions: isActive
+                              ? prev.divisions.filter(d => d !== div.value)
+                              : [...prev.divisions, div.value]
+                          }));
+                        }}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'bg-[#f26722] text-white'
+                            : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600'
+                        }`}
+                      >
+                        {div.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Leave empty to inherit divisions from the associated customer.
+                </p>
+              </div>
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <button
@@ -492,6 +547,7 @@ export default function ContactDetail() {
                     phone: contact.phone || '',
                     position: contact.position || '',
                     is_primary: contact.is_primary,
+                    divisions: contact.divisions || [],
                   });
                 }}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
@@ -560,6 +616,27 @@ export default function ContactDetail() {
                   </p>
                 </div>
               </div>
+              {contact.divisions && contact.divisions.length > 0 && (
+                <div className="flex items-start">
+                  <Briefcase className="h-5 w-5 text-[#f26722] mt-0.5" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500 dark:text-white">Divisions</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {contact.divisions.map((divValue) => {
+                        const label = DIVISION_OPTIONS.find(d => d.value === divValue)?.label || divValue;
+                        return (
+                          <span
+                            key={divValue}
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/30"
+                          >
+                            {label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -4,7 +4,7 @@ import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../../components/ui/Button';
 import { Textarea } from '../../../components/ui/Textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { FileCheck, CheckCircle, XCircle, Clock, User, Eye, Plus, FileText, DollarSign, MapPin, Calendar, Search, Settings, Download, Link as LinkIcon, Copy, Paperclip, Upload, Trash2, UserPlus } from 'lucide-react';
+import { FileCheck, CheckCircle, XCircle, Clock, User, Eye, Plus, FileText, DollarSign, MapPin, Calendar, Search, Settings, Download, Link as LinkIcon, Copy, Paperclip, Upload, Trash2, UserPlus, ArrowRight, Users, RefreshCw, AlertCircle } from 'lucide-react';
 import { offersService, Offer, OfferApproval, GlobalApprover, OfferAttachment } from '../../../services/hr/offersService';
 import { onboardingService } from '../../../services/hr/onboardingService';
 import { useAuth } from '../../../lib/AuthContext';
@@ -46,6 +46,19 @@ export const OfferApprovals: React.FC = () => {
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
   const [sendingToOnboardingOfferId, setSendingToOnboardingOfferId] = useState<string | null>(null);
+  const [approvalsMap, setApprovalsMap] = useState<Record<string, OfferApproval[]>>({});
+  const [myPendingOfferIds, setMyPendingOfferIds] = useState<Set<string>>(new Set());
+  const [viewTab, setViewTab] = useState<'mine' | 'all'>('mine');
+  const [approving, setApproving] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectOffer, setRejectOffer] = useState<Offer | null>(null);
+  const [extendOfferId, setExtendOfferId] = useState<string | null>(null);
+  const [extendModalOpen, setExtendModalOpen] = useState(false);
+  const [extendNewDate, setExtendNewDate] = useState<string>('');
+  const [extendRegenerateToken, setExtendRegenerateToken] = useState<boolean>(true);
+  const [extending, setExtending] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -57,7 +70,29 @@ export const OfferApprovals: React.FC = () => {
     try {
       setLoading(true);
       const data = await offersService.getAll();
-      setOffers(data.filter(o => o.status === 'pending_approval' || o.status === 'draft' || o.status === 'approved'));
+      const relevant = data.filter(o =>
+        ['pending_approval', 'draft', 'approved', 'sent', 'accepted', 'expired'].includes(o.status)
+      );
+      setOffers(relevant);
+
+      // Load approval chains for anything needing approval display
+      const chainIds = relevant
+        .filter(o => ['pending_approval', 'approved'].includes(o.status))
+        .map(o => o.id);
+      if (chainIds.length > 0) {
+        const chains = await offersService.getApprovalsForMultiple(chainIds);
+        setApprovalsMap(chains);
+      } else {
+        setApprovalsMap({});
+      }
+
+      // Figure out which pending offers are currently waiting on *this* user
+      if (user?.id) {
+        const mine = await offersService.getPendingForUser(user.id);
+        setMyPendingOfferIds(new Set(mine.map(m => m.offer.id)));
+      } else {
+        setMyPendingOfferIds(new Set());
+      }
     } catch (error: any) {
       console.error('Error fetching offers:', error);
       toast({
@@ -553,6 +588,195 @@ export const OfferApprovals: React.FC = () => {
   const acceptedOffers = offers.filter(o => o.status === 'accepted');
   const draftOffers = offers.filter(o => o.status === 'draft');
 
+  // --- Sequential approval / expiration helpers ---
+  const isMyTurn = (offerId: string) => myPendingOfferIds.has(offerId);
+
+  const handleSequentialApprove = async (offer: Offer) => {
+    if (!user?.id) return;
+    try {
+      setApproving(true);
+      const { allApproved } = await offersService.approveStep(offer.id, user.id);
+      toast({
+        title: allApproved ? 'Fully Approved' : 'Approved',
+        description: allApproved
+          ? 'All approvers have signed off. The offer is now approved and ready to send.'
+          : 'Your approval has been recorded and the next approver has been notified.',
+        variant: 'success',
+      });
+      setIsViewModalOpen(false);
+      fetchData();
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to approve offer',
+        variant: 'destructive',
+      });
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const openRejectModal = (offer: Offer) => {
+    setRejectOffer(offer);
+    setRejectReason('');
+    setIsRejectModalOpen(true);
+  };
+
+  const handleSequentialReject = async () => {
+    if (!rejectOffer || !user?.id) return;
+    if (!rejectReason.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please provide a reason for rejection',
+        variant: 'destructive',
+      });
+      return;
+    }
+    try {
+      setRejecting(true);
+      await offersService.rejectStep(rejectOffer.id, user.id, rejectReason);
+      toast({
+        title: 'Rejected',
+        description: 'Offer has been rejected and reverted to draft.',
+        variant: 'success',
+      });
+      setIsRejectModalOpen(false);
+      setIsViewModalOpen(false);
+      setRejectOffer(null);
+      setRejectReason('');
+      fetchData();
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to reject offer',
+        variant: 'destructive',
+      });
+    } finally {
+      setRejecting(false);
+    }
+  };
+
+  const getExpirationInfo = (offer: Offer): {
+    label: string;
+    color: string;
+    expired: boolean;
+    daysLeft: number;
+  } | null => {
+    if (!offer.expiration_date) return null;
+    const now = new Date();
+    const exp = new Date(offer.expiration_date);
+    exp.setHours(23, 59, 59, 999);
+    const diffMs = exp.getTime() - now.getTime();
+    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    if (diffMs <= 0) {
+      return { label: 'Expired', color: 'text-red-600 dark:text-red-400', expired: true, daysLeft: 0 };
+    }
+    if (daysLeft <= 1) {
+      const hoursLeft = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)));
+      return {
+        label: `Expires in ${hoursLeft} hour${hoursLeft === 1 ? '' : 's'}`,
+        color: 'text-red-600 dark:text-red-400',
+        expired: false,
+        daysLeft,
+      };
+    }
+    if (daysLeft <= 3) {
+      return {
+        label: `Expires in ${daysLeft} days`,
+        color: 'text-orange-600 dark:text-orange-400',
+        expired: false,
+        daysLeft,
+      };
+    }
+    return {
+      label: `Expires in ${daysLeft} days`,
+      color: 'text-gray-600 dark:text-gray-400',
+      expired: false,
+      daysLeft,
+    };
+  };
+
+  const openExtendModal = (offer: Offer) => {
+    const baseDate = new Date();
+    baseDate.setDate(baseDate.getDate() + 5);
+    setExtendOfferId(offer.id);
+    setExtendNewDate(baseDate.toISOString().split('T')[0]);
+    setExtendRegenerateToken(true);
+    setExtendModalOpen(true);
+  };
+
+  const handleExtendExpiration = async () => {
+    if (!extendOfferId) return;
+    try {
+      setExtending(true);
+      await offersService.refreshExpirationDate(extendOfferId, {
+        newDate: extendNewDate,
+        regenerateToken: extendRegenerateToken,
+      });
+      // If the user chose to regenerate the token, immediately surface the new link
+      if (extendRegenerateToken) {
+        const link = await offersService.generateSigningLink(extendOfferId);
+        setSigningLinkOfferId(extendOfferId);
+        setSigningLink(link);
+        setShowLinkModal(true);
+      }
+      toast({
+        title: 'Expiration updated',
+        description: extendRegenerateToken
+          ? 'New expiration date set and a new signing link was generated.'
+          : 'Expiration date updated. The existing signing link remains valid.',
+        variant: 'success',
+      });
+      setExtendModalOpen(false);
+      setExtendOfferId(null);
+      fetchData();
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to update expiration',
+        variant: 'destructive',
+      });
+    } finally {
+      setExtending(false);
+    }
+  };
+
+  // Approval chain pill display (mirrors RequisitionApprovals)
+  const ApprovalChain: React.FC<{
+    approvers: OfferApproval[];
+    currentStep: number;
+    compact?: boolean;
+  }> = ({ approvers, currentStep, compact }) => (
+    <div className={`flex items-center gap-${compact ? '1' : '2'} flex-wrap`}>
+      {approvers.map((approver, idx) => {
+        const isCurrentStep = approver.approval_order === currentStep;
+        return (
+          <React.Fragment key={approver.id}>
+            {idx > 0 && (
+              <ArrowRight className={`${compact ? 'h-3 w-3' : 'h-4 w-4'} text-gray-300 dark:text-gray-600 shrink-0`} />
+            )}
+            <div
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                approver.status === 'approved'
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                  : approver.status === 'rejected'
+                    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    : isCurrentStep
+                      ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 ring-2 ring-yellow-300 dark:ring-yellow-700'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+              }`}
+            >
+              {approver.status === 'approved' && <CheckCircle className="h-3 w-3" />}
+              {approver.status === 'rejected' && <XCircle className="h-3 w-3" />}
+              {approver.status === 'pending' && isCurrentStep && <Clock className="h-3 w-3 animate-pulse" />}
+              <span>{getApproverName(approver.approver_id)}</span>
+            </div>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+
   const handleSendToOnboarding = async (offerId: string) => {
     if (!user?.id) return;
     setSendingToOnboardingOfferId(offerId);
@@ -648,70 +872,193 @@ export const OfferApprovals: React.FC = () => {
         </Card>
       </div>
 
+      {/* Tabs: Mine vs All */}
+      <div className="flex gap-1 bg-gray-100 dark:bg-dark-100 p-1 rounded-lg w-fit">
+        <button
+          onClick={() => setViewTab('mine')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            viewTab === 'mine'
+              ? 'bg-white dark:bg-dark-150 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          My Approvals ({myPendingOfferIds.size})
+        </button>
+        <button
+          onClick={() => setViewTab('all')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            viewTab === 'all'
+              ? 'bg-white dark:bg-dark-150 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          All Pending ({pendingOffers.length})
+        </button>
+      </div>
+
       {/* Pending Approvals */}
       <Card>
         <CardHeader>
-          <CardTitle>Pending Approval</CardTitle>
+          <CardTitle>
+            {viewTab === 'mine' ? 'Waiting for Your Approval' : 'Pending Approval'}
+          </CardTitle>
           <CardDescription>
-            Offers waiting for manager or HR approval
+            {viewTab === 'mine'
+              ? 'Offers where you are the current approver in the chain'
+              : 'All offers waiting for approval, showing the full approval chain'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {pendingOffers.length === 0 ? (
-            <div className="text-center py-12">
-              <FileCheck className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No pending approvals</h3>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {pendingOffers.map((offer) => (
-                <div
-                  key={offer.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-100"
-                >
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      {offer.candidate ? `${offer.candidate.first_name} ${offer.candidate.last_name}` : 'Unknown Candidate'}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {offer.position_title} - {offer.department}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      Base Salary: {offer.base_salary ? `$${offer.base_salary.toLocaleString()}` : 'N/A'}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openAttachmentsModal(offer.id)}
-                      title="Benefit package & attachments"
-                    >
-                      <Paperclip className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleGenerateSigningLink(offer)}
-                      title="Generate Signing Link"
-                    >
-                      <LinkIcon className="h-4 w-4 mr-1" />
-                      Offer Letter Link
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openViewModal(offer)}
-                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Offer
-                    </Button>
-                  </div>
+          {(() => {
+            const list = viewTab === 'mine'
+              ? pendingOffers.filter(o => myPendingOfferIds.has(o.id))
+              : pendingOffers;
+
+            if (list.length === 0) {
+              return (
+                <div className="text-center py-12">
+                  <FileCheck className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+                    {viewTab === 'mine' ? 'No approvals assigned to you' : 'No pending approvals'}
+                  </h3>
+                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    {viewTab === 'mine'
+                      ? 'You have no offers waiting on your approval'
+                      : 'All offers have been reviewed'}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            }
+
+            return (
+              <div className="space-y-3">
+                {list.map((offer) => {
+                  const chain = approvalsMap[offer.id] || [];
+                  const currentStep = offer.current_approval_step || 1;
+                  const canApprove = isMyTurn(offer.id);
+                  const exp = getExpirationInfo(offer);
+                  return (
+                    <div
+                      key={offer.id}
+                      className={`p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-100 ${
+                        canApprove
+                          ? 'border-l-4 border-l-[#f26722] border-gray-200 dark:border-gray-700'
+                          : 'border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {offer.candidate
+                                ? `${offer.candidate.first_name} ${offer.candidate.last_name}`
+                                : 'Unknown Candidate'}
+                            </div>
+                            {canApprove && (
+                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#f26722]/10 text-[#f26722] ring-1 ring-[#f26722]/30">
+                                Your Turn
+                              </span>
+                            )}
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                              Step {currentStep} of {chain.length || '?'}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {offer.position_title} - {offer.department}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            Base Salary: {offer.base_salary ? `$${offer.base_salary.toLocaleString()}` : 'N/A'}
+                          </div>
+                          {exp && (
+                            <div className={`text-xs mt-1 flex items-center gap-1 ${exp.color}`}>
+                              <Clock className="h-3 w-3" />
+                              {exp.label}
+                              {offer.expiration_date && (
+                                <span className="text-gray-500 dark:text-gray-500">
+                                  ({new Date(offer.expiration_date).toLocaleDateString()})
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {chain.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-dark-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Users className="h-3 w-3 text-gray-400" />
+                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                  Approval Chain
+                                </span>
+                              </div>
+                              <ApprovalChain approvers={chain} currentStep={currentStep} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2 items-end shrink-0">
+                          <div className="flex gap-2 flex-wrap justify-end">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openAttachmentsModal(offer.id)}
+                              title="Benefit package & attachments"
+                            >
+                              <Paperclip className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openExtendModal(offer)}
+                              title="Extend expiration / refresh link"
+                            >
+                              <RefreshCw className="h-4 w-4 mr-1" />
+                              Extend
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleGenerateSigningLink(offer)}
+                              title="Generate Signing Link"
+                            >
+                              <LinkIcon className="h-4 w-4 mr-1" />
+                              Offer Link
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openViewModal(offer)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                          </div>
+                          {canApprove && (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleSequentialApprove(offer)}
+                                disabled={approving}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                {approving ? 'Approving...' : 'Approve'}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openRejectModal(offer)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
 
@@ -731,48 +1078,71 @@ export const OfferApprovals: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {approvedOffers.map((offer) => (
-                <div
-                  key={offer.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-100"
-                >
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      {offer.candidate ? `${offer.candidate.first_name} ${offer.candidate.last_name}` : 'Unknown Candidate'}
+              {approvedOffers.map((offer) => {
+                const exp = getExpirationInfo(offer);
+                return (
+                  <div
+                    key={offer.id}
+                    className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-100"
+                  >
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {offer.candidate ? `${offer.candidate.first_name} ${offer.candidate.last_name}` : 'Unknown Candidate'}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {offer.position_title} - {offer.department}
+                      </div>
+                      {exp && (
+                        <div className={`text-xs mt-1 flex items-center gap-1 ${exp.color}`}>
+                          <Clock className="h-3 w-3" />
+                          {exp.label}
+                          {offer.expiration_date && (
+                            <span className="text-gray-500 dark:text-gray-500">
+                              ({new Date(offer.expiration_date).toLocaleDateString()})
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {offer.position_title} - {offer.department}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openAttachmentsModal(offer.id)}
+                        title="Benefit package & attachments"
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openExtendModal(offer)}
+                        title="Extend expiration / refresh link"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-1" />
+                        Extend
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleGenerateSigningLink(offer)}
+                        title="Generate Signing Link"
+                      >
+                        <LinkIcon className="h-4 w-4 mr-1" />
+                        Offer Letter Link
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openViewModal(offer)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View Offer
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openAttachmentsModal(offer.id)}
-                      title="Benefit package & attachments"
-                    >
-                      <Paperclip className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleGenerateSigningLink(offer)}
-                      title="Generate Signing Link"
-                    >
-                      <LinkIcon className="h-4 w-4 mr-1" />
-                      Offer Letter Link
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openViewModal(offer)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Offer
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -906,135 +1276,162 @@ export const OfferApprovals: React.FC = () => {
           <div className="space-y-6 py-4">
             {selectedOffer && (
               <>
-                {/* Quick Approve/Reject for Current User if they're a global approver */}
-                {selectedOffer.status === 'pending_approval' && isCurrentUserGlobalApprover() && (() => {
-                  const userApproval = getCurrentUserApproval();
-                  // Show buttons if user is a global approver, even if approval record doesn't exist yet
-                  // (it will be created when they approve/reject)
-                  if (isCurrentUserGlobalApprover()) {
-                    return (
-                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Your Approval Required</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Review the offer below and approve or reject it.
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={async () => {
-                                if (selectedOffer && user) {
-                                  try {
-                                    // Get or create approval record
-                                    let approvalId = userApproval?.id;
-                                    if (!approvalId) {
-                                      // Create approval record if it doesn't exist
-                                      const globalApprover = globalApprovers.find(a => a.approver_id === user.id && a.is_active);
-                                      if (globalApprover) {
-                                        const newApproval = await offersService.createApproval(
-                                          selectedOffer.id,
-                                          user.id,
-                                          globalApprover.approval_order
-                                        );
-                                        approvalId = newApproval.id;
-                                      } else {
-                                        toast({
-                                          title: 'Error',
-                                          description: 'You are not authorized to approve this offer',
-                                          variant: 'destructive',
-                                        });
-                                        return;
-                                      }
-                                    }
-                                    
-                                    await offersService.updateApproval(approvalId, 'approved', '');
-                                    
-                                    // If approved, mark offer as approved immediately (only one approval needed)
-                                    await offersService.updateStatus(selectedOffer.id, 'approved');
+                {/* Your Turn to Approve banner */}
+                {selectedOffer.status === 'pending_approval' && isMyTurn(selectedOffer.id) && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Your Approval Required</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Review the offer below and approve or reject it. Previous approvers have signed off; the next approver will be notified after you approve.
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleSequentialApprove(selectedOffer)}
+                          disabled={approving}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          {approving ? 'Approving...' : 'Approve'}
+                        </Button>
+                        <Button
+                          onClick={() => openRejectModal(selectedOffer)}
+                          variant="outline"
+                          className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20"
+                        >
+                          <XCircle className="h-4 w-4 mr-2" />
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                                    toast({
-                                      title: 'Success',
-                                      description: 'Offer approved successfully',
-                                      variant: 'success',
-                                    });
-                                    setIsViewModalOpen(false);
-                                    await fetchApprovals(selectedOffer.id);
-                                    fetchData();
-                                  } catch (error: any) {
-                                    toast({
-                                      title: 'Error',
-                                      description: error.message || 'Failed to approve offer',
-                                      variant: 'destructive',
-                                    });
-                                  }
-                                }
-                              }}
-                              className="bg-green-600 hover:bg-green-700 text-white"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Approve
-                            </Button>
-                            <Button
-                              onClick={async () => {
-                                if (selectedOffer && user) {
-                                  try {
-                                    // Get or create approval record
-                                    let approvalId = userApproval?.id;
-                                    if (!approvalId) {
-                                      // Create approval record if it doesn't exist
-                                      const globalApprover = globalApprovers.find(a => a.approver_id === user.id && a.is_active);
-                                      if (globalApprover) {
-                                        const newApproval = await offersService.createApproval(
-                                          selectedOffer.id,
-                                          user.id,
-                                          globalApprover.approval_order
-                                        );
-                                        approvalId = newApproval.id;
-                                      } else {
-                                        toast({
-                                          title: 'Error',
-                                          description: 'You are not authorized to reject this offer',
-                                          variant: 'destructive',
-                                        });
-                                        return;
-                                      }
-                                    }
-                                    
-                                    await offersService.updateApproval(approvalId, 'rejected', '');
-                                    
-                                    // If rejected, revert to draft
-                                    await offersService.updateStatus(selectedOffer.id, 'draft');
-
-                                    toast({
-                                      title: 'Success',
-                                      description: 'Offer rejected',
-                                      variant: 'success',
-                                    });
-                                    setIsViewModalOpen(false);
-                                    await fetchApprovals(selectedOffer.id);
-                                    fetchData();
-                                  } catch (error: any) {
-                                    toast({
-                                      title: 'Error',
-                                      description: error.message || 'Failed to reject offer',
-                                      variant: 'destructive',
-                                    });
-                                  }
-                                }
-                              }}
-                              variant="outline"
-                              className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20"
-                            >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              Reject
-                            </Button>
-                          </div>
+                {/* Awaiting someone else */}
+                {selectedOffer.status === 'pending_approval' && !isMyTurn(selectedOffer.id) && (() => {
+                  const chain = approvalsMap[selectedOffer.id] || approvals;
+                  const currentStep = selectedOffer.current_approval_step || 1;
+                  const current = chain.find(a => a.approval_order === currentStep);
+                  if (!current) return null;
+                  return (
+                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0" />
+                        <div>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">Awaiting Approval</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Currently waiting on <strong>{getApproverName(current.approver_id)}</strong> (Step {currentStep} of {chain.length}).
+                          </p>
                         </div>
                       </div>
-                    );
-                  }
-                  return null;
+                    </div>
+                  );
+                })()}
+
+                {/* Approval Chain Progress */}
+                {(approvalsMap[selectedOffer.id] || approvals).length > 0 && (
+                  <div className="p-4 bg-gray-50 dark:bg-dark-100 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Users className="h-4 w-4 text-gray-500" />
+                      <label className="text-sm font-semibold text-gray-900 dark:text-white">Approval Chain Progress</label>
+                    </div>
+                    <div className="space-y-3">
+                      {(approvalsMap[selectedOffer.id] || approvals).map((approver, idx) => {
+                        const currentStep = selectedOffer.current_approval_step || 1;
+                        const isCurrentStep = approver.approval_order === currentStep && selectedOffer.status === 'pending_approval';
+                        return (
+                          <div
+                            key={approver.id}
+                            className={`flex items-center gap-3 p-3 rounded-lg border ${
+                              approver.status === 'approved'
+                                ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+                                : approver.status === 'rejected'
+                                  ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
+                                  : isCurrentStep
+                                    ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20'
+                                    : 'border-gray-200 bg-white dark:border-dark-200 dark:bg-dark-150'
+                            }`}
+                          >
+                            <div
+                              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                                approver.status === 'approved'
+                                  ? 'bg-green-500 text-white'
+                                  : approver.status === 'rejected'
+                                    ? 'bg-red-500 text-white'
+                                    : isCurrentStep
+                                      ? 'bg-yellow-500 text-white'
+                                      : 'bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+                              }`}
+                            >
+                              {approver.status === 'approved' ? (
+                                <CheckCircle className="h-4 w-4" />
+                              ) : approver.status === 'rejected' ? (
+                                <XCircle className="h-4 w-4" />
+                              ) : (
+                                idx + 1
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                {getApproverName(approver.approver_id)}
+                                {approver.approver_id === user?.id && (
+                                  <span className="ml-2 text-xs text-[#f26722]">(You)</span>
+                                )}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {approver.status === 'approved'
+                                  ? `Approved ${approver.approved_at ? new Date(approver.approved_at).toLocaleString() : ''}`
+                                  : approver.status === 'rejected'
+                                    ? `Rejected ${approver.approved_at ? new Date(approver.approved_at).toLocaleString() : ''}`
+                                    : isCurrentStep
+                                      ? 'Awaiting approval...'
+                                      : 'Pending'}
+                              </p>
+                              {approver.status === 'rejected' && approver.comments && (
+                                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                                  Reason: {approver.comments}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Expiration countdown inside modal */}
+                {selectedOffer.expiration_date && (() => {
+                  const exp = getExpirationInfo(selectedOffer);
+                  if (!exp) return null;
+                  return (
+                    <div
+                      className={`p-3 rounded-lg flex items-center justify-between gap-3 ${
+                        exp.expired
+                          ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                          : exp.daysLeft <= 3
+                            ? 'bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800'
+                            : 'bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-dark-200'
+                      }`}
+                    >
+                      <div className={`flex items-center gap-2 text-sm ${exp.color}`}>
+                        <Clock className="h-4 w-4" />
+                        <span>
+                          <strong>{exp.label}</strong>
+                          {' '}— expires {new Date(selectedOffer.expiration_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openExtendModal(selectedOffer)}
+                      >
+                        <RefreshCw className="h-4 w-4 mr-1" />
+                        Extend / Refresh Link
+                      </Button>
+                    </div>
+                  );
                 })()}
 
                 {/* Offer Details */}
@@ -1334,6 +1731,134 @@ export const OfferApprovals: React.FC = () => {
                 {markingSent ? 'Updating...' : 'Mark as sent'}
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Sequential Reject Modal */}
+      <Dialog open={isRejectModalOpen} onOpenChange={(open) => {
+        setIsRejectModalOpen(open);
+        if (!open) {
+          setRejectOffer(null);
+          setRejectReason('');
+        }
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+              <AlertCircle className="h-5 w-5" />
+              Reject Offer Letter
+            </DialogTitle>
+            <DialogDescription>
+              Rejecting will revert this offer to draft so it can be edited and resubmitted. Please provide a reason.
+            </DialogDescription>
+          </DialogHeader>
+          {rejectOffer && (
+            <div className="space-y-4 py-4">
+              <div className="p-4 bg-gray-50 dark:bg-dark-100 rounded-lg">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  Rejecting:{' '}
+                  <span className="font-semibold">
+                    {rejectOffer.candidate
+                      ? `${rejectOffer.candidate.first_name} ${rejectOffer.candidate.last_name}`
+                      : 'Unknown Candidate'}
+                  </span>
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {rejectOffer.position_title} &bull; {rejectOffer.department}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">
+                  Rejection Reason <span className="text-red-500">*</span>
+                </label>
+                <Textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Please explain why this offer is being rejected..."
+                  rows={5}
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  This reason will be saved with the approval record and visible to the offer creator.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsRejectModalOpen(false);
+                setRejectReason('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSequentialReject}
+              disabled={!rejectReason.trim() || rejecting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <XCircle className="mr-2 h-4 w-4" />
+              {rejecting ? 'Rejecting...' : 'Reject Offer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Extend / Refresh Expiration Modal */}
+      <Dialog open={extendModalOpen} onOpenChange={(open) => {
+        setExtendModalOpen(open);
+        if (!open) setExtendOfferId(null);
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 text-[#f26722]" />
+              Extend Offer Expiration
+            </DialogTitle>
+            <DialogDescription>
+              Pick a new expiration date. Optionally regenerate the signing link so the previously-shared link stops working once the new one is sent.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                New expiration date
+              </label>
+              <input
+                type="date"
+                value={extendNewDate}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => setExtendNewDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              />
+            </div>
+            <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={extendRegenerateToken}
+                onChange={(e) => setExtendRegenerateToken(e.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                Regenerate the signing link (recommended). The old link will stop working and a fresh link will be generated for you to share.
+              </span>
+            </label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExtendModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleExtendExpiration}
+              disabled={!extendNewDate || extending}
+              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${extending ? 'animate-spin' : ''}`} />
+              {extending ? 'Updating...' : 'Save & Refresh'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

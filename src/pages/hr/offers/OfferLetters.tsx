@@ -6,7 +6,7 @@ import { Input } from '../../../components/ui/Input';
 import { Textarea } from '../../../components/ui/Textarea';
 import { Select } from '../../../components/ui/Select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { FileText, Plus, Edit, Trash2, Eye, Copy, Save, X, Send, Download, Link as LinkIcon, Paperclip, Upload, UserPlus } from 'lucide-react';
+import { FileText, Plus, Edit, Trash2, Eye, Copy, Save, X, Send, Download, Link as LinkIcon, Paperclip, Upload, UserPlus, Clock, RefreshCw } from 'lucide-react';
 import { RichTextEditor } from '@/components/helpCenter/RichTextEditor';
 import { offersService, OfferTemplate, Offer, CreateOfferInput, OfferAttachment } from '../../../services/hr/offersService';
 import { candidatesService, Candidate } from '../../../services/hr/candidatesService';
@@ -72,10 +72,100 @@ export const OfferLetters: React.FC = () => {
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
   const [sendingToOnboardingOfferId, setSendingToOnboardingOfferId] = useState<string | null>(null);
+  const [extendOfferId, setExtendOfferId] = useState<string | null>(null);
+  const [extendModalOpen, setExtendModalOpen] = useState(false);
+  const [extendNewDate, setExtendNewDate] = useState<string>('');
+  const [extendRegenerateToken, setExtendRegenerateToken] = useState<boolean>(true);
+  const [extending, setExtending] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Expiration countdown helper (mirrors the one in OfferApprovals)
+  const getExpirationInfo = (offer: Offer): {
+    label: string;
+    color: string;
+    expired: boolean;
+    daysLeft: number;
+  } | null => {
+    if (!offer.expiration_date) return null;
+    const now = new Date();
+    const exp = new Date(offer.expiration_date);
+    exp.setHours(23, 59, 59, 999);
+    const diffMs = exp.getTime() - now.getTime();
+    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    if (diffMs <= 0) {
+      return { label: 'Expired', color: 'text-red-600 dark:text-red-400', expired: true, daysLeft: 0 };
+    }
+    if (daysLeft <= 1) {
+      const hoursLeft = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)));
+      return {
+        label: `Expires in ${hoursLeft} hour${hoursLeft === 1 ? '' : 's'}`,
+        color: 'text-red-600 dark:text-red-400',
+        expired: false,
+        daysLeft,
+      };
+    }
+    if (daysLeft <= 3) {
+      return {
+        label: `Expires in ${daysLeft} days`,
+        color: 'text-orange-600 dark:text-orange-400',
+        expired: false,
+        daysLeft,
+      };
+    }
+    return {
+      label: `Expires in ${daysLeft} days`,
+      color: 'text-gray-600 dark:text-gray-400',
+      expired: false,
+      daysLeft,
+    };
+  };
+
+  const openExtendModal = (offerId: string) => {
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 5);
+    setExtendOfferId(offerId);
+    setExtendNewDate(defaultDate.toISOString().split('T')[0]);
+    setExtendRegenerateToken(true);
+    setExtendModalOpen(true);
+  };
+
+  const handleExtendExpiration = async () => {
+    if (!extendOfferId) return;
+    try {
+      setExtending(true);
+      await offersService.refreshExpirationDate(extendOfferId, {
+        newDate: extendNewDate,
+        regenerateToken: extendRegenerateToken,
+      });
+      if (extendRegenerateToken) {
+        const link = await offersService.generateSigningLink(extendOfferId);
+        setSigningLinkOfferId(extendOfferId);
+        setSigningLink(link);
+        setShowLinkModal(true);
+      }
+      toast({
+        title: 'Expiration updated',
+        description: extendRegenerateToken
+          ? 'New expiration set and a fresh signing link was generated.'
+          : 'Expiration date updated. The existing signing link remains valid.',
+        variant: 'success',
+      });
+      setExtendModalOpen(false);
+      setExtendOfferId(null);
+      fetchData();
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to update expiration',
+        variant: 'destructive',
+      });
+    } finally {
+      setExtending(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -852,13 +942,25 @@ export const OfferLetters: React.FC = () => {
                         offer.status === 'accepted' ? 'text-green-600' :
                         offer.status === 'declined' ? 'text-red-600' :
                         offer.status === 'sent' ? 'text-blue-600' :
+                        offer.status === 'expired' ? 'text-red-600' :
                         'text-gray-600'
                       }`}>
                         {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
                       </span>
                     </div>
+                    {(() => {
+                      const exp = getExpirationInfo(offer);
+                      if (!exp) return null;
+                      if (!['sent', 'approved', 'expired'].includes(offer.status)) return null;
+                      return (
+                        <div className={`flex items-center gap-1 text-xs mt-1 ${exp.color}`}>
+                          <Clock className="h-3 w-3" />
+                          <span>{exp.label}{offer.expiration_date ? ` (${new Date(offer.expiration_date).toLocaleDateString()})` : ''}</span>
+                        </div>
+                      );
+                    })()}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap justify-end">
                     <Button
                       variant="outline"
                       size="sm"
@@ -921,6 +1023,16 @@ export const OfferLetters: React.FC = () => {
                         title="Generate Signing Link"
                       >
                         <LinkIcon className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {(offer.status === 'sent' || offer.status === 'approved' || offer.status === 'expired') && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openExtendModal(offer.id)}
+                        title="Extend expiration / refresh link"
+                      >
+                        <RefreshCw className="h-4 w-4" />
                       </Button>
                     )}
                     {offer.status === 'accepted' && (
@@ -1423,6 +1535,62 @@ export const OfferLetters: React.FC = () => {
                 {markingSent ? 'Updating...' : 'Mark as sent'}
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Extend / Refresh Expiration Modal */}
+      <Dialog open={extendModalOpen} onOpenChange={(open) => {
+        setExtendModalOpen(open);
+        if (!open) setExtendOfferId(null);
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 text-[#f26722]" />
+              Extend Offer Expiration
+            </DialogTitle>
+            <DialogDescription>
+              Pick a new expiration date. Optionally regenerate the signing link so the previously-shared link stops working.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                New expiration date
+              </label>
+              <input
+                type="date"
+                value={extendNewDate}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => setExtendNewDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              />
+            </div>
+            <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={extendRegenerateToken}
+                onChange={(e) => setExtendRegenerateToken(e.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                Regenerate the signing link (recommended). The old link will stop working and a fresh link will open for you to share.
+              </span>
+            </label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExtendModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleExtendExpiration}
+              disabled={!extendNewDate || extending}
+              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${extending ? 'animate-spin' : ''}`} />
+              {extending ? 'Updating...' : 'Save & Refresh'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

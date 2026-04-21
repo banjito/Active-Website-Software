@@ -1,6 +1,28 @@
 import { supabase } from '@/lib/supabase';
 import { candidatesService } from '@/services/hr/candidatesService';
 
+/** Fire-and-forget email notification to the current offer approver */
+function notifyOfferApprover(
+  offerId: string,
+  approverUserId: string,
+  stepNumber: number,
+  totalSteps: number,
+  action: 'submitted' | 'advanced'
+) {
+  try {
+    const fnUrl = (import.meta as any).env?.VITE_SUPABASE_URL;
+    const anonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
+    if (!fnUrl || !anonKey) return;
+    fetch(`${fnUrl.replace(/\/rest\/v1.*$/, '')}/functions/v1/offer-approval-notification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` },
+      body: JSON.stringify({ offerId, approverUserId, stepNumber, totalSteps, action }),
+    }).catch(() => {});
+  } catch {
+    /* silent */
+  }
+}
+
 export interface OfferTemplate {
   id: string;
   name: string;
@@ -49,6 +71,7 @@ export interface Offer {
   signature_data?: Record<string, any>;
   signed_at?: string;
   signing_token?: string;
+  current_approval_step?: number;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -511,20 +534,43 @@ export const offersService = {
       }
     }
 
-    // If status is pending_approval, create approval records for all active global approvers
+    // If status is pending_approval, set up the sequential approval chain from
+    // the active global approvers, set current_approval_step=1 and notify the
+    // first approver.
     if (status === 'pending_approval') {
       const globalApprovers = await this.getGlobalApprovers();
-      const activeApprovers = globalApprovers.filter(a => a.is_active);
-      
+      const activeApprovers = globalApprovers
+        .filter(a => a.is_active)
+        .sort((a, b) => a.approval_order - b.approval_order);
+
       // Check if approvals already exist
       const existingApprovals = await this.getApprovalsByOfferId(id);
       const existingApproverIds = new Set(existingApprovals.map(a => a.approver_id));
-      
-      // Create approval records for global approvers that don't have one yet
+
+      // Create approval records (reset to pending) for each active approver, ordered
+      let stepCounter = 1;
       for (const approver of activeApprovers) {
         if (!existingApproverIds.has(approver.approver_id)) {
-          await this.createApproval(id, approver.approver_id, approver.approval_order);
+          await this.createApproval(id, approver.approver_id, stepCounter);
         }
+        stepCounter += 1;
+      }
+
+      // Reset current step to 1 and notify the first approver
+      await supabase
+        .schema('common')
+        .from('offers')
+        .update({ current_approval_step: 1, updated_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (activeApprovers.length > 0) {
+        notifyOfferApprover(
+          id,
+          activeApprovers[0].approver_id,
+          1,
+          activeApprovers.length,
+          'submitted'
+        );
       }
     }
 
@@ -715,6 +761,239 @@ export const offersService = {
     }
 
     return data;
+  },
+
+  // --- Sequential Approval Workflow ---
+
+  /**
+   * Load approvals for multiple offers at once, grouped by offer_id. Used by the
+   * OfferApprovals page to display the approval chain on every card.
+   */
+  async getApprovalsForMultiple(offerIds: string[]): Promise<Record<string, OfferApproval[]>> {
+    if (offerIds.length === 0) return {};
+    const { data, error } = await supabase
+      .schema('common')
+      .from('offer_approvals')
+      .select('*')
+      .in('offer_id', offerIds)
+      .order('approval_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching approvals for multiple offers:', error);
+      throw error;
+    }
+
+    const grouped: Record<string, OfferApproval[]> = {};
+    for (const row of data || []) {
+      const key = (row as any).offer_id as string;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(row as OfferApproval);
+    }
+    return grouped;
+  },
+
+  /**
+   * Approve the current step for an offer on behalf of the given user. Only the
+   * user whose approval record matches the offer's current_approval_step may
+   * approve. If there is no next step, the offer is marked as approved.
+   */
+  async approveStep(
+    offerId: string,
+    userId: string
+  ): Promise<{ offer: Offer; allApproved: boolean }> {
+    const offer = await this.getById(offerId);
+    if (!offer) throw new Error('Offer not found');
+
+    const approvals = await this.getApprovalsByOfferId(offerId);
+    if (approvals.length === 0) {
+      throw new Error('No approval chain is configured for this offer');
+    }
+
+    const currentStep = offer.current_approval_step || 1;
+    const currentApproval = approvals.find(a => a.approval_order === currentStep);
+    if (!currentApproval) throw new Error('No approver found for the current step');
+    if (currentApproval.approver_id !== userId) {
+      throw new Error('You are not the current approver for this offer');
+    }
+
+    await this.updateApproval(currentApproval.id, 'approved');
+
+    const nextStep = currentStep + 1;
+    const hasNext = approvals.some(a => a.approval_order === nextStep);
+
+    if (hasNext) {
+      const { error } = await supabase
+        .schema('common')
+        .from('offers')
+        .update({
+          current_approval_step: nextStep,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', offerId);
+      if (error) throw error;
+
+      const nextApproval = approvals.find(a => a.approval_order === nextStep);
+      if (nextApproval) {
+        notifyOfferApprover(
+          offerId,
+          nextApproval.approver_id,
+          nextStep,
+          approvals.length,
+          'advanced'
+        );
+      }
+
+      const refreshed = await this.getById(offerId);
+      return { offer: refreshed as Offer, allApproved: false };
+    }
+
+    // All steps approved — mark offer approved.
+    const finalOffer = await this.updateStatus(offerId, 'approved');
+    return { offer: finalOffer, allApproved: true };
+  },
+
+  /**
+   * Reject the current step for an offer on behalf of the given user. Reverts
+   * the offer to draft so it can be edited and resubmitted, and records the
+   * rejection reason in the approver's comments.
+   */
+  async rejectStep(offerId: string, userId: string, reason: string): Promise<Offer> {
+    const offer = await this.getById(offerId);
+    if (!offer) throw new Error('Offer not found');
+
+    const approvals = await this.getApprovalsByOfferId(offerId);
+    if (approvals.length === 0) {
+      throw new Error('No approval chain is configured for this offer');
+    }
+
+    const currentStep = offer.current_approval_step || 1;
+    const currentApproval = approvals.find(a => a.approval_order === currentStep);
+    if (!currentApproval) throw new Error('No approver found for the current step');
+    if (currentApproval.approver_id !== userId) {
+      throw new Error('You are not the current approver for this offer');
+    }
+
+    await this.updateApproval(currentApproval.id, 'rejected', reason);
+
+    // Revert the offer back to draft so it can be edited and resubmitted.
+    const reverted = await this.updateStatus(offerId, 'draft');
+
+    // Reset current_approval_step so a resubmit starts clean.
+    await supabase
+      .schema('common')
+      .from('offers')
+      .update({ current_approval_step: 0, updated_at: new Date().toISOString() })
+      .eq('id', offerId);
+
+    return reverted;
+  },
+
+  /**
+   * Return the list of offers that are currently waiting on `userId` for
+   * approval. An offer is returned only when the user is the current step
+   * approver AND their approval record is still pending.
+   */
+  async getPendingForUser(
+    userId: string
+  ): Promise<{ offer: Offer; approval: OfferApproval }[]> {
+    const all = await this.getAll();
+    const pending = all.filter(o => o.status === 'pending_approval');
+    if (pending.length === 0) return [];
+
+    const approvalsMap = await this.getApprovalsForMultiple(pending.map(o => o.id));
+    const out: { offer: Offer; approval: OfferApproval }[] = [];
+
+    for (const offer of pending) {
+      const chain = approvalsMap[offer.id] || [];
+      const currentStep = offer.current_approval_step || 1;
+      const current = chain.find(a => a.approval_order === currentStep);
+      if (current && current.approver_id === userId && current.status === 'pending') {
+        out.push({ offer, approval: current });
+      }
+    }
+    return out;
+  },
+
+  /**
+   * Extend the expiration date on an offer. Pass the exact ISO date (YYYY-MM-DD)
+   * to set, or omit to push it out `daysFromNow` days from today (default 5).
+   * Also regenerates the signing token so any previously-shared link becomes
+   * invalid once the new link is distributed.
+   */
+  async refreshExpirationDate(
+    offerId: string,
+    opts?: { newDate?: string; daysFromNow?: number; regenerateToken?: boolean }
+  ): Promise<Offer> {
+    const newDate =
+      opts?.newDate ||
+      (() => {
+        const d = new Date();
+        d.setDate(d.getDate() + (opts?.daysFromNow ?? 5));
+        return d.toISOString().split('T')[0];
+      })();
+
+    const updatePayload: Record<string, any> = {
+      expiration_date: newDate,
+      updated_at: new Date().toISOString(),
+    };
+
+    const existing = await this.getById(offerId);
+
+    if (opts?.regenerateToken) {
+      const array = new Uint8Array(32);
+      crypto.getRandomValues(array);
+      updatePayload.signing_token = Array.from(array, byte =>
+        byte.toString(16).padStart(2, '0')
+      ).join('');
+
+      // A refreshed token represents a brand-new signing session. Clear any
+      // stale signature state from previous attempts so the candidate isn't
+      // greeted with "already signed" when they open the new link.
+      updatePayload.signature_status = 'pending';
+      updatePayload.signed_at = null;
+      updatePayload.signature_data = null;
+
+      // If the offer had been accepted/declined on the previous link, revert
+      // those terminal states so the new link can be actioned again.
+      if (existing?.status === 'accepted') {
+        updatePayload.status = 'sent';
+        updatePayload.accepted_date = null;
+      } else if (existing?.status === 'declined') {
+        updatePayload.status = 'sent';
+        updatePayload.declined_date = null;
+      }
+
+      // Remove prior signature rows so the E-Signatures tab/audit doesn't
+      // continue reporting this offer as signed.
+      try {
+        await supabase
+          .schema('common')
+          .from('e_signatures')
+          .delete()
+          .eq('offer_id', offerId);
+      } catch (sigErr) {
+        console.warn('Could not clear previous e_signatures on refresh:', sigErr);
+      }
+    }
+
+    // If the offer had already expired, put it back into a usable state.
+    if (!updatePayload.status && existing?.status === 'expired') {
+      updatePayload.status = existing.sent_date ? 'sent' : 'approved';
+    }
+
+    const { data, error } = await supabase
+      .schema('common')
+      .from('offers')
+      .update(updatePayload)
+      .eq('id', offerId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error refreshing offer expiration:', error);
+      throw error;
+    }
+    return data as Offer;
   },
 
   // E-Signatures

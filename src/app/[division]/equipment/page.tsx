@@ -28,10 +28,16 @@ export default function EquipmentPage() {
     }
   }, [params.division, division, setDivision]);
 
-  // Check user permissions
-  const canAccessEquipment = user?.user_metadata?.role === 'Admin' || 
-                            user?.user_metadata?.permissions?.includes('equipment_manage') || 
-                            user?.user_metadata?.permissions?.includes('equipment_view');
+  // Check user permissions.
+  // Some technician accounts do not have explicit equipment_* permission flags,
+  // but they still need access to update calibration dates.
+  const roleText = String(user?.user_metadata?.role || '').toLowerCase();
+  const isTechnicianRole = roleText.includes('technician');
+  const canAccessEquipment =
+    user?.user_metadata?.role === 'Admin' ||
+    isTechnicianRole ||
+    user?.user_metadata?.permissions?.includes('equipment_manage') ||
+    user?.user_metadata?.permissions?.includes('equipment_view');
 
   useEffect(() => {
     if (!user || !canAccessEquipment) {

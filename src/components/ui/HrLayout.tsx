@@ -164,7 +164,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
 
   // All authenticated users get limited HR access (employee files, profiles, doc acknowledgment, manager portal).
   // Only Admin/Super Admin get the full HR portal.
-  const HR_LIMITED_ALLOWED_PATHS = ['/hr/employee-files', '/hr/data/employee-profiles', '/hr/data/org-chart', '/hr/compliance/document-acknowledgment', '/hr/self-service/manager-portal'];
+  const HR_LIMITED_ALLOWED_PATHS = ['/hr/employee-files', '/hr/data/employee-profiles', '/hr/data/org-chart', '/hr/compliance/document-acknowledgment', '/hr/self-service/manager-portal', '/hr/onboarding/your-onboarding', '/hr/onboarding/sign-form'];
   const isPathAllowedForLimited = HR_LIMITED_ALLOWED_PATHS.some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
   if (!isHrFullAccess && !isPathAllowedForLimited) {
     return <Navigate to="/hr/employee-files" replace />;
@@ -292,6 +292,10 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
         { path: '/hr/onboarding/welcome-emails', label: 'Welcome Emails', icon: <Mail className="mr-2 h-3.5 w-3.5" /> },
         { path: '/hr/onboarding/it-equipment-tasks', label: 'IT/Equipment Tasks', icon: <Laptop className="mr-2 h-3.5 w-3.5" /> },
         { path: '/hr/onboarding/it-onboarding', label: 'IT Onboarding', icon: <ClipboardCheck className="mr-2 h-3.5 w-3.5" /> },
+        { path: '/hr/onboarding/office-admin-tasks', label: 'Office Admin Tasks', icon: <Briefcase className="mr-2 h-3.5 w-3.5" /> },
+        { path: '/hr/onboarding/office-admin-onboarding', label: 'Office Admin Onboarding', icon: <ClipboardCheck className="mr-2 h-3.5 w-3.5" /> },
+        { path: '/hr/onboarding/hr-tasks', label: 'HR Tasks', icon: <Users className="mr-2 h-3.5 w-3.5" /> },
+        { path: '/hr/onboarding/hr-onboarding', label: 'HR Onboarding', icon: <ClipboardCheck className="mr-2 h-3.5 w-3.5" /> },
       ],
     },
     {
@@ -441,6 +445,17 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
             </>
           ) : (
             <div className="flex flex-col gap-0.5">
+              <Link to="/hr/onboarding/your-onboarding">
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start pl-0 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
+                    location.pathname.startsWith('/hr/onboarding/your-onboarding') ? 'bg-black/5 dark:bg-dark-50' : ''
+                  }`}
+                >
+                  <UserCheck className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
+                  Your Onboarding
+                </Button>
+              </Link>
               <Link to="/hr/data/employee-profiles">
                 <Button
                   variant="ghost"

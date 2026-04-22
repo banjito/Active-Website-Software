@@ -19,6 +19,8 @@ import {
   CheckSquare,
   Calendar,
   Laptop,
+  Briefcase,
+  Users,
 } from 'lucide-react';
 import { onboardingService, OnboardingTrackingRecord, NewHirePacket, Checklist, ChecklistAssignment } from '../../../services/hr/onboardingService';
 import { useAuth } from '../../../lib/AuthContext';
@@ -558,6 +560,50 @@ export const MyOnboarding: React.FC = () => {
                   <li key={t.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800 gap-2">
                     <span className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
                       <Laptop className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      {t.name}
+                    </span>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 ${
+                      (t.status === 'completed') ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                      (t.status === 'in_progress') ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                    }`}>
+                      {(t.status === 'in_progress') ? 'In progress' : (t.status === 'completed') ? 'Completed' : 'Pending'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mt-4">Your Office Admin tasks</p>
+            {(record.assigned_office_admin_tasks?.length ?? 0) === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No Office Admin tasks assigned yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {record.assigned_office_admin_tasks!.map((t) => (
+                  <li key={t.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800 gap-2">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                      <Briefcase className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      {t.name}
+                    </span>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 ${
+                      (t.status === 'completed') ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                      (t.status === 'in_progress') ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                    }`}>
+                      {(t.status === 'in_progress') ? 'In progress' : (t.status === 'completed') ? 'Completed' : 'Pending'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mt-4">Your HR tasks</p>
+            {(record.assigned_hr_tasks?.length ?? 0) === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No HR tasks assigned yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {record.assigned_hr_tasks!.map((t) => (
+                  <li key={t.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800 gap-2">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                      <Users className="h-4 w-4 text-gray-500 flex-shrink-0" />
                       {t.name}
                     </span>
                     <span className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 ${

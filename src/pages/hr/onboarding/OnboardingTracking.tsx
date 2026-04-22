@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
-import { onboardingService, OnboardingTrackingRecord, NewHirePacket, ESignForm, Checklist, ITEquipmentTask } from '../../../services/hr/onboardingService';
+import { onboardingService, OnboardingTrackingRecord, NewHirePacket, ESignForm, Checklist, ITEquipmentTask, OfficeAdminTask, HRTask } from '../../../services/hr/onboardingService';
 import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { Input } from '../../../components/ui/Input';
-import { UserPlus, Folder, Loader2, ChevronRight, ChevronLeft, Link2, User, Search, UserMinus, FileSignature, X, CheckSquare, Laptop, Mail, CheckCircle2 } from 'lucide-react';
+import { UserPlus, Folder, Loader2, ChevronRight, ChevronLeft, Link2, User, Search, UserMinus, FileSignature, X, CheckSquare, Laptop, Mail, CheckCircle2, Briefcase, Users } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/Tabs';
 
 const PAGE_SIZE = 15;
 
@@ -33,10 +34,20 @@ export const OnboardingTracking: React.FC = () => {
   const [removingTrackingId, setRemovingTrackingId] = useState<string | null>(null);
   const [eSignForms, setESignForms] = useState<ESignForm[]>([]);
   const [assigningForm, setAssigningForm] = useState(false);
+  const [formIdsToAssign, setFormIdsToAssign] = useState<string[]>([]);
+  const [packetIdsToAssign, setPacketIdsToAssign] = useState<string[]>([]);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
   const [assigningChecklist, setAssigningChecklist] = useState(false);
+  const [checklistIdsToAssign, setChecklistIdsToAssign] = useState<string[]>([]);
   const [itTasks, setItTasks] = useState<ITEquipmentTask[]>([]);
   const [assigningITTask, setAssigningITTask] = useState(false);
+  const [itTaskIdsToAssign, setItTaskIdsToAssign] = useState<string[]>([]);
+  const [officeAdminTasks, setOfficeAdminTasks] = useState<OfficeAdminTask[]>([]);
+  const [assigningOfficeAdminTask, setAssigningOfficeAdminTask] = useState(false);
+  const [officeAdminTaskIdsToAssign, setOfficeAdminTaskIdsToAssign] = useState<string[]>([]);
+  const [hrTasks, setHrTasks] = useState<HRTask[]>([]);
+  const [assigningHRTask, setAssigningHRTask] = useState(false);
+  const [hrTaskIdsToAssign, setHrTaskIdsToAssign] = useState<string[]>([]);
   const [linkAccountSearch, setLinkAccountSearch] = useState('');
   const [linkAccountResults, setLinkAccountResults] = useState<AmpOSUser[]>([]);
   const [linkAccountLoading, setLinkAccountLoading] = useState(false);
@@ -69,6 +80,22 @@ export const OnboardingTracking: React.FC = () => {
         setItTasks([]);
       }
     })();
+    (async () => {
+      try {
+        const templates = await onboardingService.getOfficeAdminTasks({ is_template: true });
+        setOfficeAdminTasks(templates.filter((t) => t.status !== 'cancelled'));
+      } catch {
+        setOfficeAdminTasks([]);
+      }
+    })();
+    (async () => {
+      try {
+        const templates = await onboardingService.getHRTasks({ is_template: true });
+        setHrTasks(templates.filter((t) => t.status !== 'cancelled'));
+      } catch {
+        setHrTasks([]);
+      }
+    })();
   }, []);
 
   const fetchData = async (): Promise<OnboardingTrackingRecord[]> => {
@@ -92,7 +119,10 @@ export const OnboardingTracking: React.FC = () => {
 
   const fetchPacketsForAssign = async () => {
     try {
-      const data = await onboardingService.getPackets({ custom_only: true });
+      // Only real templates belong in the assign list. Without `is_template: true`,
+      // per-person instance packets created by `assignPacketToTracking` leak back
+      // into the dropdown and look like duplicates of the original template.
+      const data = await onboardingService.getPackets({ is_template: true, custom_only: true });
       setPacketTemplates(data);
     } catch {
       setPacketTemplates([]);
@@ -200,6 +230,178 @@ export const OnboardingTracking: React.FC = () => {
     }
   };
 
+  const handleAssignMultipleForms = async (trackingId: string) => {
+    if (formIdsToAssign.length === 0) return;
+    setAssigningForm(true);
+    try {
+      const { assigned, skipped } = await onboardingService.assignFormsToTracking(trackingId, formIdsToAssign);
+      toast({
+        title: `${assigned} form${assigned === 1 ? '' : 's'} assigned`,
+        description: skipped > 0
+          ? `${skipped} form${skipped === 1 ? '' : 's'} could not be assigned (they may already be attached).`
+          : 'Forms are now visible to the employee in Your Onboarding.',
+        variant: 'success',
+      });
+      setFormIdsToAssign([]);
+      const data = await fetchData();
+      if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to assign forms', variant: 'destructive' });
+    } finally {
+      setAssigningForm(false);
+    }
+  };
+
+  const toggleFormToAssign = (formId: string) => {
+    setFormIdsToAssign((prev) =>
+      prev.includes(formId) ? prev.filter((id) => id !== formId) : [...prev, formId]
+    );
+  };
+
+  const togglePacketToAssign = (packetId: string) => {
+    setPacketIdsToAssign((prev) =>
+      prev.includes(packetId) ? prev.filter((id) => id !== packetId) : [...prev, packetId]
+    );
+  };
+
+  const toggleChecklistToAssign = (checklistId: string) => {
+    setChecklistIdsToAssign((prev) =>
+      prev.includes(checklistId) ? prev.filter((id) => id !== checklistId) : [...prev, checklistId]
+    );
+  };
+
+  const toggleITTaskToAssign = (taskId: string) => {
+    setItTaskIdsToAssign((prev) =>
+      prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
+    );
+  };
+
+  const computeProgress = (record: OnboardingTrackingRecord) => {
+    const isCompleted = (status?: string) =>
+      status === 'completed' || status === 'signed' || status === 'finalized';
+    const buckets: { label: string; total: number; done: number }[] = [
+      {
+        label: 'Forms',
+        total: record.assigned_forms?.length ?? 0,
+        done: (record.assigned_forms ?? []).filter((x) => isCompleted(x.status)).length,
+      },
+      {
+        label: 'Checklists',
+        total: record.assigned_checklists?.length ?? 0,
+        done: (record.assigned_checklists ?? []).filter((x) => isCompleted(x.status)).length,
+      },
+      {
+        label: 'IT tasks',
+        total: record.assigned_it_tasks?.length ?? 0,
+        done: (record.assigned_it_tasks ?? []).filter((x) => isCompleted(x.status)).length,
+      },
+      {
+        label: 'Office Admin',
+        total: record.assigned_office_admin_tasks?.length ?? 0,
+        done: (record.assigned_office_admin_tasks ?? []).filter((x) => isCompleted(x.status)).length,
+      },
+      {
+        label: 'HR tasks',
+        total: record.assigned_hr_tasks?.length ?? 0,
+        done: (record.assigned_hr_tasks ?? []).filter((x) => isCompleted(x.status)).length,
+      },
+    ];
+    const total = buckets.reduce((s, b) => s + b.total, 0);
+    const done = buckets.reduce((s, b) => s + b.done, 0);
+    const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+    return { buckets, total, done, percent };
+  };
+
+  const toggleOfficeAdminTaskToAssign = (taskId: string) => {
+    setOfficeAdminTaskIdsToAssign((prev) =>
+      prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
+    );
+  };
+
+  const toggleHRTaskToAssign = (taskId: string) => {
+    setHrTaskIdsToAssign((prev) =>
+      prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
+    );
+  };
+
+  const handleAssignMultiplePackets = async (trackingId: string) => {
+    if (!user?.id || packetIdsToAssign.length === 0) return;
+    setAssigningInModal(true);
+    try {
+      const { assigned, skipped } = await onboardingService.assignPacketsToTracking(
+        trackingId,
+        packetIdsToAssign,
+        user.id,
+      );
+      toast({
+        title: `${assigned} packet${assigned === 1 ? '' : 's'} assigned`,
+        description: skipped > 0
+          ? `${skipped} packet${skipped === 1 ? '' : 's'} could not be assigned.`
+          : 'Packets were created and linked to this onboarding.',
+        variant: 'success',
+      });
+      setPacketIdsToAssign([]);
+      const data = await fetchData();
+      if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to assign packets', variant: 'destructive' });
+    } finally {
+      setAssigningInModal(false);
+    }
+  };
+
+  const handleAssignMultipleChecklists = async (trackingId: string) => {
+    if (!user?.id || checklistIdsToAssign.length === 0) return;
+    setAssigningChecklist(true);
+    try {
+      const { assigned, skipped } = await onboardingService.assignChecklistsToTracking(
+        trackingId,
+        checklistIdsToAssign,
+        user.id,
+      );
+      toast({
+        title: `${assigned} checklist${assigned === 1 ? '' : 's'} assigned`,
+        description: skipped > 0
+          ? `${skipped} checklist${skipped === 1 ? '' : 's'} could not be assigned (they may already be attached).`
+          : 'Checklists are visible to the employee in Your Onboarding.',
+        variant: 'success',
+      });
+      setChecklistIdsToAssign([]);
+      const data = await fetchData();
+      if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to assign checklists', variant: 'destructive' });
+    } finally {
+      setAssigningChecklist(false);
+    }
+  };
+
+  const handleAssignMultipleITTasks = async (trackingId: string) => {
+    if (!user?.id || itTaskIdsToAssign.length === 0) return;
+    setAssigningITTask(true);
+    try {
+      const { assigned, skipped } = await onboardingService.assignITTasksToTracking(
+        trackingId,
+        itTaskIdsToAssign,
+        user.id,
+      );
+      toast({
+        title: `${assigned} task${assigned === 1 ? '' : 's'} assigned`,
+        description: skipped > 0
+          ? `${skipped} task${skipped === 1 ? '' : 's'} could not be assigned.`
+          : 'Copies were created and assigned to this person.',
+        variant: 'success',
+      });
+      setItTaskIdsToAssign([]);
+      const data = await fetchData();
+      if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to assign IT tasks', variant: 'destructive' });
+    } finally {
+      setAssigningITTask(false);
+    }
+  };
+
   const handleRemoveForm = async (trackingId: string, formId: string) => {
     try {
       await onboardingService.removeFormFromTracking(trackingId, formId);
@@ -260,6 +462,80 @@ export const OnboardingTracking: React.FC = () => {
       if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
     } catch (error: any) {
       toast({ title: 'Error', description: error?.message || 'Failed to remove IT task', variant: 'destructive' });
+    }
+  };
+
+  const handleAssignMultipleOfficeAdminTasks = async (trackingId: string) => {
+    if (!user?.id || officeAdminTaskIdsToAssign.length === 0) return;
+    setAssigningOfficeAdminTask(true);
+    try {
+      const { assigned, skipped } = await onboardingService.assignOfficeAdminTasksToTracking(
+        trackingId,
+        officeAdminTaskIdsToAssign,
+        user.id,
+      );
+      toast({
+        title: `${assigned} task${assigned === 1 ? '' : 's'} assigned`,
+        description: skipped > 0
+          ? `${skipped} task${skipped === 1 ? '' : 's'} could not be assigned.`
+          : 'Copies were created and assigned to this person.',
+        variant: 'success',
+      });
+      setOfficeAdminTaskIdsToAssign([]);
+      const data = await fetchData();
+      if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to assign Office Admin tasks', variant: 'destructive' });
+    } finally {
+      setAssigningOfficeAdminTask(false);
+    }
+  };
+
+  const handleRemoveOfficeAdminTask = async (trackingId: string, taskId: string) => {
+    try {
+      await onboardingService.removeOfficeAdminTaskFromTracking(trackingId, taskId);
+      toast({ title: 'Task removed', description: 'Office Admin task unlinked from this onboarding.', variant: 'success' });
+      const data = await fetchData();
+      if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to remove task', variant: 'destructive' });
+    }
+  };
+
+  const handleAssignMultipleHRTasks = async (trackingId: string) => {
+    if (!user?.id || hrTaskIdsToAssign.length === 0) return;
+    setAssigningHRTask(true);
+    try {
+      const { assigned, skipped } = await onboardingService.assignHRTasksToTracking(
+        trackingId,
+        hrTaskIdsToAssign,
+        user.id,
+      );
+      toast({
+        title: `${assigned} task${assigned === 1 ? '' : 's'} assigned`,
+        description: skipped > 0
+          ? `${skipped} task${skipped === 1 ? '' : 's'} could not be assigned.`
+          : 'Copies were created and assigned to this person.',
+        variant: 'success',
+      });
+      setHrTaskIdsToAssign([]);
+      const data = await fetchData();
+      if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to assign HR tasks', variant: 'destructive' });
+    } finally {
+      setAssigningHRTask(false);
+    }
+  };
+
+  const handleRemoveHRTask = async (trackingId: string, taskId: string) => {
+    try {
+      await onboardingService.removeHRTaskFromTracking(trackingId, taskId);
+      toast({ title: 'Task removed', description: 'HR task unlinked from this onboarding.', variant: 'success' });
+      const data = await fetchData();
+      if (selectedTracking?.id === trackingId) setSelectedTracking(data.find(r => r.id === trackingId) || null);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to remove task', variant: 'destructive' });
     }
   };
 
@@ -443,19 +719,52 @@ export const OnboardingTracking: React.FC = () => {
                           No account linked
                         </span>
                       )}
-                      {(record.assigned_packets?.length ?? 0) > 0 && (
-                        <span>· {(record.assigned_packets?.length ?? 0)} packet(s)</span>
-                      )}
-                      {(record.assigned_forms?.length ?? 0) > 0 && (
-                        <span>· {(record.assigned_forms?.length ?? 0)} form(s)</span>
-                      )}
-                      {(record.assigned_checklists?.length ?? 0) > 0 && (
-                        <span>· {(record.assigned_checklists?.length ?? 0)} checklist(s)</span>
-                      )}
-                      {(record.assigned_it_tasks?.length ?? 0) > 0 && (
-                        <span>· {(record.assigned_it_tasks?.length ?? 0)} IT task(s)</span>
-                      )}
                     </div>
+                    {(() => {
+                      const prog = computeProgress(record);
+                      const chips: { label: string; count: number; icon: React.ReactNode }[] = [
+                        { label: 'Packets', count: record.assigned_packets?.length ?? 0, icon: <Folder className="h-3 w-3" /> },
+                        { label: 'Forms', count: record.assigned_forms?.length ?? 0, icon: <FileSignature className="h-3 w-3" /> },
+                        { label: 'Checklists', count: record.assigned_checklists?.length ?? 0, icon: <CheckSquare className="h-3 w-3" /> },
+                        { label: 'IT', count: record.assigned_it_tasks?.length ?? 0, icon: <Laptop className="h-3 w-3" /> },
+                        { label: 'Office', count: record.assigned_office_admin_tasks?.length ?? 0, icon: <Briefcase className="h-3 w-3" /> },
+                        { label: 'HR', count: record.assigned_hr_tasks?.length ?? 0, icon: <Users className="h-3 w-3" /> },
+                      ].filter(c => c.count > 0);
+                      if (chips.length === 0 && prog.total === 0) return null;
+                      return (
+                        <div className="mt-2 space-y-1.5">
+                          {chips.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {chips.map(c => (
+                                <span
+                                  key={c.label}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+                                >
+                                  {c.icon}
+                                  <span>{c.label}</span>
+                                  <span className="font-semibold">{c.count}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {prog.total > 0 && (
+                            <div className="flex items-center gap-2 max-w-md">
+                              <div className="flex-1 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                <div
+                                  className={`h-full transition-all ${
+                                    prog.percent === 100 ? 'bg-green-500' : 'bg-[#f26722]'
+                                  }`}
+                                  style={{ width: `${prog.percent}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-medium text-gray-600 dark:text-gray-400 tabular-nums w-24 text-right">
+                                {prog.done}/{prog.total} · {prog.percent}%
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </button>
                   <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                     <select
@@ -501,8 +810,19 @@ export const OnboardingTracking: React.FC = () => {
       </Card>
 
       {/* Assign packets modal – click row to open */}
-      <Dialog open={!!selectedTracking} onOpenChange={(open) => !open && setSelectedTracking(null)}>
-        <DialogContent className="max-w-md">
+      <Dialog open={!!selectedTracking} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedTracking(null);
+          setFormIdsToAssign([]);
+          setPacketIdsToAssign([]);
+          setChecklistIdsToAssign([]);
+          setItTaskIdsToAssign([]);
+          setOfficeAdminTaskIdsToAssign([]);
+          setHrTaskIdsToAssign([]);
+        }
+      }}>
+        {/* Fixed height (not max-height) so the dialog doesn't recenter — and its internal buttons don't jump — when switching between tabs whose content heights differ. */}
+        <DialogContent className="max-w-6xl w-[95vw] h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedTracking?.user
@@ -631,6 +951,64 @@ export const OnboardingTracking: React.FC = () => {
                   Copy link
                 </Button>
               </div>
+
+              {(() => {
+                const prog = computeProgress(selectedTracking);
+                return (
+                  <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-150 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">Onboarding progress</span>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 tabular-nums">
+                        {prog.done}/{prog.total} items · {prog.percent}%
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden mb-3">
+                      <div
+                        className={`h-full transition-all ${prog.percent === 100 ? 'bg-green-500' : 'bg-[#f26722]'}`}
+                        style={{ width: `${prog.percent}%` }}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                      {prog.buckets.map(b => (
+                        <div
+                          key={b.label}
+                          className="flex items-center justify-between px-2 py-1.5 rounded bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                        >
+                          <span className="text-gray-600 dark:text-gray-400">{b.label}</span>
+                          <span className={`font-semibold tabular-nums ${
+                            b.total === 0
+                              ? 'text-gray-400'
+                              : b.done === b.total
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-gray-900 dark:text-white'
+                          }`}>
+                            {b.done}/{b.total}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* min-h keeps the modal a stable size so the tab buttons don't jump when switching between tabs with differing content lengths */}
+              <Tabs defaultValue="documents" className="w-full min-h-[60vh]">
+                <TabsList className="grid grid-cols-3 w-full">
+                  <TabsTrigger value="documents">
+                    <FileSignature className="h-4 w-4 mr-2" />
+                    Documents
+                  </TabsTrigger>
+                  <TabsTrigger value="checklists">
+                    <CheckSquare className="h-4 w-4 mr-2" />
+                    Checklists
+                  </TabsTrigger>
+                  <TabsTrigger value="tasks">
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    Tasks
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="documents" className="space-y-4 pt-3">
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned packets</p>
                 {(selectedTracking.assigned_packets?.length ?? 0) === 0 ? (
@@ -654,27 +1032,103 @@ export const OnboardingTracking: React.FC = () => {
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assign packet</p>
-                <div className="flex items-center gap-2">
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      if (id) handleAssignPacket(selectedTracking.id, id);
-                      e.target.value = '';
-                    }}
-                    disabled={assigningInModal || packetTemplates.length === 0}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-                  >
-                    <option value="">
-                      {packetTemplates.length === 0 ? 'No packets – create one in New Hire Packets' : 'Choose a packet to assign...'}
-                    </option>
-                    {packetTemplates.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
-                  {assigningInModal && <Loader2 className="h-4 w-4 animate-spin text-gray-500" />}
-                </div>
+                {(() => {
+                  const availablePackets = packetTemplates;
+                  return (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Assign packets
+                          {packetIdsToAssign.length > 0 && (
+                            <span className="ml-2 text-xs text-[#f26722]">({packetIdsToAssign.length} selected)</span>
+                          )}
+                        </p>
+                        {availablePackets.length > 0 && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <button
+                              type="button"
+                              className="text-[#f26722] hover:underline"
+                              onClick={() =>
+                                setPacketIdsToAssign(
+                                  packetIdsToAssign.length === availablePackets.length ? [] : availablePackets.map((p) => p.id)
+                                )
+                              }
+                            >
+                              {packetIdsToAssign.length === availablePackets.length ? 'Clear all' : 'Select all'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {availablePackets.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          No packets – create one in New Hire Packets.
+                        </p>
+                      ) : (
+                        <>
+                          <div className="border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 max-h-48 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-700">
+                            {availablePackets.map((t) => {
+                              const isChecked = packetIdsToAssign.includes(t.id);
+                              return (
+                                <label
+                                  key={t.id}
+                                  className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-sm ${
+                                    isChecked ? 'bg-[#f26722]/5 dark:bg-[#f26722]/10' : ''
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => togglePacketToAssign(t.id)}
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                                    disabled={assigningInModal}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 text-gray-900 dark:text-white">
+                                      <Folder className="h-3.5 w-3.5 flex-shrink-0" />
+                                      <span className="truncate">{t.name}</span>
+                                    </div>
+                                    {t.description && (
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                        {t.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <div className="flex items-center justify-end gap-2 mt-2">
+                            {packetIdsToAssign.length > 0 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPacketIdsToAssign([])}
+                                disabled={assigningInModal}
+                              >
+                                Clear
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => handleAssignMultiplePackets(selectedTracking.id)}
+                              disabled={assigningInModal || packetIdsToAssign.length === 0}
+                              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                            >
+                              {assigningInModal ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                  Assigning...
+                                </>
+                              ) : (
+                                `Assign ${packetIdsToAssign.length || ''} packet${packetIdsToAssign.length === 1 ? '' : 's'}`.trim()
+                              )}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned E-Sign forms</p>
@@ -703,30 +1157,113 @@ export const OnboardingTracking: React.FC = () => {
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assign E-Sign form</p>
-                <div className="flex items-center gap-2">
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      if (id) handleAssignForm(selectedTracking.id, id);
-                      e.target.value = '';
-                    }}
-                    disabled={assigningForm || eSignForms.length === 0}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-                  >
-                    <option value="">
-                      {eSignForms.length === 0 ? 'No active E-Sign forms – create one in E-Sign Forms' : 'Choose a form to assign...'}
-                    </option>
-                    {eSignForms
-                      .filter((form) => !selectedTracking.assigned_forms?.some((af) => af.id === form.id))
-                      .map((form) => (
-                        <option key={form.id} value={form.id}>{form.name}</option>
-                      ))}
-                  </select>
-                  {assigningForm && <Loader2 className="h-4 w-4 animate-spin text-gray-500" />}
-                </div>
+                {(() => {
+                  const available = eSignForms.filter(
+                    (form) => !selectedTracking.assigned_forms?.some((af) => af.id === form.id)
+                  );
+                  return (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Assign E-Sign forms
+                          {formIdsToAssign.length > 0 && (
+                            <span className="ml-2 text-xs text-[#f26722]">({formIdsToAssign.length} selected)</span>
+                          )}
+                        </p>
+                        {available.length > 0 && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <button
+                              type="button"
+                              className="text-[#f26722] hover:underline"
+                              onClick={() =>
+                                setFormIdsToAssign(
+                                  formIdsToAssign.length === available.length ? [] : available.map((f) => f.id)
+                                )
+                              }
+                            >
+                              {formIdsToAssign.length === available.length ? 'Clear all' : 'Select all'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {eSignForms.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          No active E-Sign forms – create one in E-Sign Forms.
+                        </p>
+                      ) : available.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Every available form is already assigned.
+                        </p>
+                      ) : (
+                        <>
+                          <div className="border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 max-h-48 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-700">
+                            {available.map((form) => {
+                              const isChecked = formIdsToAssign.includes(form.id);
+                              return (
+                                <label
+                                  key={form.id}
+                                  className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-sm ${
+                                    isChecked ? 'bg-[#f26722]/5 dark:bg-[#f26722]/10' : ''
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => toggleFormToAssign(form.id)}
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                                    disabled={assigningForm}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 text-gray-900 dark:text-white">
+                                      <FileSignature className="h-3.5 w-3.5 flex-shrink-0" />
+                                      <span className="truncate">{form.name}</span>
+                                    </div>
+                                    {form.description && (
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                        {form.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <div className="flex items-center justify-end gap-2 mt-2">
+                            {formIdsToAssign.length > 0 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setFormIdsToAssign([])}
+                                disabled={assigningForm}
+                              >
+                                Clear
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => handleAssignMultipleForms(selectedTracking.id)}
+                              disabled={assigningForm || formIdsToAssign.length === 0}
+                              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                            >
+                              {assigningForm ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                  Assigning...
+                                </>
+                              ) : (
+                                `Assign ${formIdsToAssign.length || ''} form${formIdsToAssign.length === 1 ? '' : 's'}`.trim()
+                              )}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
+                </TabsContent>
+
+                <TabsContent value="checklists" className="space-y-4 pt-3">
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned checklists</p>
                 {(selectedTracking.assigned_checklists?.length ?? 0) === 0 ? (
@@ -763,30 +1300,120 @@ export const OnboardingTracking: React.FC = () => {
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assign checklist</p>
-                <div className="flex items-center gap-2">
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      if (id) handleAssignChecklist(selectedTracking.id, id);
-                      e.target.value = '';
-                    }}
-                    disabled={assigningChecklist || checklists.length === 0}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-                  >
-                    <option value="">
-                      {checklists.length === 0 ? 'No checklists – create one in Checklists' : 'Choose a checklist to assign...'}
-                    </option>
-                    {checklists
-                      .filter((cl) => !selectedTracking.assigned_checklists?.some((ac) => ac.id === cl.id))
-                      .map((cl) => (
-                        <option key={cl.id} value={cl.id}>{cl.name}</option>
-                      ))}
-                  </select>
-                  {assigningChecklist && <Loader2 className="h-4 w-4 animate-spin text-gray-500" />}
-                </div>
+                {(() => {
+                  const availableChecklists = checklists.filter(
+                    (cl) => !selectedTracking.assigned_checklists?.some((ac) => ac.id === cl.id)
+                  );
+                  return (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Assign checklists
+                          {checklistIdsToAssign.length > 0 && (
+                            <span className="ml-2 text-xs text-[#f26722]">({checklistIdsToAssign.length} selected)</span>
+                          )}
+                        </p>
+                        {availableChecklists.length > 0 && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <button
+                              type="button"
+                              className="text-[#f26722] hover:underline"
+                              onClick={() =>
+                                setChecklistIdsToAssign(
+                                  checklistIdsToAssign.length === availableChecklists.length
+                                    ? []
+                                    : availableChecklists.map((c) => c.id)
+                                )
+                              }
+                            >
+                              {checklistIdsToAssign.length === availableChecklists.length ? 'Clear all' : 'Select all'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {checklists.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          No checklists – create one in Checklists.
+                        </p>
+                      ) : availableChecklists.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Every available checklist is already assigned.
+                        </p>
+                      ) : (
+                        <>
+                          <div className="border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 max-h-48 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-700">
+                            {availableChecklists.map((cl) => {
+                              const isChecked = checklistIdsToAssign.includes(cl.id);
+                              return (
+                                <label
+                                  key={cl.id}
+                                  className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-sm ${
+                                    isChecked ? 'bg-[#f26722]/5 dark:bg-[#f26722]/10' : ''
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => toggleChecklistToAssign(cl.id)}
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                                    disabled={assigningChecklist}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 text-gray-900 dark:text-white">
+                                      <CheckSquare className="h-3.5 w-3.5 flex-shrink-0" />
+                                      <span className="truncate">{cl.name}</span>
+                                    </div>
+                                    {cl.description && (
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                        {cl.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <div className="flex items-center justify-end gap-2 mt-2">
+                            {checklistIdsToAssign.length > 0 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setChecklistIdsToAssign([])}
+                                disabled={assigningChecklist}
+                              >
+                                Clear
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => handleAssignMultipleChecklists(selectedTracking.id)}
+                              disabled={assigningChecklist || checklistIdsToAssign.length === 0}
+                              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                            >
+                              {assigningChecklist ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                  Assigning...
+                                </>
+                              ) : (
+                                `Assign ${checklistIdsToAssign.length || ''} checklist${checklistIdsToAssign.length === 1 ? '' : 's'}`.trim()
+                              )}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
+                </TabsContent>
+
+                <TabsContent value="tasks" className="space-y-6 pt-3">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 pb-1 border-b border-gray-200 dark:border-gray-700">
+                  <Laptop className="h-4 w-4 text-[#f26722]" />
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white">IT / Equipment</h4>
+                </div>
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned IT/Equipment tasks</p>
                 {(selectedTracking.assigned_it_tasks?.length ?? 0) === 0 ? (
@@ -823,28 +1450,404 @@ export const OnboardingTracking: React.FC = () => {
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assign IT/Equipment task</p>
-                <div className="flex items-center gap-2">
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      if (id) handleAssignITTask(selectedTracking.id, id);
-                      e.target.value = '';
-                    }}
-                    disabled={assigningITTask || itTasks.length === 0}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-                  >
-                    <option value="">
-                      {itTasks.length === 0 ? 'No IT tasks – create one in IT/Equipment Tasks' : 'Choose a task to assign (a copy will be created)...'}
-                    </option>
-                    {itTasks.map((task) => (
-                      <option key={task.id} value={task.id}>{task.name}</option>
-                    ))}
-                  </select>
-                  {assigningITTask && <Loader2 className="h-4 w-4 animate-spin text-gray-500" />}
-                </div>
+                {(() => {
+                  const availableITTasks = itTasks;
+                  return (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Assign IT/Equipment tasks
+                          {itTaskIdsToAssign.length > 0 && (
+                            <span className="ml-2 text-xs text-[#f26722]">({itTaskIdsToAssign.length} selected)</span>
+                          )}
+                        </p>
+                        {availableITTasks.length > 0 && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <button
+                              type="button"
+                              className="text-[#f26722] hover:underline"
+                              onClick={() =>
+                                setItTaskIdsToAssign(
+                                  itTaskIdsToAssign.length === availableITTasks.length
+                                    ? []
+                                    : availableITTasks.map((t) => t.id)
+                                )
+                              }
+                            >
+                              {itTaskIdsToAssign.length === availableITTasks.length ? 'Clear all' : 'Select all'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        A copy of each selected task will be created and assigned to this person.
+                      </p>
+                      {availableITTasks.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          No IT tasks – create one in IT/Equipment Tasks.
+                        </p>
+                      ) : (
+                        <>
+                          <div className="border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 max-h-48 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-700">
+                            {availableITTasks.map((task) => {
+                              const isChecked = itTaskIdsToAssign.includes(task.id);
+                              return (
+                                <label
+                                  key={task.id}
+                                  className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-sm ${
+                                    isChecked ? 'bg-[#f26722]/5 dark:bg-[#f26722]/10' : ''
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => toggleITTaskToAssign(task.id)}
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                                    disabled={assigningITTask}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 text-gray-900 dark:text-white">
+                                      <Laptop className="h-3.5 w-3.5 flex-shrink-0" />
+                                      <span className="truncate">{task.name}</span>
+                                    </div>
+                                    {task.description && (
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                        {task.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <div className="flex items-center justify-end gap-2 mt-2">
+                            {itTaskIdsToAssign.length > 0 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setItTaskIdsToAssign([])}
+                                disabled={assigningITTask}
+                              >
+                                Clear
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => handleAssignMultipleITTasks(selectedTracking.id)}
+                              disabled={assigningITTask || itTaskIdsToAssign.length === 0}
+                              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                            >
+                              {assigningITTask ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                  Assigning...
+                                </>
+                              ) : (
+                                `Assign ${itTaskIdsToAssign.length || ''} task${itTaskIdsToAssign.length === 1 ? '' : 's'}`.trim()
+                              )}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 pb-1 border-b border-gray-200 dark:border-gray-700">
+                  <Briefcase className="h-4 w-4 text-[#f26722]" />
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Office Admin</h4>
+                </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned Office Admin tasks</p>
+                {(selectedTracking.assigned_office_admin_tasks?.length ?? 0) === 0 ? (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No Office Admin tasks assigned. Assign below to create a copy for this person.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {selectedTracking.assigned_office_admin_tasks!.map((t) => (
+                      <li key={t.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800 gap-2">
+                        <span className="text-sm text-gray-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
+                          <Briefcase className="h-3.5 w-3.5 flex-shrink-0" />
+                          {t.name}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/hr/onboarding/office-admin-tasks?taskId=${t.id}`)}
+                          >
+                            View
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-gray-500 hover:text-red-600 h-8 w-8 p-0"
+                            onClick={() => handleRemoveOfficeAdminTask(selectedTracking.id, t.id)}
+                            title="Remove task from onboarding"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div>
+                {(() => {
+                  const available = officeAdminTasks;
+                  return (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Assign Office Admin tasks
+                          {officeAdminTaskIdsToAssign.length > 0 && (
+                            <span className="ml-2 text-xs text-[#f26722]">({officeAdminTaskIdsToAssign.length} selected)</span>
+                          )}
+                        </p>
+                        {available.length > 0 && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <button
+                              type="button"
+                              className="text-[#f26722] hover:underline"
+                              onClick={() =>
+                                setOfficeAdminTaskIdsToAssign(
+                                  officeAdminTaskIdsToAssign.length === available.length
+                                    ? []
+                                    : available.map((t) => t.id)
+                                )
+                              }
+                            >
+                              {officeAdminTaskIdsToAssign.length === available.length ? 'Clear all' : 'Select all'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        A copy of each selected task will be created and assigned to this person.
+                      </p>
+                      {available.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          No Office Admin tasks – create one in Office Admin Tasks.
+                        </p>
+                      ) : (
+                        <>
+                          <div className="border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 max-h-48 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-700">
+                            {available.map((task) => {
+                              const isChecked = officeAdminTaskIdsToAssign.includes(task.id);
+                              return (
+                                <label
+                                  key={task.id}
+                                  className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-sm ${
+                                    isChecked ? 'bg-[#f26722]/5 dark:bg-[#f26722]/10' : ''
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => toggleOfficeAdminTaskToAssign(task.id)}
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                                    disabled={assigningOfficeAdminTask}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 text-gray-900 dark:text-white">
+                                      <Briefcase className="h-3.5 w-3.5 flex-shrink-0" />
+                                      <span className="truncate">{task.name}</span>
+                                    </div>
+                                    {task.description && (
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                        {task.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <div className="flex items-center justify-end gap-2 mt-2">
+                            {officeAdminTaskIdsToAssign.length > 0 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setOfficeAdminTaskIdsToAssign([])}
+                                disabled={assigningOfficeAdminTask}
+                              >
+                                Clear
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => handleAssignMultipleOfficeAdminTasks(selectedTracking.id)}
+                              disabled={assigningOfficeAdminTask || officeAdminTaskIdsToAssign.length === 0}
+                              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                            >
+                              {assigningOfficeAdminTask ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                  Assigning...
+                                </>
+                              ) : (
+                                `Assign ${officeAdminTaskIdsToAssign.length || ''} task${officeAdminTaskIdsToAssign.length === 1 ? '' : 's'}`.trim()
+                              )}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 pb-1 border-b border-gray-200 dark:border-gray-700">
+                  <Users className="h-4 w-4 text-[#f26722]" />
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white">HR</h4>
+                </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned HR tasks</p>
+                {(selectedTracking.assigned_hr_tasks?.length ?? 0) === 0 ? (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No HR tasks assigned. Assign below to create a copy for this person.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {selectedTracking.assigned_hr_tasks!.map((t) => (
+                      <li key={t.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800 gap-2">
+                        <span className="text-sm text-gray-900 dark:text-white truncate flex-1 flex items-center gap-1.5">
+                          <Users className="h-3.5 w-3.5 flex-shrink-0" />
+                          {t.name}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/hr/onboarding/hr-tasks?taskId=${t.id}`)}
+                          >
+                            View
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-gray-500 hover:text-red-600 h-8 w-8 p-0"
+                            onClick={() => handleRemoveHRTask(selectedTracking.id, t.id)}
+                            title="Remove task from onboarding"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div>
+                {(() => {
+                  const available = hrTasks;
+                  return (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Assign HR tasks
+                          {hrTaskIdsToAssign.length > 0 && (
+                            <span className="ml-2 text-xs text-[#f26722]">({hrTaskIdsToAssign.length} selected)</span>
+                          )}
+                        </p>
+                        {available.length > 0 && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <button
+                              type="button"
+                              className="text-[#f26722] hover:underline"
+                              onClick={() =>
+                                setHrTaskIdsToAssign(
+                                  hrTaskIdsToAssign.length === available.length
+                                    ? []
+                                    : available.map((t) => t.id)
+                                )
+                              }
+                            >
+                              {hrTaskIdsToAssign.length === available.length ? 'Clear all' : 'Select all'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        A copy of each selected task will be created and assigned to this person.
+                      </p>
+                      {available.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          No HR tasks – create one in HR Tasks.
+                        </p>
+                      ) : (
+                        <>
+                          <div className="border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 max-h-48 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-700">
+                            {available.map((task) => {
+                              const isChecked = hrTaskIdsToAssign.includes(task.id);
+                              return (
+                                <label
+                                  key={task.id}
+                                  className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-sm ${
+                                    isChecked ? 'bg-[#f26722]/5 dark:bg-[#f26722]/10' : ''
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => toggleHRTaskToAssign(task.id)}
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722]"
+                                    disabled={assigningHRTask}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 text-gray-900 dark:text-white">
+                                      <Users className="h-3.5 w-3.5 flex-shrink-0" />
+                                      <span className="truncate">{task.name}</span>
+                                    </div>
+                                    {task.description && (
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                        {task.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <div className="flex items-center justify-end gap-2 mt-2">
+                            {hrTaskIdsToAssign.length > 0 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setHrTaskIdsToAssign([])}
+                                disabled={assigningHRTask}
+                              >
+                                Clear
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => handleAssignMultipleHRTasks(selectedTracking.id)}
+                              disabled={assigningHRTask || hrTaskIdsToAssign.length === 0}
+                              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                            >
+                              {assigningHRTask ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                  Assigning...
+                                </>
+                              ) : (
+                                `Assign ${hrTaskIdsToAssign.length || ''} task${hrTaskIdsToAssign.length === 1 ? '' : 's'}`.trim()
+                              )}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+              </div>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
           <DialogFooter className="flex-row justify-between sm:justify-between">

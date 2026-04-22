@@ -98,6 +98,10 @@ import { Checklists } from './pages/hr/onboarding/Checklists';
 import { WelcomeEmails } from './pages/hr/onboarding/WelcomeEmails';
 import { ITEquipmentTasks } from './pages/hr/onboarding/ITEquipmentTasks';
 import { ITOnboarding } from './pages/hr/onboarding/ITOnboarding';
+import { OfficeAdminTasks } from './pages/hr/onboarding/OfficeAdminTasks';
+import { OfficeAdminOnboarding } from './pages/hr/onboarding/OfficeAdminOnboarding';
+import { HRTasks } from './pages/hr/onboarding/HRTasks';
+import { HROnboarding } from './pages/hr/onboarding/HROnboarding';
 import { MyOnboarding } from './pages/hr/onboarding/MyOnboarding';
 import { SignOnboardingForm } from './pages/hr/onboarding/SignOnboardingForm';
 import { DocumentStorage } from './pages/hr/employee-files/DocumentStorage';
@@ -576,6 +580,10 @@ function App() {
                   <Route path="/hr/onboarding/welcome-emails" element={<RequireAuth><HrLayout><WelcomeEmails /></HrLayout></RequireAuth>} />
                   <Route path="/hr/onboarding/it-equipment-tasks" element={<RequireAuth><HrLayout><ITEquipmentTasks /></HrLayout></RequireAuth>} />
                   <Route path="/hr/onboarding/it-onboarding" element={<RequireAuth><HrLayout><ITOnboarding /></HrLayout></RequireAuth>} />
+                  <Route path="/hr/onboarding/office-admin-tasks" element={<RequireAuth><HrLayout><OfficeAdminTasks /></HrLayout></RequireAuth>} />
+                  <Route path="/hr/onboarding/office-admin-onboarding" element={<RequireAuth><HrLayout><OfficeAdminOnboarding /></HrLayout></RequireAuth>} />
+                  <Route path="/hr/onboarding/hr-tasks" element={<RequireAuth><HrLayout><HRTasks /></HrLayout></RequireAuth>} />
+                  <Route path="/hr/onboarding/hr-onboarding" element={<RequireAuth><HrLayout><HROnboarding /></HrLayout></RequireAuth>} />
                   
                   {/* HR Employee Files Routes */}
                   <Route path="/hr/employee-files" element={<RequireAuth><HrLayout><EmployeeFiles /></HrLayout></RequireAuth>} />

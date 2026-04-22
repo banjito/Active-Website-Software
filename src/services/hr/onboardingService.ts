@@ -123,12 +123,16 @@ export interface OnboardingTrackingRecord {
   new_hire_packet?: NewHirePacket;
   /** Assigned packet names for display (id, name) */
   assigned_packets?: { id: string; name: string }[];
-  /** Assigned E-Sign form names for display (id, name) */
-  assigned_forms?: { id: string; name: string }[];
-  /** Assigned checklist names for display (id, name) */
-  assigned_checklists?: { id: string; name: string }[];
+  /** Assigned E-Sign form names for display (id, name, status) — status derived from the most recent submission by the linked user */
+  assigned_forms?: { id: string; name: string; status?: string }[];
+  /** Assigned checklist names for display (id, name, status, completion_percentage) — hydrated from the checklist assignment for the linked user */
+  assigned_checklists?: { id: string; name: string; status?: string; completion_percentage?: number }[];
   /** Assigned IT/Equipment task names and status for display (id, name, status) */
   assigned_it_tasks?: { id: string; name: string; status?: string }[];
+  /** Assigned Office Admin task names and status for display (id, name, status) */
+  assigned_office_admin_tasks?: { id: string; name: string; status?: string }[];
+  /** Assigned HR task names and status for display (id, name, status) */
+  assigned_hr_tasks?: { id: string; name: string; status?: string }[];
 }
 
 export interface ChecklistAssignment {
@@ -224,6 +228,53 @@ export interface ITEquipmentTask {
     serial_number?: string;
     assigned_date?: string;
   }>;
+  notes?: string;
+  is_template?: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Office Admin Task — non-IT logistical tasks such as workspace setup,
+ * supplies, access badges, mail, travel, etc. Templates live with
+ * `is_template: true` and are cloned per-person via Onboarding Tracking.
+ */
+export interface OfficeAdminTask {
+  id: string;
+  name: string;
+  description?: string;
+  task_type: 'standard' | 'workspace' | 'supplies' | 'access_badge' | 'phone' | 'mail' | 'travel' | 'custom';
+  employee_id?: string;
+  assigned_to_user_id?: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  due_date?: string;
+  completed_at?: string;
+  notes?: string;
+  is_template?: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * HR Task — people-operations tasks such as benefits enrollment, I-9/W-4,
+ * background check follow-up, orientation scheduling, handbook review, etc.
+ * Templates live with `is_template: true` and are cloned per-person via
+ * Onboarding Tracking.
+ */
+export interface HRTask {
+  id: string;
+  name: string;
+  description?: string;
+  task_type: 'standard' | 'benefits' | 'compliance' | 'orientation' | 'handbook' | 'background_check' | 'documentation' | 'custom';
+  employee_id?: string;
+  assigned_to_user_id?: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  due_date?: string;
+  completed_at?: string;
   notes?: string;
   is_template?: boolean;
   created_by: string;
@@ -985,28 +1036,39 @@ export const onboardingService = {
     const userIds = [...new Set(list.map(r => (r as any).user_id).filter(Boolean))] as string[];
 
     const promises: Promise<any>[] = [
-      supabase.schema('common').from('new_hire_packets').select('id, name'),
+      supabase.schema('common').from('new_hire_packets').select('id, name') as unknown as Promise<any>,
     ];
     if (candidateIds.length) {
-      promises.push(supabase.schema('common').from('candidates').select('id, first_name, last_name, email, position_applied').in('id', candidateIds));
+      promises.push(supabase.schema('common').from('candidates').select('id, first_name, last_name, email, position_applied').in('id', candidateIds) as unknown as Promise<any>);
     } else {
       promises.push(Promise.resolve({ data: [] }));
     }
     if (offerIds.length) {
-      promises.push(supabase.schema('common').from('offers').select('id, position_title, department').in('id', offerIds));
+      promises.push(supabase.schema('common').from('offers').select('id, position_title, department').in('id', offerIds) as unknown as Promise<any>);
     } else {
       promises.push(Promise.resolve({ data: [] }));
     }
-    const [{ data: tpData, error: tpErr }, { data: tfData, error: tfErr }, { data: tcData, error: tcErr }, { data: ttData, error: ttErr }] = await Promise.all([
+    const [
+      { data: tpData, error: tpErr },
+      { data: tfData, error: tfErr },
+      { data: tcData, error: tcErr },
+      { data: ttData, error: ttErr },
+      { data: toaData, error: toaErr },
+      { data: thrData, error: thrErr },
+    ] = await Promise.all([
       supabase.schema('common').from('onboarding_tracking_packets').select('tracking_id, packet_id').in('tracking_id', trackingIds),
       supabase.schema('common').from('onboarding_tracking_forms').select('tracking_id, form_id').in('tracking_id', trackingIds),
       supabase.schema('common').from('onboarding_tracking_checklists').select('tracking_id, checklist_id').in('tracking_id', trackingIds),
       supabase.schema('common').from('onboarding_tracking_it_tasks').select('tracking_id, task_id').in('tracking_id', trackingIds),
+      supabase.schema('common').from('onboarding_tracking_office_admin_tasks').select('tracking_id, task_id').in('tracking_id', trackingIds),
+      supabase.schema('common').from('onboarding_tracking_hr_tasks').select('tracking_id, task_id').in('tracking_id', trackingIds),
     ]);
     let trackingPackets: { tracking_id: string; packet_id: string }[] = (!tpErr && tpData ? tpData : []) as any[];
     const trackingForms: { tracking_id: string; form_id: string }[] = (!tfErr && tfData ? tfData : []) as any[];
     const trackingChecklists: { tracking_id: string; checklist_id: string }[] = (!tcErr && tcData ? tcData : []) as any[];
     const trackingITTasks: { tracking_id: string; task_id: string }[] = (!ttErr && ttData ? ttData : []) as any[];
+    const trackingOfficeAdminTasks: { tracking_id: string; task_id: string }[] = (!toaErr && toaData ? toaData : []) as any[];
+    const trackingHRTasks: { tracking_id: string; task_id: string }[] = (!thrErr && thrData ? thrData : []) as any[];
 
     const formIds = [...new Set(trackingForms.map((tf: any) => tf.form_id))];
     let formMap = new Map<string, { id: string; name: string }>();
@@ -1043,6 +1105,89 @@ export const onboardingService = {
     if (taskIds.length > 0) {
       const { data: taskRows } = await supabase.schema('common').from('it_equipment_tasks').select('id, name, status').in('id', taskIds);
       (taskRows || []).forEach((t: any) => taskMap.set(t.id, { id: t.id, name: t.name || 'IT Task', status: t.status || 'pending' }));
+    }
+
+    // Office Admin tasks
+    const oaTaskIdsByTracking = new Map<string, string[]>();
+    for (const t of trackingOfficeAdminTasks) {
+      const arr = oaTaskIdsByTracking.get(t.tracking_id) || [];
+      arr.push(t.task_id);
+      oaTaskIdsByTracking.set(t.tracking_id, arr);
+    }
+    const oaTaskIds = [...new Set(trackingOfficeAdminTasks.map((t: any) => t.task_id))];
+    const oaTaskMap = new Map<string, { id: string; name: string; status: string }>();
+    if (oaTaskIds.length > 0) {
+      const { data: rows } = await supabase.schema('common').from('office_admin_tasks').select('id, name, status').in('id', oaTaskIds);
+      (rows || []).forEach((t: any) => oaTaskMap.set(t.id, { id: t.id, name: t.name || 'Office Admin Task', status: t.status || 'pending' }));
+    }
+
+    // HR tasks
+    const hrTaskIdsByTracking = new Map<string, string[]>();
+    for (const t of trackingHRTasks) {
+      const arr = hrTaskIdsByTracking.get(t.tracking_id) || [];
+      arr.push(t.task_id);
+      hrTaskIdsByTracking.set(t.tracking_id, arr);
+    }
+    const hrTaskIds = [...new Set(trackingHRTasks.map((t: any) => t.task_id))];
+    const hrTaskMap = new Map<string, { id: string; name: string; status: string }>();
+    if (hrTaskIds.length > 0) {
+      const { data: rows } = await supabase.schema('common').from('hr_tasks').select('id, name, status').in('id', hrTaskIds);
+      (rows || []).forEach((t: any) => hrTaskMap.set(t.id, { id: t.id, name: t.name || 'HR Task', status: t.status || 'pending' }));
+    }
+
+    // Form submission status — keyed by `${userId}:${formId}` (only for tracking records with a linked user).
+    // We only flag a form as "signed" when the linked user actually has a signed submission for it,
+    // so the progress bar can't be gamed by another user's draft.
+    const formStatusByKey = new Map<string, string>();
+    const userFormPairs: Array<{ userId: string; formId: string }> = [];
+    for (const r of list) {
+      const uid = (r as any).user_id;
+      if (!uid) continue;
+      const fids = formIdsByTracking.get(r.id) || [];
+      for (const fid of fids) userFormPairs.push({ userId: uid, formId: fid });
+    }
+    if (userFormPairs.length > 0) {
+      const uniqUserIds = [...new Set(userFormPairs.map((p) => p.userId))];
+      const uniqFormIds = [...new Set(userFormPairs.map((p) => p.formId))];
+      const { data: subs } = await supabase
+        .schema('common')
+        .from('onboarding_e_sign_submissions')
+        .select('form_id, employee_id, status, created_at')
+        .in('employee_id', uniqUserIds)
+        .in('form_id', uniqFormIds)
+        .order('created_at', { ascending: false });
+      for (const s of (subs || []) as any[]) {
+        const key = `${s.employee_id}:${s.form_id}`;
+        // Keep the first (most recent) status we see per (user, form)
+        if (!formStatusByKey.has(key)) formStatusByKey.set(key, s.status || 'draft');
+      }
+    }
+
+    // Checklist assignment status + percentage — keyed by `${userId}:${checklistId}`.
+    const checklistStatusByKey = new Map<string, { status: string; completion_percentage: number }>();
+    const userChecklistPairs: Array<{ userId: string; checklistId: string }> = [];
+    for (const r of list) {
+      const uid = (r as any).user_id;
+      if (!uid) continue;
+      const cids = checklistIdsByTracking.get(r.id) || [];
+      for (const cid of cids) userChecklistPairs.push({ userId: uid, checklistId: cid });
+    }
+    if (userChecklistPairs.length > 0) {
+      const uniqUserIds = [...new Set(userChecklistPairs.map((p) => p.userId))];
+      const uniqChecklistIds = [...new Set(userChecklistPairs.map((p) => p.checklistId))];
+      const { data: assigns } = await supabase
+        .schema('common')
+        .from('onboarding_checklist_assignments')
+        .select('checklist_id, employee_id, status, completion_percentage')
+        .in('employee_id', uniqUserIds)
+        .in('checklist_id', uniqChecklistIds);
+      for (const a of (assigns || []) as any[]) {
+        const key = `${a.employee_id}:${a.checklist_id}`;
+        checklistStatusByKey.set(key, {
+          status: a.status || 'not_started',
+          completion_percentage: typeof a.completion_percentage === 'number' ? a.completion_percentage : 0,
+        });
+      }
     }
 
     const results = await Promise.all(promises);
@@ -1079,16 +1224,33 @@ export const onboardingService = {
     const offerMap = new Map((offers || []).map((o: any) => [o.id, o]));
 
     return list.map(r => {
+      const uid = (r as any).user_id as string | undefined;
       const pids = packetIdsByTracking.get(r.id) || [];
       if (r.new_hire_packet_id && !pids.includes(r.new_hire_packet_id)) pids.unshift(r.new_hire_packet_id);
       const assigned_packets = pids.map(pid => ({ id: pid, name: (packetMap.get(pid) as any)?.name || 'Packet' }));
       const fids = formIdsByTracking.get(r.id) || [];
-      const assigned_forms = fids.map(fid => formMap.get(fid) || { id: fid, name: 'Form' });
+      const assigned_forms = fids.map(fid => {
+        const f = formMap.get(fid) || { id: fid, name: 'Form' };
+        const status = uid ? formStatusByKey.get(`${uid}:${fid}`) : undefined;
+        return { ...f, status: status || 'pending' };
+      });
       const cids = checklistIdsByTracking.get(r.id) || [];
-      const assigned_checklists = cids.map(cid => checklistMap.get(cid) || { id: cid, name: 'Checklist' });
+      const assigned_checklists = cids.map(cid => {
+        const c = checklistMap.get(cid) || { id: cid, name: 'Checklist' };
+        const statusRow = uid ? checklistStatusByKey.get(`${uid}:${cid}`) : undefined;
+        return {
+          ...c,
+          status: statusRow?.status || 'not_started',
+          completion_percentage: statusRow?.completion_percentage ?? 0,
+        };
+      });
       const tids = taskIdsByTracking.get(r.id) || [];
       const assigned_it_tasks = tids.map(tid => taskMap.get(tid) || { id: tid, name: 'IT Task', status: 'pending' });
-      const user = (r as any).user_id ? userMap.get((r as any).user_id) : undefined;
+      const oaIds = oaTaskIdsByTracking.get(r.id) || [];
+      const assigned_office_admin_tasks = oaIds.map(tid => oaTaskMap.get(tid) || { id: tid, name: 'Office Admin Task', status: 'pending' });
+      const hrIds = hrTaskIdsByTracking.get(r.id) || [];
+      const assigned_hr_tasks = hrIds.map(tid => hrTaskMap.get(tid) || { id: tid, name: 'HR Task', status: 'pending' });
+      const user = uid ? userMap.get(uid) : undefined;
       return {
         ...r,
         assigned_packet_ids: pids,
@@ -1096,10 +1258,12 @@ export const onboardingService = {
         assigned_forms,
         assigned_checklists,
         assigned_it_tasks,
-        candidate: r.candidate_id ? candidateMap.get(r.candidate_id) : undefined,
-        offer: r.offer_id ? offerMap.get(r.offer_id) : undefined,
+        assigned_office_admin_tasks,
+        assigned_hr_tasks,
+        candidate: r.candidate_id ? (candidateMap.get(r.candidate_id) as any) : undefined,
+        offer: r.offer_id ? (offerMap.get(r.offer_id) as any) : undefined,
         user,
-      };
+      } as OnboardingTrackingRecord;
     });
   },
 
@@ -1127,7 +1291,17 @@ export const onboardingService = {
 
     const trackingIds = list.map(r => r.id);
     const offerIds = [...new Set(list.map(r => r.offer_id))];
-    const [{ data: candidateRows }, { data: offers }, { data: packets }, { data: tpData }, { data: tfData }, { data: tcData }, { data: ttData }] = await Promise.all([
+    const [
+      { data: candidateRows },
+      { data: offers },
+      { data: packets },
+      { data: tpData },
+      { data: tfData },
+      { data: tcData },
+      { data: ttData },
+      { data: toaData },
+      { data: thrData },
+    ] = await Promise.all([
       supabase.schema('common').from('candidates').select('id, first_name, last_name, email, position_applied').in('id', candidateIds),
       supabase.schema('common').from('offers').select('id, position_title, department').in('id', offerIds),
       supabase.schema('common').from('new_hire_packets').select('id, name'),
@@ -1135,12 +1309,16 @@ export const onboardingService = {
       supabase.schema('common').from('onboarding_tracking_forms').select('tracking_id, form_id').in('tracking_id', trackingIds),
       supabase.schema('common').from('onboarding_tracking_checklists').select('tracking_id, checklist_id').in('tracking_id', trackingIds),
       supabase.schema('common').from('onboarding_tracking_it_tasks').select('tracking_id, task_id').in('tracking_id', trackingIds),
+      supabase.schema('common').from('onboarding_tracking_office_admin_tasks').select('tracking_id, task_id').in('tracking_id', trackingIds),
+      supabase.schema('common').from('onboarding_tracking_hr_tasks').select('tracking_id, task_id').in('tracking_id', trackingIds),
     ]);
 
     const trackingPackets = (tpData || []) as { tracking_id: string; packet_id: string }[];
     const trackingForms = (tfData || []) as { tracking_id: string; form_id: string }[];
     const trackingChecklists = (tcData || []) as { tracking_id: string; checklist_id: string }[];
     const trackingITTasks = (ttData || []) as { tracking_id: string; task_id: string }[];
+    const trackingOfficeAdminTasks = (toaData || []) as { tracking_id: string; task_id: string }[];
+    const trackingHRTasks = (thrData || []) as { tracking_id: string; task_id: string }[];
     const packetIdsByTracking = new Map<string, string[]>();
     for (const tp of trackingPackets) {
       const arr = packetIdsByTracking.get(tp.tracking_id) || [];
@@ -1183,20 +1361,95 @@ export const onboardingService = {
       const { data: taskRows } = await supabase.schema('common').from('it_equipment_tasks').select('id, name, status').in('id', taskIds);
       (taskRows || []).forEach((t: any) => taskMap.set(t.id, { id: t.id, name: t.name || 'IT Task', status: t.status || 'pending' }));
     }
+    const oaTaskIdsByTracking = new Map<string, string[]>();
+    for (const t of trackingOfficeAdminTasks) {
+      const arr = oaTaskIdsByTracking.get(t.tracking_id) || [];
+      arr.push(t.task_id);
+      oaTaskIdsByTracking.set(t.tracking_id, arr);
+    }
+    const oaTaskIds = [...new Set(trackingOfficeAdminTasks.map((t: any) => t.task_id))];
+    const oaTaskMap = new Map<string, { id: string; name: string; status: string }>();
+    if (oaTaskIds.length > 0) {
+      const { data: rows } = await supabase.schema('common').from('office_admin_tasks').select('id, name, status').in('id', oaTaskIds);
+      (rows || []).forEach((t: any) => oaTaskMap.set(t.id, { id: t.id, name: t.name || 'Office Admin Task', status: t.status || 'pending' }));
+    }
+    const hrTaskIdsByTracking = new Map<string, string[]>();
+    for (const t of trackingHRTasks) {
+      const arr = hrTaskIdsByTracking.get(t.tracking_id) || [];
+      arr.push(t.task_id);
+      hrTaskIdsByTracking.set(t.tracking_id, arr);
+    }
+    const hrTaskIds = [...new Set(trackingHRTasks.map((t: any) => t.task_id))];
+    const hrTaskMap = new Map<string, { id: string; name: string; status: string }>();
+    if (hrTaskIds.length > 0) {
+      const { data: rows } = await supabase.schema('common').from('hr_tasks').select('id, name, status').in('id', hrTaskIds);
+      (rows || []).forEach((t: any) => hrTaskMap.set(t.id, { id: t.id, name: t.name || 'HR Task', status: t.status || 'pending' }));
+    }
+
+    // Form + Checklist status per (user, item). Candidate-only records (no user_id) stay pending.
+    const formStatusByKey = new Map<string, string>();
+    const checklistStatusByKey = new Map<string, { status: string; completion_percentage: number }>();
+    const userIds = [...new Set(list.map(r => (r as any).user_id).filter(Boolean))] as string[];
+    if (userIds.length > 0 && formIds.length > 0) {
+      const { data: subs } = await supabase
+        .schema('common')
+        .from('onboarding_e_sign_submissions')
+        .select('form_id, employee_id, status, created_at')
+        .in('employee_id', userIds)
+        .in('form_id', formIds)
+        .order('created_at', { ascending: false });
+      for (const s of (subs || []) as any[]) {
+        const key = `${s.employee_id}:${s.form_id}`;
+        if (!formStatusByKey.has(key)) formStatusByKey.set(key, s.status || 'draft');
+      }
+    }
+    if (userIds.length > 0 && checklistIds.length > 0) {
+      const { data: assigns } = await supabase
+        .schema('common')
+        .from('onboarding_checklist_assignments')
+        .select('checklist_id, employee_id, status, completion_percentage')
+        .in('employee_id', userIds)
+        .in('checklist_id', checklistIds);
+      for (const a of (assigns || []) as any[]) {
+        const key = `${a.employee_id}:${a.checklist_id}`;
+        checklistStatusByKey.set(key, {
+          status: a.status || 'not_started',
+          completion_percentage: typeof a.completion_percentage === 'number' ? a.completion_percentage : 0,
+        });
+      }
+    }
+
     const packetMap = new Map((packets || []).map((p: any) => [p.id, p]));
     const candidateMap = new Map((candidateRows || []).map((c: any) => [c.id, c]));
     const offerMap = new Map((offers || []).map((o: any) => [o.id, o]));
 
     return list.map(r => {
+      const uid = (r as any).user_id as string | undefined;
       const pids = packetIdsByTracking.get(r.id) || [];
       if (r.new_hire_packet_id && !pids.includes(r.new_hire_packet_id)) pids.unshift(r.new_hire_packet_id);
       const assigned_packets = pids.map(pid => ({ id: pid, name: (packetMap.get(pid) as any)?.name || 'Packet' }));
       const fids = formIdsByTracking.get(r.id) || [];
-      const assigned_forms = fids.map(fid => formMap.get(fid) || { id: fid, name: 'Form' });
+      const assigned_forms = fids.map(fid => {
+        const f = formMap.get(fid) || { id: fid, name: 'Form' };
+        const status = uid ? formStatusByKey.get(`${uid}:${fid}`) : undefined;
+        return { ...f, status: status || 'pending' };
+      });
       const cids = checklistIdsByTracking.get(r.id) || [];
-      const assigned_checklists = cids.map(cid => checklistMap.get(cid) || { id: cid, name: 'Checklist' });
+      const assigned_checklists = cids.map(cid => {
+        const c = checklistMap.get(cid) || { id: cid, name: 'Checklist' };
+        const statusRow = uid ? checklistStatusByKey.get(`${uid}:${cid}`) : undefined;
+        return {
+          ...c,
+          status: statusRow?.status || 'not_started',
+          completion_percentage: statusRow?.completion_percentage ?? 0,
+        };
+      });
       const tids = taskIdsByTracking.get(r.id) || [];
       const assigned_it_tasks = tids.map(tid => taskMap.get(tid) || { id: tid, name: 'IT Task', status: 'pending' });
+      const oaIds = oaTaskIdsByTracking.get(r.id) || [];
+      const assigned_office_admin_tasks = oaIds.map(tid => oaTaskMap.get(tid) || { id: tid, name: 'Office Admin Task', status: 'pending' });
+      const hrIds = hrTaskIdsByTracking.get(r.id) || [];
+      const assigned_hr_tasks = hrIds.map(tid => hrTaskMap.get(tid) || { id: tid, name: 'HR Task', status: 'pending' });
       return {
         ...r,
         assigned_packet_ids: pids,
@@ -1204,9 +1457,11 @@ export const onboardingService = {
         assigned_forms,
         assigned_checklists,
         assigned_it_tasks,
-        candidate: candidateMap.get(r.candidate_id),
-        offer: offerMap.get(r.offer_id),
-      };
+        assigned_office_admin_tasks,
+        assigned_hr_tasks,
+        candidate: candidateMap.get(r.candidate_id) as any,
+        offer: offerMap.get(r.offer_id) as any,
+      } as OnboardingTrackingRecord;
     });
   },
 
@@ -1225,19 +1480,32 @@ export const onboardingService = {
 
     const trackingIds = list.map(r => r.id);
     const offerIds = [...new Set(list.map(r => r.offer_id).filter(Boolean))] as string[];
-    const [{ data: offers }, { data: packets }, { data: tpData }, { data: tfData }, { data: tcData }, { data: ttData }] = await Promise.all([
+    const [
+      { data: offers },
+      { data: packets },
+      { data: tpData },
+      { data: tfData },
+      { data: tcData },
+      { data: ttData },
+      { data: toaData },
+      { data: thrData },
+    ] = await Promise.all([
       offerIds.length > 0 ? supabase.schema('common').from('offers').select('id, position_title, department').in('id', offerIds) : Promise.resolve({ data: [] }),
       supabase.schema('common').from('new_hire_packets').select('id, name'),
       supabase.schema('common').from('onboarding_tracking_packets').select('tracking_id, packet_id').in('tracking_id', trackingIds),
       supabase.schema('common').from('onboarding_tracking_forms').select('tracking_id, form_id').in('tracking_id', trackingIds),
       supabase.schema('common').from('onboarding_tracking_checklists').select('tracking_id, checklist_id').in('tracking_id', trackingIds),
       supabase.schema('common').from('onboarding_tracking_it_tasks').select('tracking_id, task_id').in('tracking_id', trackingIds),
+      supabase.schema('common').from('onboarding_tracking_office_admin_tasks').select('tracking_id, task_id').in('tracking_id', trackingIds),
+      supabase.schema('common').from('onboarding_tracking_hr_tasks').select('tracking_id, task_id').in('tracking_id', trackingIds),
     ]);
 
     const trackingPackets = (tpData || []) as { tracking_id: string; packet_id: string }[];
     const trackingForms = (tfData || []) as { tracking_id: string; form_id: string }[];
     const trackingChecklists = (tcData || []) as { tracking_id: string; checklist_id: string }[];
     const trackingITTasks = (ttData || []) as { tracking_id: string; task_id: string }[];
+    const trackingOfficeAdminTasks = (toaData || []) as { tracking_id: string; task_id: string }[];
+    const trackingHRTasks = (thrData || []) as { tracking_id: string; task_id: string }[];
     const packetIdsByTracking = new Map<string, string[]>();
     for (const tp of trackingPackets) {
       const arr = packetIdsByTracking.get(tp.tracking_id) || [];
@@ -1280,6 +1548,61 @@ export const onboardingService = {
       const { data: taskRows } = await supabase.schema('common').from('it_equipment_tasks').select('id, name, status').in('id', taskIds);
       (taskRows || []).forEach((t: any) => taskMap.set(t.id, { id: t.id, name: t.name || 'IT Task', status: t.status || 'pending' }));
     }
+    const oaTaskIdsByTracking = new Map<string, string[]>();
+    for (const t of trackingOfficeAdminTasks) {
+      const arr = oaTaskIdsByTracking.get(t.tracking_id) || [];
+      arr.push(t.task_id);
+      oaTaskIdsByTracking.set(t.tracking_id, arr);
+    }
+    const oaTaskIds = [...new Set(trackingOfficeAdminTasks.map((t: any) => t.task_id))];
+    const oaTaskMap = new Map<string, { id: string; name: string; status: string }>();
+    if (oaTaskIds.length > 0) {
+      const { data: rows } = await supabase.schema('common').from('office_admin_tasks').select('id, name, status').in('id', oaTaskIds);
+      (rows || []).forEach((t: any) => oaTaskMap.set(t.id, { id: t.id, name: t.name || 'Office Admin Task', status: t.status || 'pending' }));
+    }
+    const hrTaskIdsByTracking = new Map<string, string[]>();
+    for (const t of trackingHRTasks) {
+      const arr = hrTaskIdsByTracking.get(t.tracking_id) || [];
+      arr.push(t.task_id);
+      hrTaskIdsByTracking.set(t.tracking_id, arr);
+    }
+    const hrTaskIds = [...new Set(trackingHRTasks.map((t: any) => t.task_id))];
+    const hrTaskMap = new Map<string, { id: string; name: string; status: string }>();
+    if (hrTaskIds.length > 0) {
+      const { data: rows } = await supabase.schema('common').from('hr_tasks').select('id, name, status').in('id', hrTaskIds);
+      (rows || []).forEach((t: any) => hrTaskMap.set(t.id, { id: t.id, name: t.name || 'HR Task', status: t.status || 'pending' }));
+    }
+
+    // Form + checklist status for this user (since this is the "My Onboarding" view, we know the user).
+    const formStatusByFormId = new Map<string, string>();
+    if (formIds.length > 0) {
+      const { data: subs } = await supabase
+        .schema('common')
+        .from('onboarding_e_sign_submissions')
+        .select('form_id, status, created_at')
+        .eq('employee_id', userId)
+        .in('form_id', formIds)
+        .order('created_at', { ascending: false });
+      for (const s of (subs || []) as any[]) {
+        if (!formStatusByFormId.has(s.form_id)) formStatusByFormId.set(s.form_id, s.status || 'draft');
+      }
+    }
+    const checklistStatusById = new Map<string, { status: string; completion_percentage: number }>();
+    if (checklistIds.length > 0) {
+      const { data: assigns } = await supabase
+        .schema('common')
+        .from('onboarding_checklist_assignments')
+        .select('checklist_id, status, completion_percentage')
+        .eq('employee_id', userId)
+        .in('checklist_id', checklistIds);
+      for (const a of (assigns || []) as any[]) {
+        checklistStatusById.set(a.checklist_id, {
+          status: a.status || 'not_started',
+          completion_percentage: typeof a.completion_percentage === 'number' ? a.completion_percentage : 0,
+        });
+      }
+    }
+
     const packetMap = new Map((packets || []).map((p: any) => [p.id, p]));
     const offerMap = new Map((offers || []).map((o: any) => [o.id, o]));
 
@@ -1302,11 +1625,26 @@ export const onboardingService = {
       if (r.new_hire_packet_id && !pids.includes(r.new_hire_packet_id)) pids.unshift(r.new_hire_packet_id);
       const assigned_packets = pids.map(pid => ({ id: pid, name: (packetMap.get(pid) as any)?.name || 'Packet' }));
       const fids = formIdsByTracking.get(r.id) || [];
-      const assigned_forms = fids.map(fid => formMap.get(fid) || { id: fid, name: 'Form' });
+      const assigned_forms = fids.map(fid => {
+        const f = formMap.get(fid) || { id: fid, name: 'Form' };
+        return { ...f, status: formStatusByFormId.get(fid) || 'pending' };
+      });
       const cids = checklistIdsByTracking.get(r.id) || [];
-      const assigned_checklists = cids.map(cid => checklistMap.get(cid) || { id: cid, name: 'Checklist' });
+      const assigned_checklists = cids.map(cid => {
+        const c = checklistMap.get(cid) || { id: cid, name: 'Checklist' };
+        const statusRow = checklistStatusById.get(cid);
+        return {
+          ...c,
+          status: statusRow?.status || 'not_started',
+          completion_percentage: statusRow?.completion_percentage ?? 0,
+        };
+      });
       const tids = taskIdsByTracking.get(r.id) || [];
       const assigned_it_tasks = tids.map(tid => taskMap.get(tid) || { id: tid, name: 'IT Task', status: 'pending' });
+      const oaIds = oaTaskIdsByTracking.get(r.id) || [];
+      const assigned_office_admin_tasks = oaIds.map(tid => oaTaskMap.get(tid) || { id: tid, name: 'Office Admin Task', status: 'pending' });
+      const hrIds = hrTaskIdsByTracking.get(r.id) || [];
+      const assigned_hr_tasks = hrIds.map(tid => hrTaskMap.get(tid) || { id: tid, name: 'HR Task', status: 'pending' });
       return {
         ...r,
         assigned_packet_ids: pids,
@@ -1314,9 +1652,11 @@ export const onboardingService = {
         assigned_forms,
         assigned_checklists,
         assigned_it_tasks,
-        offer: r.offer_id ? offerMap.get(r.offer_id) : undefined,
+        assigned_office_admin_tasks,
+        assigned_hr_tasks,
+        offer: r.offer_id ? (offerMap.get(r.offer_id) as any) : undefined,
         user: userInfo,
-      };
+      } as OnboardingTrackingRecord;
     });
   },
 
@@ -1494,8 +1834,8 @@ export const onboardingService = {
       documents: Array.isArray(template.documents) ? [...template.documents] : [],
       instructions: template.instructions || undefined,
       custom_fields: template.custom_fields ? { ...template.custom_fields } : {},
-      employee_id: employeeId,
-      offer_id: offerId,
+      employee_id: employeeId ?? undefined,
+      offer_id: offerId ?? undefined,
       status: 'active',
       is_template: false,
       created_by: userId,
@@ -1759,5 +2099,370 @@ export const onboardingService = {
     const { data, error } = await query;
     if (error) throw error;
     return (data || []) as any[];
+  },
+
+  // ============================================================================
+  // Office Admin Tasks (templates + per-person assignments)
+  // ============================================================================
+
+  async getOfficeAdminTasks(filters?: { employee_id?: string; assigned_to?: string; status?: string; is_template?: boolean }): Promise<OfficeAdminTask[]> {
+    let query = supabase
+      .schema('common')
+      .from('office_admin_tasks')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (filters?.employee_id) query = query.eq('employee_id', filters.employee_id);
+    if (filters?.assigned_to) query = query.eq('assigned_to_user_id', filters.assigned_to);
+    if (filters?.status) query = query.eq('status', filters.status);
+    if (filters?.is_template !== undefined) query = query.eq('is_template', filters.is_template);
+    const { data, error } = await query;
+    if (error) {
+      console.error('Error fetching Office Admin tasks:', error);
+      throw error;
+    }
+    return (data || []) as OfficeAdminTask[];
+  },
+
+  async getOfficeAdminTaskById(id: string): Promise<OfficeAdminTask | null> {
+    const { data, error } = await supabase
+      .schema('common')
+      .from('office_admin_tasks')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) {
+      console.error('Error fetching Office Admin task:', error);
+      throw error;
+    }
+    return data as OfficeAdminTask;
+  },
+
+  async createOfficeAdminTask(task: Omit<OfficeAdminTask, 'id' | 'created_at' | 'updated_at'>): Promise<OfficeAdminTask> {
+    const cleaned = {
+      name: task.name,
+      description: task.description?.trim() || null,
+      task_type: task.task_type || 'standard',
+      employee_id: task.employee_id || null,
+      assigned_to_user_id: task.assigned_to_user_id || null,
+      status: task.status || 'pending',
+      priority: task.priority || 'medium',
+      due_date: task.due_date || null,
+      completed_at: task.completed_at || null,
+      notes: task.notes?.trim() || null,
+      is_template: task.is_template === true,
+      created_by: task.created_by,
+    };
+    const { data, error } = await supabase
+      .schema('common')
+      .from('office_admin_tasks')
+      .insert(cleaned)
+      .select()
+      .single();
+    if (error) {
+      console.error('Error creating Office Admin task:', error);
+      throw new Error(error.message || 'Failed to create Office Admin task');
+    }
+    return data as OfficeAdminTask;
+  },
+
+  async updateOfficeAdminTask(id: string, updates: Partial<OfficeAdminTask>): Promise<OfficeAdminTask> {
+    const { data, error } = await supabase
+      .schema('common')
+      .from('office_admin_tasks')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) {
+      console.error('Error updating Office Admin task:', error);
+      throw error;
+    }
+    return data as OfficeAdminTask;
+  },
+
+  async deleteOfficeAdminTask(id: string): Promise<void> {
+    const { error } = await supabase
+      .schema('common')
+      .from('office_admin_tasks')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      console.error('Error deleting Office Admin task:', error);
+      throw error;
+    }
+  },
+
+  // ============================================================================
+  // HR Tasks (templates + per-person assignments)
+  // ============================================================================
+
+  async getHRTasks(filters?: { employee_id?: string; assigned_to?: string; status?: string; is_template?: boolean }): Promise<HRTask[]> {
+    let query = supabase
+      .schema('common')
+      .from('hr_tasks')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (filters?.employee_id) query = query.eq('employee_id', filters.employee_id);
+    if (filters?.assigned_to) query = query.eq('assigned_to_user_id', filters.assigned_to);
+    if (filters?.status) query = query.eq('status', filters.status);
+    if (filters?.is_template !== undefined) query = query.eq('is_template', filters.is_template);
+    const { data, error } = await query;
+    if (error) {
+      console.error('Error fetching HR tasks:', error);
+      throw error;
+    }
+    return (data || []) as HRTask[];
+  },
+
+  async getHRTaskById(id: string): Promise<HRTask | null> {
+    const { data, error } = await supabase
+      .schema('common')
+      .from('hr_tasks')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) {
+      console.error('Error fetching HR task:', error);
+      throw error;
+    }
+    return data as HRTask;
+  },
+
+  async createHRTask(task: Omit<HRTask, 'id' | 'created_at' | 'updated_at'>): Promise<HRTask> {
+    const cleaned = {
+      name: task.name,
+      description: task.description?.trim() || null,
+      task_type: task.task_type || 'standard',
+      employee_id: task.employee_id || null,
+      assigned_to_user_id: task.assigned_to_user_id || null,
+      status: task.status || 'pending',
+      priority: task.priority || 'medium',
+      due_date: task.due_date || null,
+      completed_at: task.completed_at || null,
+      notes: task.notes?.trim() || null,
+      is_template: task.is_template === true,
+      created_by: task.created_by,
+    };
+    const { data, error } = await supabase
+      .schema('common')
+      .from('hr_tasks')
+      .insert(cleaned)
+      .select()
+      .single();
+    if (error) {
+      console.error('Error creating HR task:', error);
+      throw new Error(error.message || 'Failed to create HR task');
+    }
+    return data as HRTask;
+  },
+
+  async updateHRTask(id: string, updates: Partial<HRTask>): Promise<HRTask> {
+    const { data, error } = await supabase
+      .schema('common')
+      .from('hr_tasks')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) {
+      console.error('Error updating HR task:', error);
+      throw error;
+    }
+    return data as HRTask;
+  },
+
+  async deleteHRTask(id: string): Promise<void> {
+    const { error } = await supabase
+      .schema('common')
+      .from('hr_tasks')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      console.error('Error deleting HR task:', error);
+      throw error;
+    }
+  },
+
+  // ============================================================================
+  // Office Admin / HR task assignment to onboarding tracking
+  // ============================================================================
+
+  /** Clone an Office Admin template task and link it to an onboarding tracking record. */
+  async assignOfficeAdminTaskToTracking(trackingId: string, templateTaskId: string, assignedBy: string): Promise<void> {
+    const { data: tracking, error: trackErr } = await supabase
+      .schema('common')
+      .from('onboarding_tracking')
+      .select('user_id')
+      .eq('id', trackingId)
+      .single();
+    if (trackErr || !tracking) throw new Error('Onboarding record not found');
+    const template = await this.getOfficeAdminTaskById(templateTaskId);
+    if (!template) throw new Error('Office Admin task not found');
+    const userId = (tracking as any).user_id;
+    const newTask = await this.createOfficeAdminTask({
+      name: template.name,
+      description: template.description,
+      task_type: template.task_type,
+      employee_id: userId || undefined,
+      assigned_to_user_id: template.assigned_to_user_id,
+      status: 'pending',
+      priority: template.priority || 'medium',
+      due_date: template.due_date,
+      notes: template.notes,
+      is_template: false,
+      created_by: assignedBy,
+    });
+    const { error } = await supabase
+      .schema('common')
+      .from('onboarding_tracking_office_admin_tasks')
+      .insert({ tracking_id: trackingId, task_id: newTask.id });
+    if (error && error.code !== '23505') throw error;
+  },
+
+  async removeOfficeAdminTaskFromTracking(trackingId: string, taskId: string): Promise<void> {
+    await supabase
+      .schema('common')
+      .from('onboarding_tracking_office_admin_tasks')
+      .delete()
+      .eq('tracking_id', trackingId)
+      .eq('task_id', taskId);
+  },
+
+  /** Clone an HR template task and link it to an onboarding tracking record. */
+  async assignHRTaskToTracking(trackingId: string, templateTaskId: string, assignedBy: string): Promise<void> {
+    const { data: tracking, error: trackErr } = await supabase
+      .schema('common')
+      .from('onboarding_tracking')
+      .select('user_id')
+      .eq('id', trackingId)
+      .single();
+    if (trackErr || !tracking) throw new Error('Onboarding record not found');
+    const template = await this.getHRTaskById(templateTaskId);
+    if (!template) throw new Error('HR task not found');
+    const userId = (tracking as any).user_id;
+    const newTask = await this.createHRTask({
+      name: template.name,
+      description: template.description,
+      task_type: template.task_type,
+      employee_id: userId || undefined,
+      assigned_to_user_id: template.assigned_to_user_id,
+      status: 'pending',
+      priority: template.priority || 'medium',
+      due_date: template.due_date,
+      notes: template.notes,
+      is_template: false,
+      created_by: assignedBy,
+    });
+    const { error } = await supabase
+      .schema('common')
+      .from('onboarding_tracking_hr_tasks')
+      .insert({ tracking_id: trackingId, task_id: newTask.id });
+    if (error && error.code !== '23505') throw error;
+  },
+
+  async removeHRTaskFromTracking(trackingId: string, taskId: string): Promise<void> {
+    await supabase
+      .schema('common')
+      .from('onboarding_tracking_hr_tasks')
+      .delete()
+      .eq('tracking_id', trackingId)
+      .eq('task_id', taskId);
+  },
+
+  // ============================================================================
+  // Multi-assign wrappers — UI calls these to bulk-assign selected items
+  // Each returns { assigned, skipped } so the UI can give a clear summary.
+  // Individual failures (duplicates, missing templates) are swallowed and
+  // counted as "skipped" so partial successes still update the UI.
+  // ============================================================================
+
+  async assignPacketsToTracking(trackingId: string, templatePacketIds: string[], userId: string): Promise<{ assigned: number; skipped: number }> {
+    let assigned = 0;
+    let skipped = 0;
+    for (const id of templatePacketIds) {
+      try {
+        await this.assignPacketToTracking(trackingId, id, userId);
+        assigned += 1;
+      } catch (err) {
+        console.error('Failed to assign packet', id, err);
+        skipped += 1;
+      }
+    }
+    return { assigned, skipped };
+  },
+
+  async assignFormsToTracking(trackingId: string, formIds: string[]): Promise<{ assigned: number; skipped: number }> {
+    let assigned = 0;
+    let skipped = 0;
+    for (const id of formIds) {
+      try {
+        await this.assignFormToTracking(trackingId, id);
+        assigned += 1;
+      } catch (err) {
+        console.error('Failed to assign form', id, err);
+        skipped += 1;
+      }
+    }
+    return { assigned, skipped };
+  },
+
+  async assignChecklistsToTracking(trackingId: string, checklistIds: string[], assignedBy: string): Promise<{ assigned: number; skipped: number }> {
+    let assigned = 0;
+    let skipped = 0;
+    for (const id of checklistIds) {
+      try {
+        await this.assignChecklistToTracking(trackingId, id, assignedBy);
+        assigned += 1;
+      } catch (err) {
+        console.error('Failed to assign checklist', id, err);
+        skipped += 1;
+      }
+    }
+    return { assigned, skipped };
+  },
+
+  async assignITTasksToTracking(trackingId: string, templateTaskIds: string[], assignedBy: string): Promise<{ assigned: number; skipped: number }> {
+    let assigned = 0;
+    let skipped = 0;
+    for (const id of templateTaskIds) {
+      try {
+        await this.assignITTaskToTracking(trackingId, id, assignedBy);
+        assigned += 1;
+      } catch (err) {
+        console.error('Failed to assign IT task', id, err);
+        skipped += 1;
+      }
+    }
+    return { assigned, skipped };
+  },
+
+  async assignOfficeAdminTasksToTracking(trackingId: string, templateTaskIds: string[], assignedBy: string): Promise<{ assigned: number; skipped: number }> {
+    let assigned = 0;
+    let skipped = 0;
+    for (const id of templateTaskIds) {
+      try {
+        await this.assignOfficeAdminTaskToTracking(trackingId, id, assignedBy);
+        assigned += 1;
+      } catch (err) {
+        console.error('Failed to assign Office Admin task', id, err);
+        skipped += 1;
+      }
+    }
+    return { assigned, skipped };
+  },
+
+  async assignHRTasksToTracking(trackingId: string, templateTaskIds: string[], assignedBy: string): Promise<{ assigned: number; skipped: number }> {
+    let assigned = 0;
+    let skipped = 0;
+    for (const id of templateTaskIds) {
+      try {
+        await this.assignHRTaskToTracking(trackingId, id, assignedBy);
+        assigned += 1;
+      } catch (err) {
+        console.error('Failed to assign HR task', id, err);
+        skipped += 1;
+      }
+    }
+    return { assigned, skipped };
   },
 };

@@ -98,7 +98,9 @@ export const DocumentAcknowledgment: React.FC = () => {
   const activeForms = forms.filter((f) => f.status !== 'archived');
   const archivedForms = forms.filter((f) => f.status === 'archived');
 
-  const baseForms = activeTab === 'active' ? activeForms : archivedForms;
+  // Non-managers can never view the Archived tab
+  const effectiveTab: DocTab = !isManager ? 'active' : activeTab;
+  const baseForms = effectiveTab === 'active' ? activeForms : archivedForms;
 
   const filteredForms = baseForms.filter((f) => {
     if (filter !== 'all') {
@@ -467,32 +469,34 @@ export const DocumentAcknowledgment: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Active / Archived tabs */}
-      <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700">
-        <button
-          onClick={() => setActiveTab('active')}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'active'
-              ? 'border-[#f26722] text-[#f26722]'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-          }`}
-        >
-          Active
-          {!loading && <span className="ml-1.5 text-xs bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5">{activeForms.length}</span>}
-        </button>
-        <button
-          onClick={() => setActiveTab('archived')}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'archived'
-              ? 'border-[#f26722] text-[#f26722]'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-          }`}
-        >
-          <Archive className="h-3.5 w-3.5 inline mr-1.5" />
-          Archived
-          {!loading && <span className="ml-1.5 text-xs bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5">{archivedForms.length}</span>}
-        </button>
-      </div>
+      {/* Active / Archived tabs — Archived restricted to Admin / HR */}
+      {isManager && (
+        <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => setActiveTab('active')}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'active'
+                ? 'border-[#f26722] text-[#f26722]'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+            }`}
+          >
+            Active
+            {!loading && <span className="ml-1.5 text-xs bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5">{activeForms.length}</span>}
+          </button>
+          <button
+            onClick={() => setActiveTab('archived')}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'archived'
+                ? 'border-[#f26722] text-[#f26722]'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+            }`}
+          >
+            <Archive className="h-3.5 w-3.5 inline mr-1.5" />
+            Archived
+            {!loading && <span className="ml-1.5 text-xs bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5">{archivedForms.length}</span>}
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
@@ -501,7 +505,7 @@ export const DocumentAcknowledgment: React.FC = () => {
       ) : filteredForms.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            {activeTab === 'archived' ? (
+            {effectiveTab === 'archived' ? (
               <>
                 <Archive className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
                 <p className="text-gray-600 dark:text-gray-400">
@@ -558,7 +562,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                      {activeTab === 'active' && (
+                      {effectiveTab === 'active' && (
                         <>
                           {getAttachmentUrl(form) && (
                             <Button variant="outline" size="sm" onClick={() => openSignModal(form)} className="text-[#f26722] border-[#f26722] hover:bg-[#f26722]/10">
@@ -573,7 +577,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                           )}
                         </>
                       )}
-                      {activeTab === 'archived' && isManager && (
+                      {effectiveTab === 'archived' && isManager && (
                         <>
                           <Button variant="outline" size="sm" onClick={() => handleRestoreDocument(form.id)} title="Restore document">
                             <RotateCcw className="h-4 w-4 mr-1" />

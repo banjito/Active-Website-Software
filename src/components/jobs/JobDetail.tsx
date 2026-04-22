@@ -26,6 +26,7 @@ import { JobNotifications } from './JobNotifications';
 import { AssetCommentsDialog } from '@/components/ui/AssetCommentsDialog';
 import { SubmittalTracker } from './SubmittalTracker';
 import JobNotes from './JobNotes';
+import JobPictures from './JobPictures';
 import { SignatureProfileSelector } from './SignatureProfileSelector';
 import { getQuickBooksStatus, searchQuickBooksProjects, getQuickBooksHoursByProject } from '../../services/quickbooksService';
 // TrackingSection is defined locally below
@@ -6360,6 +6361,16 @@ ${newBodyHtml}
                     Job Notes
                   </button>
                   <button
+                    onClick={() => handleTabChange('pictures')}
+                    className={`py-4 px-6 text-sm font-medium ${
+                      activeTab === 'pictures'
+                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Pictures
+                  </button>
+                  <button
                     onClick={() => handleTabChange('after-action')}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === 'after-action'
@@ -7926,6 +7937,10 @@ ${newBodyHtml}
 
                 {activeTab === 'notes' && job && (
                   <JobNotes jobId={job.id} />
+                )}
+
+                {activeTab === 'pictures' && job && (
+                  <JobPictures jobId={job.id} />
                 )}
 
                 {activeTab === 'tracking' && job && (

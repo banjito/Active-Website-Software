@@ -78,11 +78,13 @@ export const NewHirePackets: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const filters: any = { custom_only: true };
+      // This page manages packet *templates*. Per-person instance copies are created
+      // by `assignPacketToTracking` with is_template=false and are viewed from the
+      // Onboarding Tracking modal via `?packetId=` deep link, not listed here –
+      // otherwise every assignment looks like a duplicated template.
+      const filters: any = { custom_only: true, is_template: true };
       
-      if (filter === 'templates') {
-        filters.is_template = true;
-      } else if (filter === 'active') {
+      if (filter === 'active') {
         filters.status = 'active';
       } else if (filter === 'archived') {
         filters.status = 'archived';

@@ -30,7 +30,7 @@ export const NorthAlabamaDashboard: React.FC = () => {
   return (
     <DivisionDashboard
       division="north_alabama"
-      divisionName="North Alabama Division"
+      divisionName="Alabama Division"
       showTechnicians={true}
       showDocumentation={true}
       customMetrics={customMetrics}

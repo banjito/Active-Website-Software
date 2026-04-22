@@ -461,7 +461,7 @@ export default function FieldTechJobsPage() {
       <div className="mb-6 sm:mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-dark-900">All Field Tech Jobs</h1>
-          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-dark-400">Aggregated from North Alabama, Tennessee, Georgia, and International</p>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-dark-400">Aggregated from Alabama, Tennessee, Georgia, and International</p>
         </div>
         {/* Only show T&M button to authorized users */}
         {(user?.email === 'william.sasser@ampqes.com' || user?.email === 'john.chambers@ampqes.com' || user?.email === 'anthony.masters@ampqes.com' || user?.email === 'caleb.hipp@ampqes.com' || user?.email === 'zach.freeborn@ampqes.com' || user?.email === 'zecahriah.freeborn@ampqes.com' || user?.email === 'michael.bland@ampqes.com' || user?.email === 'kelly.lawton@ampqes.com') && (
@@ -714,7 +714,7 @@ export default function FieldTechJobsPage() {
                   required
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">Select a division</option>
-                  <option value="north_alabama" className="dark:bg-dark-150 dark:text-white">North Alabama Division</option>
+                  <option value="north_alabama" className="dark:bg-dark-150 dark:text-white">Alabama Division</option>
                   <option value="tennessee" className="dark:bg-dark-150 dark:text-white">Tennessee Division</option>
                   <option value="georgia" className="dark:bg-dark-150 dark:text-white">Georgia Division</option>
                   <option value="international" className="dark:bg-dark-150 dark:text-white">International Division</option>

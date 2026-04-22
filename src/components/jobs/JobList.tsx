@@ -977,13 +977,13 @@ export default function JobList() {
     if (!divisionValue) return '';
     
     const divisionMap: { [key: string]: string } = {
-      'north_alabama': 'North Alabama Division',
+      'north_alabama': 'Alabama Division',
       'tennessee': 'Tennessee Division',
       'georgia': 'Georgia Division',
       'international': 'International Division',
       'engineering': 'Engineering',
       'scavenger': 'Scavenger',
-      'Decatur': 'North Alabama Division (Decatur)',
+      'Decatur': 'Alabama Division (Decatur)',
       'calibration': 'Calibration Lab',
       'armadillo': 'Armadillo Lab',
       'lab': 'Lab Portal'
@@ -1790,7 +1790,7 @@ export default function JobList() {
                   required
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">Select a division</option>
-                  <option value="north_alabama" className="dark:bg-dark-150 dark:text-white">North Alabama Division</option>
+                  <option value="north_alabama" className="dark:bg-dark-150 dark:text-white">Alabama Division</option>
                   <option value="tennessee" className="dark:bg-dark-150 dark:text-white">Tennessee Division</option>
                   <option value="georgia" className="dark:bg-dark-150 dark:text-white">Georgia Division</option>
                   <option value="international" className="dark:bg-dark-150 dark:text-white">International Division</option>

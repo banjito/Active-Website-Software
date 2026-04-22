@@ -149,7 +149,7 @@ export function DivisionAnalyticsDialog({ division, isOpen, onClose }: DivisionA
 
   function formatDivisionName(division: string): string {
     const divisionMap: { [key: string]: string } = {
-      'north_alabama': 'North Alabama Division',
+      'north_alabama': 'Alabama Division',
       'tennessee': 'Tennessee Division',
       'georgia': 'Georgia Division',
       'international': 'International Division',

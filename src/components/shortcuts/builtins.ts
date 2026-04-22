@@ -166,7 +166,7 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
   ...(['north_alabama','tennessee','georgia','international','armadillo','scavenger'] as BuiltinPortalKey[]).map((key) => ({
     key,
     label:
-      key === 'north_alabama' ? 'North Alabama' :
+      key === 'north_alabama' ? 'Alabama' :
       key === 'international' ? 'International' :
       key.charAt(0).toUpperCase() + key.slice(1),
     options: [

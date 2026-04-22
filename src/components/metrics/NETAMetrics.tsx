@@ -21,7 +21,7 @@ function formatDivisionForDisplay(division?: string | null): string {
   if (!division) return 'All Divisions';
   
   const divisionMap: { [key: string]: string } = {
-    'north_alabama': 'North Alabama Division',
+    'north_alabama': 'Alabama Division',
     'tennessee': 'Tennessee Division',
     'georgia': 'Georgia Division',
     'international': 'International Division'

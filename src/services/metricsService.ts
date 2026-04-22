@@ -18,7 +18,7 @@ export interface ReportApprovalMetrics {
 
 // Division mapping for display names
 const divisionDisplayMap: Record<string, string> = {
-  'north_alabama': 'North Alabama',
+  'north_alabama': 'Alabama',
   'tennessee': 'Tennessee',
   'georgia': 'Georgia',
   'international': 'International',

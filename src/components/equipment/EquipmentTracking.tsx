@@ -92,7 +92,7 @@ const statusOptions = [
 ];
 
 const divisionOptions = [
-  { value: 'north_alabama', label: 'North Alabama' },
+  { value: 'north_alabama', label: 'Alabama' },
   { value: 'tennessee', label: 'Tennessee' },
   { value: 'georgia', label: 'Georgia' },
   { value: 'international', label: 'International' }

@@ -20,7 +20,7 @@ const getMockSuggestions = (query: string): string[] => {
     'customer:Acme Systems',
     'customer:Global Technologies',
     // Jobs
-    'job:Annual Testing North Alabama',
+    'job:Annual Testing Alabama',
     'job:Switchgear Installation Tennessee',
     'job:Circuit Breaker Maintenance',
     'job:Transformer Testing International',

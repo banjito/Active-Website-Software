@@ -27,6 +27,7 @@ import { AssetCommentsDialog } from '@/components/ui/AssetCommentsDialog';
 import { SubmittalTracker } from './SubmittalTracker';
 import JobNotes from './JobNotes';
 import JobPictures from './JobPictures';
+import { formatDivisionDisplay } from '../../lib/utils/divisionDisplay';
 import { SignatureProfileSelector } from './SignatureProfileSelector';
 import { getQuickBooksStatus, searchQuickBooksProjects, getQuickBooksHoursByProject } from '../../services/quickbooksService';
 // TrackingSection is defined locally below
@@ -5946,7 +5947,7 @@ ${newBodyHtml}
                         className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="">Select Division</option>
-                        <option value="north_alabama">North Alabama Division</option>
+                        <option value="north_alabama">Alabama Division</option>
                         <option value="tennessee">Tennessee Division</option>
                         <option value="georgia">Georgia Division</option>
                         <option value="international">International Division</option>
@@ -6758,7 +6759,7 @@ ${newBodyHtml}
                           {job.division && (
                             <div>
                               <label className="text-sm font-medium text-gray-600 dark:text-white">Division</label>
-                              <p className="text-gray-900 dark:text-white capitalize">{job.division.replace('_', ' ')}</p>
+                              <p className="text-gray-900 dark:text-white">{formatDivisionDisplay(job.division)}</p>
                             </div>
                           )}
                           <div>

@@ -16,7 +16,7 @@ export default function NETAProfilesPage() {
 
   return (
     <div className="py-8">
-      <h1 className="text-2xl font-bold mb-6 px-4">North Alabama Division - Technician Profiles</h1>
+      <h1 className="text-2xl font-bold mb-6 px-4">Alabama Division - Technician Profiles</h1>
       <TechnicianProfileManagement portalType="neta" division="north_alabama" />
     </div>
   );

@@ -2387,7 +2387,7 @@ export default function PortalLanding() {
                       <MapPin className="h-5 w-5 text-rose-500 dark:text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">North Alabama Division</CardTitle>
+                      <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Alabama Division</CardTitle>
                       <CardDescription className="text-sm text-gray-500 dark:text-white/70">Field services and operations</CardDescription>
                     </div>
                   </div>
@@ -2801,7 +2801,7 @@ export default function PortalLanding() {
                       <MapPin className="h-5 w-5 text-rose-500 dark:text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">North Alabama Division</CardTitle>
+                      <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Alabama Division</CardTitle>
                       <CardDescription className="text-sm text-gray-500 dark:text-white/70">Field services and operations</CardDescription>
                     </div>
                   </div>

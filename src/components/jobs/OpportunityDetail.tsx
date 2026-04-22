@@ -2851,7 +2851,7 @@ export default function OpportunityDetail() {
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     >
                       <option value="" className="dark:bg-dark-150 dark:text-white">Select a division</option>
-                      <option value="north_alabama" className="dark:bg-dark-150 dark:text-white">North Alabama Division</option>
+                      <option value="north_alabama" className="dark:bg-dark-150 dark:text-white">Alabama Division</option>
                       <option value="tennessee" className="dark:bg-dark-150 dark:text-white">Tennessee Division</option>
                       <option value="georgia" className="dark:bg-dark-150 dark:text-white">Georgia Division</option>
                       <option value="international" className="dark:bg-dark-150 dark:text-white">International Division</option>
@@ -4120,7 +4120,7 @@ export default function OpportunityDetail() {
 
 function formatDivisionName(division: string): string {
   const divisionMap: { [key: string]: string } = {
-    'north_alabama': 'North Alabama Division',
+    'north_alabama': 'Alabama Division',
     'tennessee': 'Tennessee Division',
     'georgia': 'Georgia Division',
     'international': 'International Division',

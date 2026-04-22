@@ -21,7 +21,7 @@ const ENTITY_TYPES = [
 
 // Available divisions in the system
 const DIVISIONS = [
-  { id: 'north_alabama', label: 'North Alabama' },
+  { id: 'north_alabama', label: 'Alabama' },
   { id: 'tennessee', label: 'Tennessee' },
   { id: 'georgia', label: 'Georgia' },
   { id: 'international', label: 'International' },

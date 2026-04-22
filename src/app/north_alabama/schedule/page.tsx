@@ -16,7 +16,7 @@ export default function NETASchedulePage() {
 
   return (
     <div className="py-8">
-      <h1 className="text-2xl font-bold mb-6 px-4">North Alabama Division - Technician Scheduling</h1>
+      <h1 className="text-2xl font-bold mb-6 px-4">Alabama Division - Technician Scheduling</h1>
       <ScheduleManagement portalType="neta" division="north_alabama" />
     </div>
   );

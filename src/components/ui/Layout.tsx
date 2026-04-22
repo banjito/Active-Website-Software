@@ -320,8 +320,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     if (!divisionValue) return 'AMP Portal';
     const divisionMap: { [key: string]: string } = {
       'neta': 'Global Portal',
-      'north_alabama': 'North Alabama Division',
-      'northAlabama': 'North Alabama Division',
+      'north_alabama': 'Alabama Division',
+      'northAlabama': 'Alabama Division',
       'tennessee': 'Tennessee Division',
       'georgia': 'Georgia Division',
       'international': 'International Division',
@@ -330,7 +330,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       'scavenger': 'Scavenger Division',
       'engineering': 'Engineering Portal',
       'field_tech': 'Field Technician Portal',
-      'Decatur': 'North Alabama Division (Decatur)'
+      'Decatur': 'Alabama Division (Decatur)'
     };
     return divisionMap[divisionValue] || 'All Divisions';
   }

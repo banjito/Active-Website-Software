@@ -16,7 +16,7 @@ export default function NETAEquipmentPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold border-b pb-3">North Alabama Division Equipment Tracking</h1>
+      <h1 className="text-2xl font-bold border-b pb-3">Alabama Division Equipment Tracking</h1>
       <EquipmentTracking division="North Alabama" />
     </div>
   );

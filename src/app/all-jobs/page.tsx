@@ -12,7 +12,7 @@ const PAGE_SIZE = 50;
 const UNIFIED_DIVISIONS = ['north_alabama', 'tennessee', 'georgia', 'international', 'engineering', 'scavenger'] as const;
 
 const DIVISION_LABELS: Record<string, string> = {
-  north_alabama: 'North Alabama',
+  north_alabama: 'Alabama',
   tennessee: 'Tennessee',
   georgia: 'Georgia',
   international: 'International',

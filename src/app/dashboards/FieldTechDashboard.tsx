@@ -190,7 +190,7 @@ export const FieldTechDashboard: React.FC = () => {
 
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-dark-900">Field Tech Portal</h1>
-        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-dark-400">North Alabama, Tennessee, Georgia, and International</p>
+        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-dark-400">Alabama, Tennessee, Georgia, and International</p>
       </div>
 
       <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

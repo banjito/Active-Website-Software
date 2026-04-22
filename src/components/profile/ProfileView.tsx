@@ -28,6 +28,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { EditProfilePopup } from './EditProfilePopup';
 import { fetchEmployeeDocuments, updateEmployeeDocument } from '@/services/hr/employeeDocumentsService';
 import { fetchCertifications, updateCertification } from '@/services/hr/employeeCertificationsService';
+import { formatDivisionDisplay } from '@/lib/utils/divisionDisplay';
 import { OneOnOneList } from '@/components/hr/OneOnOneList';
 import { formatDateOnly, toDateOnlyISO } from '@/services/hr/dateUtils';
 import { toast } from '@/components/ui/toast';
@@ -1222,7 +1223,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     <Briefcase className="mr-2 h-4 w-4 text-gray-500 dark:text-white flex-shrink-0" />
                     <div>
                       <p className="text-sm text-gray-500 dark:text-white">NETA Division</p>
-                      <p>{division || 'Not specified'}</p>
+                      <p>{formatDivisionDisplay(division) || 'Not specified'}</p>
                     </div>
                   </div>
                   {!limitedView && formattedBirthday && (

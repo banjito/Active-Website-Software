@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactCrop, { type Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { ProfileView } from './ProfileView';
+import { formatDivisionDisplay } from '@/lib/utils/divisionDisplay';
 
 interface EditProfilePopupProps {
   isOpen: boolean;
@@ -1002,7 +1003,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                           >
                             <option value="">Select a division</option>
                             {divisions.map((div) => (
-                              <option key={div} value={div}>{div}</option>
+                              <option key={div} value={div}>{formatDivisionDisplay(div) || div}</option>
                             ))}
                           </select>
                         </div>
@@ -1100,7 +1101,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                           </div>
                           <div className="flex justify-between">
                             <dt className="text-gray-500 dark:text-white">Division:</dt>
-                            <dd className="text-gray-900 dark:text-white">{division || 'Not set'}</dd>
+                            <dd className="text-gray-900 dark:text-white">{formatDivisionDisplay(division) || 'Not set'}</dd>
                           </div>
                           {workPhone && (
                             <div className="flex justify-between">

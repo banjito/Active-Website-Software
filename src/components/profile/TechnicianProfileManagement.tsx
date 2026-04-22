@@ -11,6 +11,7 @@ import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import Select from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
+import { formatDivisionDisplay } from '@/lib/utils/divisionDisplay';
 import { 
   UserCircle, 
   Save, 
@@ -423,7 +424,7 @@ export function TechnicianProfileManagement({ portalType, division }: Technician
                         </Badge>
                         {technicianData.user_metadata?.division && (
                           <Badge className="bg-purple-100 text-purple-800">
-                            {technicianData.user_metadata.division}
+                            {formatDivisionDisplay(technicianData.user_metadata.division)}
                           </Badge>
                         )}
                       </div>

@@ -93,3 +93,59 @@ SELECT on, so every request returned 42501.
 - [ ] Scavenger Jobs page loads without 400/403 errors in console.
 - [ ] Notification bell still renders correctly and hides notifications whose
       job has been soft-deleted.
+
+---
+
+## Org Chart — shared positions, searchable reporting, manager groups
+
+### Problems
+1. Visual gaps between cards and broken connector lines when siblings had
+   different subtree widths.
+2. Reporting selector was a scrollable checkbox list — unusable once the chart
+   had more than ~15 people.
+3. Business case: some technicians report to multiple project managers. We had
+   no way to say "these two managers share reports" or to bulk-assign an
+   employee to an entire pod at once.
+
+### Fixes
+
+| File | Change |
+| --- | --- |
+| `src/pages/hr/data/OrgChart.tsx` | Rewrote sibling connector row: cells are now contiguous with `px-4` per cell and the horizontal bus uses `w-full -mx-4` so bars bridge the padding between siblings. First/last children only render the inner half of the bar. Vertical drops are `3px` solid. |
+| `src/pages/hr/data/OrgChart.tsx` | New `ManagerPicker` component replaces the scrollable checkbox list in both Add and Edit modals. Type-to-search against name + job title, selected managers shown as removable chips, popover list limited to 20 matches. |
+| `src/pages/hr/data/OrgChart.tsx` | Dragging a person onto another person now opens a "Choose relationship" dialog: **Move Under** (current behavior, group-aware for the target) or **Group Together** (makes both managers peers in a shared manager group). Dropping on the empty top-level zone still moves straight to top-level. |
+| `src/pages/hr/data/OrgChart.tsx` | `handleMoveUnder` expands the target to the full group when the target is in a manager group, so a single drop creates multi-manager reporting rows for every group member. |
+| `src/pages/hr/data/OrgChart.tsx` | `handleGroupTogether` creates a new group, adds to an existing group, or merges two groups as needed. `handleUngroup` removes a profile and tears down the group if it falls below 2 members. |
+| `src/pages/hr/data/OrgChart.tsx` | `FlowchartNode` cards in a manager group now render with a colored ring, a "Grouped manager (shares reports)" label, and an **Ungroup** button. Group color comes from the `common.org_chart_manager_groups.color` column. |
+| `src/pages/hr/data/OrgChart.tsx` | Fetch path gracefully degrades: if `org_chart_manager_groups*` tables don't exist yet, `managerGroupsSupported` flips to `false`, the **Group Together** option disables itself with a message pointing at the migration. |
+
+### Database
+
+| File | Purpose |
+| --- | --- |
+| `Database Scripts/Setup & Configuration/enable_org_chart_manager_groups.sql` | Creates `common.org_chart_manager_groups` (id, name, color) and `common.org_chart_manager_group_members` (profile_id PK, group_id FK). One profile can belong to one group. Grants SELECT/INSERT/UPDATE/DELETE to `authenticated`, RLS disabled to match the rest of the org chart tables. |
+
+### Deployment / next steps
+
+1. Run `enable_org_chart_manager_groups.sql` in Supabase SQL editor.
+2. Existing charts work unchanged — grouping is additive.
+3. When dragging a tech onto a grouped manager, verify they get one row in
+   `common.org_chart_assignments` per member of the group (needs the multi-manager
+   migration from earlier in the week to also be applied).
+
+### Verification checklist
+
+- [ ] Sibling connector lines are continuous with no visual break across the
+      horizontal bus, regardless of how many siblings.
+- [ ] Add Person modal shows a search input with chips instead of a long
+      checkbox list.
+- [ ] Dragging Manager A onto Manager B opens the relationship dialog with both
+      names filled in.
+- [ ] "Group Together" with two non-grouped managers creates a new group
+      (colored ring on both cards).
+- [ ] "Group Together" when one party is already grouped joins the other into
+      the existing group.
+- [ ] Dropping a technician onto any member of a group creates multi-manager
+      assignments for every group member.
+- [ ] Ungroup button removes that profile from the group and dissolves the
+      group if it had exactly 2 members.

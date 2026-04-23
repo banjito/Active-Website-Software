@@ -23,6 +23,7 @@ interface OrgPerson {
   job_title: string;
   avatar_url: string | null;
   reports_to: string | null;
+  reports_to_ids?: string[];
   role?: string;
   level_id?: string | null;
 }
@@ -190,6 +191,99 @@ function findNodeById(nodes: OrgNode[], id: string): OrgNode | null {
   return null;
 }
 
+/** Group sibling nodes that share a manager group so we can render their cards flush, side by side. */
+function clusterChildrenByManagerGroup(
+  children: OrgNode[],
+  profileToGroup: Record<string, string>,
+  groupMembers: Record<string, string[]>
+): OrgNode[][] {
+  const used = new Set<string>();
+  const out: OrgNode[][] = [];
+  for (const child of children) {
+    if (used.has(child.id)) continue;
+    const gid = profileToGroup[child.id];
+    const gmem = gid ? groupMembers[gid] : undefined;
+    if (gid && gmem && gmem.length > 1) {
+      const set = new Set(gmem);
+      const peers = children.filter((c) => set.has(c.id));
+      if (peers.length > 1) {
+        peers.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+        peers.forEach((p) => used.add(p.id));
+        out.push(peers);
+        continue;
+      }
+    }
+    used.add(child.id);
+    out.push([child]);
+  }
+  return out;
+}
+
+/** Deduplicate and sort all direct reports of a cluster of co-managers (one visual row, shared connector). */
+function mergeDirectReportsForManagerCluster(cluster: OrgNode[]): OrgNode[] {
+  const seen = new Set<string>();
+  const out: OrgNode[] = [];
+  for (const m of cluster) {
+    for (const ch of m.children) {
+      if (!seen.has(ch.id)) {
+        seen.add(ch.id);
+        out.push(ch);
+      }
+    }
+  }
+  return out.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+}
+
+/**
+ * Replaces all org_chart_assignments rows for a profile. Required after the multi-manager
+ * migration (PK is `id`, not `profile_id` — upsert on profile_id is invalid).
+ */
+async function replaceProfileOrgChartAssignments(
+  profileId: string,
+  managerIds: string[],
+  common: { level_id?: string | null; role?: string | null; grid_column: number }
+) {
+  const { error: delErr } = await supabase
+    .schema('common')
+    .from('org_chart_assignments')
+    .delete()
+    .eq('profile_id', profileId);
+  if (delErr) throw delErr;
+
+  const unique = Array.from(new Set(managerIds.filter(Boolean)));
+  if (unique.length === 0) {
+    const { error } = await supabase
+      .schema('common')
+      .from('org_chart_assignments')
+      .insert({
+        profile_id: profileId,
+        reports_to_profile_id: null,
+        level_id: common.level_id ?? null,
+        role: common.role ?? null,
+        grid_column: common.grid_column,
+      });
+    if (error) throw error;
+  } else {
+    const rows = unique.map((managerId) => ({
+      profile_id: profileId,
+      reports_to_profile_id: managerId,
+      level_id: common.level_id ?? null,
+      role: common.role ?? null,
+      grid_column: common.grid_column,
+    }));
+    const { error: insErr } = await supabase
+      .schema('common')
+      .from('org_chart_assignments')
+      .insert(rows);
+    if (insErr) {
+      if ((insErr.message || '').toLowerCase().includes('duplicate')) {
+        throw new Error('Run the multi-manager org chart SQL migration to assign to multiple managers.');
+      }
+      throw insErr;
+    }
+  }
+}
+
 // ============================================================================
 // Draggable Flowchart Node Component
 // ============================================================================
@@ -208,15 +302,33 @@ const FlowchartNode: React.FC<{
   dataVersion?: number;
   orgLevels?: Array<{ id: string; label: string; color?: string }>;
   orgRoles?: Array<{ id: string; value: string; label: string; color: string; display_order: number }>;
+  peopleLookup?: Record<string, OrgPerson>;
+  profileToGroup?: Record<string, string>;
+  groupMembers?: Record<string, string[]>;
+  groupColors?: Record<string, string>;
+  onUngroup?: (profileId: string) => void;
+  /** When set, this card is part of a side-by-side manager group — drop extra labels/rings. */
+  inManagerCluster?: boolean;
+  /** Merged with other peers: render only the card; direct reports are drawn in one row under the group. */
+  suppressSubtree?: boolean;
   canEdit?: boolean;
-}> = ({ node, orgTree, onSelect, onEdit, onDelete, onAddUnder, onDrop, collapsedNodes, toggleCollapse, draggedId, setDraggedId, dataVersion = 0, orgLevels, orgRoles, canEdit = true }) => {
+}> = ({ node, orgTree, onSelect, onEdit, onDelete, onAddUnder, onDrop, collapsedNodes, toggleCollapse, draggedId, setDraggedId, dataVersion = 0, orgLevels, orgRoles, peopleLookup = {}, profileToGroup = {}, groupMembers = {}, groupColors = {}, onUngroup, inManagerCluster = false, suppressSubtree = false, canEdit = true }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   // Use assigned level color if set, otherwise depth-based
   const assignedLevel = node.level_id && orgLevels ? orgLevels.find(l => l.id === node.level_id) : null;
   const colors = assignedLevel ? getColorByName(assignedLevel.color) : getLevelColors(node.level, orgLevels);
   const hasChildren = node.children.length > 0;
   const isCollapsed = collapsedNodes.has(node.id);
+  const showOwnSubtree = hasChildren && !isCollapsed && !suppressSubtree;
   const isRoot = node.level === 0;
+  const secondaryManagerNames = (node.reports_to_ids || [])
+    .filter((id) => id && id !== node.reports_to)
+    .map((id) => peopleLookup[id]?.full_name || 'Unknown')
+    .slice(0, 2);
+
+  const groupId = profileToGroup[node.id];
+  const groupColorName = groupId ? groupColors[groupId] : undefined;
+  const groupPalette = !inManagerCluster && groupColorName ? getColorByName(groupColorName) : null;
 
   const initials = (node.full_name || 'U')
     .split(' ')
@@ -308,10 +420,12 @@ const FlowchartNode: React.FC<{
         onDrop={canEdit ? handleDrop : undefined}
         style={{ userSelect: 'none' }}
         className={`
-          relative group rounded-lg border-2 shadow-sm select-none
+          relative group border-2 shadow-sm select-none
+          ${inManagerCluster ? 'rounded-none' : 'rounded-lg'}
           transition-all duration-200
           ${colors.bg} ${colors.border}
           min-w-[160px] max-w-[200px]
+          ${groupPalette ? `ring-2 ${groupPalette.ring} ring-offset-2 ring-offset-white dark:ring-offset-gray-800` : ''}
           ${isDragging ? 'opacity-50 scale-95 cursor-grabbing' : canEdit ? 'cursor-grab hover:shadow-md hover:scale-[1.02]' : 'cursor-pointer hover:shadow-md hover:scale-[1.02]'}
           ${isDragOver && isValidDropTarget ? `ring-4 ${colors.ring} ring-opacity-60 scale-105` : ''}
           ${draggedId && !isValidDropTarget && draggedId !== node.id ? 'opacity-40' : ''}
@@ -398,10 +512,33 @@ const FlowchartNode: React.FC<{
               </span>
             )}
           </div>
+          {secondaryManagerNames.length > 0 && (
+            <p
+              className="text-[10px] text-gray-600 dark:text-gray-300 mt-1 px-1"
+              title={(node.reports_to_ids || [])
+                .filter((id) => id && id !== node.reports_to)
+                .map((id) => peopleLookup[id]?.full_name || 'Unknown')
+                .join(', ')}
+            >
+              Also reports to: {secondaryManagerNames.join(', ')}
+              {(node.reports_to_ids || []).filter((id) => id && id !== node.reports_to).length > secondaryManagerNames.length ? '…' : ''}
+            </p>
+          )}
         </div>
+        {canEdit && groupId && onUngroup && (
+          <button
+            draggable="false"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onUngroup(node.id); }}
+            className="absolute -bottom-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-white shadow border border-gray-200 hover:bg-gray-50 pointer-events-auto z-10"
+            title="Remove from manager group"
+          >
+            Ungroup
+          </button>
+        )}
 
-        {/* Collapse toggle */}
-        {hasChildren && (
+        {/* Collapse (hidden when this node's subtree is merged under the group row) */}
+        {hasChildren && !suppressSubtree && (
           <button
             draggable="false"
             onMouseDown={(e) => e.stopPropagation()}
@@ -433,50 +570,360 @@ const FlowchartNode: React.FC<{
         </button>
       )}
 
-      {/* Connector line down */}
-      {hasChildren && !isCollapsed && (
-        <div className="w-px h-8 bg-gray-300 dark:bg-gray-600" />
+      {/* Connector line down from parent to horizontal bus (own subtree only) */}
+      {showOwnSubtree && (
+        <div className="h-4 w-[2px] shrink-0 rounded-sm bg-gray-500 dark:bg-gray-400" />
       )}
 
-      {/* Children row */}
-      {hasChildren && !isCollapsed && (
-        <div className="relative">
-          {node.children.length > 1 && (
-            <div 
-              className="absolute top-0 left-0 right-0 h-px bg-gray-300 dark:bg-gray-600"
-              style={{
-                left: `calc(50% / ${node.children.length})`,
-                right: `calc(50% / ${node.children.length})`,
-              }}
-            />
-          )}
+      {/* Children row — group peers in the same manager group side by side with shared lines */}
+      {showOwnSubtree && (() => {
+        const childClusters = clusterChildrenByManagerGroup(node.children, profileToGroup, groupMembers);
+        const nClusters = childClusters.length;
+        return (
+          <div
+            className={
+              nClusters === 1 ? 'flex items-start justify-center' : 'flex items-start'
+            }
+          >
+            {childClusters.map((cluster, idx) => {
+              const isFirst = idx === 0;
+              const isLast = idx === nClusters - 1;
+              const onlyCluster = nClusters === 1;
+              const key = cluster.map((c) => c.id).join('-') + `-${dataVersion}`;
 
-          <div className="flex gap-4">
-            {node.children.map((child) => (
-              <div key={`${child.id}-${dataVersion}`} className="flex flex-col items-center">
-                <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
-                <FlowchartNode
-                  node={child}
-                  orgTree={orgTree}
-                  onSelect={onSelect}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onAddUnder={onAddUnder}
-                  onDrop={onDrop}
-                  collapsedNodes={collapsedNodes}
-                  toggleCollapse={toggleCollapse}
-                  draggedId={draggedId}
-                  setDraggedId={setDraggedId}
-                  dataVersion={dataVersion}
-                  orgLevels={orgLevels}
-                  orgRoles={orgRoles}
-                  canEdit={canEdit}
-                />
-              </div>
-            ))}
+              if (cluster.length === 1) {
+                const child = cluster[0];
+                return (
+                  <div key={key} className="flex flex-col items-center px-1.5">
+                    <div className="relative h-[2px] w-full -mx-1.5">
+                      {!onlyCluster && (
+                        <>
+                          <div
+                            className={`absolute top-0 left-0 right-1/2 h-[2px] ${
+                              isFirst ? '' : 'bg-gray-500 dark:bg-gray-400'
+                            }`}
+                          />
+                          <div
+                            className={`absolute top-0 left-1/2 right-0 h-[2px] ${
+                              isLast ? '' : 'bg-gray-500 dark:bg-gray-400'
+                            }`}
+                          />
+                        </>
+                      )}
+                    </div>
+                    <div className="h-4 w-[2px] shrink-0 rounded-sm bg-gray-500 dark:bg-gray-400" />
+                    <FlowchartNode
+                      node={child}
+                      orgTree={orgTree}
+                      onSelect={onSelect}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      onAddUnder={onAddUnder}
+                      onDrop={onDrop}
+                      collapsedNodes={collapsedNodes}
+                      toggleCollapse={toggleCollapse}
+                      draggedId={draggedId}
+                      setDraggedId={setDraggedId}
+                      dataVersion={dataVersion}
+                      orgLevels={orgLevels}
+                      orgRoles={orgRoles}
+                      peopleLookup={peopleLookup}
+                      profileToGroup={profileToGroup}
+                      groupMembers={groupMembers}
+                      groupColors={groupColors}
+                      onUngroup={onUngroup}
+                      canEdit={canEdit}
+                    />
+                  </div>
+                );
+              }
+
+              const mergedDirects = mergeDirectReportsForManagerCluster(cluster);
+              const groupId = profileToGroup[cluster[0].id];
+              const mergeCollapseKey = groupId ? `__mgrgrp__${groupId}` : `__mgrgrp__${cluster.map((c) => c.id).join('_')}`;
+              const mergeCollapsed = collapsedNodes.has(mergeCollapseKey);
+
+              return (
+                <div
+                  key={key}
+                  className={
+                    onlyCluster
+                      ? 'flex w-max max-w-full flex-col items-center gap-0 px-1.5'
+                      : 'flex w-full min-w-0 max-w-full flex-col items-stretch px-1.5'
+                  }
+                >
+                  {/*
+                    Put "Greg → T → Chad/Ryan" in a w-fit block only as wide as two cards.
+                    If merged team lives in the *same* flex column, w-max includes the 5-wide row and the top bar stretches to that width.
+                  */}
+                  <div
+                    className={
+                      onlyCluster
+                        ? 'flex w-max max-w-full flex-col items-stretch'
+                        : 'flex w-full min-w-0 max-w-full flex-col items-stretch'
+                    }
+                  >
+                    <div
+                      className={`relative h-[2px] w-full ${
+                        onlyCluster ? '' : '-mx-1.5'
+                      }`}
+                    >
+                      {onlyCluster ? (
+                        <div className="absolute inset-0 h-[2px] bg-gray-500 dark:bg-gray-400" />
+                      ) : (
+                        <>
+                          <div
+                            className={`absolute top-0 left-0 right-1/2 h-[2px] ${
+                              isFirst ? '' : 'bg-gray-500 dark:bg-gray-400'
+                            }`}
+                          />
+                          <div
+                            className={`absolute top-0 left-1/2 right-0 h-[2px] ${
+                              isLast ? '' : 'bg-gray-500 dark:bg-gray-400'
+                            }`}
+                          />
+                        </>
+                      )}
+                    </div>
+                    <div className="flex w-full min-w-0 flex-row items-start justify-center gap-0">
+                      {cluster.map((child) => (
+                        <div
+                          key={child.id}
+                          className="flex w-[200px] min-w-[160px] max-w-[200px] shrink-0 flex-col items-center"
+                        >
+                          <div className="h-4 w-[2px] shrink-0 rounded-sm bg-gray-500 dark:bg-gray-400" />
+                          <FlowchartNode
+                            node={child}
+                            orgTree={orgTree}
+                            onSelect={onSelect}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
+                            onAddUnder={onAddUnder}
+                            onDrop={onDrop}
+                            collapsedNodes={collapsedNodes}
+                            toggleCollapse={toggleCollapse}
+                            draggedId={draggedId}
+                            setDraggedId={setDraggedId}
+                            dataVersion={dataVersion}
+                            orgLevels={orgLevels}
+                            orgRoles={orgRoles}
+                            peopleLookup={peopleLookup}
+                            profileToGroup={profileToGroup}
+                            groupMembers={groupMembers}
+                            groupColors={groupColors}
+                            onUngroup={onUngroup}
+                            inManagerCluster
+                            suppressSubtree
+                            canEdit={canEdit}
+                          />
+                          {mergedDirects.length > 0 && !mergeCollapsed && (
+                            <div className="h-4 w-[2px] shrink-0 rounded-sm bg-gray-500 dark:bg-gray-400" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {mergedDirects.length > 0 && (
+                    <div
+                      className={
+                        onlyCluster
+                          ? 'relative -mt-px w-max min-w-0 max-w-full self-center'
+                          : 'relative -mt-px w-full min-w-0'
+                      }
+                    >
+                      <button
+                        type="button"
+                        draggable={false}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          toggleCollapse(mergeCollapseKey);
+                        }}
+                        className="absolute -top-1 right-0 z-20 rounded-full border border-gray-200 bg-white p-0.5 shadow hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800"
+                        title={mergeCollapsed ? 'Expand team' : 'Collapse team'}
+                      >
+                        {mergeCollapsed ? (
+                          <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
+                        ) : (
+                          <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
+                        )}
+                      </button>
+                      {!mergeCollapsed && (
+                        <>
+                          <div
+                            className="grid w-full min-w-0 max-w-full gap-0"
+                            style={{
+                              gridTemplateColumns: `repeat(${mergedDirects.length}, minmax(160px, 200px))`,
+                            }}
+                          >
+                            <div
+                              className="h-[2px] bg-gray-500 dark:bg-gray-400"
+                              style={{ gridColumn: '1 / -1' }}
+                            />
+                            {mergedDirects.map((sub) => {
+                              return (
+                                <div
+                                  key={`${sub.id}-${dataVersion}-mg`}
+                                  className="flex min-w-0 flex-col items-center px-1.5"
+                                >
+                                  <div className="h-4 w-[2px] shrink-0 rounded-sm bg-gray-500 dark:bg-gray-400" />
+                                  <FlowchartNode
+                                    node={sub}
+                                    orgTree={orgTree}
+                                    onSelect={onSelect}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    onAddUnder={onAddUnder}
+                                    onDrop={onDrop}
+                                    collapsedNodes={collapsedNodes}
+                                    toggleCollapse={toggleCollapse}
+                                    draggedId={draggedId}
+                                    setDraggedId={setDraggedId}
+                                    dataVersion={dataVersion}
+                                    orgLevels={orgLevels}
+                                    orgRoles={orgRoles}
+                                    peopleLookup={peopleLookup}
+                                    profileToGroup={profileToGroup}
+                                    groupMembers={groupMembers}
+                                    groupColors={groupColors}
+                                    onUngroup={onUngroup}
+                                    canEdit={canEdit}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+        );
+      })()}
+    </div>
+  );
+};
+
+// ============================================================================
+// Searchable Manager Picker
+// ============================================================================
+const ManagerPicker: React.FC<{
+  people: OrgPerson[];
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+  excludeId?: string;
+  label?: string;
+  helperText?: string;
+}> = ({ people, selectedIds, onChange, excludeId, label = 'Reports to (search & select one or more)', helperText = 'Leave empty to keep at top level.' }) => {
+  const [query, setQuery] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, []);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return people
+      .filter((p) => (excludeId ? p.id !== excludeId : true))
+      .filter((p) => !selectedIds.includes(p.id))
+      .filter((p) =>
+        q === ''
+          ? true
+          : (p.full_name || '').toLowerCase().includes(q) ||
+            (p.job_title || '').toLowerCase().includes(q)
+      )
+      .slice(0, 20);
+  }, [people, query, selectedIds, excludeId]);
+
+  const selected = selectedIds
+    .map((id) => people.find((p) => p.id === id))
+    .filter(Boolean) as OrgPerson[];
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <Label>{label}</Label>
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-1.5 mb-1.5">
+          {selected.map((p) => (
+            <span
+              key={p.id}
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/40 rounded-full"
+            >
+              {p.full_name}
+              <button
+                type="button"
+                onClick={() => onChange(selectedIds.filter((id) => id !== p.id))}
+                className="ml-0.5 hover:text-[#f26722]/70"
+                aria-label={`Remove ${p.full_name}`}
+              >
+                ×
+              </button>
+            </span>
+          ))}
         </div>
       )}
+      <div className="relative mt-1.5">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+        <Input
+          value={query}
+          onFocus={() => setIsOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+          }}
+          placeholder="Search by name or title..."
+          className="pl-10"
+        />
+      </div>
+      {isOpen && (
+        <div className="absolute z-30 mt-1 w-full max-h-56 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 shadow-lg divide-y divide-gray-100 dark:divide-gray-700">
+          {filtered.length === 0 ? (
+            <p className="p-3 text-sm text-gray-500">
+              {query ? 'No matches' : selected.length === people.length ? 'All options selected' : 'Start typing to search…'}
+            </p>
+          ) : (
+            filtered.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => {
+                  onChange(Array.from(new Set([...selectedIds, p.id])));
+                  setQuery('');
+                }}
+                className="w-full flex items-center gap-2 p-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <div className="w-7 h-7 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+                  {p.avatar_url ? (
+                    <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[10px] font-medium text-gray-500">
+                      {(p.full_name || '?')[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-gray-900 dark:text-white">{p.full_name}</p>
+                  {p.job_title && <p className="truncate text-xs text-gray-500">{p.job_title}</p>}
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+      <p className="mt-1 text-xs text-gray-500">{helperText}</p>
     </div>
   );
 };
@@ -548,6 +995,7 @@ export const OrgChart: React.FC = () => {
   const [addUnderManagerId, setAddUnderManagerId] = useState<string | null>(null);
   const [addLevelId, setAddLevelId] = useState<string | null>(null);
   const [addRole, setAddRole] = useState('');
+  const [addManagerIds, setAddManagerIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
 
@@ -557,6 +1005,17 @@ export const OrgChart: React.FC = () => {
   const [editJobTitle, setEditJobTitle] = useState('');
   const [editRole, setEditRole] = useState('');
   const [editLevelId, setEditLevelId] = useState<string | null>(null);
+  const [editManagerIds, setEditManagerIds] = useState<string[]>([]);
+
+  // Manager groups: profile_id -> group_id, and group_id -> profile_id[]
+  const [profileToGroup, setProfileToGroup] = useState<Record<string, string>>({});
+  const [groupMembers, setGroupMembers] = useState<Record<string, string[]>>({});
+  const [groupColors, setGroupColors] = useState<Record<string, string>>({});
+  const [managerGroupsSupported, setManagerGroupsSupported] = useState<boolean>(true);
+
+  // Drop choice dialog state (Group Together vs Move Under)
+  const [dropDialogOpen, setDropDialogOpen] = useState(false);
+  const [pendingDrop, setPendingDrop] = useState<{ draggedId: string; targetId: string } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -691,6 +1150,41 @@ export const OrgChart: React.FC = () => {
         profilesMap[p.id] = p; 
       });
 
+      // Get manager groups (gracefully handle missing tables)
+      try {
+        const [{ data: groupsData, error: groupsError }, { data: groupMembersData, error: groupMembersError }] = await Promise.all([
+          supabase.schema('common').from('org_chart_manager_groups').select('id, color'),
+          supabase.schema('common').from('org_chart_manager_group_members').select('group_id, profile_id'),
+        ]);
+
+        if (groupsError || groupMembersError) {
+          setManagerGroupsSupported(false);
+          setProfileToGroup({});
+          setGroupMembers({});
+          setGroupColors({});
+        } else {
+          const colorMap: Record<string, string> = {};
+          (groupsData || []).forEach((g: any) => {
+            colorMap[g.id] = g.color || 'orange';
+          });
+
+          const pToG: Record<string, string> = {};
+          const gToP: Record<string, string[]> = {};
+          (groupMembersData || []).forEach((m: any) => {
+            pToG[m.profile_id] = m.group_id;
+            if (!gToP[m.group_id]) gToP[m.group_id] = [];
+            gToP[m.group_id].push(m.profile_id);
+          });
+
+          setProfileToGroup(pToG);
+          setGroupMembers(gToP);
+          setGroupColors(colorMap);
+          setManagerGroupsSupported(true);
+        }
+      } catch {
+        setManagerGroupsSupported(false);
+      }
+
       // Get org chart assignments (level_id, role, reports_to)
       const { data: assignmentsData } = await supabase
         .schema('common')
@@ -698,14 +1192,31 @@ export const OrgChart: React.FC = () => {
         .select('profile_id, reports_to_profile_id, level_id, role');
 
       const assignmentsMap: Record<string, string | null> = {};
+      const assignmentManagerIdsMap: Record<string, string[]> = {};
       const rolesMap: Record<string, string> = {};
       const levelsMap: Record<string, string | null> = {};
-      const onChartIds: string[] = [];
+      const onChartIds = new Set<string>();
       (assignmentsData || []).forEach((a: any) => {
-        assignmentsMap[a.profile_id] = a.reports_to_profile_id;
-        rolesMap[a.profile_id] = a.role || '';
-        levelsMap[a.profile_id] = a.level_id ?? null;
-        onChartIds.push(a.profile_id);
+        if (!assignmentManagerIdsMap[a.profile_id]) {
+          assignmentManagerIdsMap[a.profile_id] = [];
+        }
+        if (a.reports_to_profile_id) {
+          assignmentManagerIdsMap[a.profile_id].push(a.reports_to_profile_id);
+        }
+        if (!(a.profile_id in rolesMap)) {
+          rolesMap[a.profile_id] = a.role || '';
+        }
+        if (!(a.profile_id in levelsMap)) {
+          levelsMap[a.profile_id] = a.level_id ?? null;
+        }
+        if (!(a.profile_id in assignmentsMap)) {
+          assignmentsMap[a.profile_id] = a.reports_to_profile_id;
+        }
+        onChartIds.add(a.profile_id);
+      });
+
+      Object.entries(assignmentManagerIdsMap).forEach(([profileId, managerIds]) => {
+        assignmentsMap[profileId] = managerIds[0] || null;
       });
 
       // Build allEmployees list (for add modal)
@@ -728,6 +1239,7 @@ export const OrgChart: React.FC = () => {
               job_title: profile?.job_title || '',
               avatar_url: avatarUrl,
               reports_to: assignmentsMap[u.id] ?? null,
+              reports_to_ids: assignmentManagerIdsMap[u.id] || [],
             };
           });
       } else {
@@ -737,6 +1249,7 @@ export const OrgChart: React.FC = () => {
           job_title: p.job_title || '',
           avatar_url: p.avatar_url || p.profile_image || null,
           reports_to: assignmentsMap[p.id] ?? null,
+          reports_to_ids: assignmentManagerIdsMap[p.id] || [],
         }));
       }
       employees.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
@@ -748,7 +1261,7 @@ export const OrgChart: React.FC = () => {
         .schema('common')
         .from('job_title_history')
         .select('profile_id, title')
-        .in('profile_id', onChartIds)
+        .in('profile_id', Array.from(onChartIds))
         .order('effective_from', { ascending: false });
       const latestJobTitleByProfile: Record<string, string> = {};
       (jobHistoryData || []).forEach((row: any) => {
@@ -761,7 +1274,7 @@ export const OrgChart: React.FC = () => {
       const chartPeople: OrgPerson[] = [];
       // For people whose name is missing from profiles, fetch from auth metadata via RPC
       const metadataMap: Record<string, any> = {};
-      const idsNeedingMetadata = onChartIds.filter(id => {
+      const idsNeedingMetadata = Array.from(onChartIds).filter(id => {
         const p = profilesMap[id];
         return !p?.full_name;
       });
@@ -775,7 +1288,7 @@ export const OrgChart: React.FC = () => {
         metaResults.forEach(({ id, data }) => { if (data) metadataMap[id] = data; });
       }
 
-      for (const profileId of onChartIds) {
+      for (const profileId of Array.from(onChartIds)) {
         const profile = profilesMap[profileId];
         const user = usersMap[profileId];
         const meta = metadataMap[profileId];
@@ -792,6 +1305,7 @@ export const OrgChart: React.FC = () => {
           job_title: jobTitle,
           avatar_url: avatarUrl,
           reports_to: assignmentsMap[profileId] ?? null,
+          reports_to_ids: assignmentManagerIdsMap[profileId] || [],
           role: rolesMap[profileId] || '',
           level_id: levelsMap[profileId] ?? null,
         });
@@ -813,41 +1327,197 @@ export const OrgChart: React.FC = () => {
 
   // Rebuild tree on every render to ensure fresh data (dataVersion forces parent re-render)
   const orgTree = buildOrgTree(people);
+  const peopleLookup = useMemo(() => {
+    const lookup: Record<string, OrgPerson> = {};
+    people.forEach((person) => {
+      lookup[person.id] = person;
+    });
+    return lookup;
+  }, [people]);
 
-  // Handle drop - update reporting structure
-  const handleDrop = async (draggedPersonId: string, newManagerId: string | null) => {
+  // Drop entry: top-level and leaf employees move immediately; only manager→manager shows Group vs Move.
+  const handleDrop = (draggedPersonId: string, newManagerId: string | null) => {
+    if (!newManagerId) {
+      void handleMoveUnder(draggedPersonId, null);
+      return;
+    }
+    const draggedInTree = findNodeById(orgTree, draggedPersonId);
+    const draggedIsLeaf = !draggedInTree || draggedInTree.children.length === 0;
+    if (draggedIsLeaf) {
+      void handleMoveUnder(draggedPersonId, newManagerId);
+      return;
+    }
+    setPendingDrop({ draggedId: draggedPersonId, targetId: newManagerId });
+    setDropDialogOpen(true);
+  };
+
+  // "Move Under": standard reporting reassignment, group-aware for target.
+  // If target is in a manager group, employee reports to every member of the group.
+  const handleMoveUnder = async (draggedPersonId: string, newManagerId: string | null) => {
     const draggedPerson = people.find(p => p.id === draggedPersonId);
     if (!draggedPerson) return;
 
-    // Check if it's actually a change
-    if (draggedPerson.reports_to === newManagerId) {
-      toast({ title: 'No change', description: 'Already reports to this person' });
+    // Expand to full group if target is in one
+    let targetManagerIds: string[] = [];
+    if (newManagerId) {
+      const groupId = profileToGroup[newManagerId];
+      if (groupId && groupMembers[groupId]?.length) {
+        targetManagerIds = groupMembers[groupId];
+      } else {
+        targetManagerIds = [newManagerId];
+      }
+    }
+
+    const existingList =
+      (draggedPerson.reports_to_ids && draggedPerson.reports_to_ids.length > 0)
+        ? Array.from(new Set(draggedPerson.reports_to_ids.filter(Boolean)))
+        : draggedPerson.reports_to
+          ? [draggedPerson.reports_to]
+          : [];
+    const existing = existingList.sort();
+    const proposed = [...targetManagerIds].sort();
+    if (existing.length === proposed.length && existing.every((id, i) => id === proposed[i])) {
+      toast({ title: 'No change', description: 'Already reports to this manager' });
+      setDraggedId(null);
       return;
     }
 
     setSaving(true);
     try {
-      await supabase
-        .schema('common')
-        .from('org_chart_assignments')
-        .update({ reports_to_profile_id: newManagerId })
-        .eq('profile_id', draggedPersonId);
-
-      const managerName = newManagerId 
-        ? people.find(p => p.id === newManagerId)?.full_name || 'manager'
-        : 'top level';
-      
-      toast({ 
-        title: 'Moved', 
-        description: `${draggedPerson.full_name} now reports to ${managerName}`,
-        variant: 'success' 
+      await replaceProfileOrgChartAssignments(draggedPersonId, newManagerId ? targetManagerIds : [], {
+        level_id: draggedPerson.level_id ?? null,
+        role: draggedPerson.role || null,
+        grid_column: 0,
       });
+
+      const description = targetManagerIds.length === 0
+        ? `${draggedPerson.full_name} moved to top level`
+        : targetManagerIds.length === 1
+          ? `${draggedPerson.full_name} now reports to ${people.find(p => p.id === targetManagerIds[0])?.full_name || 'manager'}`
+          : `${draggedPerson.full_name} now reports to ${targetManagerIds.length} managers (group)`;
+
+      toast({ title: 'Moved', description, variant: 'success' });
       await fetchData();
     } catch (e: any) {
       toast({ title: 'Error', description: e?.message || 'Failed to update', variant: 'destructive' });
     } finally {
       setSaving(false);
       setDraggedId(null);
+    }
+  };
+
+  // "Group Together": add both managers to a shared manager group.
+  const handleGroupTogether = async (a: string, b: string) => {
+    if (!managerGroupsSupported) {
+      toast({
+        title: 'Setup required',
+        description: 'Run enable_org_chart_manager_groups.sql in Supabase to enable grouping.',
+        variant: 'destructive',
+      });
+      setDraggedId(null);
+      return;
+    }
+    if (a === b) return;
+
+    setSaving(true);
+    try {
+      const groupA = profileToGroup[a];
+      const groupB = profileToGroup[b];
+
+      // Decide target group
+      let targetGroupId = groupA || groupB || null;
+
+      if (groupA && groupB && groupA !== groupB) {
+        // Merge: move all members of groupA into groupB
+        const { error: mergeError } = await supabase
+          .schema('common')
+          .from('org_chart_manager_group_members')
+          .update({ group_id: groupB })
+          .eq('group_id', groupA);
+        if (mergeError) throw mergeError;
+
+        // Delete empty group A
+        await supabase
+          .schema('common')
+          .from('org_chart_manager_groups')
+          .delete()
+          .eq('id', groupA);
+
+        targetGroupId = groupB;
+      } else if (!targetGroupId) {
+        // Create a new group
+        const palette = ['orange', 'teal', 'purple', 'green', 'amber', 'cyan', 'red'];
+        const pickColor = palette[Math.floor(Math.random() * palette.length)];
+        const { data: newGroup, error: newGroupError } = await supabase
+          .schema('common')
+          .from('org_chart_manager_groups')
+          .insert({ color: pickColor })
+          .select('id')
+          .single();
+        if (newGroupError || !newGroup) throw newGroupError || new Error('Could not create group');
+        targetGroupId = newGroup.id;
+      }
+
+      // Add both members (idempotent via upsert on profile_id PK)
+      const rows = [a, b].map((profile_id) => ({ profile_id, group_id: targetGroupId }));
+      const { error: memberError } = await supabase
+        .schema('common')
+        .from('org_chart_manager_group_members')
+        .upsert(rows, { onConflict: 'profile_id' });
+      if (memberError) throw memberError;
+
+      const nameA = people.find(p => p.id === a)?.full_name || 'Manager';
+      const nameB = people.find(p => p.id === b)?.full_name || 'Manager';
+      toast({
+        title: 'Grouped',
+        description: `${nameA} and ${nameB} now share reports. Assigning someone to either assigns them to both.`,
+        variant: 'success',
+      });
+
+      await fetchData();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e?.message || 'Failed to group managers', variant: 'destructive' });
+    } finally {
+      setSaving(false);
+      setDraggedId(null);
+    }
+  };
+
+  const handleUngroup = async (profileId: string) => {
+    if (!managerGroupsSupported) return;
+    const groupId = profileToGroup[profileId];
+    if (!groupId) return;
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .schema('common')
+        .from('org_chart_manager_group_members')
+        .delete()
+        .eq('profile_id', profileId);
+      if (error) throw error;
+
+      // If group is now empty or has <2 members, delete it
+      const remaining = (groupMembers[groupId] || []).filter((id) => id !== profileId);
+      if (remaining.length < 2) {
+        await supabase
+          .schema('common')
+          .from('org_chart_manager_group_members')
+          .delete()
+          .eq('group_id', groupId);
+        await supabase
+          .schema('common')
+          .from('org_chart_manager_groups')
+          .delete()
+          .eq('id', groupId);
+      }
+
+      toast({ title: 'Removed from group', variant: 'success' });
+      await fetchData();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e?.message || 'Failed to leave group', variant: 'destructive' });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -895,19 +1565,17 @@ export const OrgChart: React.FC = () => {
         // Continue anyway - profile might already exist
       }
 
-      // Create org chart assignment (level_id and role can be null)
-      const { error: assignmentError } = await supabase
-        .schema('common')
-        .from('org_chart_assignments')
-        .upsert({
-          profile_id: selectedEmployeeId,
-          reports_to_profile_id: addUnderManagerId,
+      const selectedManagerIds = Array.from(new Set(addManagerIds.filter(Boolean)));
+      try {
+        await replaceProfileOrgChartAssignments(selectedEmployeeId, selectedManagerIds, {
           level_id: levelId,
           role: addRole === '' ? null : addRole,
           grid_column: 0,
-        }, { onConflict: 'profile_id' });
-
-      if (assignmentError) {
+        });
+      } catch (assignmentError: any) {
+        if ((assignmentError?.message || '').toLowerCase().includes('duplicate')) {
+          throw new Error('This database may need the multi-manager org chart SQL migration. Run it, then try again.');
+        }
         throw assignmentError;
       }
 
@@ -915,6 +1583,7 @@ export const OrgChart: React.FC = () => {
       setAddModalOpen(false);
       setSelectedEmployeeId(null);
       setAddUnderManagerId(null);
+      setAddManagerIds([]);
       setAddLevelId(null);
       setAddRole('');
       setSearch('');
@@ -1084,6 +1753,7 @@ export const OrgChart: React.FC = () => {
 
   const openAddModal = (managerId: string | null = null) => {
     setAddUnderManagerId(managerId);
+    setAddManagerIds(managerId ? [managerId] : []);
     setAddLevelId(null);
     setAddRole('');
     setSelectedEmployeeId(null);
@@ -1096,6 +1766,9 @@ export const OrgChart: React.FC = () => {
     setEditJobTitle(person.job_title || '');
     setEditRole(person.role || '');
     setEditLevelId(person.level_id || null);
+    setEditManagerIds((person.reports_to_ids && person.reports_to_ids.length > 0)
+      ? person.reports_to_ids
+      : (person.reports_to ? [person.reports_to] : []));
     setEditModalOpen(true);
   };
 
@@ -1107,21 +1780,24 @@ export const OrgChart: React.FC = () => {
       const userId = editingPerson.id;
       const newRole = editRole === '' ? null : (editRole || null);
       const newLevelId = editLevelId || null;
-      
-      // Update level and role in org_chart_assignments (level_id and role can both be null)
-      const updatePayload: { role?: string | null; level_id?: string | null } = { role: newRole, level_id: newLevelId };
-
-      const { error } = await supabase
-        .schema('common')
-        .from('org_chart_assignments')
-        .update(updatePayload)
-        .eq('profile_id', userId);
-
-      if (error) throw error;
+      const managerIdsToSave = Array.from(new Set(editManagerIds.filter(Boolean)));
+      await replaceProfileOrgChartAssignments(userId, managerIdsToSave, {
+        level_id: newLevelId,
+        role: newRole,
+        grid_column: 0,
+      });
 
       // Update local state immediately for instant feedback
       setPeople(prev => prev.map(p => 
-        p.id === userId ? { ...p, role: newRole || '', level_id: newLevelId } : p
+        p.id === userId
+          ? {
+              ...p,
+              role: newRole || '',
+              level_id: newLevelId,
+              reports_to: managerIdsToSave[0] || null,
+              reports_to_ids: managerIdsToSave,
+            }
+          : p
       ));
       setDataVersion(v => v + 1);
 
@@ -1131,6 +1807,7 @@ export const OrgChart: React.FC = () => {
       setEditJobTitle('');
       setEditRole('');
       setEditLevelId(null);
+      setEditManagerIds([]);
       
       // Refetch to ensure consistency
       await fetchData();
@@ -1191,7 +1868,11 @@ export const OrgChart: React.FC = () => {
       {/* Instructions */}
       <div className="flex items-center gap-2 text-xs text-gray-500">
         {canEdit && <GripVertical className="h-4 w-4" />}
-        <span>{canEdit ? 'Drag cards to rearrange · Click & drag background to pan' : 'Click a person to view their profile · Click & drag background to pan'}</span>
+        <span>
+          {canEdit
+            ? 'Drag to reorganize: anyone with no one below them moves in one step; if you drag a manager, you choose Group or Under. Click & drag empty background to pan.'
+            : 'Click a person to view their profile · Click & drag background to pan'}
+        </span>
       </div>
 
       {/* Chart Card */}
@@ -1328,6 +2009,11 @@ export const OrgChart: React.FC = () => {
                     dataVersion={dataVersion}
                     orgLevels={orgLevels}
                     orgRoles={orgRoles}
+                    peopleLookup={peopleLookup}
+                    profileToGroup={profileToGroup}
+                    groupMembers={groupMembers}
+                    groupColors={groupColors}
+                    onUngroup={handleUngroup}
                     canEdit={canEdit}
                   />
                 ))}
@@ -1339,7 +2025,7 @@ export const OrgChart: React.FC = () => {
 
       {/* Add Person Modal */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {addUnderManagerId 
@@ -1416,21 +2102,12 @@ export const OrgChart: React.FC = () => {
                 )}
               </div>
             </div>
-            {!addUnderManagerId && (
-              <div>
-                <Label>Reports to (optional)</Label>
-                <select
-                  value={addUnderManagerId || ''}
-                  onChange={(e) => setAddUnderManagerId(e.target.value || null)}
-                  className="mt-1.5 w-full h-10 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
-                >
-                  <option value="">No manager (top level)</option>
-                  {people.map((p) => (
-                    <option key={p.id} value={p.id}>{p.full_name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <ManagerPicker
+              people={people}
+              selectedIds={addManagerIds}
+              onChange={setAddManagerIds}
+              helperText="Type to search. Leave empty to place at top level."
+            />
             {orgLevels.length > 0 && (
               <div>
                 <Label>Level (optional)</Label>
@@ -1472,7 +2149,7 @@ export const OrgChart: React.FC = () => {
 
       {/* Edit Person Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Level & Role</DialogTitle>
           </DialogHeader>
@@ -1538,6 +2215,13 @@ export const OrgChart: React.FC = () => {
                   ))}
                 </select>
               </div>
+              <ManagerPicker
+                people={people}
+                selectedIds={editManagerIds}
+                onChange={setEditManagerIds}
+                excludeId={editingPerson.id}
+                helperText="Type to search. Leave empty to make this person top level."
+              />
             </div>
           )}
           <DialogFooter>
@@ -1709,6 +2393,93 @@ export const OrgChart: React.FC = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSettingsOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Drop Choice Dialog: Group Together vs Move Under */}
+      <Dialog
+        open={dropDialogOpen}
+        onOpenChange={(open) => {
+          setDropDialogOpen(open);
+          if (!open) {
+            setPendingDrop(null);
+            setDraggedId(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Choose relationship</DialogTitle>
+          </DialogHeader>
+          {pendingDrop && (() => {
+            const draggedP = people.find((p) => p.id === pendingDrop.draggedId);
+            const targetP = people.find((p) => p.id === pendingDrop.targetId);
+            const targetGroupId = profileToGroup[pendingDrop.targetId];
+            const targetGroupSize = targetGroupId ? (groupMembers[targetGroupId] || []).length : 0;
+            return (
+              <div className="space-y-4 py-2">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  What should happen with{' '}
+                  <span className="font-medium">{draggedP?.full_name || 'this person'}</span>{' '}
+                  and{' '}
+                  <span className="font-medium">{targetP?.full_name || 'the target'}</span>?
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (pendingDrop) {
+                      void handleMoveUnder(pendingDrop.draggedId, pendingDrop.targetId);
+                    }
+                    setDropDialogOpen(false);
+                    setPendingDrop(null);
+                  }}
+                  className="w-full text-left p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:border-[#f26722] hover:bg-[#f26722]/5"
+                >
+                  <p className="font-medium text-gray-900 dark:text-white">Move Under</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {targetGroupSize > 1
+                      ? `${draggedP?.full_name || 'This person'} will report to all ${targetGroupSize} managers in ${targetP?.full_name}'s group.`
+                      : `${draggedP?.full_name || 'This person'} will report to ${targetP?.full_name || 'the target'}.`}
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={!managerGroupsSupported}
+                  onClick={() => {
+                    if (pendingDrop) {
+                      void handleGroupTogether(pendingDrop.draggedId, pendingDrop.targetId);
+                    }
+                    setDropDialogOpen(false);
+                    setPendingDrop(null);
+                  }}
+                  className={`w-full text-left p-3 rounded-lg border border-gray-300 dark:border-gray-600 ${
+                    managerGroupsSupported ? 'hover:border-[#f26722] hover:bg-[#f26722]/5' : 'opacity-50 cursor-not-allowed'
+                  }`}
+                >
+                  <p className="font-medium text-gray-900 dark:text-white">Group Together</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {managerGroupsSupported
+                      ? 'Make them peers who share reports. Anyone dropped on either will report to both.'
+                      : 'Run enable_org_chart_manager_groups.sql to enable grouping.'}
+                  </p>
+                </button>
+              </div>
+            );
+          })()}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDropDialogOpen(false);
+                setPendingDrop(null);
+                setDraggedId(null);
+              }}
+            >
+              Cancel
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

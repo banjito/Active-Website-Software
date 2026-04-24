@@ -163,41 +163,58 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           if (!profileError && profileData) {
             console.log(`Found user ${userId} in profiles table:`, profileData);
             
-            // Try to get user metadata to get coverImage and profileImage
-            // Use admin_get_users to get all users, then filter for this user
+            // Try to get the target user's full raw_user_meta_data.
+            // Prefer the dedicated reader RPC (allows self + Admin/HR),
+            // fall back to admin_get_users (Admin-only), then the limited
+            // common.get_user_metadata.
             let userMetadata: any = {};
             try {
-              // First try admin_get_users which has user_metadata
-              const { data: adminData, error: adminError } = await supabase
+              const { data: metaJson, error: metaErr1 } = await supabase
                 .schema('common')
-                .rpc('admin_get_users');
-              
-              if (!adminError && adminData) {
-                const userFromAdmin = adminData.find((u: any) => u.id === userId);
-                if (userFromAdmin) {
-                  userMetadata = {
-                    profileImage: userFromAdmin.raw_user_meta_data?.profileImage || userFromAdmin.user_metadata?.profileImage || userFromAdmin.raw_user_meta_data?.avatar_url || userFromAdmin.user_metadata?.avatar_url,
-                    coverImage: userFromAdmin.raw_user_meta_data?.coverImage || userFromAdmin.user_metadata?.coverImage,
-                    name: userFromAdmin.raw_user_meta_data?.name || userFromAdmin.user_metadata?.name,
-                    email: userFromAdmin.email,
-                    ...(userFromAdmin.raw_user_meta_data || userFromAdmin.user_metadata || {})
-                  };
+                .rpc('admin_get_user_metadata', { target_user_id: userId });
+
+              if (!metaErr1 && metaJson && typeof metaJson === 'object') {
+                userMetadata = {
+                  profileImage: (metaJson as any).profileImage || (metaJson as any).avatar_url,
+                  coverImage: (metaJson as any).coverImage,
+                  name: (metaJson as any).name,
+                  email: (metaJson as any).email,
+                  ...(metaJson as any),
+                };
+              }
+
+              if (!userMetadata || Object.keys(userMetadata).length === 0) {
+                const { data: adminData, error: adminError } = await supabase
+                  .schema('common')
+                  .rpc('admin_get_users');
+
+                if (!adminError && adminData) {
+                  const userFromAdmin = adminData.find((u: any) => u.id === userId);
+                  if (userFromAdmin) {
+                    userMetadata = {
+                      profileImage: userFromAdmin.raw_user_meta_data?.profileImage || userFromAdmin.user_metadata?.profileImage || userFromAdmin.raw_user_meta_data?.avatar_url || userFromAdmin.user_metadata?.avatar_url,
+                      coverImage: userFromAdmin.raw_user_meta_data?.coverImage || userFromAdmin.user_metadata?.coverImage,
+                      name: userFromAdmin.raw_user_meta_data?.name || userFromAdmin.user_metadata?.name,
+                      email: userFromAdmin.email,
+                      ...(userFromAdmin.raw_user_meta_data || userFromAdmin.user_metadata || {})
+                    };
+                  }
                 }
               }
-              
-              // Fallback to get_user_metadata if admin_get_users didn't work
+
               if (!userMetadata.coverImage && !userMetadata.profileImage) {
                 const { data: metaData, error: metaError } = await supabase
                   .schema('common')
                   .rpc('get_user_metadata', { p_user_id: userId });
-                
+
                 if (!metaError && metaData) {
                   userMetadata = {
                     profileImage: metaData.profile_image || metaData.avatar_url || metaData.profileImage,
                     coverImage: metaData.cover_image || metaData.coverImage,
                     name: metaData.name || metaData.full_name,
                     email: metaData.email,
-                    ...metaData
+                    ...metaData,
+                    ...userMetadata,
                   };
                 }
               }

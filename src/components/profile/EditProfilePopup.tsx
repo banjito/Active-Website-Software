@@ -354,7 +354,6 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       // Update the profile image state immediately
       setProfileImage(publicUrl);
 
-      // Update user metadata with new image URL
       console.log('Updating user metadata...');
       if (isEditingOwnProfile) {
         const { error: updateError } = await supabase.auth.updateUser({
@@ -365,9 +364,19 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
           console.error('Failed to update user metadata:', updateError);
           throw new Error('Failed to update profile: ' + updateError.message);
         }
+      } else {
+        const { error: rpcError } = await supabase
+          .schema('common')
+          .rpc('admin_update_user_metadata', {
+            target_user_id: editingUserId,
+            new_metadata: { profileImage: publicUrl },
+          });
+        if (rpcError) {
+          console.error('Failed to update target user metadata (avatar):', rpcError);
+          throw new Error('Failed to update profile: ' + rpcError.message);
+        }
       }
 
-      // Sync to profiles table so other users can see this avatar (profiles is readable by all authenticated)
       await supabase.schema('common').from('profiles').upsert({
         id: editingUserId,
         avatar_url: publicUrl,
@@ -430,7 +439,6 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       // Update state immediately
       setCoverImage(publicUrl);
 
-      // Update metadata
       if (isEditingOwnProfile) {
         const { error: updateError } = await supabase.auth.updateUser({
           data: { ...user.user_metadata, coverImage: publicUrl }
@@ -440,9 +448,19 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
           console.error('Failed to update user metadata (cover):', updateError);
           throw new Error('Failed to update cover image: ' + updateError.message);
         }
+      } else {
+        const { error: rpcError } = await supabase
+          .schema('common')
+          .rpc('admin_update_user_metadata', {
+            target_user_id: editingUserId,
+            new_metadata: { coverImage: publicUrl },
+          });
+        if (rpcError) {
+          console.error('Failed to update target user metadata (cover):', rpcError);
+          throw new Error('Failed to update cover image: ' + rpcError.message);
+        }
       }
 
-      // Sync to profiles table so other users can see this cover
       await supabase.schema('common').from('profiles').upsert({
         id: editingUserId,
         cover_image: publicUrl,
@@ -703,37 +721,61 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         userMetadata.coverImage = coverImage;
       }
 
+      console.log('[EditProfilePopup] handleSubmit', {
+        editingUserId,
+        isEditingOwnProfile,
+        viewerId: user?.id,
+        userMetadataKeys: Object.keys(userMetadata),
+      });
+
       if (isEditingOwnProfile) {
         const { error } = await supabase.auth.updateUser({
           data: userMetadata
         });
 
         if (error) throw error;
+      } else {
+        const { data: rpcData, error: rpcError } = await supabase
+          .schema('common')
+          .rpc('admin_update_user_metadata', {
+            target_user_id: editingUserId,
+            new_metadata: userMetadata,
+          });
+        console.log('[EditProfilePopup] admin_update_user_metadata result', {
+          rpcData,
+          rpcError,
+        });
+        if (rpcError) {
+          console.error('admin_update_user_metadata failed:', rpcError);
+          throw new Error(
+            'Failed to update profile: ' + rpcError.message +
+            '. If this is the first time, run create_admin_update_user_metadata_function.sql in Supabase.'
+          );
+        }
       }
 
-      // Persist employee info to common.profiles so it shows on profile view
-      await supabase
+      // Also mirror the "profiles" columns that ProfileView reads directly.
+      // Only include fields that exist as actual columns on common.profiles.
+      const profilesRow: Record<string, any> = {
+        id: editingUserId,
+        full_name: name || null,
+        job_title: jobTitle || null,
+        department: department || null,
+      };
+      if (profileImage) {
+        profilesRow.avatar_url = profileImage;
+        profilesRow.profile_image = profileImage;
+      }
+      if (coverImage) {
+        profilesRow.cover_image = coverImage;
+      }
+      const { error: profilesError } = await supabase
         .schema('common')
         .from('profiles')
-        .upsert({
-          id: editingUserId,
-          full_name: name || null,
-          role: selectedRole || null,
-          bio: bio || null,
-          division: division || null,
-          birthday: birthday || null,
-          job_title: jobTitle || null,
-          department: department || null,
-          work_phone: workPhone || null,
-          personal_phone: personalPhone || null,
-          emergency_contact_name: emergencyContactName || null,
-          emergency_contact_phone: emergencyContactPhone || null,
-          emergency_contact_relationship: emergencyContactRelationship || null,
-          goals: goals || null,
-          avatar_url: profileImage || null,
-          profile_image: profileImage || null,
-          cover_image: coverImage || null,
-        }, { onConflict: 'id' });
+        .upsert(profilesRow, { onConflict: 'id' });
+      if (profilesError) {
+        console.warn('common.profiles mirror upsert failed (non-fatal):', profilesError);
+      }
 
       setShowSuccess(true);
       setTimeout(() => {

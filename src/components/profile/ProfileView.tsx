@@ -655,6 +655,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const viewerRole = user?.user_metadata?.role;
   const isAdminViewer = viewerRole === 'Admin' || viewerRole === 'Super Admin';
   const isHrViewer = viewerRole === 'HR' || viewerRole === 'HR Rep';
+  const canEditAnyProfile = isAdminViewer || isHrViewer;
+  const canEditThisProfile = viewingOwnProfile || canEditAnyProfile;
+  const canEditEeData = viewingOwnProfile || isAdminViewer || isHrViewer;
   const canViewSensitiveSection = viewingOwnProfile || isManagerViewingReport || isAdminViewer || isHrViewer;
   const profileIdToFetch = isOpen && canViewSensitiveSection
     ? (userId || (profileUser?.id ?? user?.id))
@@ -795,7 +798,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   const handleSaveFrSizes = async () => {
-    if (!profileIdToFetch || !viewingOwnProfile) return;
+    if (!profileIdToFetch || !canEditEeData) return;
     setSavingFrSizes(true);
     try {
       const { error } = await supabase
@@ -1073,11 +1076,24 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <EditProfilePopup
           isOpen={isEditProfileOpen}
           onClose={handleEditClose}
+          targetUserId={profileUser?.id || userId || user?.id}
           currentUser={{
             name: name,
             email: profileUser?.email,
             role: role,
-            profileImage: profileImage
+            bio: bio,
+            division: division,
+            birthday: birthday,
+            job_title: jobTitle,
+            department: department,
+            work_phone: workPhone,
+            personal_phone: personalPhone,
+            emergency_contact_name: emergencyContactName,
+            emergency_contact_phone: emergencyContactPhone,
+            emergency_contact_relationship: emergencyContactRelationship,
+            goals: goalsText,
+            profileImage: profileImage,
+            coverImage: coverImage,
           }}
         />
       )}
@@ -1151,8 +1167,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   )}
                   {!limitedView && <p className="text-gray-500 dark:text-white mt-1">{profileUser?.email}</p>}
                 </div>
-                {/* Edit Button - Only show if viewing own profile or no userId specified */}
-                {(!userId || userId === user?.id) && (
+                {/* Edit Button - own profile plus HR/Admin for any profile */}
+                {canEditThisProfile && (
                   <Button
                     type="button"
                     variant="outline"
@@ -1438,7 +1454,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                               <Shirt className="h-4 w-4 text-[#f26722]" />
                               FR clothing sizes
                             </h3>
-                            {viewingOwnProfile && !editingFrSizes && (
+                            {canEditEeData && !editingFrSizes && (
                               <button
                                 type="button"
                                 onClick={handleStartEditFrSizes}

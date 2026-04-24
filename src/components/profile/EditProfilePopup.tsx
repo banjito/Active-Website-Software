@@ -16,8 +16,21 @@ interface EditProfilePopupProps {
     name?: string;
     email?: string;
     role?: string;
+    bio?: string;
+    division?: string;
+    birthday?: string;
+    job_title?: string;
+    department?: string;
+    work_phone?: string;
+    personal_phone?: string;
+    emergency_contact_name?: string;
+    emergency_contact_phone?: string;
+    emergency_contact_relationship?: string;
+    goals?: string;
     profileImage?: string;
+    coverImage?: string;
   };
+  targetUserId?: string;
   isNewUser?: boolean;
 }
 
@@ -122,23 +135,26 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   isOpen,
   onClose,
   currentUser,
+  targetUserId,
   isNewUser = false
 }) => {
   const { user } = useAuth();
+  const editingUserId = targetUserId || user?.id || '';
+  const isEditingOwnProfile = !!user?.id && editingUserId === user.id;
   const [step, setStep] = useState(1);
   const [name, setName] = useState(currentUser?.name || '');
   const [selectedRole, setSelectedRole] = useState(currentUser?.role || '');
-  const [bio, setBio] = useState(user?.user_metadata?.bio || '');
-  const [division, setDivision] = useState(user?.user_metadata?.division || '');
-  const [birthday, setBirthday] = useState(user?.user_metadata?.birthday || '');
-  const [jobTitle, setJobTitle] = useState(user?.user_metadata?.job_title || '');
-  const [department, setDepartment] = useState(user?.user_metadata?.department || '');
-  const [workPhone, setWorkPhone] = useState(user?.user_metadata?.work_phone || '');
-  const [personalPhone, setPersonalPhone] = useState(user?.user_metadata?.personal_phone || '');
-  const [emergencyContactName, setEmergencyContactName] = useState(user?.user_metadata?.emergency_contact_name || '');
-  const [emergencyContactPhone, setEmergencyContactPhone] = useState(user?.user_metadata?.emergency_contact_phone || '');
-  const [emergencyContactRelationship, setEmergencyContactRelationship] = useState(user?.user_metadata?.emergency_contact_relationship || '');
-  const [goals, setGoals] = useState(user?.user_metadata?.goals || '');
+  const [bio, setBio] = useState(currentUser?.bio || user?.user_metadata?.bio || '');
+  const [division, setDivision] = useState(currentUser?.division || user?.user_metadata?.division || '');
+  const [birthday, setBirthday] = useState(currentUser?.birthday || user?.user_metadata?.birthday || '');
+  const [jobTitle, setJobTitle] = useState(currentUser?.job_title || user?.user_metadata?.job_title || '');
+  const [department, setDepartment] = useState(currentUser?.department || user?.user_metadata?.department || '');
+  const [workPhone, setWorkPhone] = useState(currentUser?.work_phone || user?.user_metadata?.work_phone || '');
+  const [personalPhone, setPersonalPhone] = useState(currentUser?.personal_phone || user?.user_metadata?.personal_phone || '');
+  const [emergencyContactName, setEmergencyContactName] = useState(currentUser?.emergency_contact_name || user?.user_metadata?.emergency_contact_name || '');
+  const [emergencyContactPhone, setEmergencyContactPhone] = useState(currentUser?.emergency_contact_phone || user?.user_metadata?.emergency_contact_phone || '');
+  const [emergencyContactRelationship, setEmergencyContactRelationship] = useState(currentUser?.emergency_contact_relationship || user?.user_metadata?.emergency_contact_relationship || '');
+  const [goals, setGoals] = useState(currentUser?.goals || user?.user_metadata?.goals || '');
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -162,7 +178,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
   // Update state when user metadata changes
   useEffect(() => {
-    if (user?.user_metadata) {
+    if (isEditingOwnProfile && user?.user_metadata) {
       setName(user.user_metadata.name || '');
       setSelectedRole(user.user_metadata.role || '');
       setBio(user.user_metadata.bio || '');
@@ -178,44 +194,62 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       setGoals(user.user_metadata.goals || '');
       setProfileImage(user.user_metadata.profileImage || null);
       setCoverImage(user.user_metadata.coverImage || null);
+      return;
     }
-  }, [user?.user_metadata]);
+    if (currentUser) {
+      setName(currentUser.name || '');
+      setSelectedRole(currentUser.role || '');
+      setBio(currentUser.bio || '');
+      setDivision(currentUser.division || '');
+      setBirthday(currentUser.birthday || '');
+      setJobTitle(currentUser.job_title || '');
+      setDepartment(currentUser.department || '');
+      setWorkPhone(currentUser.work_phone || '');
+      setPersonalPhone(currentUser.personal_phone || '');
+      setEmergencyContactName(currentUser.emergency_contact_name || '');
+      setEmergencyContactPhone(currentUser.emergency_contact_phone || '');
+      setEmergencyContactRelationship(currentUser.emergency_contact_relationship || '');
+      setGoals(currentUser.goals || '');
+      setProfileImage(currentUser.profileImage || null);
+      setCoverImage(currentUser.coverImage || null);
+    }
+  }, [currentUser, isEditingOwnProfile, user?.user_metadata]);
 
   // Load job_title and department from common.profiles when opening (source of truth for employee info)
   // Also backfill profile/cover image to profiles if it exists in user_metadata but not in profiles (so others can see it)
   useEffect(() => {
-    if (!isOpen || !user?.id) return;
+    if (!isOpen || !editingUserId) return;
     (async () => {
       const { data } = await supabase
         .schema('common')
         .from('profiles')
         .select('job_title, department, avatar_url, profile_image, cover_image')
-        .eq('id', user.id)
+        .eq('id', editingUserId)
         .single();
       if (data) {
         if (data.job_title != null) setJobTitle(data.job_title);
         if (data.department != null) setDepartment(data.department);
       }
       // Backfill: if user has profile/cover in metadata but profiles doesn't, sync so others can see
-      const metaImg = user.user_metadata?.profileImage || user.user_metadata?.avatar_url;
-      const metaCover = user.user_metadata?.coverImage;
+      const metaImg = isEditingOwnProfile ? (user?.user_metadata?.profileImage || user?.user_metadata?.avatar_url) : profileImage;
+      const metaCover = isEditingOwnProfile ? user?.user_metadata?.coverImage : coverImage;
       const hasInProfiles = data?.avatar_url || data?.profile_image;
       const hasCoverInProfiles = data?.cover_image;
       if (metaImg && !hasInProfiles) {
         await supabase.schema('common').from('profiles').upsert({
-          id: user.id,
+          id: editingUserId,
           avatar_url: metaImg,
           profile_image: metaImg,
         }, { onConflict: 'id' });
       }
       if (metaCover && !hasCoverInProfiles) {
         await supabase.schema('common').from('profiles').upsert({
-          id: user.id,
+          id: editingUserId,
           cover_image: metaCover,
         }, { onConflict: 'id' });
       }
     })();
-  }, [isOpen, user?.id, user?.user_metadata?.profileImage, user?.user_metadata?.coverImage]);
+  }, [coverImage, editingUserId, isEditingOwnProfile, isOpen, profileImage, user?.user_metadata?.coverImage, user?.user_metadata?.profileImage]);
 
   // Handle clicks outside the dropdown
   useEffect(() => {
@@ -276,7 +310,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
     // Create a unique filename
     const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+    const fileName = `${editingUserId}_${Date.now()}.${fileExt}`;
     const storagePath = `user-uploads/profile-images/${fileName}`;
     
     // Construct the Supabase Storage URL
@@ -322,18 +356,20 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
       // Update user metadata with new image URL
       console.log('Updating user metadata...');
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { ...user.user_metadata, profileImage: publicUrl }
-      });
+      if (isEditingOwnProfile) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { ...user.user_metadata, profileImage: publicUrl }
+        });
 
-      if (updateError) {
-        console.error('Failed to update user metadata:', updateError);
-        throw new Error('Failed to update profile: ' + updateError.message);
+        if (updateError) {
+          console.error('Failed to update user metadata:', updateError);
+          throw new Error('Failed to update profile: ' + updateError.message);
+        }
       }
 
       // Sync to profiles table so other users can see this avatar (profiles is readable by all authenticated)
       await supabase.schema('common').from('profiles').upsert({
-        id: user.id,
+        id: editingUserId,
         avatar_url: publicUrl,
         profile_image: publicUrl,
       }, { onConflict: 'id' });
@@ -363,7 +399,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     const token = session.access_token;
 
     const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}_cover_${Date.now()}.${fileExt}`;
+    const fileName = `${editingUserId}_cover_${Date.now()}.${fileExt}`;
     const storagePath = `user-uploads/cover-images/${fileName}`; // Changed path
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (!supabaseUrl) throw new Error('VITE_SUPABASE_URL is not defined');
@@ -395,18 +431,20 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       setCoverImage(publicUrl);
 
       // Update metadata
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { ...user.user_metadata, coverImage: publicUrl }
-      });
+      if (isEditingOwnProfile) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { ...user.user_metadata, coverImage: publicUrl }
+        });
 
-      if (updateError) {
-        console.error('Failed to update user metadata (cover):', updateError);
-        throw new Error('Failed to update cover image: ' + updateError.message);
+        if (updateError) {
+          console.error('Failed to update user metadata (cover):', updateError);
+          throw new Error('Failed to update cover image: ' + updateError.message);
+        }
       }
 
       // Sync to profiles table so other users can see this cover
       await supabase.schema('common').from('profiles').upsert({
-        id: user.id,
+        id: editingUserId,
         cover_image: publicUrl,
       }, { onConflict: 'id' });
 
@@ -636,7 +674,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !editingUserId) return;
     setIsSubmitting(true);
 
     try {
@@ -665,18 +703,37 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         userMetadata.coverImage = coverImage;
       }
 
-      const { error } = await supabase.auth.updateUser({
-        data: userMetadata
-      });
+      if (isEditingOwnProfile) {
+        const { error } = await supabase.auth.updateUser({
+          data: userMetadata
+        });
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       // Persist employee info to common.profiles so it shows on profile view
       await supabase
         .schema('common')
         .from('profiles')
-        .update({ job_title: jobTitle || null, department: department || null, full_name: name || null, work_phone: workPhone || null, personal_phone: personalPhone || null })
-        .eq('id', user.id);
+        .upsert({
+          id: editingUserId,
+          full_name: name || null,
+          role: selectedRole || null,
+          bio: bio || null,
+          division: division || null,
+          birthday: birthday || null,
+          job_title: jobTitle || null,
+          department: department || null,
+          work_phone: workPhone || null,
+          personal_phone: personalPhone || null,
+          emergency_contact_name: emergencyContactName || null,
+          emergency_contact_phone: emergencyContactPhone || null,
+          emergency_contact_relationship: emergencyContactRelationship || null,
+          goals: goals || null,
+          avatar_url: profileImage || null,
+          profile_image: profileImage || null,
+          cover_image: coverImage || null,
+        }, { onConflict: 'id' });
 
       setShowSuccess(true);
       setTimeout(() => {

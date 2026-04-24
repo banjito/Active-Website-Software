@@ -4,7 +4,7 @@ import Card from "../../components/ui/Card"
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs"
 import { Badge } from "../../components/ui"
-import { ChevronRight, Building, MapPin, Bell, User as UserIcon, Settings, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Phone, Loader2, BookOpen, Gauge, AlertTriangle, MoreVertical, Check, AlertCircle } from "lucide-react"
+import { ChevronRight, Building, MapPin, Bell, User as UserIcon, Settings, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Phone, Loader2, BookOpen, Gauge, AlertTriangle, MoreVertical, Check, AlertCircle, Image as ImageIcon } from "lucide-react"
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react"
 import { useAuth } from "../../lib/AuthContext"
 import { useDivision } from '../../App'
@@ -151,6 +151,18 @@ export default function PortalLanding() {
   const ackIsDrawingRef = useRef(false);
   const rtDebounceRef = useRef<number | null>(null);
   const preferenceSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const stripAnnouncementSystemLinks = useCallback((content: string) => {
+    return content
+      .replace(/\n\n---\n📘 \[View Help Guide\]\([^)]+\)/g, '')
+      .replace(/\n\n---\n📄 \[View & Acknowledge Document\]\([^)]+\)/g, '')
+      .replace(/\n\n---\n📎 \[Attachment\]\([^)]+\)/g, '');
+  }, []);
+
+  const extractAnnouncementAttachments = useCallback((content: string) => {
+    const matches = content.matchAll(/📎 \[Attachment\]\(([^)]+)\)/g);
+    return Array.from(matches).map((m) => m[1]).filter(Boolean);
+  }, []);
 
   // Resolve ESign form by document URL when ack modal opens
   useEffect(() => {
@@ -1934,11 +1946,11 @@ export default function PortalLanding() {
                       </div>
                       {expandedAnnouncementId === a.id ? (
                         <p className="text-sm text-gray-700 dark:text-gray-300 mt-3 whitespace-pre-wrap leading-relaxed">
-                          {a.content.replace(/\n\n---\n📘 \[View Help Guide\]\([^)]+\)/, '').replace(/\n\n---\n📄 \[View & Acknowledge Document\]\([^)]+\)/, '')}
+                          {stripAnnouncementSystemLinks(a.content)}
                         </p>
                       ) : (
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
-                          {(a.excerpt || a.content).replace(/\n\n---\n📘 \[View Help Guide\]\([^)]+\)/, '').replace(/\n\n---\n📄 \[View & Acknowledge Document\]\([^)]+\)/, '')}
+                          stripAnnouncementSystemLinks(a.excerpt || a.content)
                         </p>
                       )}
                       <div className="flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-gray-400">
@@ -1948,9 +1960,10 @@ export default function PortalLanding() {
                       {(() => {
                         const guideMatch = a.content.match(/📘 \[View Help Guide\]\(([^)]+)\)/);
                         const docMatch = a.content.match(/📄 \[View & Acknowledge Document\]\(([^)]+)\)/);
+                        const attachmentUrls = extractAnnouncementAttachments(a.content);
                         const guidePath = guideMatch ? guideMatch[1] : null;
                         const docUrl = docMatch ? docMatch[1] : null;
-                        if (!guidePath && !docUrl) return null;
+                        if (!guidePath && !docUrl && attachmentUrls.length === 0) return null;
                         return (
                           <div className="flex flex-wrap items-center gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
                             {guidePath && (
@@ -1979,6 +1992,25 @@ export default function PortalLanding() {
                           </div>
                         );
                       })()}
+                      {(() => {
+                        const attachmentUrls = extractAnnouncementAttachments(a.content);
+                        if (attachmentUrls.length === 0 || expandedAnnouncementId !== a.id) return null;
+                        return (
+                          <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2" onClick={(e) => e.stopPropagation()}>
+                            {attachmentUrls.map((url, idx) => (
+                              <a key={url} href={url} target="_blank" rel="noreferrer" className="block border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden hover:opacity-90 transition-opacity">
+                                <img src={url} alt={`Announcement attachment ${idx + 1}`} className="w-full h-32 object-contain bg-gray-100 dark:bg-dark-300" loading="lazy" />
+                              </a>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                      {extractAnnouncementAttachments(a.content).length > 0 && (
+                        <span className="inline-flex items-center gap-1 mt-2 text-xs text-[#f26722] font-medium">
+                          <ImageIcon className="h-3 w-3" />
+                          {extractAnnouncementAttachments(a.content).length} image attachment{extractAnnouncementAttachments(a.content).length > 1 ? 's' : ''}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>

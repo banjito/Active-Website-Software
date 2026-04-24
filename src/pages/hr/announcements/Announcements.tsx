@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../lib/AuthContext';
 import { Dialog } from '@headlessui/react';
-import { Plus, Pencil, Trash2, X, Pin, PinOff, Eye, EyeOff, Clock, Megaphone, FileText, Link2, BookOpen } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Pin, PinOff, Eye, EyeOff, Clock, Megaphone, FileText, Link2, BookOpen, ImagePlus, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '../../../components/ui/toast';
 import { onboardingService, ESignForm } from '../../../services/hr/onboardingService';
@@ -33,6 +33,11 @@ interface AnnouncementFormData {
   published_at: string;
   expires_at: string;
   linked_document_url: string;
+}
+
+interface AttachmentItem {
+  url: string;
+  name: string;
 }
 
 const initialFormData: AnnouncementFormData = {
@@ -100,6 +105,44 @@ export function Announcements() {
   const [availableGuides, setAvailableGuides] = useState<HelpGuideOption[]>([]);
   const [showDocPicker, setShowDocPicker] = useState(false);
   const [linkType, setLinkType] = useState<'document' | 'guide'>('document');
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+
+  const ATTACHMENT_MARKER = '📎 [Attachment](';
+  const HELP_GUIDE_MARKER = '📘 [View Help Guide](';
+  const DOC_MARKER = '📄 [View & Acknowledge Document](';
+
+  function extractAttachmentUrls(content: string): string[] {
+    const matches = content.matchAll(/📎 \[Attachment\]\(([^)]+)\)/g);
+    return Array.from(matches).map((m) => m[1]).filter(Boolean);
+  }
+
+  function stripSystemLinks(content: string): string {
+    return content
+      .replace(/\n\n---\n📘 \[View Help Guide\]\([^)]+\)/g, '')
+      .replace(/\n\n---\n📄 \[View & Acknowledge Document\]\([^)]+\)/g, '')
+      .replace(/\n\n---\n📎 \[Attachment\]\([^)]+\)/g, '');
+  }
+
+  function appendSystemLinks(baseContent: string, linkedUrl: string, currentLinkType: 'document' | 'guide', attachmentUrls: string[]): string {
+    let finalContent = stripSystemLinks(baseContent);
+    if (linkedUrl) {
+      if (currentLinkType === 'guide') {
+        const guidePath = linkedUrl.startsWith('/') ? linkedUrl : `/${linkedUrl.replace(/^\//, '')}`;
+        if (!finalContent.includes(guidePath)) {
+          finalContent += `\n\n---\n${HELP_GUIDE_MARKER}${guidePath})`;
+        }
+      } else if (!finalContent.includes(linkedUrl)) {
+        finalContent += `\n\n---\n${DOC_MARKER}${linkedUrl})`;
+      }
+    }
+    attachmentUrls.forEach((url) => {
+      if (!finalContent.includes(url)) {
+        finalContent += `\n\n---\n${ATTACHMENT_MARKER}${url})`;
+      }
+    });
+    return finalContent;
+  }
 
   useEffect(() => {
     if (user) {
@@ -200,6 +243,7 @@ export function Announcements() {
     setEditingId(null);
     setShowDocPicker(false);
     setLinkType('document');
+    setAttachments([]);
     setIsFormOpen(true);
   }
 
@@ -209,9 +253,8 @@ export function Announcements() {
     const docMatch = a.content.match(/📄 \[View & Acknowledge Document\]\(([^)]+)\)/);
     const linkedUrl = guideMatch ? guideMatch[1] : (docMatch ? docMatch[1] : '');
     const isGuide = !!guideMatch;
-    const cleanContent = a.content
-      .replace(/\n\n---\n📘 \[View Help Guide\]\([^)]+\)/, '')
-      .replace(/\n\n---\n📄 \[View & Acknowledge Document\]\([^)]+\)/, '');
+    const attachmentUrls = extractAttachmentUrls(a.content);
+    const cleanContent = stripSystemLinks(a.content);
     setFormData({
       title: a.title,
       content: cleanContent,
@@ -225,6 +268,12 @@ export function Announcements() {
     });
     setLinkType(isGuide ? 'guide' : 'document');
     setShowDocPicker(!!linkedUrl);
+    setAttachments(
+      attachmentUrls.map((url) => ({
+        url,
+        name: decodeURIComponent(url.split('/').pop() || 'attachment'),
+      }))
+    );
     setIsEditing(true);
     setEditingId(a.id);
     setIsFormOpen(true);
@@ -236,17 +285,7 @@ export function Announcements() {
 
     try {
       setFormLoading(true);
-      let finalContent = formData.content;
-      if (formData.linked_document_url) {
-        if (linkType === 'guide') {
-          const guidePath = formData.linked_document_url.startsWith('/') ? formData.linked_document_url : `/${formData.linked_document_url.replace(/^\//, '')}`;
-          if (!finalContent.includes(guidePath)) {
-            finalContent += `\n\n---\n📘 [View Help Guide](${guidePath})`;
-          }
-        } else if (!finalContent.includes(formData.linked_document_url)) {
-          finalContent += `\n\n---\n📄 [View & Acknowledge Document](${formData.linked_document_url})`;
-        }
-      }
+      const finalContent = appendSystemLinks(formData.content, formData.linked_document_url, linkType, attachments.map((a) => a.url));
       const payload: any = {
         title: formData.title,
         content: finalContent,
@@ -286,6 +325,42 @@ export function Announcements() {
       toast({ title: 'Error', description: 'Failed to save announcement', variant: 'destructive' });
     } finally {
       setFormLoading(false);
+    }
+  }
+
+  async function handleAttachmentUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !user) return;
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Invalid file', description: 'Only image files are supported for announcements.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Please upload images under 10MB.', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      setUploadingAttachment(true);
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `announcement-attachments/${user.id}/${Date.now()}-${safeName}`;
+      const { error: uploadError } = await supabase.storage.from('user-uploads').upload(path, file, {
+        upsert: false,
+        contentType: file.type,
+      });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from('user-uploads').getPublicUrl(path);
+      const url = data?.publicUrl;
+      if (!url) throw new Error('Unable to build public URL for uploaded image');
+
+      setAttachments((prev) => [...prev, { url, name: file.name }]);
+      toast({ title: 'Uploaded', description: 'Image attached to announcement.', variant: 'success' });
+    } catch (err: any) {
+      console.error('Error uploading announcement attachment:', err);
+      toast({ title: 'Upload failed', description: err?.message || 'Could not upload image.', variant: 'destructive' });
+    } finally {
+      setUploadingAttachment(false);
     }
   }
 
@@ -432,7 +507,7 @@ export function Announcements() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
-                      {a.excerpt || a.content.replace(/\n\n---\n📘 \[View Help Guide\]\([^)]+\)/, '').replace(/\n\n---\n📄 \[View & Acknowledge Document\]\([^)]+\)/, '')}
+                      {a.excerpt || stripSystemLinks(a.content)}
                     </p>
                     {a.content.includes('📘 [View Help Guide]') && (
                       <span className="inline-flex items-center gap-1 mt-1 text-xs text-[#f26722] font-medium">
@@ -444,6 +519,12 @@ export function Announcements() {
                       <span className="inline-flex items-center gap-1 mt-1 text-xs text-[#f26722] font-medium">
                         <FileText className="h-3 w-3" />
                         Linked document acknowledgment
+                      </span>
+                    )}
+                    {extractAttachmentUrls(a.content).length > 0 && (
+                      <span className="inline-flex items-center gap-1 mt-1 text-xs text-[#f26722] font-medium ml-2">
+                        <ImagePlus className="h-3 w-3" />
+                        {extractAttachmentUrls(a.content).length} image attachment{extractAttachmentUrls(a.content).length > 1 ? 's' : ''}
                       </span>
                     )}
                     <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -548,6 +629,42 @@ export function Announcements() {
                   className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
                   placeholder="Full announcement content..."
                 />
+              </div>
+
+              <div className="border border-gray-200 dark:border-gray-700 rounded-md p-3">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-white">Image attachments</label>
+                  <label className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-[#f26722] rounded-md cursor-pointer hover:bg-[#f26722]/90">
+                    {uploadingAttachment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
+                    {uploadingAttachment ? 'Uploading...' : 'Attach image'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAttachmentUpload}
+                      className="hidden"
+                      disabled={uploadingAttachment}
+                    />
+                  </label>
+                </div>
+                {attachments.length === 0 ? (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Attach screenshots/images to appear with this announcement.</p>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {attachments.map((attachment, idx) => (
+                      <div key={attachment.url} className="relative border border-gray-200 dark:border-gray-700 rounded overflow-hidden bg-gray-50 dark:bg-dark-200">
+                        <img src={attachment.url} alt={attachment.name || `Attachment ${idx + 1}`} className="w-full h-28 object-contain bg-gray-100 dark:bg-dark-300" />
+                        <button
+                          type="button"
+                          onClick={() => setAttachments((prev) => prev.filter((a) => a.url !== attachment.url))}
+                          className="absolute top-1 right-1 bg-black/60 text-white rounded p-1 hover:bg-black/80"
+                          aria-label="Remove attachment"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -720,7 +720,9 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
     <section className="mb-6">
       <div className="w-full h-1 bg-[#f26722] mb-4"></div>
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
-      <table className="w-full border-collapse visual-mechanical-table">
+
+      {/* Screen view — dropdowns */}
+      <table className="w-full border-collapse visual-mechanical-table print:hidden">
         <colgroup>
           <col style={{ width: '10%' }} />
           <col style={{ width: '75%' }} />
@@ -750,6 +752,31 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                   {visualOptions.map(opt => <option key={opt} value={opt === 'Select One' ? '' : opt}>{opt}</option>)}
                 </select>
               </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Print view — plain text so values actually render */}
+      <table className="hidden print:table w-full border-collapse" style={{ fontSize: '9px' }}>
+        <colgroup>
+          <col style={{ width: '10%' }} />
+          <col style={{ width: '75%' }} />
+          <col style={{ width: '15%' }} />
+        </colgroup>
+        <thead>
+          <tr>
+            <th className="border border-black p-1 text-left bg-gray-100" style={{ backgroundColor: '#f0f0f0' }}>NETA Section</th>
+            <th className="border border-black p-1 text-left bg-gray-100" style={{ backgroundColor: '#f0f0f0' }}>Description</th>
+            <th className="border border-black p-1 text-center bg-gray-100" style={{ backgroundColor: '#f0f0f0' }}>Results</th>
+          </tr>
+        </thead>
+        <tbody>
+          {form.visual.map(row => (
+            <tr key={row.neta}>
+              <td className="border border-black p-1 align-top">{row.neta}</td>
+              <td className="border border-black p-1 align-top">{row.description}</td>
+              <td className="border border-black p-1 text-center align-top">{row.result || ''}</td>
             </tr>
           ))}
         </tbody>

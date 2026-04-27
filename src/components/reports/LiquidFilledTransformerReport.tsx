@@ -1660,19 +1660,19 @@ const LiquidFilledTransformerReport: React.FC = () => {
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Visual and Mechanical Inspection</h2>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed" style={{ width: '100%' }}>
                   <colgroup>
-                    <col style={{ width: '12%' }} />
-                    <col style={{ width: '58%' }} />
-                    <col style={{ width: '15%' }} />
-                    <col style={{ width: '15%' }} />
+                    <col className="vmi-col-id" style={{ width: '12%' }} />
+                    <col className="vmi-col-desc" style={{ width: '58%' }} />
+                    <col className="vmi-col-result" style={{ width: '15%' }} />
+                    <col className="vmi-col-comments" style={{ width: '15%' }} />
                   </colgroup>
                   <thead className="bg-gray-50 dark:bg-dark-150">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">ID</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Description</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Result</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Comments</th>
+                      <th style={{ width: '12%' }} className="vmi-col-id px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">ID</th>
+                      <th style={{ width: '58%' }} className="vmi-col-desc px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Description</th>
+                      <th style={{ width: '15%' }} className="vmi-col-result px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Result</th>
+                      <th style={{ width: '15%' }} className="vmi-col-comments px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Comments</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -1685,9 +1685,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
                        })
                        .map((id) => (
                       <tr key={id}>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{id.replace('*','')}</td>
-                        <td className="px-3 py-2 text-sm text-gray-700 dark:text-white whitespace-normal break-words">{getVisualInspectionDescription(id)}</td>
-                        <td className="px-3 py-2">
+                        <td style={{ width: '12%' }} className="vmi-col-id px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{id.replace('*','')}</td>
+                        <td style={{ width: '58%' }} className="vmi-col-desc px-3 py-2 text-sm text-gray-700 dark:text-white whitespace-normal break-words">{getVisualInspectionDescription(id)}</td>
+                        <td style={{ width: '15%' }} className="vmi-col-result px-3 py-2">
                           <div className="print:hidden">
                             <select
                               value={formData.visualInspection[id]}
@@ -1702,7 +1702,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
                           </div>
                           <div className="hidden print:block text-center">{formData.visualInspection[id] || ''}</div>
                         </td>
-                        <td className="px-3 py-2">
+                        <td style={{ width: '15%' }} className="vmi-col-comments px-3 py-2">
                           <div className="print:hidden">
                             <input
                               type="text"
@@ -2286,11 +2286,39 @@ if (typeof document !== 'undefined') {
       table.visual-mechanical-table thead { display: table-header-group !important; }
       table.visual-mechanical-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
       table.visual-mechanical-table th, table.visual-mechanical-table td { font-size: 8px !important; padding: 2px 3px !important; vertical-align: middle !important; }
-      table.visual-mechanical-table colgroup col:nth-child(1) { width: 12% !important; }
-      table.visual-mechanical-table colgroup col:nth-child(2) { width: 58% !important; }
-      table.visual-mechanical-table colgroup col:nth-child(3) { width: 15% !important; }
-      table.visual-mechanical-table colgroup col:nth-child(4) { width: 15% !important; }
+      /* Enforce column widths via colgroup AND class selectors. Windows Chrome's
+         print engine sometimes ignores <col> widths for the trailing column,
+         which collapses the Comments column to the width of the longest
+         unbreakable token (the "COMMENTS" header) and renders text vertically
+         one character per line. Setting the width on every <th>/<td> via class
+         selectors fixes this reliably across Chrome on Windows and macOS. */
+      table.visual-mechanical-table colgroup col.vmi-col-id,
+      table.visual-mechanical-table th.vmi-col-id,
+      table.visual-mechanical-table td.vmi-col-id { width: 12% !important; }
+      table.visual-mechanical-table colgroup col.vmi-col-desc,
+      table.visual-mechanical-table th.vmi-col-desc,
+      table.visual-mechanical-table td.vmi-col-desc { width: 58% !important; }
+      table.visual-mechanical-table colgroup col.vmi-col-result,
+      table.visual-mechanical-table th.vmi-col-result,
+      table.visual-mechanical-table td.vmi-col-result { width: 15% !important; }
+      table.visual-mechanical-table colgroup col.vmi-col-comments,
+      table.visual-mechanical-table th.vmi-col-comments,
+      table.visual-mechanical-table td.vmi-col-comments {
+        width: 15% !important;
+        min-width: 90px !important;
+        white-space: normal !important;
+        overflow-wrap: break-word !important;
+        word-break: normal !important;
+      }
+      /* Description column wraps long phrases as before */
+      table.visual-mechanical-table td.vmi-col-desc,
       table.visual-mechanical-table td:nth-child(2) { white-space: normal !important; word-break: break-word !important; }
+      /* Header cell for Comments must not collapse character-by-character */
+      table.visual-mechanical-table th.vmi-col-comments {
+        white-space: nowrap !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+      }
 
       /* Indicator Gauges: hide on-screen grid and use compact table in print */
       .indicator-gauges-section .indicator-gauges-onscreen { display: none !important; }

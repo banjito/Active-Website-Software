@@ -1950,7 +1950,7 @@ export default function PortalLanding() {
                         </p>
                       ) : (
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
-                          stripAnnouncementSystemLinks(a.excerpt || a.content)
+                          {stripAnnouncementSystemLinks(a.excerpt || a.content)}
                         </p>
                       )}
                       <div className="flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-gray-400">

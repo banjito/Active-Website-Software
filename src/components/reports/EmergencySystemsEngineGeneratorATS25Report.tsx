@@ -227,6 +227,12 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  // Mutex shared between autoSave and handleSave so they cannot both insert
+  // concurrently. Without this, a manual Save click during the 2-second
+  // autoSave debounce window can create a duplicate report row + orphaned
+  // asset (no job_assets link), which is what made "save to a job" appear
+  // to do nothing — the report saved but the job link was missing.
+  const savingInFlightRef = React.useRef(false);
 
   const [searchParams] = useSearchParams();
   const isPrintMode = searchParams.get('print') === 'true';
@@ -363,6 +369,9 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
 
   const autoSave = React.useCallback(async () => {
     if (!jobId || !isEditing) return;
+    // Skip if a save (manual or auto) is already running.
+    if (savingInFlightRef.current) return;
+    savingInFlightRef.current = true;
     setIsAutoSaving(true);
     try {
       const dataToSave = {
@@ -393,7 +402,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
         }
         if (newReport) {
           setCurrentReportId(newReport.id);
-          const { data: assetResult } = await supabase
+          const { data: assetResult, error: assetErr } = await supabase
             .schema('neta_ops')
             .from('assets')
             .insert({
@@ -404,8 +413,16 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
             })
             .select()
             .single();
-          if (assetResult) {
-            await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user?.id });
+          if (assetErr) {
+            console.error('Auto-save asset insert failed:', assetErr);
+          } else if (assetResult) {
+            const { error: linkErr } = await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user?.id });
+            if (linkErr) {
+              console.error('Auto-save job_assets link failed:', linkErr);
+            }
           }
           window.history.replaceState(null, '', `/jobs/${jobId}/${reportSlug}/${newReport.id}`);
         }
@@ -413,6 +430,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
     } catch (err) {
       console.error('Auto-save error:', err);
     } finally {
+      savingInFlightRef.current = false;
       setIsAutoSaving(false);
     }
   }, [formData, jobId, currentReportId, isEditing, user]);
@@ -428,7 +446,30 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
   }, [formData, isEditing, jobId, currentReportId, user, autoSave]);
 
   const handleSave = async () => {
-    if (!jobId) return;
+    if (!jobId) {
+      alert('Cannot save: missing job ID');
+      return;
+    }
+
+    // Cancel any pending autoSave timer so it can't fire mid-save and create
+    // a duplicate row.
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
+
+    // Wait briefly if an autoSave is already in flight; up to ~5 seconds.
+    let waited = 0;
+    while (savingInFlightRef.current && waited < 5000) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      waited += 100;
+    }
+    if (savingInFlightRef.current) {
+      alert('A save is already in progress, please wait a moment and try again.');
+      return;
+    }
+
+    savingInFlightRef.current = true;
     try {
       const assetName = getAssetName(reportSlug, formData.identifier);
       const dataToSave = {
@@ -438,16 +479,18 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
         updated_at: new Date().toISOString(),
       };
       if (currentReportId) {
-        await supabase
+        const { error: updateErr } = await supabase
           .schema('neta_ops')
           .from('emergency_systems_engine_generator_ats25')
           .update(dataToSave)
           .eq('id', currentReportId);
-        await supabase
+        if (updateErr) throw updateErr;
+        const { error: assetUpdErr } = await supabase
           .schema('neta_ops')
           .from('assets')
           .update({ name: assetName })
           .ilike('file_url', `%${reportSlug}/${currentReportId}%`);
+        if (assetUpdErr) console.warn('Asset name update failed:', assetUpdErr);
       } else {
         const { data: newReport, error: insertError } = await supabase
           .schema('neta_ops')
@@ -456,23 +499,40 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           .select()
           .single();
         if (insertError) throw insertError;
-        if (newReport) {
-          setCurrentReportId(newReport.id);
-          await supabase.schema('neta_ops').from('assets').insert({
+        if (!newReport) throw new Error('Report insert returned no data');
+
+        setCurrentReportId(newReport.id);
+        isAutoSaveCreatedRef.current = true;
+
+        const { data: assetResult, error: assetInsertErr } = await supabase
+          .schema('neta_ops')
+          .from('assets')
+          .insert({
             name: assetName,
             file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
             template_type: 'ATS',
             status: 'in_progress',
-          }).select().single().then(({ data: ar }) => {
-            if (ar) supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: ar.id, user_id: user?.id });
-          });
-        }
+          })
+          .select()
+          .single();
+        if (assetInsertErr) throw assetInsertErr;
+        if (!assetResult) throw new Error('Asset insert returned no data');
+
+        const { error: linkErr } = await supabase
+          .schema('neta_ops')
+          .from('job_assets')
+          .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user?.id });
+        if (linkErr) throw linkErr;
       }
       setIsEditing(false);
       navigateAfterSave(navigate, jobId, location);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save error:', err);
-      setError('Failed to save report');
+      const msg = err?.message || JSON.stringify(err) || 'Unknown error';
+      setError(`Failed to save report: ${msg}`);
+      alert(`Save failed: ${msg}`);
+    } finally {
+      savingInFlightRef.current = false;
     }
   };
 
@@ -1078,6 +1138,115 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
               </table>
             </div>
           </div>
+
+          {/* Mark Ready to Review Button - flips the linked asset's status to
+              'ready_for_review' so the report appears in the Pending Approvals
+              queue (ReportApprovalWorkflow filters on this status).
+              This implementation is self-healing: if no asset row exists for
+              this report (e.g. a prior save silently failed to create one, or
+              the asset was created by JobDetail with a placeholder file_url),
+              the button locates any matching asset by job + slug + report id,
+              creates one if still missing, and links it to job_assets. The
+              update is verified via .select() so silent no-ops are caught. */}
+          {!isPrintMode && isEditing && (
+            <div className="mb-6 print:hidden flex justify-center">
+              <button
+                onClick={async () => {
+                  if (!jobId || !user?.id) return;
+
+                  try {
+                    await handleSave();
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    const savedReportId = currentReportId || window.location.pathname.split('/').pop();
+                    if (!savedReportId) throw new Error('Failed to save report');
+
+                    const canonicalFileUrl = `report:/jobs/${jobId}/${reportSlug}/${savedReportId}`;
+                    const submittedAt = new Date().toISOString();
+
+                    // Step 1: try the canonical update first and verify rows changed.
+                    let updatedRows: Array<{ id: string }> = [];
+                    {
+                      const { data, error: updateError } = await supabase
+                        .schema('neta_ops')
+                        .from('assets')
+                        .update({ status: 'ready_for_review', submitted_at: submittedAt })
+                        .eq('file_url', canonicalFileUrl)
+                        .select('id');
+                      if (updateError) throw updateError;
+                      updatedRows = data || [];
+                    }
+
+                    // Step 2: if no row matched, look up any asset whose file_url
+                    // contains this report id (covers placeholder URLs from
+                    // JobDetail or older saves that stored a slightly different
+                    // file_url) and update those.
+                    if (!updatedRows || updatedRows.length === 0) {
+                      const { data: candidates, error: lookupError } = await supabase
+                        .schema('neta_ops')
+                        .from('assets')
+                        .select('id, file_url')
+                        .ilike('file_url', `%${reportSlug}/${savedReportId}%`);
+
+                      if (lookupError) throw lookupError;
+
+                      if (candidates && candidates.length > 0) {
+                        const ids = candidates.map(c => c.id);
+                        const { data: fixedRows, error: fixError } = await supabase
+                          .schema('neta_ops')
+                          .from('assets')
+                          .update({
+                            status: 'ready_for_review',
+                            submitted_at: submittedAt,
+                            file_url: canonicalFileUrl
+                          })
+                          .in('id', ids)
+                          .select('id');
+                        if (fixError) throw fixError;
+                        updatedRows = (fixedRows as Array<{ id: string }> | null) || [];
+                      }
+                    }
+
+                    // Step 3: if still nothing exists, create the asset and link
+                    // it to job_assets so the Pending Approvals queue can find it.
+                    if (!updatedRows || updatedRows.length === 0) {
+                      const assetName = getAssetName(reportSlug, formData.identifier);
+                      const { data: newAsset, error: insertError } = await supabase
+                        .schema('neta_ops')
+                        .from('assets')
+                        .insert({
+                          name: assetName,
+                          file_url: canonicalFileUrl,
+                          template_type: 'ATS',
+                          status: 'ready_for_review',
+                          submitted_at: submittedAt
+                        })
+                        .select('id')
+                        .single();
+                      if (insertError) throw insertError;
+                      if (newAsset) {
+                        const { error: linkError } = await supabase
+                          .schema('neta_ops')
+                          .from('job_assets')
+                          .insert({ job_id: jobId, asset_id: newAsset.id, user_id: user.id });
+                        if (linkError) {
+                          console.warn('Asset created but job link failed:', linkError);
+                        }
+                      }
+                    }
+
+                    alert('Report marked as ready for review!');
+                  } catch (err: any) {
+                    console.error('Error marking report as ready:', err);
+                    alert(`Failed to mark as ready: ${err?.message || 'Unknown error'}`);
+                  }
+                }}
+                className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Mark Ready to Review
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

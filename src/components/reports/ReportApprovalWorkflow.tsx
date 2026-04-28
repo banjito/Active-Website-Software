@@ -205,26 +205,49 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
 
       if (jobId) {
         console.log('[ReportApproval] jobId:', jobId, 'assetStatusFilter:', assetStatusFilter, 'loadOffset:', loadOffset);
-        
-        // Fetch one page of asset IDs linked to this job (500 at a time)
-        const { data: jobAssetLinks, error: linksError } = await supabase
-          .schema('neta_ops')
-          .from('job_assets')
-          .select('asset_id')
-          .eq('job_id', jobId)
-          .order('asset_id', { ascending: true })
-          .range(loadOffset, loadOffset + REPORT_APPROVAL_LOAD_LIMIT - 1);
-        if (linksError) throw linksError;
-        const assetIds: string[] = (jobAssetLinks || []).map(l => l.asset_id);
-        console.log('[ReportApproval] job asset link count this page:', assetIds.length);
 
+        // Pull ALL asset IDs linked to this job (paginate through job_assets in
+        // 1000-row batches). job_assets only stores asset_id + job_id so this
+        // is cheap even for jobs with thousands of linked assets, and it is
+        // required because we need to apply the status filter against the full
+        // set — otherwise a single matching asset whose UUID sorts after page 1
+        // would be invisible in tabs like "Pending Approval". This was the
+        // root cause of the 7.22.1 Emergency Generator (and any other report)
+        // not appearing on jobs with > 500 linked assets.
+        const allLinkedIds: string[] = [];
+        const JOB_ASSETS_BATCH = 1000;
+        let batchOffset = 0;
+        while (true) {
+          const { data: linkBatch, error: linkBatchErr } = await supabase
+            .schema('neta_ops')
+            .from('job_assets')
+            .select('asset_id')
+            .eq('job_id', jobId)
+            .order('asset_id', { ascending: true })
+            .range(batchOffset, batchOffset + JOB_ASSETS_BATCH - 1);
+          if (linkBatchErr) throw linkBatchErr;
+          const ids = (linkBatch || []).map(l => l.asset_id);
+          if (ids.length === 0) break;
+          allLinkedIds.push(...ids);
+          if (ids.length < JOB_ASSETS_BATCH) break;
+          batchOffset += JOB_ASSETS_BATCH;
+        }
+        console.log('[ReportApproval] total linked assets for job:', allLinkedIds.length);
+
+        // Now query the assets table filtered by status (and report-style
+        // file_url) against the full set of linked IDs. Postgrest's `in()` can
+        // handle large arrays but we batch in chunks of 500 to be safe and to
+        // avoid URL length limits.
         const assetsData: any[] = [];
-        if (assetIds.length > 0) {
+        const ASSET_QUERY_BATCH = 500;
+        for (let i = 0; i < allLinkedIds.length; i += ASSET_QUERY_BATCH) {
+          const chunk = allLinkedIds.slice(i, i + ASSET_QUERY_BATCH);
+          if (chunk.length === 0) continue;
           let assetQuery = supabase
             .schema('neta_ops')
             .from('assets')
             .select('id, name, file_url, status, created_at, submitted_at, approved_at, sent_at, urgency, substation')
-            .in('id', assetIds)
+            .in('id', chunk)
             .or('file_url.like.report:/%,file_url.ilike.%.pdf');
           if (assetStatusFilter) {
             assetQuery = assetQuery.eq('status', assetStatusFilter);
@@ -233,10 +256,12 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
           if (assetsError) throw assetsError;
           if (assets && assets.length > 0) assetsData.push(...assets);
         }
-        
-        console.log('[ReportApproval] fetched assets count:', assetsData.length);
-        setHasMoreReports((jobAssetLinks || []).length === REPORT_APPROVAL_LOAD_LIMIT);
-        setReportsOffset(loadOffset + (jobAssetLinks || []).length);
+
+        console.log('[ReportApproval] fetched assets count after status filter:', assetsData.length);
+        // Status-filtered results are already complete after this single pass;
+        // disable Load More so the UI doesn't ask for additional pages.
+        setHasMoreReports(false);
+        setReportsOffset(allLinkedIds.length);
 
         // Convert assets to TechnicalReport-like format for compatibility with existing UI
         let merged: TechnicalReport[] = assetsData.map(asset => {

@@ -239,6 +239,10 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
         const vm = data.visual_mechanical?.items || [];
         const ir = data.insulation_resistance?.tests || [];
         const corr = data.insulation_resistance?.correctedTests || [];
+        const irUnit = data.insulation_resistance?.unit || data.insulation_resistance?.units || undefined;
+        const irTestVoltage = data.insulation_resistance?.testVoltage || undefined;
+        const criteriaValue = data.insulation_resistance?.criteriaValue || undefined;
+        const criteriaUnits = data.insulation_resistance?.criteriaUnits || data.insulation_resistance?.criteriaUnit || undefined;
         const cr = data.contact_resistance?.tests || [];
         const dw = data.contact_resistance?.dielectricTests || [];
         const dUnit = data.contact_resistance?.dielectricUnit || undefined;
@@ -272,6 +276,10 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
           visualInspectionItems: vm.length ? vm : prev.visualInspectionItems,
           insulationMeasured: ir.length ? ir : prev.insulationMeasured,
           tempCorrected: corr.length ? corr : prev.tempCorrected,
+          insulationUnit: irUnit ?? prev.insulationUnit,
+          insulationTestVoltage: irTestVoltage ?? prev.insulationTestVoltage,
+          criteriaValue: criteriaValue ?? prev.criteriaValue,
+          criteriaUnits: criteriaUnits ?? irUnit ?? prev.criteriaUnits,
           contactResistance: cr.length ? cr : prev.contactResistance,
           dielectricWithstand: dw.length ? dw : prev.dielectricWithstand,
           dielectricUnit: dUnit ?? prev.dielectricUnit,
@@ -605,7 +613,14 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
         status: formData.status,
       },
       visual_mechanical: { items: formData.visualInspectionItems },
-      insulation_resistance: { tests: formData.insulationMeasured, correctedTests: formData.tempCorrected },
+      insulation_resistance: {
+        tests: formData.insulationMeasured,
+        correctedTests: formData.tempCorrected,
+        unit: formData.insulationUnit,
+        testVoltage: formData.insulationTestVoltage,
+        criteriaValue: formData.criteriaValue,
+        criteriaUnits: formData.criteriaUnits,
+      },
       contact_resistance: {
         tests: formData.contactResistance,
         dielectricTests: formData.dielectricWithstand,
@@ -718,7 +733,14 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
         status: formData.status,
       },
       visual_mechanical: { items: formData.visualInspectionItems },
-      insulation_resistance: { tests: formData.insulationMeasured, correctedTests: formData.tempCorrected },
+      insulation_resistance: {
+        tests: formData.insulationMeasured,
+        correctedTests: formData.tempCorrected,
+        unit: formData.insulationUnit,
+        testVoltage: formData.insulationTestVoltage,
+        criteriaValue: formData.criteriaValue,
+        criteriaUnits: formData.criteriaUnits,
+      },
       contact_resistance: {
         tests: formData.contactResistance,
         dielectricTests: formData.dielectricWithstand,

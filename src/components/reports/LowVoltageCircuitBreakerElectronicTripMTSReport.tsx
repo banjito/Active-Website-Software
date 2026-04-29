@@ -1344,6 +1344,18 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
     };
   };
 
+  const primaryInjectionPrintSections = [
+    { key: 'longTime', label: 'Long Time', pickupLabel: 'LTPU' },
+    { key: 'shortTime', label: 'Short Time', pickupLabel: 'STPU' },
+    { key: 'instantaneous', label: 'Instantaneous', pickupLabel: 'IPU' },
+    { key: 'groundFault', label: 'Ground Fault', pickupLabel: 'GFPU' },
+  ] as const;
+
+  const formatPoleValue = (value: string, unit: 'sec.' | 'A') => {
+    const trimmed = (value || '').trim();
+    return trimmed ? `${trimmed} ${unit}` : '';
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -1595,7 +1607,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
 
             {/* Print-only Nameplate Data section - 2 down x 7 wide */}
             <div className="hidden print:block mt-2">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem] nameplate-print-table">
                 <colgroup>
                   <col style={{ width: '14.2857%' }} />
                   <col style={{ width: '14.2857%' }} />
@@ -2248,19 +2260,19 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative overflow-x-auto shadow-md sm:rounded-lg primary-injection-container">
+          <div className="relative overflow-x-auto shadow-md sm:rounded-lg primary-injection-container print:hidden">
             <table className="w-full table-fixed text-sm text-left primary-injection-table">
               <colgroup>
-                <col style={{ width: '7%' }} />  {/* Function */}
-                <col style={{ width: '14%' }} /> {/* Rated Amperes */}
+                <col style={{ width: '9%' }} />  {/* Function */}
+                <col style={{ width: '10%' }} /> {/* Rated Amperes */}
                 <col style={{ width: '5%' }} />  {/* Multiplier % Left */}
                 <col style={{ width: '5%' }} />  {/* Multiplier % Right */}
-                <col style={{ width: '13%' }} /> {/* Test Amperes */}
-                <col style={{ width: '9%' }} />  {/* Tolerance Min */}
-                <col style={{ width: '9%' }} />  {/* Tolerance Max */}
-                <col style={{ width: '13%' }} /> {/* Pole 1 */}
-                <col style={{ width: '13%' }} /> {/* Pole 2 */}
-                <col style={{ width: '13%' }} /> {/* Pole 3 */}
+                <col style={{ width: '11%' }} /> {/* Test Amperes */}
+                <col style={{ width: '7%' }} />  {/* Tolerance Min */}
+                <col style={{ width: '7%' }} />  {/* Tolerance Max */}
+                <col style={{ width: '15.33%' }} /> {/* Pole 1 */}
+                <col style={{ width: '15.33%' }} /> {/* Pole 2 */}
+                <col style={{ width: '15.34%' }} /> {/* Pole 3 */}
               </colgroup>
               <thead className="bg-gray-50 dark:bg-dark-150">
                 <tr>
@@ -2763,6 +2775,98 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          <div className="hidden print:block primary-injection-pdf-layout">
+            <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black primary-injection-main-pdf-table">
+              <colgroup>
+                <col style={{ width: '16%' }} />
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '16%' }} />
+                <col style={{ width: '18%' }} />
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '12%' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Function</th>
+                  <th>Test</th>
+                  <th>Rated Amps.</th>
+                  <th>Multiplier %</th>
+                  <th>Test Amps.</th>
+                  <th>Min</th>
+                  <th>Max</th>
+                </tr>
+              </thead>
+              <tbody>
+                {primaryInjectionPrintSections.map(({ key, label, pickupLabel }) => {
+                  const result = formData.primaryInjection.results[key];
+                  return (
+                    <React.Fragment key={key}>
+                      <tr>
+                        <td rowSpan={2}>{label}</td>
+                        <td>Timing</td>
+                        <td>{result.ratedAmperes1 || ''}</td>
+                        <td>{(result.multiplier || '').replace(/%/g, '')}</td>
+                        <td>{result.testAmperes1 || ''}</td>
+                        <td>{result.toleranceMin1 || ''}</td>
+                        <td>{result.toleranceMax1 || ''}</td>
+                      </tr>
+                      <tr>
+                        <td>{pickupLabel}</td>
+                        <td>{result.ratedAmperes2 || ''}</td>
+                        <td>{`${(result.toleranceMin || '').replace(/%/g, '')} / ${(result.toleranceMax || '').replace(/%/g, '')}`}</td>
+                        <td>{result.testAmperes2 || ''}</td>
+                        <td>{result.toleranceMin2 || ''}</td>
+                        <td>{result.toleranceMax2 || ''}</td>
+                      </tr>
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black primary-injection-poles-pdf-table">
+              <colgroup>
+                <col style={{ width: '18%' }} />
+                <col style={{ width: '16%' }} />
+                <col style={{ width: '22%' }} />
+                <col style={{ width: '22%' }} />
+                <col style={{ width: '22%' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Function</th>
+                  <th>Reading</th>
+                  <th>Pole 1</th>
+                  <th>Pole 2</th>
+                  <th>Pole 3</th>
+                </tr>
+              </thead>
+              <tbody>
+                {primaryInjectionPrintSections.map(({ key, label, pickupLabel }) => {
+                  const result = formData.primaryInjection.results[key];
+                  return (
+                    <React.Fragment key={`${key}-poles`}>
+                      <tr>
+                        <td rowSpan={2}>{label}</td>
+                        <td>Timing</td>
+                        <td>{formatPoleValue(result.pole1.sec, 'sec.')}</td>
+                        <td>{formatPoleValue(result.pole2.sec, 'sec.')}</td>
+                        <td>{formatPoleValue(result.pole3.sec, 'sec.')}</td>
+                      </tr>
+                      <tr>
+                        <td>{pickupLabel}</td>
+                        <td>{formatPoleValue(result.pole1.a, 'A')}</td>
+                        <td>{formatPoleValue(result.pole2.a, 'A')}</td>
+                        <td>{formatPoleValue(result.pole3.a, 'A')}</td>
+                      </tr>
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         {/* --- Test Equipment Used Section --- */}
@@ -3005,16 +3109,36 @@ if (typeof document !== 'undefined') {
       table-layout: fixed !important; 
       width: 100% !important; 
     }
-    .primary-injection-table col:nth-child(1) { width: 7% !important; min-width: 7% !important; max-width: 7% !important; }
-    .primary-injection-table col:nth-child(2) { width: 14% !important; min-width: 14% !important; max-width: 14% !important; }
+    .primary-injection-table col:nth-child(1) { width: 9% !important; min-width: 9% !important; max-width: 9% !important; }
+    .primary-injection-table col:nth-child(2) { width: 10% !important; min-width: 10% !important; max-width: 10% !important; }
     .primary-injection-table col:nth-child(3) { width: 5% !important; min-width: 5% !important; max-width: 5% !important; }
     .primary-injection-table col:nth-child(4) { width: 5% !important; min-width: 5% !important; max-width: 5% !important; }
-    .primary-injection-table col:nth-child(5) { width: 13% !important; min-width: 13% !important; max-width: 13% !important; }
-    .primary-injection-table col:nth-child(6) { width: 9% !important; min-width: 9% !important; max-width: 9% !important; }
-    .primary-injection-table col:nth-child(7) { width: 9% !important; min-width: 9% !important; max-width: 9% !important; }
-    .primary-injection-table col:nth-child(8) { width: 13% !important; min-width: 13% !important; max-width: 13% !important; }
-    .primary-injection-table col:nth-child(9) { width: 13% !important; min-width: 13% !important; max-width: 13% !important; }
-    .primary-injection-table col:nth-child(10) { width: 13% !important; min-width: 13% !important; max-width: 13% !important; }
+    .primary-injection-table col:nth-child(5) { width: 11% !important; min-width: 11% !important; max-width: 11% !important; }
+    .primary-injection-table col:nth-child(6) { width: 7% !important; min-width: 7% !important; max-width: 7% !important; }
+    .primary-injection-table col:nth-child(7) { width: 7% !important; min-width: 7% !important; max-width: 7% !important; }
+    .primary-injection-table col:nth-child(8) { width: 15.33% !important; min-width: 15.33% !important; max-width: 15.33% !important; }
+    .primary-injection-table col:nth-child(9) { width: 15.33% !important; min-width: 15.33% !important; max-width: 15.33% !important; }
+    .primary-injection-table col:nth-child(10) { width: 15.34% !important; min-width: 15.34% !important; max-width: 15.34% !important; }
+    .primary-injection-table td:nth-child(n+7) > div,
+    .primary-injection-table td:nth-child(n+7) .flex {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-wrap: nowrap !important;
+      gap: 2px !important;
+      width: 100% !important;
+      white-space: nowrap !important;
+    }
+    .primary-injection-table td:nth-child(n+7) input {
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+      width: auto !important;
+    }
+    .primary-injection-table td:nth-child(n+7) span {
+      flex: 0 0 auto !important;
+      margin-left: 1px !important;
+      white-space: nowrap !important;
+    }
     
     /* Hide tolerance input section in print */
     .no-print-tolerance-section {
@@ -3234,19 +3358,38 @@ if (typeof document !== 'undefined') {
       .ins-res-table col:nth-child(6),
       .ins-res-table col:nth-child(7) { width: 12.5% !important; }
       .ins-res-table col:nth-child(8) { width: 9% !important; }
+
+      /* Nameplate print table: keep long values inside their cells */
+      .nameplate-print-table {
+        table-layout: fixed !important;
+        width: 100% !important;
+      }
+      .nameplate-print-table td,
+      .nameplate-print-table td div {
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        line-height: 1.15 !important;
+      }
+      .nameplate-print-table td {
+        padding: 2px 3px !important;
+        vertical-align: top !important;
+      }
       
       /* Primary Injection table explicit widths for PDF */
       .primary-injection-table { table-layout: fixed !important; width: 100% !important; }
-      .primary-injection-table col:nth-child(1) { width: 7% !important; min-width: 7% !important; max-width: 7% !important; }
-      .primary-injection-table col:nth-child(2) { width: 15% !important; min-width: 15% !important; max-width: 15% !important; }
+      .primary-injection-table col:nth-child(1) { width: 9% !important; min-width: 9% !important; max-width: 9% !important; }
+      .primary-injection-table col:nth-child(2) { width: 10% !important; min-width: 10% !important; max-width: 10% !important; }
       .primary-injection-table col:nth-child(3) { width: 5% !important; min-width: 5% !important; max-width: 5% !important; }
       .primary-injection-table col:nth-child(4) { width: 5% !important; min-width: 5% !important; max-width: 5% !important; }
-      .primary-injection-table col:nth-child(5) { width: 15% !important; min-width: 15% !important; max-width: 15% !important; }
-      .primary-injection-table col:nth-child(6) { width: 5% !important; min-width: 5% !important; max-width: 5% !important; }
-      .primary-injection-table col:nth-child(7) { width: 5% !important; min-width: 5% !important; max-width: 5% !important; }
-      .primary-injection-table col:nth-child(8) { width: 14% !important; min-width: 14% !important; max-width: 14% !important; }
-      .primary-injection-table col:nth-child(9) { width: 14% !important; min-width: 14% !important; max-width: 14% !important; }
-      .primary-injection-table col:nth-child(10) { width: 15% !important; min-width: 15% !important; max-width: 15% !important; }
+      .primary-injection-table col:nth-child(5) { width: 11% !important; min-width: 11% !important; max-width: 11% !important; }
+      .primary-injection-table col:nth-child(6) { width: 7% !important; min-width: 7% !important; max-width: 7% !important; }
+      .primary-injection-table col:nth-child(7) { width: 7% !important; min-width: 7% !important; max-width: 7% !important; }
+      .primary-injection-table col:nth-child(8) { width: 15.33% !important; min-width: 15.33% !important; max-width: 15.33% !important; }
+      .primary-injection-table col:nth-child(9) { width: 15.33% !important; min-width: 15.33% !important; max-width: 15.33% !important; }
+      .primary-injection-table col:nth-child(10) { width: 15.34% !important; min-width: 15.34% !important; max-width: 15.34% !important; }
 
       /* Reduce row height for primary injection table in print */
       .primary-injection-table th,
@@ -3257,6 +3400,26 @@ if (typeof document !== 'undefined') {
       .primary-injection-table td[rowspan] { padding-top: 1px !important; padding-bottom: 1px !important; }
       .primary-injection-table input,
       .primary-injection-table select { padding: 0 2px !important; height: 14px !important; font-size: 9px !important; line-height: 1 !important; }
+      .primary-injection-table td:nth-child(n+7) > div,
+      .primary-injection-table td:nth-child(n+7) .flex {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-wrap: nowrap !important;
+        gap: 2px !important;
+        width: 100% !important;
+        white-space: nowrap !important;
+      }
+      .primary-injection-table td:nth-child(n+7) input {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        width: auto !important;
+      }
+      .primary-injection-table td:nth-child(n+7) span {
+        flex: 0 0 auto !important;
+        margin-left: 1px !important;
+        white-space: nowrap !important;
+      }
       
       /* Allow page breaks in sections for long content */
       .mb-6 {
@@ -3411,6 +3574,24 @@ if (typeof document !== 'undefined') {
         min-width: 50px !important;
         margin-top: 4px !important;
       }
+      /* Nameplate print table: wrap long values instead of stretching columns */
+      .nameplate-print-table {
+        table-layout: fixed !important;
+        width: 100% !important;
+      }
+      .nameplate-print-table td,
+      .nameplate-print-table td div {
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        line-height: 1.15 !important;
+      }
+      .nameplate-print-table td {
+        padding: 2px 3px !important;
+        vertical-align: top !important;
+      }
       /* Section headers with orange line above - ultra compact */
       h2 {
         font-size: 9px !important;
@@ -3452,8 +3633,11 @@ if (typeof document !== 'undefined') {
       tr { page-break-inside: avoid !important; break-inside: avoid !important; }
       /* Avoid clipping within scroll containers */
       .relative.overflow-x-auto, .overflow-x-auto { overflow: visible !important; }
-      /* Primary Injection: allow section and table to break across pages */
+      /* Primary Injection: start on a fresh page so the section heading,
+         tested settings, and main table header don't get orphaned. */
       .primary-injection-section { 
+        page-break-before: always !important;
+        break-before: page !important;
         page-break-inside: auto !important; 
         break-inside: auto !important;
       }
@@ -3468,6 +3652,67 @@ if (typeof document !== 'undefined') {
       .primary-injection-table tbody {
         page-break-inside: auto !important;
         break-inside: auto !important;
+      }
+      .primary-injection-table thead {
+        display: table-header-group !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-after: avoid !important;
+        break-after: avoid-page !important;
+      }
+      .primary-injection-table tbody tr:first-child {
+        page-break-before: avoid !important;
+        break-before: avoid-page !important;
+      }
+      .primary-injection-pdf-layout {
+        display: block !important;
+        margin-top: 4px !important;
+      }
+      .primary-injection-main-pdf-table,
+      .primary-injection-poles-pdf-table {
+        display: table !important;
+        table-layout: fixed !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 8px !important;
+      }
+      .primary-injection-main-pdf-table thead,
+      .primary-injection-poles-pdf-table thead {
+        display: table-header-group !important;
+      }
+      .primary-injection-main-pdf-table tbody,
+      .primary-injection-poles-pdf-table tbody {
+        display: table-row-group !important;
+      }
+      .primary-injection-main-pdf-table tr,
+      .primary-injection-poles-pdf-table tr {
+        display: table-row !important;
+      }
+      .primary-injection-main-pdf-table th,
+      .primary-injection-main-pdf-table td,
+      .primary-injection-poles-pdf-table th,
+      .primary-injection-poles-pdf-table td {
+        display: table-cell !important;
+        border: 1px solid black !important;
+        padding: 2px 4px !important;
+        font-size: 9px !important;
+        line-height: 1.15 !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+      }
+      .primary-injection-main-pdf-table th,
+      .primary-injection-poles-pdf-table th {
+        background-color: #f0f0f0 !important;
+        font-weight: bold !important;
+      }
+      .primary-injection-poles-pdf-table td:nth-child(n+3) {
+        white-space: nowrap !important;
+        font-size: 10px !important;
       }
       /* Force PASS/FAIL colors to print */
       .status-pass {

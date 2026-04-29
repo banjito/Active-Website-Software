@@ -4,9 +4,14 @@ import { supabase } from '@/lib/supabase';
 interface ReportWrapperProps {
   children: React.ReactNode;
   isPrintMode?: boolean;
+  /**
+   * When true, the side-by-side print preview iframe is hidden.
+   * Use for reports where the iframe preview is not useful or is misbehaving.
+   */
+  disablePreview?: boolean;
 }
 
-export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintMode = false }) => {
+export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintMode = false, disablePreview = false }) => {
   useEffect(() => {
     // Inject print CSS (remove old + re-inject so latest rules always apply)
     if (typeof document !== 'undefined') {
@@ -1702,7 +1707,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
     setPreviewStatus('error: iframe failed to load');
   }, []);
 
-  const actuallyShowPreview = showGlobalPreview && showPreviewEnabled;
+  const actuallyShowPreview = showGlobalPreview && showPreviewEnabled && !disablePreview;
 
   return (
     <div className={actuallyShowPreview ? 'flex flex-col lg:flex-row gap-4 items-start' : ''}>
@@ -1712,8 +1717,8 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         className={`w-full ${actuallyShowPreview ? 'lg:flex-1' : 'max-w-4xl'} mx-auto p-6 pb-20 ${isPrintMode ? 'print-mode' : ''} ${isReportLocked ? 'report-locked' : ''} overflow-x-auto screen-min-height`}
       >
         {/* Locked banner is shown once by Layout.tsx for all report pages */}
-        {/* Global preview toggle (hidden during actual print) */}
-        {!isPrintMode && (
+        {/* Global preview toggle (hidden during actual print, or when disablePreview is set) */}
+        {!isPrintMode && !disablePreview && (
           <div className="print:hidden flex justify-end mb-2">
             <button
               onClick={toggleGlobalPreview}

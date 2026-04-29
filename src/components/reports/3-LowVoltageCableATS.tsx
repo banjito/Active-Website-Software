@@ -536,8 +536,22 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState<boolean>(!reportId);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isAutoSaving, setIsAutoSaving] = useState<boolean>(false);
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
+  const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const isAutoSaveCreatedRef = React.useRef(false);
+  // Mutex shared between autoSave and handleSave so they cannot both insert
+  // concurrently. Without this, a manual Save click during the auto-save
+  // debounce window can create a duplicate report row + orphaned asset.
+  const savingInFlightRef = React.useRef(false);
   const reportSlug = 'low-voltage-cable-test-3sets-ats'; // New ATS slug
+
+  // Keep currentReportId in sync if URL param changes
+  useEffect(() => {
+    setCurrentReportId(reportId);
+    isAutoSaveCreatedRef.current = false;
+  }, [reportId]);
   
 
   // Load job information
@@ -601,20 +615,27 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
 
   // Add loadReport function to load existing report data
   const loadReport = async () => {
-    if (!reportId) {
+    // Skip load if auto-save just created this report - data is already in state
+    if (isAutoSaveCreatedRef.current) {
+      isAutoSaveCreatedRef.current = false;
+      setLoading(false);
+      return;
+    }
+
+    if (!currentReportId) {
       setLoading(false); // No report to load, finish loading
       return;
     }
     
     try {
       // Keep loading true while fetching report
-      console.log(`Loading report with ID: ${reportId}`);
+      console.log(`Loading report with ID: ${currentReportId}`);
       
       const { data, error } = await supabase
         .schema('neta_ops')
         .from('low_voltage_cable_test_3sets') // Using the same table for ATS
         .select('*')
-        .eq('id', reportId);
+        .eq('id', currentReportId);
       
       if (error) {
         console.error('Error loading report:', error);
@@ -654,7 +675,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
         }
         setIsEditMode(false); // Existing report loaded, start in view mode
       } else {
-        console.warn('No data found for report ID:', reportId);
+        console.warn('No data found for report ID:', currentReportId);
       }
     } catch (error) {
       console.error('Error in loadReport:', error);
@@ -668,7 +689,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
   useEffect(() => {
     if (jobId && user) {
       loadJobInfo().then(() => {
-        if (reportId) {
+        if (currentReportId) {
           loadReport();
         } else {
           setLoading(false);
@@ -682,7 +703,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
       setError("User not authenticated.");
       setLoading(false);
     }
-  }, [jobId, reportId, user]);
+  }, [jobId, currentReportId, user]);
 
 
   // Derived values
@@ -767,9 +788,112 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
     }));
   };
   
+  // Auto-save: silently persists in-progress data so users don't lose work
+  // if they close the tab, lose connectivity, etc.
+  const autoSave = React.useCallback(async () => {
+    if (!jobId || !user?.id || !isEditMode) return;
+    if (savingInFlightRef.current) return;
+
+    savingInFlightRef.current = true;
+    setIsAutoSaving(true);
+
+    try {
+      const reportDataToSave = { ...formData, status };
+      const payload = {
+        job_id: jobId,
+        user_id: user.id,
+        data: reportDataToSave,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (currentReportId) {
+        const { error: updateError } = await supabase
+          .schema('neta_ops')
+          .from('low_voltage_cable_test_3sets')
+          .update(payload)
+          .eq('id', currentReportId);
+        if (updateError) throw updateError;
+      } else if (!isAutoSaveCreatedRef.current) {
+        isAutoSaveCreatedRef.current = true;
+        const insertPayload = { ...payload, created_at: new Date().toISOString() };
+        const { data: insertData, error: insertError } = await supabase
+          .schema('neta_ops')
+          .from('low_voltage_cable_test_3sets')
+          .insert(insertPayload)
+          .select('id')
+          .single();
+        if (insertError) {
+          isAutoSaveCreatedRef.current = false;
+          throw insertError;
+        }
+        if (insertData) {
+          const newId = insertData.id as string;
+          setCurrentReportId(newId);
+
+          const assetData = {
+            name: getAssetName(reportSlug, formData.identifier || ''),
+            file_url: `report:/jobs/${jobId}/${reportSlug}/${newId}`,
+            user_id: user.id,
+            created_at: new Date().toISOString(),
+          };
+          const { data: assetResult, error: assetError } = await supabase
+            .schema('neta_ops')
+            .from('assets')
+            .insert(assetData)
+            .select('id')
+            .single();
+          if (assetError) {
+            console.error('Auto-save asset insert failed:', assetError);
+          } else if (assetResult) {
+            const { error: linkError } = await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            if (linkError) console.error('Auto-save job_assets link failed:', linkError);
+          }
+
+          window.history.replaceState(null, '', `/jobs/${jobId}/${reportSlug}/${newId}`);
+        }
+      }
+    } catch (err) {
+      console.error('Auto-save error:', err);
+    } finally {
+      savingInFlightRef.current = false;
+      setIsAutoSaving(false);
+    }
+  }, [jobId, user?.id, isEditMode, formData, status, currentReportId, reportSlug]);
+
+  // Debounced auto-save trigger when form data, status, or edit mode changes
+  useEffect(() => {
+    if (!isEditMode || loading) return;
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => autoSave(), 2000);
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, [formData, status, isEditMode, loading, autoSave]);
+
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditMode) return;
-    
+
+    // Cancel any pending auto-save so it cannot fire mid-save and create a duplicate row
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
+
+    // Wait briefly if an auto-save is already in flight; up to ~5 seconds
+    let waited = 0;
+    while (savingInFlightRef.current && waited < 5000) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      waited += 100;
+    }
+    if (savingInFlightRef.current) {
+      alert('A save is already in progress, please wait a moment and try again.');
+      return;
+    }
+
+    savingInFlightRef.current = true;
     setIsSaving(true);
     setError(null);
     try {
@@ -786,16 +910,16 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
 
         console.log('Payload:', reportPayload);
 
-        let savedReportId = reportId;
+        let savedReportId = currentReportId;
         let operation: 'update' | 'insert' = 'insert';
 
-        if (reportId) {
+        if (currentReportId) {
             operation = 'update';
             const { error: updateError } = await supabase
                 .schema('neta_ops')
                 .from('low_voltage_cable_test_3sets')
                 .update(reportPayload)
-                .eq('id', reportId);
+                .eq('id', currentReportId);
                 
             if (updateError) {
                 console.error('Update error details:', updateError);
@@ -820,6 +944,8 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                 throw insertError;
             }
             savedReportId = insertData.id;
+            setCurrentReportId(savedReportId);
+            isAutoSaveCreatedRef.current = true;
             console.log("Report created successfully with ID:", savedReportId);
             
             const assetData = {
@@ -873,6 +999,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
         setError(`Failed to save report: ${err.message || 'Unknown error'}`);
         alert(`Error saving report: ${err.message || 'Unknown error'}`);
     } finally {
+        savingInFlightRef.current = false;
         setIsSaving(false);
     }
   };
@@ -952,7 +1079,12 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
             </button>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">3-Set Low Voltage Cable Test Report (ATS)</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {isEditMode && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                {isAutoSaving ? 'Auto-saving…' : '✓ Auto Saving Enabled'}
+              </span>
+            )}
             <select
               value={status}
               onChange={(e) => {
@@ -968,7 +1100,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
               <option value="FAIL" className="bg-white dark:bg-dark-150 text-gray-900 dark:text-white">FAIL</option>
             </select>
 
-            {reportId && !isEditMode ? (
+            {currentReportId && !isEditMode ? (
               <>
                 <button onClick={() => setIsEditMode(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   Edit Report
@@ -982,7 +1114,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
           </>
             ) : (
               <button onClick={handleSave} disabled={!isEditMode || isSaving} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditMode ? 'hidden' : 'hover:bg-orange-700'}`}>
-                {isSaving ? 'Saving...' : reportId ? 'Update Report' : 'Save Report'}
+                {isSaving ? 'Saving...' : currentReportId ? 'Update Report' : 'Save Report'}
               </button>
         )}
       </div>

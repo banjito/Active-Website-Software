@@ -361,10 +361,24 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isAutoSaving, setIsAutoSaving] = useState<boolean>(false);
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
   const [isEditMode, setIsEditMode] = useState<boolean>(!reportId); // Edit mode enabled by default for new reports
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
   const [searchParams] = useSearchParams();
   const isPrintMode = searchParams.get('print') === 'true';
+  const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const isAutoSaveCreatedRef = React.useRef(false);
+  // Mutex shared between autoSave and handleSave so they cannot both insert
+  // concurrently. Without this, a manual Save click during the auto-save
+  // debounce window can create a duplicate report row + orphaned asset.
+  const savingInFlightRef = React.useRef(false);
+
+  // Keep currentReportId in sync if URL param changes
+  useEffect(() => {
+    setCurrentReportId(reportId);
+    isAutoSaveCreatedRef.current = false;
+  }, [reportId]);
 
   // Add print styles - replace the existing useEffect with print styles
   useEffect(() => {
@@ -1171,7 +1185,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
       console.error('Error loading job info:', error);
       setError(`Failed to load job info: ${(error as Error).message}`);
     } finally {
-      if (!reportId) {
+      if (!currentReportId) {
         setLoading(false);
       }
     }
@@ -1179,17 +1193,24 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
 
   // Add loadReport function to load existing report data
   const loadReport = async () => {
-    if (!reportId) return;
+    // Skip load if auto-save just created this report - data is already in state
+    if (isAutoSaveCreatedRef.current) {
+      isAutoSaveCreatedRef.current = false;
+      setLoading(false);
+      return;
+    }
+
+    if (!currentReportId) return;
     
     try {
       setLoading(true);
-      console.log(`Loading report with ID: ${reportId}`);
+      console.log(`Loading report with ID: ${currentReportId}`);
       
               const { data, error } = await supabase
           .schema('neta_ops')
           .from('low_voltage_cable_test_3sets')
           .select('*')
-          .eq('id', reportId);
+          .eq('id', currentReportId);
       
       if (error) {
         console.error('Error loading report:', error);
@@ -1250,7 +1271,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         }
         setIsEditMode(false);
       } else {
-        console.warn('No data found for report ID:', reportId);
+        console.warn('No data found for report ID:', currentReportId);
         console.warn('Available columns:', Object.keys(reportData));
       }
     } catch (error) {
@@ -1268,12 +1289,12 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
     }
   }, [jobId, user]);
   
-  // Load report data when reportId is available
+  // Load report data when currentReportId is available
   useEffect(() => {
-    if (reportId && user) {
+    if (currentReportId && user) {
       loadReport();
     }
-  }, [reportId, user]);
+  }, [currentReportId, user]);
 
   // Derived values (calculations that follow the Excel formulas)
   const celsiusTemperature = convertFahrenheitToCelsius(formData.temperature);
@@ -1356,52 +1377,158 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
     }));
   };
   
+  // Build the normalized data payload (used by both autoSave and handleSave)
+  const buildSavePayload = React.useCallback(() => {
+    const normalizedTestSets = formData.testSets.map((set) => ({
+      ...set,
+      size: set.size ?? '',
+      config: set.config ?? '',
+      result: set.result ?? '',
+      readings: {
+        ...set.readings,
+        continuity: set.readings?.continuity ?? '',
+      },
+      correctedReadings: {
+        ...set.correctedReadings,
+        continuity: set.correctedReadings?.continuity ?? set.readings?.continuity ?? '',
+      },
+    }));
+    const typedUser = typeof formData.user === 'string' ? formData.user : '';
+    return { ...formData, user: typedUser, status, testSets: normalizedTestSets };
+  }, [formData, status]);
+
+  // Auto-save: silently persists in-progress data so users don't lose work
+  // if they close the tab, lose connectivity, etc.
+  const autoSave = React.useCallback(async () => {
+    if (!jobId || !user?.id || !isEditMode) return;
+    if (savingInFlightRef.current) return;
+
+    savingInFlightRef.current = true;
+    setIsAutoSaving(true);
+
+    try {
+      const dataToSave = buildSavePayload();
+      const payload = {
+        job_id: jobId,
+        user_id: user.id,
+        data: dataToSave,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (currentReportId) {
+        const { error: updateError } = await supabase
+          .schema('neta_ops')
+          .from('low_voltage_cable_test_3sets')
+          .update(payload)
+          .eq('id', currentReportId);
+        if (updateError) throw updateError;
+      } else if (!isAutoSaveCreatedRef.current) {
+        isAutoSaveCreatedRef.current = true;
+        const insertPayload = { ...payload, created_at: new Date().toISOString() };
+        const { data: insertData, error: insertError } = await supabase
+          .schema('neta_ops')
+          .from('low_voltage_cable_test_3sets')
+          .insert(insertPayload)
+          .select('id')
+          .single();
+        if (insertError) {
+          isAutoSaveCreatedRef.current = false;
+          throw insertError;
+        }
+        if (insertData) {
+          const newId = insertData.id as string;
+          setCurrentReportId(newId);
+
+          const assetData = {
+            name: getAssetName(reportSlug, formData.identifier || ''),
+            file_url: `report:/jobs/${jobId}/${reportSlug}/${newId}`,
+            user_id: user.id,
+            created_at: new Date().toISOString(),
+          };
+          const { data: assetResult, error: assetError } = await supabase
+            .schema('neta_ops')
+            .from('assets')
+            .insert(assetData)
+            .select('id')
+            .single();
+          if (assetError) {
+            console.error('Auto-save asset insert failed:', assetError);
+          } else if (assetResult) {
+            const { error: linkError } = await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            if (linkError) console.error('Auto-save job_assets link failed:', linkError);
+          }
+
+          window.history.replaceState(null, '', `/jobs/${jobId}/${reportSlug}/${newId}`);
+        }
+      }
+    } catch (err) {
+      console.error('Auto-save error:', err);
+    } finally {
+      savingInFlightRef.current = false;
+      setIsAutoSaving(false);
+    }
+  }, [jobId, user?.id, isEditMode, currentReportId, buildSavePayload, formData.identifier, reportSlug]);
+
+  // Debounced auto-save trigger when form data, status, or edit mode changes
+  useEffect(() => {
+    if (!isEditMode || loading) return;
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => autoSave(), 2000);
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, [formData, status, isEditMode, loading, autoSave]);
+
   // Add Save/Update Handler
   const handleSave = async () => {
+    // Cancel any pending auto-save so it cannot fire mid-save and create a duplicate row
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
+
+    // Wait briefly if an auto-save is already in flight; up to ~5 seconds
+    let waited = 0;
+    while (savingInFlightRef.current && waited < 5000) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      waited += 100;
+    }
+    if (savingInFlightRef.current) {
+      alert('A save is already in progress, please wait a moment and try again.');
+      return;
+    }
+
+    savingInFlightRef.current = true;
     setIsSaving(true);
     setError(null);
     try {
         // Log the schema and table name for debugging
                         console.log('Attempting to save to schema: neta_ops, table: low_voltage_cable_test_3sets');
         
-        // Normalize test sets to ensure size/config/continuity persist
-        const normalizedTestSets = formData.testSets.map((set) => ({
-            ...set,
-            size: set.size ?? '',
-            config: set.config ?? '',
-            result: set.result ?? '',
-            readings: {
-              ...set.readings,
-              continuity: set.readings?.continuity ?? ''
-            },
-            correctedReadings: {
-              ...set.correctedReadings,
-              continuity: set.correctedReadings?.continuity ?? set.readings?.continuity ?? ''
-            }
-        }));
-
-        // Carry through whatever text was typed into the User input (including spaces)
-        const typedUser = typeof formData.user === 'string' ? formData.user : '';
+        const dataToSave = buildSavePayload();
 
         // Structure the data to be saved (assuming a 'data' column)
         const reportPayload = {
             job_id: jobId,
             user_id: user?.id,
-            data: { ...formData, user: typedUser, testSets: normalizedTestSets }
+            data: dataToSave
         };
 
         // Log the payload for debugging
         console.log('Payload:', reportPayload);
 
-        let savedReportId = reportId;
+        let savedReportId = currentReportId;
 
-        if (reportId) {
+        if (currentReportId) {
             // Update existing report
             const { error: updateError } = await supabase
                 .schema('neta_ops')
                 .from('low_voltage_cable_test_3sets')
-                .update({ data: { ...formData, user: typedUser, testSets: normalizedTestSets }, updated_at: new Date() })
-                .eq('id', reportId);
+                .update({ data: dataToSave, updated_at: new Date() })
+                .eq('id', currentReportId);
             if (updateError) {
                 console.error('Update error details:', updateError);
                 throw updateError;
@@ -1428,6 +1555,8 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                     throw insertError;
                 }
                 savedReportId = insertData.id;
+                setCurrentReportId(savedReportId);
+                isAutoSaveCreatedRef.current = true;
                 console.log("Report created successfully with ID:", savedReportId);
                 
                 // Create an asset entry for the saved report
@@ -1528,6 +1657,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         setError(`Failed to save report: ${err.message}`);
         alert(`Error saving report: ${err.message}`);
     } finally {
+        savingInFlightRef.current = false;
         setIsSaving(false);
     }
   };
@@ -1687,7 +1817,12 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         </button>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
+            {isEditMode && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                {isAutoSaving ? 'Auto-saving…' : '✓ Auto Saving Enabled'}
+              </span>
+            )}
             <select
               value={status}
               onChange={(e) => {
@@ -1703,7 +1838,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
               <option value="FAIL" className="bg-white dark:bg-dark-150 text-gray-900 dark:text-white">FAIL</option>
             </select>
 
-        {reportId && !isEditMode ? (
+        {currentReportId && !isEditMode ? (
           <>
                 <button onClick={() => setIsEditMode(true)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               Edit Report
@@ -1717,7 +1852,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           </>
         ) : (
               <button onClick={handleSave} disabled={!isEditMode || isSaving} className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditMode ? 'hidden' : 'hover:bg-orange-700'}`}>
-                {isSaving ? 'Saving...' : reportId ? 'Update Report' : 'Save Report'}
+                {isSaving ? 'Saving...' : currentReportId ? 'Update Report' : 'Save Report'}
           </button>
         )}
       </div>

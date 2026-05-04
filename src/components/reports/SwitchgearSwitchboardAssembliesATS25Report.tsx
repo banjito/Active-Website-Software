@@ -617,6 +617,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
         tests: formData.insulationMeasured,
         correctedTests: formData.tempCorrected,
         unit: formData.insulationUnit,
+        units: formData.insulationUnit,
         testVoltage: formData.insulationTestVoltage,
         criteriaValue: formData.criteriaValue,
         criteriaUnits: formData.criteriaUnits,
@@ -737,6 +738,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
         tests: formData.insulationMeasured,
         correctedTests: formData.tempCorrected,
         unit: formData.insulationUnit,
+        units: formData.insulationUnit,
         testVoltage: formData.insulationTestVoltage,
         criteriaValue: formData.criteriaValue,
         criteriaUnits: formData.criteriaUnits,
@@ -1346,7 +1348,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                         {(['ag','bg','cg','ab','bc','ca','an','bn','cn'] as const).map(k => (
                           <td key={k} className="px-3 py-2"><div className="print:hidden"><input value={(row as any)[k]} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{(row as any)[k]}</div></td>
                         ))}
-                        <td className="px-3 py-2"><div className="print:hidden"><input value={formData.insulationUnit} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{formData.insulationUnit}</div></td>
+                        <td className="px-3 py-2"><div className="print:hidden"><select value={formData.insulationUnit} onChange={e => setFormData(p => ({ ...p, insulationUnit: e.target.value }))} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>{INSULATION_RESISTANCE_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div><div className="hidden print:block text-center">{formData.insulationUnit}</div></td>
                       </tr>
                     ))}
                   </tbody>

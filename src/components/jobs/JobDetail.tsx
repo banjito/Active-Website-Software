@@ -190,6 +190,43 @@ const reportRoutes = {
   '2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test MTS': 'large-dry-type-xfmr-mts-report',
 };
 
+/** Report date fields — skip placeholders so we can fall back to created_at. */
+function parseReportDateField(raw: unknown): Date | null {
+  if (raw == null) return null;
+  if (raw instanceof Date) return isNaN(raw.getTime()) ? null : raw;
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (typeof raw === 'string') {
+    const t = raw.trim();
+    if (!t || /^(dates|\[dates\]|tbd|n\/a|pending)$/i.test(t)) return null;
+    const d = new Date(t);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  return null;
+}
+
+/** Report row id from `report:/jobs/.../.../reportId` (handles grounding substation segment). */
+function parseReportIdFromAssetUrl(fileUrl: string): string | null {
+  try {
+    const urlContent = fileUrl.split(':/')[1] || '';
+    const parts = urlContent.split('/');
+    if (parts[0] !== 'jobs' || !parts[2]) return null;
+    const slug = parts[2].split('?')[0];
+    const isGroundingReport =
+      slug === 'grounding-system-master' ||
+      slug === 'grounding-fall-of-potential-slope-method-test' ||
+      slug === 'gfi-trip-test-report';
+    const reportIdFromUrl = isGroundingReport && parts.length >= 5
+      ? (parts[4] || '').split('?')[0]
+      : (parts[3] || '').split('?')[0];
+    return reportIdFromUrl || null;
+  } catch {
+    return null;
+  }
+}
+
 // Signature sections types for executive summary
 export interface SignaturePerson {
   name: string;
@@ -585,14 +622,39 @@ export default function JobDetail() {
 
     const projectTitle = maskJobTitle((jd?.title || job?.title || '').trim()) || '[Project/Outage Title]';
 
-    // Derive work performed date range by scanning per-report tables for report_info.date,
-    // with fallbacks to technical_reports.submitted_at
+    // Work performed: only **approved** report assets (user selection / substation filter), never **sent**.
+    // Earliest test/start date → latest "Date Added" (job_assets.created_at). Skips invalid placeholders.
     let workPerformedText = 'Work Performed [Dates]';
     try {
       if (id) {
-        const dates: Date[] = [];
+        const dateAddedFromAssets: Date[] = [];
+        const allowedReportIds = new Set<string>();
+        const approvedReportFileUrls = new Set<string>();
+        try {
+          let reportAssets = (jobAssets || []).filter(
+            (a) =>
+              a.file_url &&
+              a.file_url.startsWith('report:') &&
+              a.status === 'approved'
+          );
+          if (filterSubstations && filterSubstations.size > 0) {
+            reportAssets = reportAssets.filter((asset) => {
+              const sub = assetSubstations[asset.id];
+              return sub && filterSubstations.has(sub);
+            });
+          }
+          reportAssets.forEach((asset) => {
+            approvedReportFileUrls.add(asset.file_url);
+            const rid = parseReportIdFromAssetUrl(asset.file_url);
+            if (rid) allowedReportIds.add(rid);
+            const d = parseReportDateField(asset.created_at);
+            if (d) dateAddedFromAssets.push(d);
+          });
+        } catch {}
 
-        // 1) Gather dates from all specific report tables
+        const testOrStartDates: Date[] = [];
+        const rowCreatedDates: Date[] = [];
+
         const reportTables = [
           'panelboard_reports',
           'liquid_xfmr_visual_mts_reports',
@@ -604,6 +666,8 @@ export default function JobDetail() {
           'medium_voltage_circuit_breaker_reports',
           'medium_voltage_circuit_breaker_mts_reports',
           'medium_voltage_switch_oil_reports',
+          'medium_voltage_switch_mts_reports',
+          'medium_voltage_switch_sf6_reports',
           'switchgear_reports',
           'low_voltage_switch_reports',
           'low_voltage_circuit_breaker_electronic_trip_ats_reports',
@@ -615,65 +679,115 @@ export default function JobDetail() {
           'voltage_potential_transformer_mts_reports',
           'low_voltage_cable_mts_reports',
           'low_voltage_cable_ats_reports',
+          'low_voltage_cable_test_12sets',
+          'low_voltage_cable_test_3sets',
           'large_dry_type_transformer_mts_reports',
           'large_dry_type_transformer_reports',
           'large_dry_type_xfmr_mts_reports',
           'liquid_filled_transformer_reports',
           'metal_enclosed_busway_reports',
+          'switchgear_switchboard_ats25_reports',
+          'medium_voltage_motor_starter_mts_reports',
         ];
 
-        await Promise.all(reportTables.map(async (table) => {
-          try {
-            const { data } = await supabase
-              .schema('neta_ops')
-              .from(table)
-              .select('report_info, report_data, created_at, updated_at')
-              .eq('job_id', id);
-            (data || []).forEach((row: any) => {
-              const ri = row?.report_info || {};
-              const rd = row?.report_data || {};
-              const info = rd.reportInfo || rd.report_info || ri || {};
-              const maybe = info?.date || info?.report_date || rd?.date || ri?.date;
-              const str = typeof maybe === 'string' ? maybe : null;
-              const d = str ? new Date(str) : (row.created_at ? new Date(row.created_at) : (row.updated_at ? new Date(row.updated_at) : null));
-              if (d && !isNaN(d.getTime())) dates.push(d);
-            });
-          } catch {}
-        }));
+        if (allowedReportIds.size > 0) {
+          await Promise.all(reportTables.map(async (table) => {
+            try {
+              const { data } = await supabase
+                .schema('neta_ops')
+                .from(table)
+                .select('id, report_info, report_data, created_at, updated_at')
+                .eq('job_id', id);
+              (data || []).forEach((row: any) => {
+                if (!row?.id || !allowedReportIds.has(row.id)) return;
+                const ri = row?.report_info || {};
+                const rd = row?.report_data || {};
+                const info = rd.reportInfo || rd.report_info || ri || {};
+                const testRaw =
+                  info.start_date ??
+                  info.startDate ??
+                  info.date ??
+                  info.report_date ??
+                  rd.date ??
+                  ri.date;
+                const testD = parseReportDateField(testRaw);
+                if (testD) testOrStartDates.push(testD);
 
-        // 2) Fallback to technical_reports.submitted_at and any embedded report_data dates
+                const rowAdded =
+                  parseReportDateField(row.created_at) ?? parseReportDateField(row.updated_at);
+                if (rowAdded) rowCreatedDates.push(rowAdded);
+              });
+            } catch {}
+          }));
+        }
+
         try {
-          const { data: reports } = await supabase
-            .schema('neta_ops')
-            .from('technical_reports')
-            .select('submitted_at, report_data')
-            .eq('job_id', id);
-          (reports || []).forEach((r: any) => {
-            const rd = r?.report_data || {};
-            const info = rd.reportInfo || rd.report_info || {};
-            const maybeDate = info?.date || info?.report_date || rd?.date;
-            const str = typeof maybeDate === 'string' ? maybeDate : null;
-            const d = str ? new Date(str) : (r.submitted_at ? new Date(r.submitted_at) : null);
-            if (d && !isNaN(d.getTime())) dates.push(d);
-          });
+          if (approvedReportFileUrls.size > 0) {
+            const { data: reports } = await supabase
+              .schema('neta_ops')
+              .from('technical_reports')
+              .select('submitted_at, report_data, created_at, status')
+              .eq('job_id', id)
+              .eq('status', 'approved');
+            (reports || []).forEach((r: any) => {
+              const fu = r?.report_data?.file_url as string | undefined;
+              if (!fu || !approvedReportFileUrls.has(fu)) return;
+              const rd = r?.report_data || {};
+              const info = rd.reportInfo || rd.report_info || {};
+              const testRaw =
+                info.start_date ??
+                info.startDate ??
+                info.date ??
+                info.report_date ??
+                rd.date;
+              const testD = parseReportDateField(testRaw);
+              if (testD) testOrStartDates.push(testD);
+              const fallback =
+                parseReportDateField(r.submitted_at) ?? parseReportDateField(r.created_at);
+              if (fallback) rowCreatedDates.push(fallback);
+            });
+          }
         } catch {}
 
-        if (dates.length > 0) {
-          dates.sort((a,b) => a.getTime() - b.getTime());
-          const first = dates[0];
-          const last = dates[dates.length - 1];
+        let startMs: number | null =
+          testOrStartDates.length > 0
+            ? Math.min(...testOrStartDates.map((d) => d.getTime()))
+            : dateAddedFromAssets.length > 0
+              ? Math.min(...dateAddedFromAssets.map((d) => d.getTime()))
+              : rowCreatedDates.length > 0
+                ? Math.min(...rowCreatedDates.map((d) => d.getTime()))
+                : null;
+
+        let endMs: number | null =
+          dateAddedFromAssets.length > 0
+            ? Math.max(...dateAddedFromAssets.map((d) => d.getTime()))
+            : testOrStartDates.length > 0
+              ? Math.max(...testOrStartDates.map((d) => d.getTime()))
+              : rowCreatedDates.length > 0
+                ? Math.max(...rowCreatedDates.map((d) => d.getTime()))
+                : null;
+
+        if (startMs != null && endMs != null && startMs > endMs) {
+          const t = startMs;
+          startMs = endMs;
+          endMs = t;
+        }
+
+        if (startMs != null && endMs != null) {
+          const first = new Date(startMs);
+          const last = new Date(endMs);
 
           const month = (d: Date) => new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d);
           const ordinal = (n: number) => {
-            const s = ["th","st","nd","rd"], v = n % 100;
-            return n + (s[(v-20)%10] || s[v] || s[0]);
+            const s = ['th', 'st', 'nd', 'rd'],
+              v = n % 100;
+            return n + (s[(v - 20) % 10] || s[v] || s[0]);
           };
 
           const sameYear = first.getFullYear() === last.getFullYear();
           const sameMonth = first.getMonth() === last.getMonth() && sameYear;
 
           if (sameYear && sameMonth) {
-            // Always include month on both sides and comma before year
             workPerformedText = `Work Performed ${month(first)} ${ordinal(first.getDate())} - ${month(last)} ${ordinal(last.getDate())}, ${first.getFullYear()}`;
           } else if (sameYear) {
             workPerformedText = `Work Performed ${month(first)} ${ordinal(first.getDate())} - ${month(last)} ${ordinal(last.getDate())}, ${first.getFullYear()}`;
@@ -681,7 +795,6 @@ export default function JobDetail() {
             workPerformedText = `Work Performed ${month(first)} ${ordinal(first.getDate())}, ${first.getFullYear()} - ${month(last)} ${ordinal(last.getDate())}, ${last.getFullYear()}`;
           }
 
-          // Safety cleanup: remove any accidental duplicated day after the comma
           workPerformedText = workPerformedText
             .replace(/(Work Performed\s+[A-Za-z]{3,9}\s+\d{1,2}(?:st|nd|rd|th)),?\s*\d{1,2}\s*-/, '$1 -')
             .replace(/\s{2,}/g, ' ')

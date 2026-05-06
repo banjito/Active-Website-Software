@@ -1944,7 +1944,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           NETA - ATS 7.6.1.2
           <div className="hidden print:block mt-2">
             <div 
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${formData.status === 'FAIL' ? 'fail' : formData.status === 'LIMITED SERVICE' ? 'limited' : 'pass'}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',
@@ -1953,13 +1953,10 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 textAlign: 'center',
                 width: 'fit-content',
                 borderRadius: '6px',
-                border: formData.status === 'PASS' ? '2px solid #16a34a' : formData.status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
-                backgroundColor: formData.status === 'PASS' ? '#22c55e' : formData.status === 'FAIL' ? '#ef4444' : '#eab308',
-                color: 'white',
-                WebkitPrintColorAdjust: 'exact',
-                printColorAdjust: 'exact',
                 boxSizing: 'border-box',
                 minWidth: '50px',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
               }}
             >
               {formData.status || 'PASS'}
@@ -2088,9 +2085,9 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="p-3 align-top border border-gray-300 print:border-black">
+                      <td className="p-3 align-top border border-gray-300 print:border-black lvcb-ats-address-cell">
                         <div className="font-semibold">Address:</div>
-                        <div className="mt-1">{maskCustomerAddress(normalizeAddress(formData.address))}</div>
+                        <div className="mt-1 lvcb-ats-address-value">{maskCustomerAddress(normalizeAddress(formData.address))}</div>
                       </td>
                       <td className="p-3 align-top border border-gray-300 print:border-black">
                         <div className="font-semibold">TCF:</div>
@@ -2145,7 +2142,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             {/* Print-only compact table with header */}
             <div className="hidden print:block print:mt-2">
               <h2 className="text-xl font-semibold mb-2 text-black border-b border-black pb-2 font-bold">Nameplate Data</h2>
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem] nameplate-print-table">
                 <colgroup>
                   <col style={{ width: '14.2857%' }} />
                   <col style={{ width: '14.2857%' }} />
@@ -2748,18 +2745,15 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table">
+              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table primary-injection-main-table">
                 <colgroup>
-                  <col style={{ width: isPrintMode ? '8%' : '10%' }} /> {/* Function */}
-                  <col style={{ width: isPrintMode ? '10%' : '12%' }} /> {/* Rated Amperes */}
-                  <col style={{ width: isPrintMode ? '8%' : '9%' }} />  {/* Multiplier % Left */}
-                  <col style={{ width: isPrintMode ? '8%' : '9%' }} />  {/* Multiplier % Right */}
-                  <col style={{ width: isPrintMode ? '10%' : '12%' }} /> {/* Test Amperes */}
-                  <col style={{ width: isPrintMode ? '8%' : '9%' }} />  {/* Tolerance Min */}
-                  <col style={{ width: isPrintMode ? '8%' : '9%' }} />  {/* Tolerance Max */}
-                  <col style={{ width: isPrintMode ? '13%' : '10%' }} /> {/* Pole 1 */}
-                  <col style={{ width: isPrintMode ? '13%' : '10%' }} /> {/* Pole 2 */}
-                  <col style={{ width: isPrintMode ? '13%' : '10%' }} /> {/* Pole 3 */}
+                  <col style={{ width: isPrintMode ? '10%' : '11%' }} /> {/* Function */}
+                  <col style={{ width: isPrintMode ? '12%' : '13%' }} /> {/* Rated Amperes */}
+                  <col style={{ width: isPrintMode ? '10%' : '10%' }} />  {/* Multiplier % Left */}
+                  <col style={{ width: isPrintMode ? '10%' : '10%' }} />  {/* Multiplier % Right */}
+                  <col style={{ width: isPrintMode ? '14%' : '14%' }} /> {/* Test Amperes */}
+                  <col style={{ width: isPrintMode ? '12%' : '11%' }} />  {/* Tolerance Min */}
+                  <col style={{ width: isPrintMode ? '12%' : '11%' }} />  {/* Tolerance Max */}
                 </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-150">
                   <tr>
@@ -2768,21 +2762,12 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={2}>Multiplier %</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" rowSpan={2}>Test Amperes</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" colSpan={2}>Tolerance</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 1</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 2</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Pole 3</th>
                   </tr>
                   <tr>
-                    {/* Placeholder cells under Multiplier % to keep columns aligned */}
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"></th>
-                    {/* Tolerance sub-headers */}
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Min</th>
                     <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">Max</th>
-                    {/* Pole units */}
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">sec.</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">sec.</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">sec.</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
@@ -2823,30 +2808,6 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                       <input type="text" value={formData.primaryInjection.results.longTime.toleranceMax1 || ''} 
                       onChange={(e) => handleChange('primaryInjection.results.longTime.toleranceMax1', e.target.value)} 
                       readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.longTime.pole1.sec || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.longTime.pole1.sec', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">sec.</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.longTime.pole2.sec || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.longTime.pole2.sec', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">sec.</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.longTime.pole3.sec || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.longTime.pole3.sec', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">sec.</span>
-                      </div>
                     </td>
                   </tr>
                   <tr>
@@ -2896,30 +2857,6 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                       onChange={(e) => handleChange('primaryInjection.results.longTime.toleranceMax2', e.target.value)} 
                       readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                     </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.longTime.pole1.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.longTime.pole1.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">A</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.longTime.pole2.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.longTime.pole2.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">A</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.longTime.pole3.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.longTime.pole3.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">A</span>
-                      </div>
-                    </td>
                   </tr>
 
                   {/* Short Time */}
@@ -2959,30 +2896,6 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                       <input type="text" value={formData.primaryInjection.results.shortTime.toleranceMax1 || ''} 
                       onChange={(e) => handleChange('primaryInjection.results.shortTime.toleranceMax1', e.target.value)} 
                       readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.shortTime.pole1.sec || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.shortTime.pole1.sec', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">sec.</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.shortTime.pole2.sec || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.shortTime.pole2.sec', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">sec.</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.shortTime.pole3.sec || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.shortTime.pole3.sec', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">sec.</span>
-                      </div>
                     </td>
                   </tr>
                   <tr>
@@ -3032,30 +2945,6 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                       onChange={(e) => handleChange('primaryInjection.results.shortTime.toleranceMax2', e.target.value)} 
                       readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                     </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.shortTime.pole1.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.shortTime.pole1.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">A</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.shortTime.pole2.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.shortTime.pole2.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">A</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.shortTime.pole3.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.shortTime.pole3.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">A</span>
-                      </div>
-                    </td>
                   </tr>
 
                   {/* Instantaneous */}
@@ -3084,9 +2973,6 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                     <td className={tableStyles.cell}></td>
                     <td className={tableStyles.cell}></td>
                     <td className={tableStyles.cell}></td>
-                    <td className={`${tableStyles.cell} text-center`}></td>
-                    <td className={`${tableStyles.cell} text-center`}></td>
-                    <td className={`${tableStyles.cell} text-center`}></td>
                   </tr>
                   <tr>
                     <td className={tableStyles.cell}>IPU</td>
@@ -3135,30 +3021,6 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                       onChange={(e) => handleChange('primaryInjection.results.instantaneous.toleranceMax2', e.target.value)} 
                       readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                     </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.instantaneous.pole1.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.instantaneous.pole1.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">A</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.instantaneous.pole2.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.instantaneous.pole2.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">A</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.instantaneous.pole3.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.instantaneous.pole3.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">A</span>
-                      </div>
-                    </td>
                   </tr>
 
                   {/* Ground Fault */}
@@ -3198,30 +3060,6 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                       <input type="text" value={formData.primaryInjection.results.groundFault.toleranceMax1 || ''} 
                       onChange={(e) => handleChange('primaryInjection.results.groundFault.toleranceMax1', e.target.value)} 
                       readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.groundFault.pole1.sec || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.groundFault.pole1.sec', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">sec.</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.groundFault.pole2.sec || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.groundFault.pole2.sec', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">sec.</span>
-                      </div>
-                    </td>
-                    <td className={`${tableStyles.cell} text-center`}>
-                      <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.groundFault.pole3.sec || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.groundFault.pole3.sec', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
-                        <span className="ml-1">sec.</span>
-                      </div>
                     </td>
                   </tr>
                   <tr>
@@ -3271,27 +3109,186 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                       onChange={(e) => handleChange('primaryInjection.results.groundFault.toleranceMax2', e.target.value)} 
                       readOnly={!isEditing} className={`${tableStyles.input} text-center`} />
                     </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-4 overflow-x-auto primary-injection-poles-section">
+              <h3 className="text-base font-semibold mb-2 text-gray-900 dark:text-white print:text-black">Primary injection — pole readings (Poles 1–3)</h3>
+              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table primary-injection-poles-table">
+                <colgroup>
+                  <col style={{ width: '22%' }} />
+                  <col style={{ width: '14%' }} />
+                  <col style={{ width: '21.33%' }} />
+                  <col style={{ width: '21.33%' }} />
+                  <col style={{ width: '21.34%' }} />
+                </colgroup>
+                <thead className="bg-gray-50 dark:bg-dark-150">
+                  <tr>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Function</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Row</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 1</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 2</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 3</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr>
+                    <td className={tableStyles.cell}>Long Time</td>
+                    <td className={`${tableStyles.cell} text-center text-sm`}>Delay</td>
                     <td className={`${tableStyles.cell} text-center`}>
                       <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.groundFault.pole1.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.groundFault.pole1.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <input type="text" value={formData.primaryInjection.results.longTime.pole1.sec || ''} onChange={(e) => handleChange('primaryInjection.results.longTime.pole1.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">sec.</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.longTime.pole2.sec || ''} onChange={(e) => handleChange('primaryInjection.results.longTime.pole2.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">sec.</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.longTime.pole3.sec || ''} onChange={(e) => handleChange('primaryInjection.results.longTime.pole3.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">sec.</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={tableStyles.cell}>Long Time</td>
+                    <td className={`${tableStyles.cell} text-center text-sm`}>LTPU</td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.longTime.pole1.a || ''} onChange={(e) => handleChange('primaryInjection.results.longTime.pole1.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
                         <span className="ml-1">A</span>
                       </div>
                     </td>
                     <td className={`${tableStyles.cell} text-center`}>
                       <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.groundFault.pole2.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.groundFault.pole2.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <input type="text" value={formData.primaryInjection.results.longTime.pole2.a || ''} onChange={(e) => handleChange('primaryInjection.results.longTime.pole2.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
                         <span className="ml-1">A</span>
                       </div>
                     </td>
                     <td className={`${tableStyles.cell} text-center`}>
                       <div className="flex items-center justify-center">
-                        <input type="text" value={formData.primaryInjection.results.groundFault.pole3.a || ''} 
-                        onChange={(e) => handleChange('primaryInjection.results.groundFault.pole3.a', e.target.value)} 
-                        readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <input type="text" value={formData.primaryInjection.results.longTime.pole3.a || ''} onChange={(e) => handleChange('primaryInjection.results.longTime.pole3.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">A</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={tableStyles.cell}>Short Time</td>
+                    <td className={`${tableStyles.cell} text-center text-sm`}>Delay</td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.shortTime.pole1.sec || ''} onChange={(e) => handleChange('primaryInjection.results.shortTime.pole1.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">sec.</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.shortTime.pole2.sec || ''} onChange={(e) => handleChange('primaryInjection.results.shortTime.pole2.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">sec.</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.shortTime.pole3.sec || ''} onChange={(e) => handleChange('primaryInjection.results.shortTime.pole3.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">sec.</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={tableStyles.cell}>Short Time</td>
+                    <td className={`${tableStyles.cell} text-center text-sm`}>STPU</td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.shortTime.pole1.a || ''} onChange={(e) => handleChange('primaryInjection.results.shortTime.pole1.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">A</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.shortTime.pole2.a || ''} onChange={(e) => handleChange('primaryInjection.results.shortTime.pole2.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">A</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.shortTime.pole3.a || ''} onChange={(e) => handleChange('primaryInjection.results.shortTime.pole3.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">A</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={tableStyles.cell}>Instantaneous</td>
+                    <td className={`${tableStyles.cell} text-center text-sm text-gray-500 dark:text-gray-400`}>—</td>
+                    <td className={`${tableStyles.cell} text-center`} colSpan={3}></td>
+                  </tr>
+                  <tr>
+                    <td className={tableStyles.cell}>Instantaneous</td>
+                    <td className={`${tableStyles.cell} text-center text-sm`}>IPU</td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.instantaneous.pole1.a || ''} onChange={(e) => handleChange('primaryInjection.results.instantaneous.pole1.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">A</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.instantaneous.pole2.a || ''} onChange={(e) => handleChange('primaryInjection.results.instantaneous.pole2.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">A</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.instantaneous.pole3.a || ''} onChange={(e) => handleChange('primaryInjection.results.instantaneous.pole3.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">A</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={tableStyles.cell}>Ground Fault</td>
+                    <td className={`${tableStyles.cell} text-center text-sm`}>Delay</td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.groundFault.pole1.sec || ''} onChange={(e) => handleChange('primaryInjection.results.groundFault.pole1.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">sec.</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.groundFault.pole2.sec || ''} onChange={(e) => handleChange('primaryInjection.results.groundFault.pole2.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">sec.</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.groundFault.pole3.sec || ''} onChange={(e) => handleChange('primaryInjection.results.groundFault.pole3.sec', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">sec.</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={tableStyles.cell}>Ground Fault</td>
+                    <td className={`${tableStyles.cell} text-center text-sm`}>GFPU</td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.groundFault.pole1.a || ''} onChange={(e) => handleChange('primaryInjection.results.groundFault.pole1.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">A</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.groundFault.pole2.a || ''} onChange={(e) => handleChange('primaryInjection.results.groundFault.pole2.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
+                        <span className="ml-1">A</span>
+                      </div>
+                    </td>
+                    <td className={`${tableStyles.cell} text-center`}>
+                      <div className="flex items-center justify-center">
+                        <input type="text" value={formData.primaryInjection.results.groundFault.pole3.a || ''} onChange={(e) => handleChange('primaryInjection.results.groundFault.pole3.a', e.target.value)} readOnly={!isEditing} className={`${tableStyles.input} text-center w-20`} />
                         <span className="ml-1">A</span>
                       </div>
                     </td>
@@ -3607,13 +3604,40 @@ if (typeof document !== 'undefined') {
         text-align: right !important;
       }
       
+      /* Address cell — wrap long addresses instead of overflowing the column */
+      .lvcb-ats-address-cell,
+      .lvcb-ats-address-cell .lvcb-ats-address-value {
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        line-height: 1.2 !important;
+      }
+
       /* Print header status box */
-      .pass-fail-status-box {
+      .pass-fail-status-box.pass {
         background-color: #22c55e !important;
         border: 2px solid #16a34a !important;
         color: white !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box.fail {
+        background-color: #ef4444 !important;
+        border: 2px solid #dc2626 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box.limited {
+        background-color: #eab308 !important;
+        border: 2px solid #ca8a04 !important;
+        color: #111827 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box {
         display: inline-block !important;
         padding: 4px 10px !important;
         font-size: 12px !important;
@@ -4105,13 +4129,29 @@ if (typeof document !== 'undefined') {
         print-color-adjust: exact !important;
       }
       
-      /* Specific class for PASS/FAIL status box */
-      .pass-fail-status-box {
+      /* Specific class for PASS/FAIL/LIMITED status box */
+      .pass-fail-status-box.pass {
         background-color: #22c55e !important;
         border: 2px solid #16a34a !important;
         color: white !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box.fail {
+        background-color: #ef4444 !important;
+        border: 2px solid #dc2626 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box.limited {
+        background-color: #eab308 !important;
+        border: 2px solid #ca8a04 !important;
+        color: #111827 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box {
         display: inline-block !important;
         padding: 4px 10px !important;
         font-size: 12px !important;
@@ -4420,95 +4460,95 @@ if (typeof document !== 'undefined') {
       .ins-res-table col:nth-child(7) { width: 12.5% !important; }
       .ins-res-table col:nth-child(8) { width: 9% !important; }
       
-      /* Primary Injection table explicit widths for PDF */
-      .primary-injection-table { table-layout: fixed !important; width: 100% !important; }
-      .primary-injection-table col:nth-child(1) { width: 7% !important; }
-      .primary-injection-table col:nth-child(2) { width: 0.01% !important; }
-      .primary-injection-table col:nth-child(3),
-      .primary-injection-table col:nth-child(4) { width: 10.745% !important; }
-      .primary-injection-table col:nth-child(5) { width: 3.7% !important; }
-      .primary-injection-table col:nth-child(6) { width: 12% !important; }
-      .primary-injection-table col:nth-child(7) { width: 11% !important; }
-      .primary-injection-table col:nth-child(8),
-      .primary-injection-table col:nth-child(9),
-      .primary-injection-table col:nth-child(10) { width: 15% !important; }
-      
-      /* Perfect centering for Tolerance Min/Max columns */
-      .primary-injection-table th:nth-child(6),
-      .primary-injection-table th:nth-child(7),
-      .primary-injection-table td:nth-child(6),
-      .primary-injection-table td:nth-child(7) {
+      /* Primary Injection — setup table (no pole columns) */
+      .primary-injection-main-table { table-layout: fixed !important; width: 100% !important; }
+      .primary-injection-main-table col:nth-child(1) { width: 10% !important; }
+      .primary-injection-main-table col:nth-child(2) { width: 12% !important; }
+      .primary-injection-main-table col:nth-child(3),
+      .primary-injection-main-table col:nth-child(4) { width: 11% !important; }
+      .primary-injection-main-table col:nth-child(5) { width: 14% !important; }
+      .primary-injection-main-table col:nth-child(6),
+      .primary-injection-main-table col:nth-child(7) { width: 12% !important; }
+
+      .primary-injection-main-table th:nth-child(6),
+      .primary-injection-main-table th:nth-child(7),
+      .primary-injection-main-table td:nth-child(6),
+      .primary-injection-main-table td:nth-child(7) {
         text-align: center !important;
         vertical-align: middle !important;
         padding-left: 0 !important;
         padding-right: 0 !important;
       }
-      
-      /* Center tolerance input values perfectly on the dividing line */
-      .primary-injection-table td:nth-child(6) input,
-      .primary-injection-table td:nth-child(7) input {
+
+      .primary-injection-main-table td:nth-child(6) input,
+      .primary-injection-main-table td:nth-child(7) input {
         margin: 0 auto !important;
         text-align: center !important;
         width: 90% !important;
-        position: relative !important;
-        left: 0 !important;
-        right: 0 !important;
       }
-      
-      /* Tighten spacing for % symbols in multiplier/tolerance % columns (cols 3 & 4) */
-      .primary-injection-table td:nth-child(3) div,
-      .primary-injection-table td:nth-child(4) div {
+
+      .primary-injection-main-table td:nth-child(3) div,
+      .primary-injection-main-table td:nth-child(4) div {
         justify-content: center !important;
         gap: 0px !important;
       }
-      
-      .primary-injection-table td:nth-child(3) input,
-      .primary-injection-table td:nth-child(4) input {
+
+      .primary-injection-main-table td:nth-child(3) input,
+      .primary-injection-main-table td:nth-child(4) input {
         width: 50% !important;
         margin-right: 0px !important;
         text-align: center !important;
       }
-      
-      .primary-injection-table td:nth-child(3) span,
-      .primary-injection-table td:nth-child(4) span {
+
+      .primary-injection-main-table td:nth-child(3) span,
+      .primary-injection-main-table td:nth-child(4) span {
         font-size: 7px !important;
-        margin-left: -5px !important; /* nudge further left to align with row above */
+        margin-left: -5px !important;
       }
 
-      /* Ensure right-side % is visible without changing column widths */
-      .primary-injection-table td:nth-child(4) { overflow: visible !important; }
-      .primary-injection-table td:nth-child(4) div { white-space: nowrap !important; }
+      .primary-injection-main-table td:nth-child(4) { overflow: visible !important; }
+      .primary-injection-main-table td:nth-child(4) div { white-space: nowrap !important; }
 
-      /* Make Rated Amperes (col 2) and Test Amperes (col 5) text one notch smaller without changing other columns */
-      .primary-injection-table td:nth-child(2),
-      .primary-injection-table td:nth-child(5) { font-size: 8px !important; }
-      .primary-injection-table td:nth-child(2) input,
-      .primary-injection-table td:nth-child(5) input { font-size: 8px !important; }
+      .primary-injection-main-table td:nth-child(2),
+      .primary-injection-main-table td:nth-child(5) { font-size: 8px !important; }
+      .primary-injection-main-table td:nth-child(2) input,
+      .primary-injection-main-table td:nth-child(5) input { font-size: 8px !important; }
 
-      
-      /* Ensure consistent alignment in pole columns */
-      .primary-injection-table td:nth-child(8) div,
-      .primary-injection-table td:nth-child(9) div,
-      .primary-injection-table td:nth-child(10) div {
+      /* Pole readings table (below setup table) */
+      .primary-injection-poles-table { table-layout: fixed !important; width: 100% !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+      .primary-injection-poles-table col:nth-child(1) { width: 22% !important; }
+      .primary-injection-poles-table col:nth-child(2) { width: 14% !important; }
+      .primary-injection-poles-table col:nth-child(3),
+      .primary-injection-poles-table col:nth-child(4),
+      .primary-injection-poles-table col:nth-child(5) { width: 21.33% !important; }
+
+      .primary-injection-poles-table td:nth-child(3) div,
+      .primary-injection-poles-table td:nth-child(4) div,
+      .primary-injection-poles-table td:nth-child(5) div {
         justify-content: center !important;
         align-items: center !important;
         gap: 2px !important;
       }
-      
-      .primary-injection-table td:nth-child(8) input,
-      .primary-injection-table td:nth-child(9) input,
-      .primary-injection-table td:nth-child(10) input {
+
+      .primary-injection-poles-table td:nth-child(3) input,
+      .primary-injection-poles-table td:nth-child(4) input,
+      .primary-injection-poles-table td:nth-child(5) input {
         width: 70% !important;
         text-align: center !important;
         margin-right: 2px !important;
       }
-      
-      .primary-injection-table td:nth-child(8) span,
-      .primary-injection-table td:nth-child(9) span,
-      .primary-injection-table td:nth-child(10) span {
+
+      .primary-injection-poles-table td:nth-child(3) span,
+      .primary-injection-poles-table td:nth-child(4) span,
+      .primary-injection-poles-table td:nth-child(5) span {
         font-size: 8px !important;
         margin-left: 1px !important;
         white-space: nowrap !important;
+      }
+
+      .primary-injection-poles-section h3 {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
       }
       
       
@@ -4591,6 +4631,265 @@ if (typeof document !== 'undefined') {
         overflow-wrap: break-word !important;
         word-break: normal !important;
         max-width: 100% !important;
+      }
+
+      /* Nameplate Data print table — wrap long values (e.g. Operation,
+         Trip Unit Type) instead of overflowing the column. Must come AFTER
+         the generic .max-w-7xl table td { white-space: nowrap } block. */
+      .nameplate-print-table {
+        table-layout: fixed !important;
+        width: 100% !important;
+      }
+      .nameplate-print-table td,
+      .nameplate-print-table td div {
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        line-height: 1.15 !important;
+      }
+      .nameplate-print-table td {
+        padding: 2px 3px !important;
+        vertical-align: top !important;
+      }
+
+      /* ============================================================== */
+      /* PDF CLEANUP — unified type scale + no stretched text in inputs */
+      /* (placed LAST so it wins over the per-section mixed sizes above) */
+      /* ============================================================== */
+
+      /* No artificial stretching anywhere in print */
+      .max-w-7xl,
+      .max-w-7xl *,
+      table,
+      table *,
+      input,
+      select,
+      textarea,
+      td,
+      th,
+      label,
+      span,
+      div {
+        letter-spacing: normal !important;
+        word-spacing: normal !important;
+        font-stretch: normal !important;
+        text-rendering: geometricPrecision !important;
+        text-justify: none !important;
+      }
+
+      /* Inputs/selects/textareas — never justify, never stretch glyphs.
+         CRITICAL: force font-family: inherit so form controls render with
+         the same Arial face as surrounding cell/label text (browsers default
+         form controls to a system UI font, which looks "different and
+         smaller" in PDF — exactly the Min/Max column issue). */
+      input,
+      select,
+      textarea,
+      .max-w-7xl input,
+      .max-w-7xl select,
+      .max-w-7xl textarea,
+      .max-w-7xl table input,
+      .max-w-7xl table select,
+      .max-w-7xl table textarea,
+      .primary-injection-table input,
+      .primary-injection-table select,
+      .primary-injection-main-table input,
+      .primary-injection-main-table select,
+      .primary-injection-poles-table input,
+      .primary-injection-poles-table select {
+        text-align: left !important;
+        text-overflow: clip !important;
+        font-stretch: normal !important;
+        letter-spacing: normal !important;
+        word-spacing: normal !important;
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        line-height: 1.2 !important;
+      }
+      .text-center input,
+      input.text-center,
+      select.text-center,
+      td.text-center input,
+      td.text-center select {
+        text-align: center !important;
+      }
+
+      /* Unified type scale (overrides earlier 7/8/9/10/12/16/18 mix).
+         Uses high-specificity selectors so it wins the cascade over
+         .max-w-7xl table td/th/input/select rules earlier in this stylesheet. */
+
+      /* Print header — title, subheader, status badge */
+      .print\\:flex h1 { font-size: 14px !important; }
+      .print\\:flex div[style*="color: #1a4e7c"] { font-size: 11px !important; }
+      .pass-fail-status-box,
+      .pass-fail-status-box.pass,
+      .pass-fail-status-box.fail,
+      .pass-fail-status-box.limited,
+      .print\\:flex .bg-green-600,
+      .print\\:flex .bg-red-600,
+      .print\\:flex .bg-yellow-500 { font-size: 11px !important; }
+
+      /* Section headers (h2) and sub-section headers (h3 — e.g. "Tested Settings") */
+      .max-w-7xl h2,
+      .max-w-7xl h2.section-job-information,
+      .max-w-7xl h2.section-nameplate-data,
+      .max-w-7xl h2.section-visual-mechanical,
+      .max-w-7xl h2.section-device-settings,
+      .max-w-7xl h2.section-contact-resistance,
+      .max-w-7xl h2.section-insulation-resistance,
+      .max-w-7xl h2.section-primary-injection,
+      .max-w-7xl h2.section-test-equipment,
+      .max-w-7xl h2.section-comments { font-size: 10px !important; line-height: 1.2 !important; }
+      .max-w-7xl h3,
+      .max-w-7xl h3.text-lg { font-size: 10px !important; line-height: 1.2 !important; margin: 2px 0 !important; }
+
+      /* Body text — labels, plain divs/paragraphs/spans, including value cells
+         that render as <div> inside <td> (Nameplate Data, Job Info, etc.) */
+      .max-w-7xl,
+      .max-w-7xl label,
+      .max-w-7xl p,
+      .max-w-7xl span,
+      .max-w-7xl div,
+      .form-label { font-size: 9px !important; }
+
+      /* Inputs / selects / textareas (outside tables) */
+      .max-w-7xl input,
+      .max-w-7xl select,
+      .max-w-7xl textarea,
+      .form-input,
+      .form-select,
+      .form-textarea { font-size: 9px !important; }
+
+      /* Tables — cells, inputs, selects, and ALL inner descendants render
+         at one unified 9px (must beat .max-w-7xl table td 8px). */
+      .max-w-7xl table,
+      .max-w-7xl table *,
+      .max-w-7xl table td,
+      .max-w-7xl table th,
+      .max-w-7xl table td *,
+      .max-w-7xl table th *,
+      .max-w-7xl table td div,
+      .max-w-7xl table td span,
+      .max-w-7xl table td p,
+      .max-w-7xl table th div,
+      .max-w-7xl table th span,
+      .max-w-7xl table input,
+      .max-w-7xl table select,
+      .max-w-7xl table textarea { font-size: 9px !important; }
+
+      /* Unit labels next to inputs (sec., A, %, etc.) — match cell text */
+      .max-w-7xl table td input + span,
+      .max-w-7xl table span.ml-1 { font-size: 9px !important; }
+
+      /* Tailwind text-size class overrides — neutralize the on-screen
+         scale (text-sm, text-base, text-lg, text-xl, text-2xl) so they
+         can't leak through into print at 14/16/18/24px. */
+      .max-w-7xl .text-2xl { font-size: 14px !important; }
+      .max-w-7xl .text-xl { font-size: 12px !important; }
+      .max-w-7xl .text-lg { font-size: 10px !important; }
+      .max-w-7xl .text-base { font-size: 9px !important; }
+      .max-w-7xl .text-sm { font-size: 9px !important; }
+
+      /* Footer / very small */
+      .text-xs,
+      .max-w-7xl .text-xs { font-size: 8px !important; }
+
+      /* Primary Injection tables — same 9px as the rest of the report.
+         Selectors are scoped under .max-w-7xl table so they match (and
+         beat) the earlier .max-w-7xl table input { 8px } rule by both
+         specificity AND cascade order. */
+      .max-w-7xl table.primary-injection-table,
+      .max-w-7xl table.primary-injection-table td,
+      .max-w-7xl table.primary-injection-table th,
+      .max-w-7xl table.primary-injection-table td div,
+      .max-w-7xl table.primary-injection-table td span,
+      .max-w-7xl table.primary-injection-table th div,
+      .max-w-7xl table.primary-injection-table th span,
+      .max-w-7xl table.primary-injection-table input,
+      .max-w-7xl table.primary-injection-table select,
+      .max-w-7xl table.primary-injection-main-table,
+      .max-w-7xl table.primary-injection-main-table td,
+      .max-w-7xl table.primary-injection-main-table th,
+      .max-w-7xl table.primary-injection-main-table td div,
+      .max-w-7xl table.primary-injection-main-table td span,
+      .max-w-7xl table.primary-injection-main-table th div,
+      .max-w-7xl table.primary-injection-main-table th span,
+      .max-w-7xl table.primary-injection-main-table input,
+      .max-w-7xl table.primary-injection-main-table select,
+      .max-w-7xl table.primary-injection-poles-table,
+      .max-w-7xl table.primary-injection-poles-table td,
+      .max-w-7xl table.primary-injection-poles-table th,
+      .max-w-7xl table.primary-injection-poles-table td div,
+      .max-w-7xl table.primary-injection-poles-table td span,
+      .max-w-7xl table.primary-injection-poles-table th div,
+      .max-w-7xl table.primary-injection-poles-table th span,
+      .max-w-7xl table.primary-injection-poles-table input,
+      .max-w-7xl table.primary-injection-poles-table select { font-size: 9px !important; }
+
+      /* DECISIVE Primary Injection input/select normalization.
+         Earlier rules use nth-child(5/6/7) selectors, but the table mixes
+         rowSpan + colSpan so the same logical column (e.g. Tolerance Max)
+         lands at different nth-child positions across rows. That made
+         Min, Max, Test Amperes, etc. render at slightly different
+         font-sizes / widths / paddings / heights. This rule forces every
+         input and select in every Primary Injection table to be visually
+         identical. Targets all rows regardless of nth-child position. */
+      .max-w-7xl table.primary-injection-table tr td input,
+      .max-w-7xl table.primary-injection-table tr td select,
+      .max-w-7xl table.primary-injection-main-table tr td input,
+      .max-w-7xl table.primary-injection-main-table tr td select,
+      .max-w-7xl table.primary-injection-poles-table tr td input,
+      .max-w-7xl table.primary-injection-poles-table tr td select {
+        font-size: 9px !important;
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        line-height: 1.2 !important;
+        text-align: center !important;
+        height: 14px !important;
+        padding: 1px 2px !important;
+        margin: 0 auto !important;
+        width: 90% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        border: 1px solid black !important;
+        background: white !important;
+        box-sizing: border-box !important;
+      }
+
+      /* And every cell in primary-injection tables uses the same alignment
+         + font, so labels match input values. */
+      .max-w-7xl table.primary-injection-table tr td,
+      .max-w-7xl table.primary-injection-main-table tr td,
+      .max-w-7xl table.primary-injection-poles-table tr td {
+        font-size: 9px !important;
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-weight: normal !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+        padding: 2px !important;
+      }
+      .max-w-7xl table.primary-injection-table tr th,
+      .max-w-7xl table.primary-injection-main-table tr th,
+      .max-w-7xl table.primary-injection-poles-table tr th {
+        font-size: 9px !important;
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        padding: 2px !important;
+      }
+
+      /* Multiplier % spans (e.g. "%") next to inputs — match cell font,
+         drop the negative margin that was pulling them on top of the
+         neighbouring input. */
+      .max-w-7xl table.primary-injection-main-table tr td span,
+      .max-w-7xl table.primary-injection-poles-table tr td span {
+        font-size: 9px !important;
+        margin-left: 2px !important;
+        font-weight: normal !important;
       }
     }
   `;

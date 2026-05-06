@@ -332,6 +332,12 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           }
           .pass-fail-status-box.pass { background-color: #22c55e !important; border-color: #16a34a !important; }
           .pass-fail-status-box.fail { background-color: #ef4444 !important; border-color: #dc2626 !important; }
+          .pass-fail-status-box.limited,
+          .pass-fail-status-box.status-limited {
+            background-color: #eab308 !important;
+            border-color: #ca8a04 !important;
+            color: #111827 !important;
+          }
 
           /* ============================================ */
           /* CUSTOM FORM PRINT - mirror on-screen layout */
@@ -962,6 +968,12 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         }
         .force-print .pass-fail-status-box.pass { background-color: #22c55e !important; border-color: #16a34a !important; }
         .force-print .pass-fail-status-box.fail { background-color: #ef4444 !important; border-color: #dc2626 !important; }
+        .force-print .pass-fail-status-box.limited,
+        .force-print .pass-fail-status-box.status-limited {
+          background-color: #eab308 !important;
+          border-color: #ca8a04 !important;
+          color: #111827 !important;
+        }
 
         /* Preserve green/red PASS/FAIL text colors in print (overrides blanket color:black on form elements) */
         .force-print #report-container .text-green-600 { color: #16a34a !important; }

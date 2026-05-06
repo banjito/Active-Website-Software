@@ -1,4 +1,57 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+
+const JOB_INFO_PRINT_STYLE_ID = 'job-info-print-table-print-css';
+
+function ensureJobInfoPrintStylesInHead() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(JOB_INFO_PRINT_STYLE_ID)) return;
+  const el = document.createElement('style');
+  el.id = JOB_INFO_PRINT_STYLE_ID;
+  el.textContent = `
+@media print {
+  /* Head injection wins cascade order over report-injected print CSS; ID beats .max-w-7xl table td nowrap */
+  #report-container .job-info-print-table,
+  #report-container .job-info-print-table colgroup,
+  #report-container .job-info-print-table col {
+    table-layout: fixed !important;
+  }
+  #report-container .job-info-print-table td,
+  #report-container .job-info-print-table td > div,
+  #report-container .job-info-print-table td.job-info-print-address-cell,
+  #report-container .job-info-print-table td.job-info-print-address-cell > div {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+  #report-container .job-info-print-table tbody tr {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+  #report-container .job-info-print-table .job-info-print-address-value {
+    display: block !important;
+    width: 100% !important;
+  }
+  /* Fallback when JobInfoPrintTable is not under #report-container */
+  .job-info-print-table td,
+  .job-info-print-table td > div {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+}
+`;
+  document.head.appendChild(el);
+}
 
 // Map full US state names to USPS abbreviations
 const STATE_NAME_TO_ABBR: Record<string, string> = {
@@ -82,6 +135,10 @@ interface Props {
  * Renders gracefully if some fields are missing.
  */
 const JobInfoPrintTable: React.FC<Props> = ({ data }) => {
+  useEffect(() => {
+    ensureJobInfoPrintStylesInHead();
+  }, []);
+
   const temp = typeof data.temperature === 'number' ? { fahrenheit: data.temperature } : (data.temperature || {});
   const formatDate = (value?: string) => {
     if (!value) return '';
@@ -114,60 +171,70 @@ const JobInfoPrintTable: React.FC<Props> = ({ data }) => {
   };
   const addressText = formatAddress(data.address);
 
+  const cellWrap = 'mt-1 text-center whitespace-normal break-words [overflow-wrap:anywhere] max-w-full leading-snug';
+
   return (
     <div className="hidden print:block job-info-print">
-      <table className="w-full border-collapse border border-gray-300 print:border-black print:border" style={{ marginLeft: 0 }}>
+      <table
+        className="job-info-print-table w-full table-fixed border-collapse border border-gray-300 print:border-black print:border"
+        style={{ marginLeft: 0, tableLayout: 'fixed' }}
+      >
+        <colgroup>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <col key={i} style={{ width: `${100 / 6}%` }} />
+          ))}
+        </colgroup>
         <tbody>
           <tr>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Customer:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{data.customer || ''}</div>
+              <div className={cellWrap}>{data.customer || ''}</div>
             </td>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Temp:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{temp?.fahrenheit !== undefined || temp?.celsius !== undefined ? `${temp?.fahrenheit ?? ''}°F ${temp?.celsius !== undefined ? `(${temp.celsius}°C)` : ''}` : ''}</div>
+              <div className={cellWrap}>{temp?.fahrenheit !== undefined || temp?.celsius !== undefined ? `${temp?.fahrenheit ?? ''}°F ${temp?.celsius !== undefined ? `(${temp.celsius}°C)` : ''}` : ''}</div>
             </td>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Job #:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{data.jobNumber || ''}</div>
+              <div className={cellWrap}>{data.jobNumber || ''}</div>
             </td>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Technicians:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{data.technicians || ''}</div>
+              <div className={cellWrap}>{data.technicians || ''}</div>
             </td>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Date:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{dateText}</div>
+              <div className={cellWrap}>{dateText}</div>
             </td>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Identifier:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{data.identifier || ''}</div>
+              <div className={cellWrap}>{data.identifier || ''}</div>
             </td>
           </tr>
           <tr>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="job-info-print-address-cell p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Address:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{addressText}</div>
+              <div className={`job-info-print-address-value ${cellWrap}`}>{addressText}</div>
             </td>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">TCF:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{temp?.tcf ?? ''}</div>
+              <div className={cellWrap}>{temp?.tcf ?? ''}</div>
             </td>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Humidity:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{temp?.humidity !== undefined ? `${temp.humidity}%` : ''}</div>
+              <div className={cellWrap}>{temp?.humidity !== undefined ? `${temp.humidity}%` : ''}</div>
             </td>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Substation:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{data.substation || ''}</div>
+              <div className={cellWrap}>{data.substation || ''}</div>
             </td>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">Eqpt. Location:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{data.eqptLocation || ''}</div>
+              <div className={cellWrap}>{data.eqptLocation || ''}</div>
             </td>
-            <td className="p-3 align-middle text-center border border-gray-300 print:border-black print:border">
+            <td className="p-3 align-top text-center border border-gray-300 print:border-black print:border min-w-0">
               <div className="font-semibold text-center">User:</div>
-              <div className="mt-1 whitespace-pre-wrap break-words text-center">{data.user || ''}</div>
+              <div className={cellWrap}>{data.user || ''}</div>
             </td>
           </tr>
         </tbody>

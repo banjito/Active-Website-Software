@@ -3467,7 +3467,7 @@ if (typeof document !== 'undefined') {
       .pass-fail-status-box.status-limited {
         background-color: #eab308 !important;
         border-color: #ca8a04 !important;
-        color: white !important;
+        color: #111827 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
@@ -3556,13 +3556,15 @@ if (typeof document !== 'undefined') {
         font-weight: bold !important;
         text-align: right !important;
       }
-      /* Print header status box */
-      .pass-fail-status-box {
+      /* Print header status box — scope green to PASS only so LIMITED SERVICE stays yellow */
+      .pass-fail-status-box.status-pass {
         background-color: #22c55e !important;
         border: 2px solid #16a34a !important;
         color: white !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box {
         display: inline-block !important;
         padding: 4px 10px !important;
         font-size: 12px !important;

@@ -2096,15 +2096,14 @@ const MediumVoltageVLFReport: React.FC = () => {
           </div>
         </div>
         
-        {/* Print-only table */}
+        {/* Print-only table — 4 cols × 4 rows = 16 cells, no trailing blanks */}
         <div className="hidden print:block">
-          <table className="w-full border border-gray-300 print:border-black">
+          <table className="w-full border border-gray-300 print:border-black table-fixed">
             <colgroup>
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '20%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '25%' }} />
             </colgroup>
             <tbody>
               <tr>
@@ -2124,6 +2123,8 @@ const MediumVoltageVLFReport: React.FC = () => {
                   <div className="font-semibold">Cable Rated Voltage (kV):</div>
                   <div className="mt-1">{formData.cableInfo?.voltageRating || ''}</div>
                 </td>
+              </tr>
+              <tr>
                 <td className="p-2 border border-gray-300 print:border-black text-center">
                   <div className="font-semibold">Cable Type:</div>
                   <div className="mt-1">{formData.cableType || ''}</div>
@@ -2132,8 +2133,6 @@ const MediumVoltageVLFReport: React.FC = () => {
                   <div className="font-semibold">Length (ft):</div>
                   <div className="mt-1">{formData.cableLength || ''}</div>
                 </td>
-              </tr>
-              <tr>
                 <td className="p-2 border border-gray-300 print:border-black text-center">
                   <div className="font-semibold">Conductor Size:</div>
                   <div className="mt-1">{formData.cableInfo?.size || ''}</div>
@@ -2142,6 +2141,8 @@ const MediumVoltageVLFReport: React.FC = () => {
                   <div className="font-semibold">Insulation Type:</div>
                   <div className="mt-1">{formData.cableInfo?.insulation || ''}</div>
                 </td>
+              </tr>
+              <tr>
                 <td className="p-2 border border-gray-300 print:border-black text-center">
                   <div className="font-semibold">Conductor Material:</div>
                   <div className="mt-1">{formData.cableInfo?.conductorMaterial || ''}</div>
@@ -2154,12 +2155,12 @@ const MediumVoltageVLFReport: React.FC = () => {
                   <div className="font-semibold">From:</div>
                   <div className="mt-1">{formData.cableInfo?.from || ''}</div>
                 </td>
-              </tr>
-              <tr>
                 <td className="p-2 border border-gray-300 print:border-black text-center">
                   <div className="font-semibold">To:</div>
                   <div className="mt-1">{formData.cableInfo?.to || ''}</div>
                 </td>
+              </tr>
+              <tr>
                 <td className="p-2 border border-gray-300 print:border-black text-center">
                   <div className="font-semibold">Termination Data:</div>
                   <div className="mt-1">{formData.terminationData?.terminationData || ''}</div>
@@ -3454,7 +3455,7 @@ if (typeof document !== 'undefined') {
         print-color-adjust: exact !important;
         display: inline-block !important;
         padding: 4px 10px !important;
-        font-size: 12px !important;
+        font-size: 11px !important;
         font-weight: bold !important;
         text-align: center !important;
         width: fit-content !important;
@@ -3462,6 +3463,76 @@ if (typeof document !== 'undefined') {
         box-sizing: border-box !important;
         min-width: 50px !important;
       }
+
+      /* ============================================================== */
+      /* PDF CLEANUP — unified type scale + no stretched text in inputs */
+      /* (placed LAST so it wins over the per-section mixed sizes above) */
+      /* ============================================================== */
+
+      /* No artificial stretching anywhere in print */
+      .max-w-7xl,
+      .max-w-7xl *,
+      table,
+      table *,
+      input,
+      select,
+      textarea,
+      td,
+      th,
+      label,
+      span,
+      div {
+        letter-spacing: normal !important;
+        word-spacing: normal !important;
+        font-stretch: normal !important;
+        text-rendering: geometricPrecision !important;
+        text-justify: none !important;
+      }
+
+      /* Inputs/selects/textareas — never justify, never stretch glyphs */
+      input,
+      select,
+      textarea {
+        text-align: left !important;
+        text-overflow: clip !important;
+        font-stretch: normal !important;
+        letter-spacing: normal !important;
+        word-spacing: normal !important;
+      }
+      .text-center input,
+      input.text-center,
+      select.text-center,
+      td.text-center input,
+      td.text-center select {
+        text-align: center !important;
+      }
+
+      /* Unified type scale */
+      h1 { font-size: 14px !important; }
+      h2 { font-size: 10px !important; line-height: 1.2 !important; }
+      h3 { font-size: 10px !important; }
+
+      .max-w-7xl,
+      .max-w-7xl label,
+      .max-w-7xl input,
+      .max-w-7xl select,
+      .max-w-7xl textarea,
+      .max-w-7xl td,
+      .max-w-7xl th,
+      .max-w-7xl span,
+      .form-label,
+      .form-input,
+      .form-select,
+      .form-textarea {
+        font-size: 9px !important;
+        line-height: 1.2 !important;
+      }
+
+      /* Visual & Mechanical Inspection: keep "Not Applicable" readable */
+      .visual-mechanical-inspection table td:last-child select { font-size: 9px !important; }
+
+      /* Cable & Termination print table — consistent cell sizing */
+      .cable-termination-section table td { font-size: 9px !important; padding: 4px !important; }
     }
   `;
   document.head.appendChild(style);

@@ -681,16 +681,13 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
         <div className="text-right" style={{ minWidth: 150 }}>
           <div className="font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA - ATS 7.2.1.1</div>
           <div
-            className="mt-1 inline-block pass-fail-status-box"
+            className={`mt-1 inline-block pass-fail-status-box ${formData.status === 'FAIL' ? 'fail' : formData.status === 'LIMITED SERVICE' ? 'limited' : 'pass'}`}
             style={{
               padding: '4px 10px',
               fontSize: '12px',
               fontWeight: 800,
               textAlign: 'center',
               borderRadius: '6px',
-              border: `2px solid ${formData.status === 'PASS' ? '#16a34a' : formData.status === 'FAIL' ? '#dc2626' : '#eab308'}`,
-              backgroundColor: formData.status === 'PASS' ? '#22c55e' : formData.status === 'FAIL' ? '#ef4444' : '#facc15',
-              color: formData.status === 'LIMITED SERVICE' ? '#111827' : 'white',
               WebkitPrintColorAdjust: 'exact',
               printColorAdjust: 'exact',
               minWidth: 60

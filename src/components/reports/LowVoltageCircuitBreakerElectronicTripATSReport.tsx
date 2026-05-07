@@ -2747,13 +2747,15 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table primary-injection-main-table">
                 <colgroup>
-                  <col style={{ width: isPrintMode ? '10%' : '11%' }} /> {/* Function */}
+                  {/* widths sum to 100% so cross-browser print layouts stay
+                      consistent (otherwise Chrome/Win shrinks the last col) */}
+                  <col style={{ width: isPrintMode ? '12%' : '11%' }} /> {/* Function */}
                   <col style={{ width: isPrintMode ? '12%' : '13%' }} /> {/* Rated Amperes */}
-                  <col style={{ width: isPrintMode ? '10%' : '10%' }} />  {/* Multiplier % Left */}
-                  <col style={{ width: isPrintMode ? '10%' : '10%' }} />  {/* Multiplier % Right */}
-                  <col style={{ width: isPrintMode ? '14%' : '14%' }} /> {/* Test Amperes */}
-                  <col style={{ width: isPrintMode ? '12%' : '11%' }} />  {/* Tolerance Min */}
-                  <col style={{ width: isPrintMode ? '12%' : '11%' }} />  {/* Tolerance Max */}
+                  <col style={{ width: isPrintMode ? '10%' : '10%' }} /> {/* Multiplier % Left */}
+                  <col style={{ width: isPrintMode ? '10%' : '10%' }} /> {/* Multiplier % Right */}
+                  <col style={{ width: isPrintMode ? '15%' : '15%' }} /> {/* Test Amperes */}
+                  <col style={{ width: isPrintMode ? '20.5%' : '20.5%' }} /> {/* Tolerance Min */}
+                  <col style={{ width: isPrintMode ? '20.5%' : '20.5%' }} /> {/* Tolerance Max */}
                 </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-150">
                   <tr>
@@ -4460,15 +4462,18 @@ if (typeof document !== 'undefined') {
       .ins-res-table col:nth-child(7) { width: 12.5% !important; }
       .ins-res-table col:nth-child(8) { width: 9% !important; }
       
-      /* Primary Injection — setup table (no pole columns) */
+      /* Primary Injection — setup table (no pole columns).
+         Widths sum to exactly 100% so Chrome on Windows lays out Min and
+         Max identically (otherwise the leftover % gets distributed
+         unevenly and Max collapses). */
       .primary-injection-main-table { table-layout: fixed !important; width: 100% !important; }
-      .primary-injection-main-table col:nth-child(1) { width: 10% !important; }
+      .primary-injection-main-table col:nth-child(1) { width: 12% !important; }
       .primary-injection-main-table col:nth-child(2) { width: 12% !important; }
       .primary-injection-main-table col:nth-child(3),
-      .primary-injection-main-table col:nth-child(4) { width: 11% !important; }
-      .primary-injection-main-table col:nth-child(5) { width: 14% !important; }
+      .primary-injection-main-table col:nth-child(4) { width: 10% !important; }
+      .primary-injection-main-table col:nth-child(5) { width: 15% !important; }
       .primary-injection-main-table col:nth-child(6),
-      .primary-injection-main-table col:nth-child(7) { width: 12% !important; }
+      .primary-injection-main-table col:nth-child(7) { width: 20.5% !important; }
 
       .primary-injection-main-table th:nth-child(6),
       .primary-injection-main-table th:nth-child(7),
@@ -4828,6 +4833,31 @@ if (typeof document !== 'undefined') {
       .max-w-7xl table.primary-injection-poles-table th span,
       .max-w-7xl table.primary-injection-poles-table input,
       .max-w-7xl table.primary-injection-poles-table select { font-size: 9px !important; }
+
+      /* CROSS-BROWSER COLUMN WIDTH FIX for Primary Injection main table.
+         The generic .max-w-7xl table th:nth-child(N) { width: 8% } rules
+         earlier in the stylesheet collapse the second-row "Max" <th>
+         (which is th:nth-child(4) of its <tr>) to 8% on Windows Chrome,
+         even though <col> widths are larger. Force the cells AND headers
+         in cols 6 (Min) and 7 (Max) to the same explicit width with high
+         specificity so neither side can collapse. */
+      .max-w-7xl table.primary-injection-main-table > colgroup > col:nth-child(6),
+      .max-w-7xl table.primary-injection-main-table > colgroup > col:nth-child(7) {
+        width: 20.5% !important;
+        min-width: 20.5% !important;
+      }
+      .max-w-7xl table.primary-injection-main-table tr td:nth-child(5),
+      .max-w-7xl table.primary-injection-main-table tr td:nth-child(6),
+      .max-w-7xl table.primary-injection-main-table tr td:nth-child(7) {
+        min-width: 60px !important;
+      }
+      /* The 2nd thead row only has 4 <th>s (empty, empty, Min, Max);
+         neutralize the broad th:nth-child(3)/(4) { width: 8% } rule. */
+      .max-w-7xl table.primary-injection-main-table thead tr:nth-child(2) th:nth-child(3),
+      .max-w-7xl table.primary-injection-main-table thead tr:nth-child(2) th:nth-child(4) {
+        width: auto !important;
+        min-width: 60px !important;
+      }
 
       /* DECISIVE Primary Injection input/select normalization.
          Earlier rules use nth-child(5/6/7) selectors, but the table mixes

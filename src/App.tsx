@@ -245,6 +245,7 @@ import LiquidFilledXfmrATS25Report from '@/components/reports/LiquidFilledXfmrAT
 
 // Import Switchgear Panelboard MTS Report
 import SwitchgearPanelboardMTSReport from './components/reports/SwitchgearPanelboardMTSReport';
+import JobHazardAnalysisForm from './components/reports/JobHazardAnalysisForm';
 
 // Import the new Large Dry Type Transformer MTS Report
 import LargeDryTypeTransformerMTSReport from './components/reports/LargeDryTypeTransformerMTSReport';
@@ -762,6 +763,9 @@ function App() {
 
                   {/* Added route for SwitchgearPanelboardMTSReport */}
                   <Route path="/jobs/:id/switchgear-panelboard-mts-report/:reportId?" element={<RequireAuth><Layout><SwitchgearPanelboardMTSReport /></Layout></RequireAuth>} />
+
+                  {/* Internal Forms - Job Hazard Analysis Form */}
+                  <Route path="/jobs/:id/job-hazard-analysis-form/:reportId?" element={<RequireAuth><Layout><JobHazardAnalysisForm /></Layout></RequireAuth>} />
 
                   {/* Added route for LiquidXfmrVisualMTSReport */}
                   <Route path="/jobs/:id/liquid-xfmr-visual-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><LiquidXfmrVisualMTSReport /></Suspense></Layout></RequireAuth>} />

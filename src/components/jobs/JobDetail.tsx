@@ -190,6 +190,33 @@ const reportRoutes = {
   '2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test MTS': 'large-dry-type-xfmr-mts-report',
 };
 
+// Internal Forms: not test reports, but go through the same review workflow.
+// When approved they appear in the dedicated "Approved Internal Forms" tab
+// instead of the regular "Approved" tab.
+interface InternalFormTemplate {
+  slug: string;
+  name: string;
+}
+const INTERNAL_FORM_TEMPLATES: InternalFormTemplate[] = [
+  { slug: 'job-hazard-analysis-form', name: 'Job Hazard Analysis Form' },
+];
+const INTERNAL_FORM_SLUGS = new Set(INTERNAL_FORM_TEMPLATES.map(t => t.slug));
+
+/** Returns true if an asset's file_url corresponds to an internal form route. */
+function isInternalFormAsset(asset: { file_url?: string | null } | null | undefined): boolean {
+  if (!asset?.file_url) return false;
+  if (!asset.file_url.startsWith('report:')) return false;
+  try {
+    const urlContent = asset.file_url.split(':/')[1] || '';
+    const parts = urlContent.split('/');
+    // Expecting [ 'jobs', jobId, slug, ... ]
+    const slug = (parts[2] || '').split('?')[0];
+    return INTERNAL_FORM_SLUGS.has(slug);
+  } catch {
+    return false;
+  }
+}
+
 /** Report date fields — skip placeholders so we can fall back to created_at. */
 function parseReportDateField(raw: unknown): Date | null {
   if (raw == null) return null;
@@ -266,7 +293,7 @@ export default function JobDetail() {
   const [filteredJobAssets, setFilteredJobAssets] = useState<Asset[]>([]);
   const [reportTimestampsByAsset, setReportTimestampsByAsset] = useState<Record<string, { submitted_at?: string | null; approved_at?: string | null; issued_at?: string | null; sent_at?: string | null }>>({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [assetStatusFilter, setAssetStatusFilter] = useState<'all' | 'not started' | 'in_progress' | 'ready_for_review' | 'approved' | 'sent' | 'issue' | 'archived'>('all');
+  const [assetStatusFilter, setAssetStatusFilter] = useState<'all' | 'not started' | 'in_progress' | 'ready_for_review' | 'approved' | 'approved_internal_forms' | 'sent' | 'issue' | 'archived'>('all');
   const [reportSearchQuery, setReportSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newAssetName, setNewAssetName] = useState('');
@@ -1811,8 +1838,8 @@ export default function JobDetail() {
     }
     
     // Handle asset status filter parameter
-    if (filterParam && ['all', 'not started', 'in_progress', 'ready_for_review', 'approved', 'issue'].includes(filterParam)) {
-      setAssetStatusFilter(filterParam as 'all' | 'not started' | 'in_progress' | 'ready_for_review' | 'approved' | 'issue');
+    if (filterParam && ['all', 'not started', 'in_progress', 'ready_for_review', 'approved', 'approved_internal_forms', 'issue'].includes(filterParam)) {
+      setAssetStatusFilter(filterParam as 'all' | 'not started' | 'in_progress' | 'ready_for_review' | 'approved' | 'approved_internal_forms' | 'issue');
     }
   }, [location.search]);
 
@@ -2025,7 +2052,11 @@ export default function JobDetail() {
     } else if (assetStatusFilter === 'ready_for_review') {
       filtered = filtered.filter(asset => asset.status === 'ready_for_review');
     } else if (assetStatusFilter === 'approved') {
-      filtered = filtered.filter(asset => asset.status === 'approved');
+      // Approved reports tab excludes internal forms (those have their own tab).
+      filtered = filtered.filter(asset => asset.status === 'approved' && !isInternalFormAsset(asset));
+    } else if (assetStatusFilter === 'approved_internal_forms') {
+      // Dedicated tab for approved internal forms.
+      filtered = filtered.filter(asset => asset.status === 'approved' && isInternalFormAsset(asset));
     } else if (assetStatusFilter === 'sent') {
       filtered = filtered.filter(asset => asset.status === 'sent');
     } else if (assetStatusFilter === 'issue') {
@@ -7487,6 +7518,29 @@ ${newBodyHtml}
                                         ))}
                                       </>
                                     )}
+
+                                    {/* Internal Forms */}
+                                    {INTERNAL_FORM_TEMPLATES.length > 0 && (
+                                      <>
+                                        <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+                                        <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-white bg-gray-50 dark:bg-dark-150">
+                                          Internal Forms
+                                        </div>
+                                        {INTERNAL_FORM_TEMPLATES.map((t) => (
+                                          <Link
+                                            key={t.slug}
+                                            to={`/jobs/${id}/${t.slug}`}
+                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                          >
+                                            <div className="flex items-center">
+                                              <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                              <span className="truncate">{t.name}</span>
+                                            </div>
+                                          </Link>
+                                        ))}
+                                      </>
+                                    )}
                                   </>
                                 )}
                               </div>
@@ -7567,7 +7621,17 @@ ${newBodyHtml}
                                   : 'text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white'
                               }`}
                             >
-                              Approved ({jobAssets.filter(asset => asset.status === 'approved').length})
+                              Approved ({jobAssets.filter(asset => asset.status === 'approved' && !isInternalFormAsset(asset)).length})
+                            </button>
+                            <button
+                              onClick={() => setAssetStatusFilter('approved_internal_forms')}
+                              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                assetStatusFilter === 'approved_internal_forms'
+                                  ? 'bg-white dark:bg-dark-150 text-gray-900 dark:text-white shadow-sm'
+                                  : 'text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white'
+                              }`}
+                            >
+                              Approved Internal Forms ({jobAssets.filter(asset => asset.status === 'approved' && isInternalFormAsset(asset)).length})
                             </button>
                             <button
                               onClick={() => setAssetStatusFilter('sent')}

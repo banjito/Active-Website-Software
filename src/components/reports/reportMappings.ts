@@ -63,7 +63,10 @@ export const REPORT_NAMES: { [key: string]: string } = {
   'gfi-trip-test-report': 'Ground Fault Trip Test Report',
   
   // Applied Voltage Test Report
-  'applied-voltage-test-ats-report': 'Applied Voltage Test ATS'
+  'applied-voltage-test-ats-report': 'Applied Voltage Test ATS',
+
+  // Internal Forms
+  'job-hazard-analysis-form': 'Job Hazard Analysis Form'
 };
 
 // Helper function to get report name by route slug

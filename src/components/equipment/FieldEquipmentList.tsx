@@ -33,6 +33,8 @@ interface FieldEquipment {
   sub_components: SubComponent[] | null;
   assigned_to: string | null;
   assigned_type: AssignedType | null;
+  checked_out_by: string | null;
+  checked_out_at: string | null;
   notes: string | null;
   tracking_url: string | null;
   calibration_certificate_url: string | null;
@@ -124,7 +126,9 @@ export default function FieldEquipmentList() {
   const [openUserSelectors, setOpenUserSelectors] = useState<{ [key: string]: boolean }>({});
   const [userSearchQueries, setUserSearchQueries] = useState<{ [key: string]: string }>({});
   const [assignTabByEquipment, setAssignTabByEquipment] = useState<{ [key: string]: AssignedType }>({});
+  const [openActionMenus, setOpenActionMenus] = useState<{ [key: string]: boolean }>({});
   const userSelectorRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const actionMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [viewingCertificate, setViewingCertificate] = useState<string | null>(null);
@@ -195,6 +199,12 @@ export default function FieldEquipmentList() {
         const ref = userSelectorRefs.current[equipmentId];
         if (ref && !ref.contains(event.target as Node)) {
           setOpenUserSelectors(prev => ({ ...prev, [equipmentId]: false }));
+        }
+      });
+      Object.keys(actionMenuRefs.current).forEach((equipmentId) => {
+        const ref = actionMenuRefs.current[equipmentId];
+        if (ref && !ref.contains(event.target as Node)) {
+          setOpenActionMenus(prev => ({ ...prev, [equipmentId]: false }));
         }
       });
     };
@@ -1159,6 +1169,97 @@ export default function FieldEquipmentList() {
     );
   };
 
+  const handleCheckOut = async (equipmentId: string) => {
+    if (!user) {
+      toast({ title: 'Error', description: 'You must be signed in to check out equipment', variant: 'destructive' });
+      return;
+    }
+    try {
+      const nowIso = new Date().toISOString();
+      const { error } = await supabase
+        .schema('neta_ops')
+        .from('field_equipment')
+        .update({
+          checked_out_by: user.id,
+          checked_out_at: nowIso,
+          updated_at: nowIso,
+        })
+        .eq('id', equipmentId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Checked out',
+        description: 'Equipment is now checked out to you.',
+        variant: 'success',
+      });
+      setOpenActionMenus(prev => ({ ...prev, [equipmentId]: false }));
+      fetchEquipment();
+    } catch (err: any) {
+      console.error('Failed to check out equipment:', err);
+      toast({
+        title: 'Error',
+        description: err.message || 'Could not check out equipment',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleCheckIn = async (equipmentId: string) => {
+    try {
+      const nowIso = new Date().toISOString();
+      const { error } = await supabase
+        .schema('neta_ops')
+        .from('field_equipment')
+        .update({
+          checked_out_by: null,
+          checked_out_at: null,
+          updated_at: nowIso,
+        })
+        .eq('id', equipmentId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Checked in',
+        description: 'Equipment has been returned.',
+        variant: 'success',
+      });
+      setOpenActionMenus(prev => ({ ...prev, [equipmentId]: false }));
+      fetchEquipment();
+    } catch (err: any) {
+      console.error('Failed to check in equipment:', err);
+      toast({
+        title: 'Error',
+        description: err.message || 'Could not check in equipment',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const formatDateTime = (iso: string | null): string => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleString();
+  };
+
+  const formatRelativeTime = (iso: string | null): string => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const diffMs = Date.now() - d.getTime();
+    const diffSec = Math.round(diffMs / 1000);
+    if (diffSec < 60) return 'just now';
+    const diffMin = Math.round(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.round(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDay = Math.round(diffHr / 24);
+    if (diffDay < 30) return `${diffDay}d ago`;
+    return d.toLocaleDateString();
+  };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
@@ -1682,6 +1783,15 @@ export default function FieldEquipmentList() {
                                 )}
                                 <span>{getAssignedLabel(item)}</span>
                               </button>
+                              {item.checked_out_by && (
+                                <div
+                                  className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200 rounded"
+                                  title={`Checked out by ${getUserNameById(item.checked_out_by)} on ${formatDateTime(item.checked_out_at)}`}
+                                >
+                                  <ArrowUp className="h-3 w-3" />
+                                  <span>Checked out · {getUserNameById(item.checked_out_by)} · {formatRelativeTime(item.checked_out_at)}</span>
+                                </div>
+                              )}
 
                               {openUserSelectors[item.id] && (() => {
                                 const activeAssignTab: AssignedType = assignTabByEquipment[item.id] || (item.assigned_type ?? 'user');
@@ -1926,12 +2036,66 @@ export default function FieldEquipmentList() {
                             </td>
                           )}
                           <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                            <button
-                              onClick={() => handleEdit(item)}
-                              className="text-[#f26722] hover:text-[#e55611]"
+                            <div
+                              className="relative inline-block"
+                              ref={el => { actionMenuRefs.current[item.id] = el; }}
                             >
-                              <Pencil className="h-4 w-4" />
-                            </button>
+                              <button
+                                type="button"
+                                onClick={() => setOpenActionMenus(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                                className="inline-flex items-center gap-1 px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-dark-100 rounded-md transition-colors"
+                                title="Actions"
+                              >
+                                Actions
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              </button>
+                              {openActionMenus[item.id] && (
+                                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-40 py-1">
+                                  {item.checked_out_by ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCheckIn(item.id)}
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-100"
+                                    >
+                                      <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                      Check In
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCheckOut(item.id)}
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-100"
+                                    >
+                                      <ArrowUp className="h-4 w-4 text-[#f26722]" />
+                                      Check Out
+                                    </button>
+                                  )}
+                                  <div className="my-1 border-t border-gray-200 dark:border-gray-700" />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenActionMenus(prev => ({ ...prev, [item.id]: false }));
+                                      handleEdit(item);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-100"
+                                  >
+                                    <Pencil className="h-4 w-4 text-[#f26722]" />
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenActionMenus(prev => ({ ...prev, [item.id]: false }));
+                                      handleDelete(item.id);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -2758,6 +2922,51 @@ export default function FieldEquipmentList() {
                             'Not assigned'
                           )}
                         </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                          Checked Out
+                        </label>
+                        {viewingEquipment.checked_out_by ? (
+                          <div className="space-y-2">
+                            <p className="text-base text-gray-900 dark:text-white flex items-center gap-2">
+                              <ArrowUp className="h-4 w-4 text-amber-500" />
+                              <span>{getUserNameById(viewingEquipment.checked_out_by)}</span>
+                              {viewingEquipment.checked_out_at && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  · {formatDateTime(viewingEquipment.checked_out_at)} ({formatRelativeTime(viewingEquipment.checked_out_at)})
+                                </span>
+                              )}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleCheckIn(viewingEquipment.id);
+                                setViewingEquipment(null);
+                              }}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-200 dark:hover:bg-green-900/50 rounded-md transition-colors"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              Check In
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <p className="text-base text-gray-500 dark:text-gray-400">Not checked out</p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleCheckOut(viewingEquipment.id);
+                                setViewingEquipment(null);
+                              }}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-[#f26722]/10 text-[#f26722] hover:bg-[#f26722]/20 dark:bg-[#f26722]/20 dark:hover:bg-[#f26722]/30 rounded-md transition-colors"
+                            >
+                              <ArrowUp className="h-4 w-4" />
+                              Check Out
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <div>

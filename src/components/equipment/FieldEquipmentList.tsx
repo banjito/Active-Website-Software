@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, Pencil, Trash2, X, Search, User, FileText, Upload, Eye, Download, ZoomIn, ZoomOut, Maximize2, ExternalLink, Calendar, CheckCircle, XCircle, AlertTriangle, Tag, MapPin, Layers, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown, Wrench } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Search, User, Briefcase, Truck as TruckIcon, FileText, Upload, Eye, Download, ZoomIn, ZoomOut, Maximize2, ExternalLink, Calendar, CheckCircle, XCircle, AlertTriangle, Tag, MapPin, Layers, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown, Wrench } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
@@ -19,6 +19,8 @@ interface SubComponent {
   amp_id: string;
 }
 
+type AssignedType = 'user' | 'job_site' | 'truck';
+
 interface FieldEquipment {
   id: string;
   equipment_name: string;
@@ -30,6 +32,7 @@ interface FieldEquipment {
   location: string | null;
   sub_components: SubComponent[] | null;
   assigned_to: string | null;
+  assigned_type: AssignedType | null;
   notes: string | null;
   tracking_url: string | null;
   calibration_certificate_url: string | null;
@@ -53,6 +56,7 @@ interface EquipmentFormData {
   category: string;
   location: string;
   assigned_to: string | null;
+  assigned_type: AssignedType | null;
   notes: string;
   tracking_url: string;
   in_service: boolean;
@@ -67,6 +71,7 @@ const initialFormData: EquipmentFormData = {
   category: '',
   location: '',
   assigned_to: null,
+  assigned_type: null,
   notes: '',
   tracking_url: '',
   in_service: true,
@@ -114,8 +119,11 @@ export default function FieldEquipmentList() {
   const [equipmentToDelete, setEquipmentToDelete] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [users, setUsers] = useState<UserData[]>([]);
+  const [jobSites, setJobSites] = useState<string[]>([]);
+  const [trucks, setTrucks] = useState<string[]>([]);
   const [openUserSelectors, setOpenUserSelectors] = useState<{ [key: string]: boolean }>({});
   const [userSearchQueries, setUserSearchQueries] = useState<{ [key: string]: string }>({});
+  const [assignTabByEquipment, setAssignTabByEquipment] = useState<{ [key: string]: AssignedType }>({});
   const userSelectorRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -161,6 +169,8 @@ export default function FieldEquipmentList() {
       fetchCategories();
       fetchLocations();
       fetchSubComponentItems();
+      fetchJobSites();
+      fetchTrucks();
     }
   }, [user]);
 
@@ -512,6 +522,144 @@ export default function FieldEquipmentList() {
     }
   }
 
+  async function fetchJobSites() {
+    try {
+      const { data, error } = await supabase
+        .schema('neta_ops')
+        .from('equipment_job_sites')
+        .select('name')
+        .order('name', { ascending: true });
+
+      if (error) {
+        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          setJobSites([]);
+          return;
+        }
+        console.error('Error fetching job sites:', error);
+        setJobSites([]);
+        return;
+      }
+
+      setJobSites((data || []).map((row: any) => row.name));
+    } catch (err) {
+      console.error('Error fetching job sites:', err);
+    }
+  }
+
+  async function createJobSite(name: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .schema('neta_ops')
+        .from('equipment_job_sites')
+        .insert([{ name: name.trim() }]);
+
+      if (error) {
+        if (error.code === '23505') return true; // already exists
+        console.error('Error creating job site:', error);
+        return false;
+      }
+      await fetchJobSites();
+      return true;
+    } catch (err) {
+      console.error('Error creating job site:', err);
+      return false;
+    }
+  }
+
+  async function deleteJobSite(name: string) {
+    try {
+      const { error } = await supabase
+        .schema('neta_ops')
+        .from('equipment_job_sites')
+        .delete()
+        .eq('name', name.trim());
+
+      if (error) {
+        console.error('Error deleting job site:', error);
+        toast({ title: 'Error', description: 'Could not delete job site', variant: 'destructive' });
+        return;
+      }
+      await fetchJobSites();
+      toast({
+        title: 'Job site removed',
+        description: `"${name}" removed from saved job sites.`,
+        variant: 'success',
+      });
+    } catch (err) {
+      console.error('Error deleting job site:', err);
+      toast({ title: 'Error', description: 'Could not delete job site', variant: 'destructive' });
+    }
+  }
+
+  async function fetchTrucks() {
+    try {
+      const { data, error } = await supabase
+        .schema('neta_ops')
+        .from('equipment_trucks')
+        .select('name')
+        .order('name', { ascending: true });
+
+      if (error) {
+        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          setTrucks([]);
+          return;
+        }
+        console.error('Error fetching trucks:', error);
+        setTrucks([]);
+        return;
+      }
+
+      setTrucks((data || []).map((row: any) => row.name));
+    } catch (err) {
+      console.error('Error fetching trucks:', err);
+    }
+  }
+
+  async function createTruck(name: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .schema('neta_ops')
+        .from('equipment_trucks')
+        .insert([{ name: name.trim() }]);
+
+      if (error) {
+        if (error.code === '23505') return true; // already exists
+        console.error('Error creating truck:', error);
+        return false;
+      }
+      await fetchTrucks();
+      return true;
+    } catch (err) {
+      console.error('Error creating truck:', err);
+      return false;
+    }
+  }
+
+  async function deleteTruck(name: string) {
+    try {
+      const { error } = await supabase
+        .schema('neta_ops')
+        .from('equipment_trucks')
+        .delete()
+        .eq('name', name.trim());
+
+      if (error) {
+        console.error('Error deleting truck:', error);
+        toast({ title: 'Error', description: 'Could not delete truck', variant: 'destructive' });
+        return;
+      }
+      await fetchTrucks();
+      toast({
+        title: 'Truck removed',
+        description: `"${name}" removed from saved trucks.`,
+        variant: 'success',
+      });
+    } catch (err) {
+      console.error('Error deleting truck:', err);
+      toast({ title: 'Error', description: 'Could not delete truck', variant: 'destructive' });
+    }
+  }
+
   async function fetchSubComponentItems() {
     try {
       const { data, error } = await supabase
@@ -609,6 +757,25 @@ export default function FieldEquipmentList() {
     if (!userId) return 'Not assigned';
     const user = users.find(u => u.id === userId);
     return user ? displayUserName(user) : 'Unknown User';
+  };
+
+  const getAssignedLabel = (item: Pick<FieldEquipment, 'assigned_to' | 'assigned_type'>): string => {
+    if (!item.assigned_to) return 'Not assigned';
+    const type = item.assigned_type || 'user';
+    if (type === 'user') {
+      const u = users.find(usr => usr.id === item.assigned_to);
+      return u ? displayUserName(u) : 'Unknown User';
+    }
+    return item.assigned_to;
+  };
+
+  const getAssignedTypeLabel = (type: AssignedType | null | undefined): string => {
+    switch (type) {
+      case 'job_site': return 'Job Site';
+      case 'truck': return 'Truck';
+      case 'user':
+      default: return 'User';
+    }
   };
 
   // Helper function to parse date string as local date (not UTC)
@@ -736,6 +903,7 @@ export default function FieldEquipmentList() {
         calibration_date: formData.calibration_date || null,
         calibration_due_date: formData.calibration_due_date || null,
         assigned_to: formData.assigned_to || null,
+        assigned_type: formData.assigned_to ? (formData.assigned_type || 'user') : null,
         notes: formData.notes || null,
         tracking_url: formData.tracking_url || null,
         category: formData.category?.trim() || null,
@@ -881,6 +1049,7 @@ export default function FieldEquipmentList() {
       category: equipmentItem.category || '',
       location: equipmentItem.location || '',
       assigned_to: equipmentItem.assigned_to,
+      assigned_type: equipmentItem.assigned_type ?? (equipmentItem.assigned_to ? 'user' : null),
       notes: equipmentItem.notes || '',
       tracking_url: equipmentItem.tracking_url || '',
       in_service: equipmentItem.in_service !== false,
@@ -938,21 +1107,32 @@ export default function FieldEquipmentList() {
     setFormData(prev => ({ ...prev, [name]: value }));
   }
 
-  const handleAssignUser = async (equipmentId: string, selectedUser: UserData | null) => {
+  const handleAssign = async (
+    equipmentId: string,
+    type: AssignedType | null,
+    value: string | null,
+    displayLabel?: string,
+  ) => {
     try {
-      const userId = selectedUser ? selectedUser.id : null;
+      const assignedTo = value && value.trim() !== '' ? value : null;
+      const assignedType = assignedTo ? type : null;
+
       const { error } = await supabase
         .schema('neta_ops')
         .from('field_equipment')
-        .update({ assigned_to: userId, updated_at: new Date().toISOString() })
+        .update({
+          assigned_to: assignedTo,
+          assigned_type: assignedType,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', equipmentId);
 
       if (error) throw error;
 
-      const userName = selectedUser ? displayUserName(selectedUser) : 'Unassigned';
+      const label = assignedTo ? (displayLabel || value || 'Assigned') : 'Unassigned';
       toast({
         title: 'Success',
-        description: `Equipment assigned to ${userName}`,
+        description: assignedTo ? `Equipment assigned to ${label}` : 'Equipment unassigned',
         variant: 'success',
       });
 
@@ -960,13 +1140,23 @@ export default function FieldEquipmentList() {
       setUserSearchQueries(prev => ({ ...prev, [equipmentId]: '' }));
       fetchEquipment();
     } catch (error: any) {
-      console.error('Failed to assign user:', error);
+      console.error('Failed to assign equipment:', error);
       toast({
         title: 'Error',
         description: 'Could not assign equipment',
         variant: 'destructive',
       });
     }
+  };
+
+  // Backwards-compatible helper for user-only assignment paths.
+  const handleAssignUser = (equipmentId: string, selectedUser: UserData | null) => {
+    return handleAssign(
+      equipmentId,
+      selectedUser ? 'user' : null,
+      selectedUser ? selectedUser.id : null,
+      selectedUser ? displayUserName(selectedUser) : undefined,
+    );
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -988,6 +1178,18 @@ export default function FieldEquipmentList() {
       const name = displayUserName(u).toLowerCase();
       return email.includes(query) || name.includes(query);
     });
+  };
+
+  const filteredJobSites = (equipmentId: string) => {
+    const query = (userSearchQueries[equipmentId] || '').toLowerCase();
+    if (!query) return jobSites;
+    return jobSites.filter(s => s.toLowerCase().includes(query));
+  };
+
+  const filteredTrucks = (equipmentId: string) => {
+    const query = (userSearchQueries[equipmentId] || '').toLowerCase();
+    if (!query) return trucks;
+    return trucks.filter(t => t.toLowerCase().includes(query));
   };
 
   // Handle sort column click
@@ -1113,10 +1315,8 @@ export default function FieldEquipmentList() {
             valB = b.location || '';
             break;
           case 'assigned_to': {
-            const userA = users.find(u => u.id === a.assigned_to);
-            const userB = users.find(u => u.id === b.assigned_to);
-            valA = userA ? displayUserName(userA) : '';
-            valB = userB ? displayUserName(userB) : '';
+            valA = a.assigned_to ? getAssignedLabel(a) : '';
+            valB = b.assigned_to ? getAssignedLabel(b) : '';
             break;
           }
           case 'notes':
@@ -1471,79 +1671,205 @@ export default function FieldEquipmentList() {
                                   ...prev,
                                   [item.id]: !prev[item.id]
                                 }))}
+                                title={item.assigned_to ? `${getAssignedTypeLabel(item.assigned_type)}: ${getAssignedLabel(item)}` : 'Not assigned'}
                               >
-                                <User className="h-4 w-4" />
-                                <span>{getUserNameById(item.assigned_to)}</span>
+                                {item.assigned_type === 'job_site' ? (
+                                  <Briefcase className="h-4 w-4" />
+                                ) : item.assigned_type === 'truck' ? (
+                                  <TruckIcon className="h-4 w-4" />
+                                ) : (
+                                  <User className="h-4 w-4" />
+                                )}
+                                <span>{getAssignedLabel(item)}</span>
                               </button>
 
-                              {openUserSelectors[item.id] && (
-                                <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
-                                  <div className="p-3">
-                                    <Input
-                                      type="text"
-                                      placeholder="Search users..."
-                                      value={userSearchQueries[item.id] || ''}
-                                      onChange={(e) => setUserSearchQueries(prev => ({
-                                        ...prev,
-                                        [item.id]: e.target.value
-                                      }))}
-                                      className="w-full"
-                                    />
-                                  </div>
-                                  <div className="max-h-60 overflow-y-auto">
-                                    <div
-                                      className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700"
-                                      onClick={() => handleAssignUser(item.id, null)}
-                                    >
-                                      <div className="flex flex-col">
-                                        <span className="font-medium text-gray-900 dark:text-white">
-                                          Unassign
-                                        </span>
-                                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                                          Remove assignment
-                                        </span>
-                                      </div>
+                              {openUserSelectors[item.id] && (() => {
+                                const activeAssignTab: AssignedType = assignTabByEquipment[item.id] || (item.assigned_type ?? 'user');
+                                const searchValue = userSearchQueries[item.id] || '';
+                                const setSearchValue = (v: string) => setUserSearchQueries(prev => ({ ...prev, [item.id]: v }));
+                                const setActiveAssignTab = (t: AssignedType) => {
+                                  setAssignTabByEquipment(prev => ({ ...prev, [item.id]: t }));
+                                  setSearchValue('');
+                                };
+                                const placeholderByTab: Record<AssignedType, string> = {
+                                  user: 'Search users...',
+                                  job_site: 'Search or create job site...',
+                                  truck: 'Search or create truck...',
+                                };
+                                const tabButtonClass = (t: AssignedType) =>
+                                  `flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium border-b-2 transition-colors ${
+                                    activeAssignTab === t
+                                      ? 'border-[#f26722] text-[#f26722]'
+                                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                  }`;
+                                return (
+                                  <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                                    <div className="flex border-b border-gray-200 dark:border-gray-700">
+                                      <button type="button" className={tabButtonClass('user')} onClick={() => setActiveAssignTab('user')}>
+                                        <User className="h-3.5 w-3.5" /> Users
+                                      </button>
+                                      <button type="button" className={tabButtonClass('job_site')} onClick={() => setActiveAssignTab('job_site')}>
+                                        <Briefcase className="h-3.5 w-3.5" /> Job Sites
+                                      </button>
+                                      <button type="button" className={tabButtonClass('truck')} onClick={() => setActiveAssignTab('truck')}>
+                                        <TruckIcon className="h-3.5 w-3.5" /> Trucks
+                                      </button>
                                     </div>
-                                    {filteredUsers(item.id).map((u) => (
+                                    <div className="p-3">
+                                      <Input
+                                        type="text"
+                                        placeholder={placeholderByTab[activeAssignTab]}
+                                        value={searchValue}
+                                        onChange={(e) => setSearchValue(e.target.value)}
+                                        className="w-full"
+                                      />
+                                    </div>
+                                    <div className="max-h-60 overflow-y-auto">
                                       <div
-                                        key={u.id}
-                                        className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                                        onClick={() => handleAssignUser(item.id, u)}
+                                        className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700"
+                                        onClick={() => handleAssign(item.id, null, null)}
                                       >
                                         <div className="flex flex-col">
-                                          <span className="font-medium text-gray-900 dark:text-white">
-                                            {displayUserName(u)}
-                                          </span>
-                                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                                            {u.email}
-                                          </span>
-                                          {u.user_metadata?.role && (
-                                            <span className="text-xs text-gray-600 dark:text-gray-300">
-                                              Role: {u.user_metadata.role}
-                                            </span>
-                                          )}
+                                          <span className="font-medium text-gray-900 dark:text-white">Unassign</span>
+                                          <span className="text-xs text-gray-500 dark:text-gray-400">Remove assignment</span>
                                         </div>
                                       </div>
-                                    ))}
-                                    {filteredUsers(item.id).length === 0 && (
-                                      <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">
-                                        No users found
-                                      </div>
-                                    )}
+
+                                      {activeAssignTab === 'user' && (
+                                        <>
+                                          {filteredUsers(item.id).map((u) => (
+                                            <div
+                                              key={u.id}
+                                              className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                              onClick={() => handleAssign(item.id, 'user', u.id, displayUserName(u))}
+                                            >
+                                              <div className="flex flex-col">
+                                                <span className="font-medium text-gray-900 dark:text-white">{displayUserName(u)}</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">{u.email}</span>
+                                                {u.user_metadata?.role && (
+                                                  <span className="text-xs text-gray-600 dark:text-gray-300">Role: {u.user_metadata.role}</span>
+                                                )}
+                                              </div>
+                                            </div>
+                                          ))}
+                                          {filteredUsers(item.id).length === 0 && (
+                                            <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">No users found</div>
+                                          )}
+                                        </>
+                                      )}
+
+                                      {activeAssignTab === 'job_site' && (
+                                        <>
+                                          {filteredJobSites(item.id).map((site) => (
+                                            <div
+                                              key={site}
+                                              className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                              onClick={() => handleAssign(item.id, 'job_site', site, site)}
+                                            >
+                                              <div className="flex items-center gap-2">
+                                                <Briefcase className="h-4 w-4 text-gray-400" />
+                                                <span className="font-medium text-gray-900 dark:text-white">{site}</span>
+                                              </div>
+                                              <button
+                                                type="button"
+                                                onClick={(e) => { e.stopPropagation(); deleteJobSite(site); }}
+                                                className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                                title="Remove from saved job sites"
+                                              >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                              </button>
+                                            </div>
+                                          ))}
+                                          {searchValue.trim() &&
+                                            !jobSites.some(s => s.toLowerCase() === searchValue.trim().toLowerCase()) && (
+                                              <div
+                                                className="px-3 py-2 cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-t border-gray-200 dark:border-gray-700"
+                                                onClick={async () => {
+                                                  const name = searchValue.trim();
+                                                  const success = await createJobSite(name);
+                                                  if (success) {
+                                                    await handleAssign(item.id, 'job_site', name, name);
+                                                  } else {
+                                                    toast({ title: 'Error', description: 'Failed to create job site', variant: 'destructive' });
+                                                  }
+                                                }}
+                                              >
+                                                <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                                  + Create &amp; assign "{searchValue.trim()}"
+                                                </span>
+                                              </div>
+                                            )}
+                                          {filteredJobSites(item.id).length === 0 && !searchValue.trim() && (
+                                            <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                              No saved job sites yet. Type a name above to add one.
+                                            </div>
+                                          )}
+                                        </>
+                                      )}
+
+                                      {activeAssignTab === 'truck' && (
+                                        <>
+                                          {filteredTrucks(item.id).map((truckName) => (
+                                            <div
+                                              key={truckName}
+                                              className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                              onClick={() => handleAssign(item.id, 'truck', truckName, truckName)}
+                                            >
+                                              <div className="flex items-center gap-2">
+                                                <TruckIcon className="h-4 w-4 text-gray-400" />
+                                                <span className="font-medium text-gray-900 dark:text-white">{truckName}</span>
+                                              </div>
+                                              <button
+                                                type="button"
+                                                onClick={(e) => { e.stopPropagation(); deleteTruck(truckName); }}
+                                                className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                                title="Remove from saved trucks"
+                                              >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                              </button>
+                                            </div>
+                                          ))}
+                                          {searchValue.trim() &&
+                                            !trucks.some(t => t.toLowerCase() === searchValue.trim().toLowerCase()) && (
+                                              <div
+                                                className="px-3 py-2 cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-t border-gray-200 dark:border-gray-700"
+                                                onClick={async () => {
+                                                  const name = searchValue.trim();
+                                                  const success = await createTruck(name);
+                                                  if (success) {
+                                                    await handleAssign(item.id, 'truck', name, name);
+                                                  } else {
+                                                    toast({ title: 'Error', description: 'Failed to create truck', variant: 'destructive' });
+                                                  }
+                                                }}
+                                              >
+                                                <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                                  + Create &amp; assign "{searchValue.trim()}"
+                                                </span>
+                                              </div>
+                                            )}
+                                          {filteredTrucks(item.id).length === 0 && !searchValue.trim() && (
+                                            <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                              No saved trucks yet. Type a name above to add one.
+                                            </div>
+                                          )}
+                                        </>
+                                      )}
+                                    </div>
+                                    <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+                                      <button
+                                        className="w-full px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                                        onClick={() => {
+                                          setOpenUserSelectors(prev => ({ ...prev, [item.id]: false }));
+                                          setUserSearchQueries(prev => ({ ...prev, [item.id]: '' }));
+                                        }}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
                                   </div>
-                                  <div className="p-2 border-t border-gray-200 dark:border-gray-700">
-                                    <button
-                                      className="w-full px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                                      onClick={() => {
-                                        setOpenUserSelectors(prev => ({ ...prev, [item.id]: false }));
-                                        setUserSearchQueries(prev => ({ ...prev, [item.id]: '' }));
-                                      }}
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
+                                );
+                              })()}
                             </div>
                           </td>
                           {activeTab !== 'all' && activeTab !== 'category' && (
@@ -2413,8 +2739,24 @@ export default function FieldEquipmentList() {
                         <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                           Assigned To
                         </label>
-                        <p className="text-base text-gray-900 dark:text-white">
-                          {getUserNameById(viewingEquipment.assigned_to)}
+                        <p className="text-base text-gray-900 dark:text-white flex items-center gap-2">
+                          {viewingEquipment.assigned_to ? (
+                            <>
+                              {viewingEquipment.assigned_type === 'job_site' ? (
+                                <Briefcase className="h-4 w-4 text-gray-400" />
+                              ) : viewingEquipment.assigned_type === 'truck' ? (
+                                <TruckIcon className="h-4 w-4 text-gray-400" />
+                              ) : (
+                                <User className="h-4 w-4 text-gray-400" />
+                              )}
+                              <span>{getAssignedLabel(viewingEquipment)}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                ({getAssignedTypeLabel(viewingEquipment.assigned_type)})
+                              </span>
+                            </>
+                          ) : (
+                            'Not assigned'
+                          )}
                         </p>
                       </div>
 

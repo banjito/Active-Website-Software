@@ -282,9 +282,12 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
           .select()
           .single();
         if (result.data) {
-          // Create folder structure by substation
-          const substationFolder = jobInfo.substation 
-            ? jobInfo.substation.replace(/[^a-zA-Z0-9-_]/g, '_').toLowerCase() 
+          // Create folder structure by substation.
+          // Use encodeURIComponent so the original substation name (e.g. "P2(I)")
+          // round-trips losslessly through the asset file_url and back into the
+          // Linked Reports grouping display.
+          const substationFolder = jobInfo.substation && jobInfo.substation.trim()
+            ? encodeURIComponent(jobInfo.substation.trim())
             : 'general';
           
           const assetData = {

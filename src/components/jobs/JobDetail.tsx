@@ -3668,31 +3668,45 @@ export default function JobDetail() {
             nameUpdates[asset.id] = display;
           }
 
-          // Derive substation for grouping
-          // First check if we already have it from database (for PDF reports)
+          // Derive substation for grouping.
+          // First check if we already have it from database (for PDF reports).
           let substation = substationUpdates[asset.id] || '';
-          
+
           if (!substation) {
-            // For grounding reports, prefer the substation from the URL path (if present)
-            // Decode it back to readable format (e.g., "main_substation" -> "main substation")
-            if (substationFromUrl && substationFromUrl !== 'general') {
-              // Decode URL-encoded folder name back to readable substation name
-              substation = substationFromUrl.replace(/_/g, ' ');
-            } else {
-              // Fall back to database value
-              // Check direct field first (for GFI Trip Test and similar reports that store substation directly)
-              substation =
-                data.substation ||
-                (data.report_info && (data.report_info.substation || data.report_info.location || (data.report_info.jobInfo && data.report_info.jobInfo.substation))) ||
-                (data.report_data && (
-                  data.report_data.substation || (data.report_data.jobInfo && data.report_data.jobInfo.substation) ||
-                  (data.report_data.reportInfo && (data.report_data.reportInfo.substation || data.report_data.reportInfo.location))
-                )) ||
-                (data.data && (
-                  data.data.substation || data.data.location || (data.data.jobInfo && data.data.jobInfo.substation) ||
-                  (data.data.reportInfo && (data.data.reportInfo.substation || data.data.reportInfo.location))
-                )) ||
-                '';
+            // Always prefer the substation as stored on the report itself — this is the
+            // authoritative, unmangled value the technician actually entered (e.g. "P2(I)").
+            // The URL folder segment is only a fallback because legacy grounding reports
+            // sanitized it lossily (`p2_i_`), which would otherwise create phantom groups
+            // like "p2 i" that don't merge with new reports saved as "P2(I)".
+            const fromReportData =
+              data.substation ||
+              (data.report_info && (data.report_info.substation || data.report_info.location || (data.report_info.jobInfo && data.report_info.jobInfo.substation))) ||
+              (data.report_data && (
+                data.report_data.substation || (data.report_data.jobInfo && data.report_data.jobInfo.substation) ||
+                (data.report_data.reportInfo && (data.report_data.reportInfo.substation || data.report_data.reportInfo.location))
+              )) ||
+              (data.data && (
+                data.data.substation || data.data.location || (data.data.jobInfo && data.data.jobInfo.substation) ||
+                (data.data.reportInfo && (data.data.reportInfo.substation || data.data.reportInfo.location))
+              )) ||
+              '';
+
+            if (fromReportData && typeof fromReportData === 'string' && fromReportData.trim()) {
+              substation = fromReportData;
+            } else if (substationFromUrl && substationFromUrl !== 'general') {
+              // Fall back to the URL folder segment. Decode both legacy (lossy) and new
+              // (encodeURIComponent) formats:
+              //   - Legacy: lowercased and stripped of special chars, e.g. "main_substation".
+              //   - New: properly URL-encoded, e.g. "P2(I)" or "Main%20Substation".
+              if (/^[a-z0-9_-]+$/.test(substationFromUrl)) {
+                substation = substationFromUrl.replace(/_/g, ' ');
+              } else {
+                try {
+                  substation = decodeURIComponent(substationFromUrl);
+                } catch {
+                  substation = substationFromUrl;
+                }
+              }
             }
           }
 

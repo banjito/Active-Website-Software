@@ -277,9 +277,12 @@ const GFITripTestReport: React.FC = () => {
           .single();
 
         if (result.data) {
-          // Create folder structure by substation
-          const substationFolder = formData.substation 
-            ? formData.substation.replace(/[^a-zA-Z0-9-_]/g, '_').toLowerCase() 
+          // Create folder structure by substation.
+          // Use encodeURIComponent so the original substation name (e.g. "P2(I)")
+          // round-trips losslessly through the asset file_url and back into the
+          // Linked Reports grouping display.
+          const substationFolder = formData.substation && formData.substation.trim()
+            ? encodeURIComponent(formData.substation.trim())
             : 'general';
           
           const assetName = getAssetName(REPORT_SLUG, formData.identifier);

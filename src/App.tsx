@@ -487,6 +487,7 @@ function App() {
                   <Route path="/back-to-job-test" element={<RequireAuth><Layout><BackToJobButtonTest /></Layout></RequireAuth>} />
                   {/* === Features & Fixes Portal (independent window, no Layout) === */}
                   <Route path="/features-fixes" element={<RequireAuth><FeaturesFixesPage /></RequireAuth>} />
+                  <Route path="/community" element={<RequireAuth><Navigate to="/portal" replace /></RequireAuth>} />
 
                   {/* === Custom Forms === */}
                   <Route path="/custom-forms/templates" element={<RequireAuth><Layout><CustomFormTemplates /></Layout></RequireAuth>} />

@@ -317,7 +317,11 @@ const FeaturesFixesPage: React.FC = () => {
   };
 
   const isAdmin = (user?.user_metadata?.role || '') === 'Admin';
-  const isJohn = (user?.email || '').toLowerCase() === 'john.chambers@ampqes.com';
+  /** Stats column (hidden / excluded-from-stats) + workflow actions on Features & Fixes */
+  const ISSUE_OPS_ALLOWED_EMAILS = new Set(
+    ['john.chambers@ampqes.com', 'jack.lyons@ampqes.com'].map((e) => e.toLowerCase())
+  );
+  const hasIssueOpsAccess = ISSUE_OPS_ALLOWED_EMAILS.has((user?.email || '').toLowerCase());
 
   const updateIssue = async (id: string, patch: Partial<Issue>) => {
     const { data, error } = await supabase
@@ -789,14 +793,14 @@ const FeaturesFixesPage: React.FC = () => {
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 min-w-[7.5rem]">Priority</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Date Added</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Reporter</th>
-                    {isJohn && <th className="text-center py-3 px-2 text-sm font-medium text-gray-500 dark:text-gray-400" title="Exclude from stats">Stats</th>}
+                    {hasIssueOpsAccess && <th className="text-center py-3 px-2 text-sm font-medium text-gray-500 dark:text-gray-400" title="Exclude from stats">Stats</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedIssues.map(issue => {
                     const isExcluded = issue.excluded_from_stats ?? false;
                     return (
-                      <tr key={issue.id} className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-dark-100 ${isJohn && isExcluded ? 'opacity-50' : ''}`}>
+                      <tr key={issue.id} className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-dark-100 ${hasIssueOpsAccess && isExcluded ? 'opacity-50' : ''}`}>
                         <td className="py-3 px-4">
                           <span className={`text-xs font-medium px-2 py-1 rounded ${
                             issue.type === 'feature_request' 
@@ -847,7 +851,7 @@ const FeaturesFixesPage: React.FC = () => {
                             {getReporterName(issue.reporter_id)}
                           </span>
                         </td>
-                        {isJohn && (
+                        {hasIssueOpsAccess && (
                           <td className="py-3 px-2 text-center">
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleExcludeFromStats(issue); }}
@@ -1310,7 +1314,7 @@ const FeaturesFixesPage: React.FC = () => {
               {/* Footer */}
               <div className="sticky bottom-0 bg-gray-50 dark:bg-dark-100 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
                 <div className="flex gap-2">
-                  {isJohn && selectedIssue.status === 'open' && (
+                  {hasIssueOpsAccess && selectedIssue.status === 'open' && (
                     <button
                       onClick={() => {
                         handleMarkInProgress(selectedIssue);
@@ -1321,7 +1325,7 @@ const FeaturesFixesPage: React.FC = () => {
                       Mark In Progress
                     </button>
                   )}
-                  {isJohn && selectedIssue.status === 'in_progress' && (
+                  {hasIssueOpsAccess && selectedIssue.status === 'in_progress' && (
                     <button
                       onClick={() => {
                         handlePause(selectedIssue);
@@ -1332,7 +1336,7 @@ const FeaturesFixesPage: React.FC = () => {
                       ⏸ Pause
                     </button>
                   )}
-                  {isJohn && selectedIssue.status === 'paused' && (
+                  {hasIssueOpsAccess && selectedIssue.status === 'paused' && (
                     <button
                       onClick={() => {
                         handleResume(selectedIssue);
@@ -1343,7 +1347,7 @@ const FeaturesFixesPage: React.FC = () => {
                       ▶ Resume
                     </button>
                   )}
-                  {isJohn && (selectedIssue.status === 'in_progress' || selectedIssue.status === 'paused' || selectedIssue.status === 'open') && selectedIssue.status !== 'resolved' && selectedIssue.status !== 'closed' && (
+                  {hasIssueOpsAccess && (selectedIssue.status === 'in_progress' || selectedIssue.status === 'paused' || selectedIssue.status === 'open') && selectedIssue.status !== 'resolved' && selectedIssue.status !== 'closed' && (
                     <button
                       onClick={() => {
                         handleMarkResolved(selectedIssue);

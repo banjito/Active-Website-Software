@@ -4,7 +4,7 @@ import Card from "../../components/ui/Card"
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs"
 import { Badge } from "../../components/ui"
-import { ChevronRight, Building, MapPin, Bell, User as UserIcon, Settings, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Phone, Loader2, BookOpen, Gauge, AlertTriangle, MoreVertical, Check, AlertCircle, Image as ImageIcon } from "lucide-react"
+import { ChevronRight, Building, MapPin, Bell, User as UserIcon, Settings, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Phone, Loader2, BookOpen, Gauge, AlertTriangle, MoreVertical, Check, AlertCircle, Image as ImageIcon, Bookmark } from "lucide-react"
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react"
 import { useAuth } from "../../lib/AuthContext"
 import { useDivision } from '../../App'
@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/DropdownMenu"
 import { onboardingService } from "@/services/hr/onboardingService"
 import { toast } from "@/components/ui/toast"
+import { CommunityBoardPopover } from '@/components/community/CommunityBoardPopover'
 
 type ReviewNotification = {
   jobId: string;
@@ -1343,7 +1344,7 @@ export default function PortalLanding() {
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-black dark:text-white">
       {/* Header */}
-      <div className="bg-white dark:bg-dark-150 p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-dark-150 p-4 border-none">
         <div className="flex items-center w-full min-w-0">
           {/* AMP Logo */}
           <img
@@ -1353,7 +1354,7 @@ export default function PortalLanding() {
           />
 
           {/* Shortcut Tabs - centered in the middle */}
-          <div className="hidden sm:flex items-center justify-center flex-1 min-w-0 ml-4 border-l border-gray-200 dark:border-gray-700 pl-4">
+          <div className="hidden sm:flex items-center justify-center flex-1 min-w-0 ml-4 border-none">
             <div ref={shortcutsBarRef} className="flex items-center gap-0.5">
               {headerShortcuts.slice(0, 8).map((shortcut) => (
                 <button
@@ -1374,18 +1375,28 @@ export default function PortalLanding() {
             </div>
           </div>
           
-          {/* Right side - Edit shortcuts, contacts, notifications, profile */}
-          <div className="flex items-center gap-4 shrink-0 ml-4">
-            <button
-              onClick={() => setIsShortcutManagerOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-[#f26722] dark:hover:text-[#f26722] hover:bg-orange-50 dark:hover:bg-dark-200 rounded-md transition-colors shrink-0 border border-gray-200 dark:border-gray-700 hover:border-orange-200 dark:hover:border-orange-900/30"
-              title="Add, edit, or reorder your shortcuts"
-            >
-              <Settings className="h-3.5 w-3.5" />
-              Edit
-            </button>
+          {/* Right side — fixed slots so shortcut, board, contacts, notifications, and profile spacing is even */}
+          <div
+            className="grid shrink-0 ml-4 [grid-template-columns:repeat(5,2.5rem)] gap-x-3 sm:gap-x-4 place-items-center"
+            role="toolbar"
+            aria-label="Portal shortcuts and account"
+          >
+            <div className="relative flex h-10 w-10 items-center justify-center">
+              <button
+                type="button"
+                aria-label="Add, edit, or reorder your shortcuts"
+                onClick={() => setIsShortcutManagerOpen(true)}
+                className="rounded-full w-10 h-10 p-0 flex items-center justify-center text-gray-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                title="Add, edit, or reorder your shortcuts"
+              >
+                <Bookmark className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="relative flex h-10 w-10 items-center justify-center">
+              <CommunityBoardPopover />
+            </div>
             {/* AMP contacts */}
-            <div className="relative" ref={contactsRef}>
+            <div className="relative flex h-10 w-10 items-center justify-center" ref={contactsRef}>
               <button
                 aria-label="AMP contacts"
                 className="rounded-full w-10 h-10 p-0 flex items-center justify-center bg-transparent hover:bg-transparent focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
@@ -1451,7 +1462,7 @@ export default function PortalLanding() {
               )}
             </div>
             {/* Notifications */}
-            <div className="relative" ref={notificationsRef}>
+            <div className="relative flex h-10 w-10 items-center justify-center" ref={notificationsRef}>
               <button
                 aria-label="Notifications"
                 className="rounded-full w-10 h-10 p-0 flex items-center justify-center bg-transparent hover:bg-transparent focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 relative"
@@ -1670,7 +1681,7 @@ export default function PortalLanding() {
                 </div>
               )}
             </div>
-            <div className="relative" ref={profileMenuRef}>
+            <div className="relative flex h-10 w-10 items-center justify-center" ref={profileMenuRef}>
               <button
                 className="rounded-full w-10 h-10 bg-gray-100 dark:bg-dark-150 hover:bg-gray-200 dark:hover:bg-gray-600 p-0 overflow-hidden flex items-center justify-center border border-gray-300 dark:border-gray-600"
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}

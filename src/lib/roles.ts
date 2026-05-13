@@ -85,6 +85,7 @@ export interface RolePermissions {
 // Superuser emails that always have full admin access regardless of assigned role.
 const SUPERUSER_EMAILS: string[] = [
   'john.chambers@ampqes.com',
+  'jack.lyons@ampqes.com'
 ];
 
 export const isSuperUser = (email: string | undefined | null): boolean => {

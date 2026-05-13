@@ -22,6 +22,7 @@ import { AboutPopup } from './AboutPopup';
 import { SidebarShortcuts } from '@/components/shortcuts/SidebarShortcuts';
 import { useMyMenuEnabled } from '@/lib/userPrefs';
 import { useMobileDetection } from '../../hooks/useMobileDetection';
+import { CommunityBoardPopover } from '@/components/community/CommunityBoardPopover';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -635,7 +636,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <h2 className="text-sm lg:text-lg font-semibold truncate mobile-nav-text">{location.pathname === '/all-jobs' || useGlobalJobs ? 'Global Portal' : (formatDivisionName(division) || 'AMP Portal')}</h2>
               </div>
 
-              <div className="flex items-center print:hidden"> {/* <-- Add print:hidden to right side too */}
+              <div className="flex items-center gap-1 sm:gap-2 print:hidden">
+                <CommunityBoardPopover triggerClassName="w-9 h-9 lg:w-10 lg:h-10" />
                 <div className="relative" ref={profileMenuRef}>
                   <Button
                     variant="ghost"

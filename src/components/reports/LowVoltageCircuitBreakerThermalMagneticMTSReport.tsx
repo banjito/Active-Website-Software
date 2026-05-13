@@ -173,6 +173,9 @@ interface FormData {
   // Status (PASS/FAIL/LIMITED SERVICE)
   status: string;
 
+  /** When true, hide counter reading, primary injection, and primary injection test equipment; keep device settings, contact resistance (DLRO), and insulation resistance (IR). */
+  irDlroOnly: boolean;
+
   // Counter Reading
   counterReading: {
     asFound: string;
@@ -308,6 +311,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
     },
     comments: '',
     status: 'PASS',
+    irDlroOnly: false,
     counterReading: {
       asFound: '',
       asLeft: ''
@@ -378,7 +382,8 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
           insulationResistance: data.report_info?.insulationResistance || prev.insulationResistance,
           // Ensure primaryInjection shape if present
           primaryInjection: data.report_info?.primaryInjection || prev.primaryInjection,
-          status: data.status || 'PASS'
+          status: data.status || 'PASS',
+          irDlroOnly: data.report_info?.irDlroOnly === true,
         }));
         setIsEditing(false);
       }
@@ -633,7 +638,29 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Low Voltage Circuit Breaker Thermal Magnetic MTS
             </h1>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              {/* IR & DLRO Only Toggle — matches LV Circuit Breaker ATS 25 */}
+              <div className="flex flex-col items-center">
+                <span className={`text-[10px] font-medium mb-0.5 ${formData.irDlroOnly ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                  {formData.irDlroOnly ? 'Enabled' : 'Disabled'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isEditing) {
+                      handleChange('irDlroOnly', !formData.irDlroOnly);
+                    }
+                  }}
+                  disabled={!isEditing}
+                  className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    formData.irDlroOnly
+                      ? 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                  } ${!isEditing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                >
+                  IR & DLRO Only
+                </button>
+              </div>
               {/* Status Button */}
               <button
                 onClick={() => {
@@ -905,6 +932,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
           </div>
 
           {/* --- Counter Reading Section --- */}
+          {!formData.irDlroOnly && (
           <div className="mb-6 print:mb-2">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 print:mb-2 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">Counter Reading</h2>
@@ -931,6 +959,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
               </div>
         </div>
       </div>
+          )}
 
           {/* --- Device Settings Section --- */}
           <div className="mb-6 print:mb-2">
@@ -1230,6 +1259,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
           </div>
 
           {/* --- Electrical Tests - Primary Injection Section --- */}
+          {!formData.irDlroOnly && (
           <div className="mb-6 print:mb-2 print:break-before-page">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 print:mb-2 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">Electrical Tests - Primary Injection</h2>
@@ -1465,13 +1495,14 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
             </table>
           </div>
         </div>
+          )}
 
           {/* --- Test Equipment Used Section --- */}
           <div className="mb-6 print:mb-2">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 print:mb-2 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
             {/* Screen-visible layout */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden te-section-screen">
+            <div className={`grid grid-cols-1 gap-4 print:hidden te-section-screen ${formData.irDlroOnly ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
               <div className="card p-4">
                 <div className="font-semibold mb-2">Megohmmeter</div>
                 <label className="form-label">Name</label>
@@ -1586,6 +1617,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                   className="form-input"
                 />
               </div>
+              {!formData.irDlroOnly && (
               <div className="card p-4">
                 <div className="font-semibold mb-2">Primary Injection Test Set</div>
                 <label className="form-label">Name</label>
@@ -1643,14 +1675,24 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                   className="form-input"
                 />
               </div>
+              )}
             </div>
             {/* Print-only 3-column table for all test equipment */}
             <div className="hidden print:block mt-2">
               <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
                 <colgroup>
-                  <col style={{ width: '33.33%' }} />
-                  <col style={{ width: '33.33%' }} />
-                  <col style={{ width: '33.33%' }} />
+                  {formData.irDlroOnly ? (
+                    <>
+                      <col style={{ width: '50%' }} />
+                      <col style={{ width: '50%' }} />
+                    </>
+                  ) : (
+                    <>
+                      <col style={{ width: '33.33%' }} />
+                      <col style={{ width: '33.33%' }} />
+                      <col style={{ width: '33.33%' }} />
+                    </>
+                  )}
                 </colgroup>
                 <tbody>
                   <tr>
@@ -1674,6 +1716,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                       <div className="font-semibold mt-1">Cal Date:</div>
                       <div className="mt-0">{formData.testEquipment.lowResistanceOhmmeter.calDate || ''}</div>
                     </td>
+                    {!formData.irDlroOnly && (
                     <td className="p-2 align-top border border-gray-300 print:border-black print:border">
                       <div className="font-semibold">Primary Injection Test Set:</div>
                       <div className="mt-0">{formData.testEquipment.primaryInjectionTestSet.name || ''}</div>
@@ -1684,6 +1727,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                       <div className="font-semibold mt-1">Cal Date:</div>
                       <div className="mt-0">{formData.testEquipment.primaryInjectionTestSet.calDate || ''}</div>
                     </td>
+                    )}
                   </tr>
                 </tbody>
               </table>

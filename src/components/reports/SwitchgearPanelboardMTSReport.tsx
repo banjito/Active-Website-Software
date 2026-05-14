@@ -521,9 +521,10 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
             const valStr = String(row[key] || ''); // Ensure it's a string and handle null/undefined
             const trimmedVal = valStr.trim();
             
-            // Check for empty, N/A, or special values
-            if (trimmedVal === '' || trimmedVal.toLowerCase() === 'n/a' || trimmedVal.startsWith('>') || trimmedVal.startsWith('<')) {
+            if (trimmedVal === '' || trimmedVal.toLowerCase() === 'n/a') {
                 correctedRow[key] = 'N/A';
+            } else if (trimmedVal.startsWith('>') || trimmedVal.startsWith('<')) {
+                correctedRow[key] = trimmedVal;
             } else {
                 const val = parseFloat(trimmedVal);
                 if (!isNaN(val) && isFinite(val)) {

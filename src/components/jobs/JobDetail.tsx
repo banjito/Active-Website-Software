@@ -3358,11 +3358,11 @@ export default function JobDetail() {
     }
 
     const jobIdSegment = pathSegments[1]; // This is the job ID from the asset's URL
-    let reportNameSlug = pathSegments[2];
+    let reportNameSlug = (pathSegments[2] || '').trim();
     
     // Clean query parameters from reportNameSlug if it's the last significant path part before query
     if (reportNameSlug.includes('?')) {
-      reportNameSlug = reportNameSlug.split('?')[0];
+      reportNameSlug = reportNameSlug.split('?')[0].trim();
     }
     
     // Handle grounding reports with substation folder structure
@@ -3441,10 +3441,13 @@ export default function JobDetail() {
       '23-medium-voltage-switch-mts-report': '23-medium-voltage-switch-mts-report',
       'two-small-dry-typer-xfmr-mts-report': 'two-small-dry-typer-xfmr-mts-report',
       'gfi-trip-test-report': 'gfi-trip-test-report',
-      'applied-voltage-test-ats-report': 'applied-voltage-test-ats-report'
+      'applied-voltage-test-ats-report': 'applied-voltage-test-ats-report',
+      'job-hazard-analysis-form': 'job-hazard-analysis-form'
     };
 
-    const mappedReportName = reportPathMap[reportNameSlug];
+    const mappedReportName =
+      reportPathMap[reportNameSlug] ??
+      (INTERNAL_FORM_SLUGS.has(reportNameSlug) ? reportNameSlug : undefined);
 
     if (!mappedReportName) {
       console.error('Unknown report type for path mapping. Slug:', reportNameSlug, 'Original URL:', asset.file_url, 'Asset ID:', asset.id);

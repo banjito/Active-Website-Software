@@ -257,6 +257,9 @@ interface FormData {
   // Status (PASS/FAIL) - Added based on standard report structure
   status: string;
 
+  /** When true, hide primary injection and primary injection test equipment; keep contact resistance (DLRO) and insulation resistance (IR). */
+  irDlroOnly: boolean;
+
   // Counter Reading
   counterReading: {
     asFound: string;
@@ -545,6 +548,8 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
     // Status
     status: 'PASS',
 
+    irDlroOnly: false,
+
     // Counter Reading
     counterReading: {
       asFound: '',
@@ -712,6 +717,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           // Comments & status
           comments: d.comments ?? prev.comments,
           status: d.reportInfo?.status ?? prev.status,
+          irDlroOnly: d.reportInfo?.irDlroOnly === true,
         }));
         setIsEditing(false);
         setLoading(false);
@@ -790,6 +796,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
 
           // Status - Use equipmentEvaluationResultOptions
           status: data.report_info?.status || 'PASS',
+          irDlroOnly: data.report_info?.irDlroOnly === true,
         }));
         setIsEditing(false);
       }
@@ -819,6 +826,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
         eqptLocation: formData.eqptLocation,
         temperature: formData.temperature,
         status: formData.status,
+        irDlroOnly: formData.irDlroOnly,
       },
       nameplateData: {
         manufacturer: formData.manufacturer,
@@ -939,6 +947,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
         eqptLocation: formData.eqptLocation,
         temperature: formData.temperature,
         status: formData.status,
+        irDlroOnly: formData.irDlroOnly,
       },
       nameplateData: {
         manufacturer: formData.manufacturer,
@@ -1409,6 +1418,28 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                ✓ Auto Saving Enabled
              </span>
+             {/* IR & DLRO Only Toggle */}
+             <div className="flex flex-col items-center">
+               <span className={`text-[10px] font-medium mb-0.5 ${formData.irDlroOnly ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                 {formData.irDlroOnly ? 'Enabled' : 'Disabled'}
+               </span>
+               <button
+                 type="button"
+                 onClick={() => {
+                   if (isEditing) {
+                     handleChange('irDlroOnly', !formData.irDlroOnly);
+                   }
+                 }}
+                 disabled={!isEditing}
+                 className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                   formData.irDlroOnly
+                     ? 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500'
+                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                 } ${!isEditing ? 'opacity-70 cursor-not-allowed' : ''}`}
+               >
+                 IR & DLRO Only
+               </button>
+             </div>
              {/* Status Button */}
              <button
                onClick={() => {
@@ -2143,6 +2174,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           </div>
 
         {/* --- Electrical Tests - Primary Injection Section --- */}
+        {!formData.irDlroOnly && (
         <section className="mb-6 primary-injection-section">
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
@@ -2868,6 +2900,7 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
             </table>
           </div>
         </section>
+        )}
 
         {/* --- Test Equipment Used Section --- */}
           <div className="mb-6 print:hidden">
@@ -2952,6 +2985,8 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
               <label className="form-label inline-block w-24 ml-4">Cal Date:</label>
               <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.calDate} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.calDate', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
             </div>
+            {!formData.irDlroOnly && (
+            <>
             {/* Primary Injection Test Set */}
             <div className="flex items-center">
               <label className="form-label inline-block w-32">Primary Injection Test Set:</label>
@@ -2991,6 +3026,8 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
               <label className="form-label inline-block w-24 ml-4">Cal Date:</label>
               <input type="text" value={formData.testEquipment.primaryInjectionTestSet.calDate} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.calDate', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
             </div>
+            </>
+            )}
           </div>
           </div>
 
@@ -3020,12 +3057,14 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                   <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.lowResistanceOhmmeter.ampId}</td>
                   <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.lowResistanceOhmmeter.calDate}</td>
                 </tr>
+                {!formData.irDlroOnly && (
                 <tr>
                   <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.primaryInjectionTestSet.name || 'Primary Inj Test Set'}</td>
                   <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.primaryInjectionTestSet.serialNumber}</td>
                   <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.primaryInjectionTestSet.ampId}</td>
                   <td className="border border-black px-2 py-1 text-sm">{formData.testEquipment.primaryInjectionTestSet.calDate}</td>
                 </tr>
+                )}
               </tbody>
             </table>
           </div>

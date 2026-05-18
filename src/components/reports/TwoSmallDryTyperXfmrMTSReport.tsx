@@ -1855,22 +1855,13 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
           <div className="space-y-4 print:hidden test-eqpt-onscreen">
-            <div className="flex items-center gap-4">
-              <div className="min-w-[120px] font-medium text-gray-900 dark:text-white">Megohmmeter:</div>
-              <div className="flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Megohmmeter</label>
                 <EquipmentAutocomplete
                   value={formData.testEquipment.megohmmeter.name}
                   onChange={(value) => handleChange('testEquipment.megohmmeter.name', value)}
                   onSelect={(equipment) => {
-                    const formatDate = (dateString: string | null): string => {
-                      if (!dateString) return '';
-                      try {
-                        const date = new Date(dateString);
-                        return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-                      } catch {
-                        return dateString;
-                      }
-                    };
                     setFormData(p => ({
                       ...p,
                       testEquipment: {
@@ -1888,57 +1879,47 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                   className="w-full text-sm"
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="whitespace-nowrap font-medium text-gray-900 dark:text-white">Serial Number:</span>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Serial Number</label>
                 <input
                   type="text"
                   name="testEquipment.megohmmeter.serialNumber"
                   value={formData.testEquipment.megohmmeter.serialNumber}
                   onChange={e => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-48 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="whitespace-nowrap font-medium text-gray-900 dark:text-white">AMP ID:</span>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">AMP ID</label>
                 <input
                   type="text"
                   name="testEquipment.megohmmeter.ampId"
                   value={formData.testEquipment.megohmmeter.ampId}
                   onChange={e => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-32 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="whitespace-nowrap font-medium text-gray-900 dark:text-white">Cal Date:</span>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Cal Date</label>
                 <input
                   type="text"
                   name="testEquipment.megohmmeter.calDate"
                   value={formData.testEquipment.megohmmeter.calDate}
                   onChange={e => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-32 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                 />
               </div>
             </div>
-
-            <div className="flex items-center gap-4">
-              <div className="min-w-[120px] font-medium text-gray-900 dark:text-white">TTR Test Set:</div>
-              <div className="flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">TTR Test Set</label>
                 <EquipmentAutocomplete
                   value={formData.testEquipment.ttrTestSet.name}
                   onChange={(value) => handleChange('testEquipment.ttrTestSet.name', value)}
                   onSelect={(equipment) => {
-                    const formatDate = (dateString: string | null): string => {
-                      if (!dateString) return '';
-                      try {
-                        const date = new Date(dateString);
-                        return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-                      } catch {
-                        return dateString;
-                      }
-                    };
                     setFormData(p => ({
                       ...p,
                       testEquipment: {
@@ -1956,37 +1937,37 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                   className="w-full text-sm"
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="whitespace-nowrap font-medium text-gray-900 dark:text-white">Serial Number:</span>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Serial Number</label>
                 <input
                   type="text"
                   name="testEquipment.ttrTestSet.serialNumber"
                   value={formData.testEquipment.ttrTestSet.serialNumber}
                   onChange={e => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-48 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="whitespace-nowrap font-medium text-gray-900 dark:text-white">AMP ID:</span>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">AMP ID</label>
                 <input
                   type="text"
                   name="testEquipment.ttrTestSet.ampId"
                   value={formData.testEquipment.ttrTestSet.ampId}
                   onChange={e => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-32 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="whitespace-nowrap font-medium text-gray-900 dark:text-white">Cal Date:</span>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Cal Date</label>
                 <input
                   type="text"
                   name="testEquipment.ttrTestSet.calDate"
                   value={formData.testEquipment.ttrTestSet.calDate}
                   onChange={e => handleChange(e.target.name, e.target.value)}
                   readOnly={!isEditing}
-                  className={`form-input w-32 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  className={`form-input w-full text-sm text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                 />
               </div>
             </div>
@@ -2106,6 +2087,21 @@ if (typeof document !== 'undefined') {
   style.textContent = `
     /* Visible scrollbar for turns ratio table on screen */
     @media screen {
+      /* On-screen test equipment: ensure values are readable (print layout unchanged) */
+      .test-eqpt-onscreen input,
+      .test-eqpt-onscreen input[readonly],
+      .test-eqpt-onscreen .form-input {
+        color: #111827 !important;
+        -webkit-text-fill-color: #111827 !important;
+        opacity: 1 !important;
+      }
+      html.dark .test-eqpt-onscreen input,
+      html.dark .test-eqpt-onscreen input[readonly],
+      html.dark .test-eqpt-onscreen .form-input {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+
       .turns-ratio-scroll {
         overflow-x: scroll !important; /* Force scrollbar to always show */
         scrollbar-gutter: stable; /* Reserve space for scrollbar */

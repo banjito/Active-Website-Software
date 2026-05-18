@@ -2903,134 +2903,125 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
         )}
 
         {/* --- Test Equipment Used Section --- */}
-          <div className="mb-6 print:hidden">
+          <div className="mb-6 print:hidden test-eqpt-onscreen">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
-          <div className="grid grid-cols-1 gap-y-4">
-            {/* Megohmmeter */}
-            <div className="flex items-center">
-              <label className="form-label inline-block w-32">Megohmmeter:</label>
-              <EquipmentAutocomplete
-                value={formData.testEquipment.megohmmeter.name}
-                onChange={(value) => handleChange('testEquipment.megohmmeter.name', value)}
-                onSelect={(equipment) => {
-                  const formatDate = (dateString: string | null): string => {
-                    if (!dateString) return '';
-                    try {
-                      const date = new Date(dateString);
-                      return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-                    } catch {
-                      return dateString;
-                    }
-                  };
-                  setFormData(p => ({
-                    ...p,
-                    testEquipment: {
-                      ...p.testEquipment,
-                      megohmmeter: {
-                        name: equipment.equipment_name,
-                        serialNumber: equipment.serial_number || '',
-                        ampId: equipment.amp_id || '',
-                        calDate: formatLocalDateShort(equipment.calibration_date),
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Megohmmeter</label>
+                <EquipmentAutocomplete
+                  value={formData.testEquipment.megohmmeter.name}
+                  onChange={(value) => handleChange('testEquipment.megohmmeter.name', value)}
+                  onSelect={(equipment) => {
+                    setFormData(p => ({
+                      ...p,
+                      testEquipment: {
+                        ...p.testEquipment,
+                        megohmmeter: {
+                          name: equipment.equipment_name,
+                          serialNumber: equipment.serial_number || '',
+                          ampId: equipment.amp_id || '',
+                          calDate: formatLocalDateShort(equipment.calibration_date),
+                        }
                       }
-                    }
-                  }));
-                }}
-                readOnly={!isEditing}
-                className="flex-1"
-              />
-              <label className="form-label inline-block w-32 ml-4">Serial Number:</label>
-              <input type="text" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.megohmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
-              <label className="form-label inline-block w-24 ml-4">AMP ID:</label>
-              <input type="text" value={formData.testEquipment.megohmmeter.ampId} onChange={(e) => handleChange('testEquipment.megohmmeter.ampId', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
-              <label className="form-label inline-block w-24 ml-4">Cal Date:</label>
-              <input type="text" value={formData.testEquipment.megohmmeter.calDate} onChange={(e) => handleChange('testEquipment.megohmmeter.calDate', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                    }));
+                  }}
+                  readOnly={!isEditing}
+                  className="w-full"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Serial Number</label>
+                <input type="text" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.megohmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">AMP ID</label>
+                <input type="text" value={formData.testEquipment.megohmmeter.ampId} onChange={(e) => handleChange('testEquipment.megohmmeter.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Cal Date</label>
+                <input type="text" value={formData.testEquipment.megohmmeter.calDate} onChange={(e) => handleChange('testEquipment.megohmmeter.calDate', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              </div>
             </div>
-            {/* Low Resistance Ohmmeter */}
-            <div className="flex items-center">
-              <label className="form-label inline-block w-32">Low-Resistance Ohmmeter:</label>
-              <EquipmentAutocomplete
-                value={formData.testEquipment.lowResistanceOhmmeter.name}
-                onChange={(value) => handleChange('testEquipment.lowResistanceOhmmeter.name', value)}
-                onSelect={(equipment) => {
-                  const formatDate = (dateString: string | null): string => {
-                    if (!dateString) return '';
-                    try {
-                      const date = new Date(dateString);
-                      return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-                    } catch {
-                      return dateString;
-                    }
-                  };
-                  setFormData(p => ({
-                    ...p,
-                    testEquipment: {
-                      ...p.testEquipment,
-                      lowResistanceOhmmeter: {
-                        name: equipment.equipment_name,
-                        serialNumber: equipment.serial_number || '',
-                        ampId: equipment.amp_id || '',
-                        calDate: formatLocalDateShort(equipment.calibration_date),
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Low-Resistance Ohmmeter</label>
+                <EquipmentAutocomplete
+                  value={formData.testEquipment.lowResistanceOhmmeter.name}
+                  onChange={(value) => handleChange('testEquipment.lowResistanceOhmmeter.name', value)}
+                  onSelect={(equipment) => {
+                    setFormData(p => ({
+                      ...p,
+                      testEquipment: {
+                        ...p.testEquipment,
+                        lowResistanceOhmmeter: {
+                          name: equipment.equipment_name,
+                          serialNumber: equipment.serial_number || '',
+                          ampId: equipment.amp_id || '',
+                          calDate: formatLocalDateShort(equipment.calibration_date),
+                        }
                       }
-                    }
-                  }));
-                }}
-                readOnly={!isEditing}
-                className="flex-1"
-              />
-              <label className="form-label inline-block w-32 ml-4">Serial Number:</label>
-              <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
-              <label className="form-label inline-block w-24 ml-4">AMP ID:</label>
-              <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.ampId} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.ampId', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
-              <label className="form-label inline-block w-24 ml-4">Cal Date:</label>
-              <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.calDate} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.calDate', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                    }));
+                  }}
+                  readOnly={!isEditing}
+                  className="w-full"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Serial Number</label>
+                <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.serialNumber} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">AMP ID</label>
+                <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.ampId} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Cal Date</label>
+                <input type="text" value={formData.testEquipment.lowResistanceOhmmeter.calDate} onChange={(e) => handleChange('testEquipment.lowResistanceOhmmeter.calDate', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              </div>
             </div>
             {!formData.irDlroOnly && (
-            <>
-            {/* Primary Injection Test Set */}
-            <div className="flex items-center">
-              <label className="form-label inline-block w-32">Primary Injection Test Set:</label>
-              <EquipmentAutocomplete
-                value={formData.testEquipment.primaryInjectionTestSet.name}
-                onChange={(value) => handleChange('testEquipment.primaryInjectionTestSet.name', value)}
-                onSelect={(equipment) => {
-                  const formatDate = (dateString: string | null): string => {
-                    if (!dateString) return '';
-                    try {
-                      const date = new Date(dateString);
-                      return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-                    } catch {
-                      return dateString;
-                    }
-                  };
-                  setFormData(p => ({
-                    ...p,
-                    testEquipment: {
-                      ...p.testEquipment,
-                      primaryInjectionTestSet: {
-                        name: equipment.equipment_name,
-                        serialNumber: equipment.serial_number || '',
-                        ampId: equipment.amp_id || '',
-                        calDate: formatLocalDateShort(equipment.calibration_date),
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Primary Injection Test Set</label>
+                <EquipmentAutocomplete
+                  value={formData.testEquipment.primaryInjectionTestSet.name}
+                  onChange={(value) => handleChange('testEquipment.primaryInjectionTestSet.name', value)}
+                  onSelect={(equipment) => {
+                    setFormData(p => ({
+                      ...p,
+                      testEquipment: {
+                        ...p.testEquipment,
+                        primaryInjectionTestSet: {
+                          name: equipment.equipment_name,
+                          serialNumber: equipment.serial_number || '',
+                          ampId: equipment.amp_id || '',
+                          calDate: formatLocalDateShort(equipment.calibration_date),
+                        }
                       }
-                    }
-                  }));
-                }}
-                readOnly={!isEditing}
-                className="flex-1"
-              />
-              <label className="form-label inline-block w-32 ml-4">Serial Number:</label>
-              <input type="text" value={formData.testEquipment.primaryInjectionTestSet.serialNumber} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
-              <label className="form-label inline-block w-24 ml-4">AMP ID:</label>
-              <input type="text" value={formData.testEquipment.primaryInjectionTestSet.ampId} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.ampId', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
-              <label className="form-label inline-block w-24 ml-4">Cal Date:</label>
-              <input type="text" value={formData.testEquipment.primaryInjectionTestSet.calDate} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.calDate', e.target.value)} readOnly={!isEditing} className={`form-input flex-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                    }));
+                  }}
+                  readOnly={!isEditing}
+                  className="w-full"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Serial Number</label>
+                <input type="text" value={formData.testEquipment.primaryInjectionTestSet.serialNumber} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">AMP ID</label>
+                <input type="text" value={formData.testEquipment.primaryInjectionTestSet.ampId} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.ampId', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">Cal Date</label>
+                <input type="text" value={formData.testEquipment.primaryInjectionTestSet.calDate} onChange={(e) => handleChange('testEquipment.primaryInjectionTestSet.calDate', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+              </div>
             </div>
-            </>
             )}
           </div>
           </div>
-
         {/* Print-Only Test Equipment Used Table */}
           <div className="hidden print:block">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
@@ -3143,6 +3134,21 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
+    /* On-screen test equipment: ensure values are readable (print layout unchanged) */
+    .test-eqpt-onscreen input,
+    .test-eqpt-onscreen input[readonly],
+    .test-eqpt-onscreen .form-input {
+      color: #111827 !important;
+      -webkit-text-fill-color: #111827 !important;
+      opacity: 1 !important;
+    }
+    html.dark .test-eqpt-onscreen input,
+    html.dark .test-eqpt-onscreen input[readonly],
+    html.dark .test-eqpt-onscreen .form-input {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
     /* Screen styles for primary injection table */
     .primary-injection-table { 
       table-layout: fixed !important; 

@@ -1369,29 +1369,44 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
               </tr>
             </tbody>
           </table>
+
+          {/* Comments (print) — inline after test equipment to stay on same page */}
+          <div className="comments-section-print mt-1">
+            <div className="w-full h-1 bg-[#f26722] mb-1"></div>
+            <h2 className="text-xl font-semibold mb-1 text-black border-b border-black pb-1 font-bold">Comments</h2>
+            <table
+              className="w-full border border-gray-300 print:border-black print-comment-table"
+              style={{ tableLayout: 'fixed', width: '100%' }}
+            >
+              <tbody>
+                <tr className="allow-row-break">
+                  <td
+                    className="p-2 border border-gray-300 print:border-black min-h-0 align-top break-words whitespace-pre-wrap"
+                    style={{ wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}
+                  >
+                    <div className="text-sm whitespace-pre-wrap break-words">
+                      {formData.comments || 'No comments'}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
       
-      {/* Comments */}
-      <section className="mb-6 comments-section">
+      {/* Comments (on-screen only) */}
+      <section className="mb-6 comments-section print:hidden">
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
-        {/* On-screen form - hidden in print */}
-        <div className="print:hidden comments-onscreen">
-          <textarea value={formData.comments || ''} onChange={(e) => handleChange('comments', e.target.value)} readOnly={!isEditMode} rows={4} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-150' : ''}`}/>
-        </div>
-        
-        {/* Print-only table */}
-        <div className="hidden print:block">
-          <table className="w-full border border-gray-300 print:border-black">
-            <tbody>
-              <tr>
-                <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
-                  {formData.comments || 'No comments'}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
+        <div className="comments-onscreen">
+          <textarea
+            value={formData.comments || ''}
+            onChange={(e) => handleChange('comments', e.target.value)}
+            readOnly={!isEditMode}
+            rows={4}
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white break-words whitespace-pre-wrap ${!isEditMode ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+          />
         </div>
       </section>
         </div>
@@ -1632,6 +1647,60 @@ if (typeof document !== 'undefined') {
       .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
       .comments-onscreen, .comments-onscreen * { display: none !important; }
       .job-info-onscreen, .job-info-onscreen * { display: none !important; }
+
+      /* Comments inline with test equipment — wrap long text, stay on same page */
+      .comments-section-print {
+        page-break-before: avoid !important;
+        break-before: avoid !important;
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+        margin-top: 2px !important;
+        margin-bottom: 0 !important;
+      }
+      .comments-section-print h2 {
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+      .comments-section-print tr,
+      .comments-section-print tr.allow-row-break {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+      .comments-section-print table,
+      .comments-section-print table.print-comment-table,
+      .comments-section table,
+      .comments-section table.print-comment-table {
+        table-layout: fixed !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+      #report-container .comments-section-print table.print-comment-table td,
+      #report-container .comments-section table.print-comment-table td,
+      .comments-section-print table td,
+      .comments-section-print table td div,
+      .comments-section table td,
+      .comments-section table td div {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
+        white-space: pre-wrap !important;
+        vertical-align: top !important;
+        padding: 4px !important;
+        font-size: 9px !important;
+        line-height: 1.3 !important;
+        max-width: 100% !important;
+        min-height: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      div[class*="p-6"],
+      div[class*="max-w-7xl"],
+      section {
+        min-height: 0 !important;
+        height: auto !important;
+      }
       .job-info-section .w-16 { width: 50px !important; }
       .job-info-section span { margin: 0 6px !important; }
 

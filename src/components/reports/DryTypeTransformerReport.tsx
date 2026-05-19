@@ -860,12 +860,13 @@ const DryTypeTransformerReport: React.FC = () => {
           .single();
 
         if (result.data) {
-           currentReportId = result.data.id; // Get the new report ID
-           console.log(`New report created with ID: ${currentReportId}`);
-           // Create asset entry
+          const newReportId = result.data.id;
+          setCurrentReportId(newReportId);
+          console.log(`New report created with ID: ${newReportId}`);
+          // Create asset entry
           const assetData = {
             name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
-            file_url: `report:/jobs/${jobId}/dry-type-transformer/${currentReportId}`,
+            file_url: `report:/jobs/${jobId}/dry-type-transformer/${newReportId}`,
             user_id: user.id
           };
            console.log("Creating asset:", assetData);

@@ -2344,13 +2344,6 @@ export default function PortalLanding() {
 
       {/* Portal Section */}
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="space-y-3 text-center mb-16">
-          <h2 className="text-3xl font-semibold text-gray-900 dark:text-white">Select Your Portal</h2>
-          <p className="text-lg text-gray-600 dark:text-white max-w-2xl mx-auto">
-            Choose the appropriate portal to access specialized tools and resources.
-          </p>
-        </div>
-
         {isEditMode && (
           <div className="mb-8 p-6 bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">

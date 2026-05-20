@@ -249,8 +249,11 @@ export default function Login() {
       <div className="hidden lg:flex lg:w-1/2 bg-black items-center justify-center relative overflow-hidden">
         <div className="relative z-10 flex flex-col justify-center items-center p-12 text-center">
           {/* Wordmark */}
-          <h1 className="text-6xl tracking-tight" style={{ letterSpacing: '-0.02em' }}>ampOS</h1>
-          <p className="mt-6 text-lg text-[#D9D5CA]">Professional Electrical Testing & Maintenance</p>
+          <img
+            src="/ampOS_full_logo.svg"
+            alt="ampOS"
+            className="h-[6rem] w-auto brightness-0 invert"
+          />
         </div>
       </div>
 
@@ -268,12 +271,12 @@ export default function Login() {
             </h2>
             <p className="text-gray-300">
               {isSignUpMode 
-                ? 'Create your account to get started with ampOS' 
-                : 'Sign in to access your dashboard and manage your projects'}
+                ? 'Create your account to get started with ampOS.'
+                : 'Sign in to access your dashboard.'}
             </p>
           </div>
 
-          <Card className="border border-[#2A2A2A] shadow-xl bg-gray-600">
+          <Card className="border border-[#2A2A2A] shadow-sm">
             <CardContent className="p-12">
               <form className="space-y-8" onSubmit={isSignUpMode ? handleSignUp : handleSubmit}>
                 <div className="space-y-6 pt-4">
@@ -402,7 +405,7 @@ export default function Login() {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-xs text-[#9A9487]">
-            © 2024 ampOS. All rights reserved.
+            © 2026 ampOS. All rights reserved.
           </p>
         </div>
       </div>

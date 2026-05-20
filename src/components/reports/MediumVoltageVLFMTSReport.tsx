@@ -815,7 +815,7 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
           NETA - MTS 7.3.3
           <div className="hidden print:block mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${formData.status === TestStatus.PASS ? 'pass' : 'fail'}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',
@@ -1370,10 +1370,10 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
             </tbody>
           </table>
 
-          {/* Comments (print) — inline after test equipment to stay on same page */}
-          <div className="comments-section-print mt-1">
-            <div className="w-full h-1 bg-[#f26722] mb-1"></div>
-            <h2 className="text-xl font-semibold mb-1 text-black border-b border-black pb-1 font-bold">Comments</h2>
+          {/* Comments (print) — own page with spacing above heading */}
+          <div className="comments-section-print print:break-before-page mt-6 print:mt-8">
+            <div className="w-full h-1 bg-[#f26722] mb-3 print:mb-4"></div>
+            <h2 className="text-xl font-semibold mb-2 print:mb-3 text-black border-b border-black pb-1 font-bold comments-print-heading">Comments</h2>
             <table
               className="w-full border border-gray-300 print:border-black print-comment-table"
               style={{ tableLayout: 'fixed', width: '100%' }}
@@ -1632,6 +1632,23 @@ if (typeof document !== 'undefined') {
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }
 
+      /* PASS/FAIL badge — keep red/green after global color override */
+      .pass-fail-status-box {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color: white !important;
+      }
+      .pass-fail-status-box.pass {
+        background-color: #22c55e !important;
+        border: 2px solid #16a34a !important;
+        color: white !important;
+      }
+      .pass-fail-status-box.fail {
+        background-color: #ef4444 !important;
+        border: 2px solid #dc2626 !important;
+        color: white !important;
+      }
+
       /* Force printed layout to match on-screen for Job Information */
       .job-info-section .grid { display: grid !important; }
       .job-info-section .grid.grid-cols-1.md\:grid-cols-4 { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
@@ -1648,18 +1665,25 @@ if (typeof document !== 'undefined') {
       .comments-onscreen, .comments-onscreen * { display: none !important; }
       .job-info-onscreen, .job-info-onscreen * { display: none !important; }
 
-      /* Comments inline with test equipment — wrap long text, stay on same page */
+      /* Comments — new page, space above heading, wrap long text */
       .comments-section-print {
-        page-break-before: avoid !important;
-        break-before: avoid !important;
+        page-break-before: always !important;
+        break-before: page !important;
         page-break-inside: auto !important;
         break-inside: auto !important;
-        margin-top: 2px !important;
+        margin-top: 24px !important;
         margin-bottom: 0 !important;
+        padding-top: 8px !important;
       }
+      .comments-section-print .comments-print-heading,
       .comments-section-print h2 {
-        page-break-after: auto !important;
-        break-after: auto !important;
+        margin-top: 12px !important;
+        margin-bottom: 8px !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
+      .comments-section-print > div[class*="bg-[#f26722]"] {
+        margin-bottom: 12px !important;
       }
       .comments-section-print tr,
       .comments-section-print tr.allow-row-break {

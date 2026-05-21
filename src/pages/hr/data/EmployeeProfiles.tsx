@@ -445,9 +445,9 @@ export const EmployeeProfiles: React.FC = () => {
                           title={profile.hidden ? 'Unhide profile' : 'Hide profile'}
                         >
                           {profile.hidden ? (
-                            <Eye className="h-4 w-4 text-green-600" />
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
                           ) : (
-                            <EyeOff className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           )}
                         </Button>
                       )}

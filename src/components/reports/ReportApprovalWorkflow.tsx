@@ -27,6 +27,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import Select from '@/components/ui/Select';
+import { compareLinkedAssetFolderLabels } from '@/utils/sortUtils';
 import { Routes, Route } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
@@ -1798,13 +1799,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
                     if (!groups[key]) groups[key] = [];
                     groups[key].push(r);
                   });
-                  const orderKeys = Object.keys(groups).sort((a, b) => {
-                    if (a === 'Imported') return -1;
-                    if (b === 'Imported') return 1;
-                    if (a === 'Other' && b !== 'Other') return 1;
-                    if (b === 'Other' && a !== 'Other') return -1;
-                    return a.localeCompare(b, undefined, { sensitivity: 'base' });
-                  });
+                  const orderKeys = Object.keys(groups).sort(compareLinkedAssetFolderLabels);
                   return (
                     <>
                       {hasMoreReports && (

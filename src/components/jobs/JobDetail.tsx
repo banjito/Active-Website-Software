@@ -28,6 +28,7 @@ import { SubmittalTracker } from './SubmittalTracker';
 import JobNotes from './JobNotes';
 import JobPictures from './JobPictures';
 import { formatDivisionDisplay } from '../../lib/utils/divisionDisplay';
+import { compareAlphanumericLabels, compareLinkedAssetFolderLabels } from '../../utils/sortUtils';
 import { SignatureProfileSelector } from './SignatureProfileSelector';
 import { getQuickBooksStatus, searchQuickBooksProjects, getQuickBooksHoursByProject } from '../../services/quickbooksService';
 // TrackingSection is defined locally below
@@ -5955,7 +5956,7 @@ ${newBodyHtml}
                     substations.add(sub.trim());
                   }
                 });
-                const sortedSubs = Array.from(substations).sort((a, b) => a.localeCompare(b));
+                const sortedSubs = Array.from(substations).sort(compareAlphanumericLabels);
                 if (sortedSubs.length === 0) {
                   return <p className="text-gray-500 dark:text-gray-400">No substations found for this job.</p>;
                 }
@@ -7778,13 +7779,7 @@ ${newBodyHtml}
                                 groups[key].push(asset);
                               });
 
-                              const orderKeys = Object.keys(groups).sort((a, b) => {
-                                if (a === 'Imported') return -1;
-                                if (b === 'Imported') return 1;
-                                if (a === 'Other' && b !== 'Other') return 1;
-                                if (b === 'Other' && a !== 'Other') return -1;
-                                return a.localeCompare(b, undefined, { sensitivity: 'base' });
-                              });
+                              const orderKeys = Object.keys(groups).sort(compareLinkedAssetFolderLabels);
 
                               const isPaginatedTab = assetStatusFilter === 'all' || assetStatusFilter === 'in_progress' || assetStatusFilter === 'sent';
 
@@ -7847,10 +7842,7 @@ ${newBodyHtml}
                                               .sort((a, b) => {
                                                 const nameA = dynamicAssetNames[a.id] || a.name;
                                                 const nameB = dynamicAssetNames[b.id] || b.name;
-                                                return nameA.localeCompare(nameB, undefined, { 
-                                                  sensitivity: 'base',
-                                                  numeric: true
-                                                });
+                                                return compareAlphanumericLabels(nameA, nameB);
                                               })
                                               .map((asset) => (
                                                 <TableRow key={asset.id}>

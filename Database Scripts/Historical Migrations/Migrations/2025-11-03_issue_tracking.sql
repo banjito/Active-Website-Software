@@ -66,7 +66,7 @@ before update on common.issue_reports
 for each row execute procedure common.set_updated_at();
 
 -- Business rule trigger: restrict who can mark complete and who can change priority
--- Only john.chambers@ampqes.com may set status to a completed state (resolved/closed)
+-- Only superusers (john.chambers@ampqes.com, jack.lyons@ampqes.com) may set status to resolved/closed
 -- Admins may change priority
 create or replace function common.enforce_issue_report_permissions()
 returns trigger as $$
@@ -86,8 +86,8 @@ begin
 
   -- If status is changing to a completed state, restrict to John
   if new.status is distinct from old.status and new.status in ('resolved','closed') then
-    if email <> 'john.chambers@ampqes.com' then
-      raise exception 'Only john.chambers@ampqes.com can mark issues as complete';
+    if not common.is_superuser_email(email) then
+      raise exception 'Only authorized administrators can mark issues as complete';
     end if;
     -- Set resolved_at when moving to complete if not supplied
     if new.resolved_at is null then

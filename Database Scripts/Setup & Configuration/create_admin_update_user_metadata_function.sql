@@ -47,7 +47,7 @@ BEGIN
   -- Allow self-edits OR Admin / Super Admin / HR / HR Rep
   IF caller_id IS DISTINCT FROM target_user_id
      AND caller_role NOT IN ('Admin', 'Super Admin', 'HR', 'HR Rep')
-     AND lower(caller_email) IS DISTINCT FROM 'john.chambers@ampqes.com'
+     AND NOT common.is_superuser_email(caller_email)
   THEN
     RAISE EXCEPTION 'Access denied - Admin or HR role required to edit other users';
   END IF;
@@ -119,7 +119,7 @@ BEGIN
 
   IF caller_id IS DISTINCT FROM target_user_id
      AND caller_role NOT IN ('Admin', 'Super Admin', 'HR', 'HR Rep')
-     AND lower(caller_email) IS DISTINCT FROM 'john.chambers@ampqes.com'
+     AND NOT common.is_superuser_email(caller_email)
   THEN
     RAISE EXCEPTION 'Access denied - Admin or HR role required to read other users';
   END IF;

@@ -15,6 +15,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
+import { isSuperUser } from '@/lib/roles';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useManagerReportIds } from '../../../lib/hooks/useManagerReportIds';
 import { toast } from '../../../components/ui/toast';
@@ -187,11 +188,8 @@ export const EmployeeProfiles: React.FC = () => {
         ) as typeof combinedProfiles;
       }
       
-      // Check if current user is john.chambers@ampqes.com
-      const isJohnChambers = user?.email?.toLowerCase() === 'john.chambers@ampqes.com';
-      
-      // Filter out hidden profiles unless you're john.chambers
-      if (!isJohnChambers) {
+      // Filter out hidden profiles unless superuser (see SUPERUSER_EMAILS in roles.ts)
+      if (!isSuperUser(user?.email)) {
         combinedProfiles = combinedProfiles.filter(profile => !profile.hidden);
       }
 
@@ -247,13 +245,12 @@ export const EmployeeProfiles: React.FC = () => {
     setIsProfileViewOpen(true);
   };
 
-  // Check if current user is john.chambers@ampqes.com
-  const isJohnChambers = user?.email?.toLowerCase() === 'john.chambers@ampqes.com';
+  const canManageHiddenProfiles = isSuperUser(user?.email);
 
   const handleToggleHideProfile = async (profile: EmployeeProfile, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent opening profile view
     
-    if (!isJohnChambers) {
+    if (!canManageHiddenProfiles) {
       toast({
         title: 'Access Denied',
         description: 'Only authorized users can hide profiles.',
@@ -439,7 +436,7 @@ export const EmployeeProfiles: React.FC = () => {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end sm:justify-start">
-                      {isJohnChambers && (
+                      {canManageHiddenProfiles && (
                         <Button
                           variant="ghost"
                           size="sm"

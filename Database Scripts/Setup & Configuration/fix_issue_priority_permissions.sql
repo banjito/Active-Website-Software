@@ -19,10 +19,10 @@ begin
   email := coalesce(jwt ->> 'email', '');
   user_id := (jwt ->> 'sub')::uuid;
 
-  -- If status is changing to a completed state, restrict to John
+  -- If status is changing to a completed state, restrict to superusers
   if new.status is distinct from old.status and new.status in ('resolved','closed') then
-    if email <> 'john.chambers@ampqes.com' then
-      raise exception 'Only john.chambers@ampqes.com can mark issues as complete';
+    if not common.is_superuser_email(email) then
+      raise exception 'Only authorized administrators can mark issues as complete';
     end if;
     -- Set resolved_at when moving to complete if not supplied
     if new.resolved_at is null then

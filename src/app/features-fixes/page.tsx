@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
+import { isSuperUser } from '@/lib/roles';
 import { Bug, Lightbulb, Clock, Trophy, BarChart3, EyeOff, Eye } from 'lucide-react';
 import IssueNotes from '@/components/feedback/IssueNotes';
 
@@ -316,12 +317,9 @@ const FeaturesFixesPage: React.FC = () => {
     }
   };
 
-  const isAdmin = (user?.user_metadata?.role || '') === 'Admin';
-  /** Stats column (hidden / excluded-from-stats) + workflow actions on Features & Fixes */
-  const ISSUE_OPS_ALLOWED_EMAILS = new Set(
-    ['john.chambers@ampqes.com', 'jack.lyons@ampqes.com'].map((e) => e.toLowerCase())
-  );
-  const hasIssueOpsAccess = ISSUE_OPS_ALLOWED_EMAILS.has((user?.email || '').toLowerCase());
+  const isAdmin = (user?.user_metadata?.role || '') === 'Admin' || isSuperUser(user?.email);
+  /** Stats column (excluded-from-stats) + workflow actions on Features & Fixes */
+  const hasIssueOpsAccess = isSuperUser(user?.email);
 
   const updateIssue = async (id: string, patch: Partial<Issue>) => {
     const { data, error } = await supabase

@@ -67,9 +67,9 @@ BEGIN
   FROM auth.users u
   WHERE u.id = caller_id;
 
-  -- Only allow Admins or the hardcoded superuser
+  -- Only allow Admins or superusers (see common.is_superuser_email)
   IF caller_role IS DISTINCT FROM 'Admin'
-     AND lower(caller_email) IS DISTINCT FROM 'john.chambers@ampqes.com'
+     AND NOT common.is_superuser_email(caller_email)
   THEN
     RAISE EXCEPTION 'Access denied – Admin role required';
   END IF;
@@ -133,7 +133,7 @@ BEGIN
   WHERE u.id = auth.uid();
 
   IF caller_role IS DISTINCT FROM 'Admin'
-     AND lower(caller_email) IS DISTINCT FROM 'john.chambers@ampqes.com'
+     AND NOT common.is_superuser_email(caller_email)
   THEN
     RAISE EXCEPTION 'Access denied – Admin role required';
   END IF;

@@ -102,6 +102,41 @@ const INSPECTION_RESULTS_OPTIONS = [
   "Not Applicable"
 ];
 
+const VISUAL_MECHANICAL_INSPECTION_ITEMS: Record<string, string> = {
+  "7.3.1.A.1": "Inspect exposed sections of cables and connectors for physical damage and evidence of degradation.",
+  "7.3.1.A.2.1": "Use of a low-resistance ohmmeter in accordance with Section 7.3.3.B.1.",
+  "7.3.1.A.3": "Inspect cable tray and cable supports.",
+  "7.3.1.A.4": "If cables are terminated through window-type current transformers, inspect to verify that neutral and ground conductors are correctly placed for operation of protective devices.",
+  "7.3.1.A.5*": "Compare cable data with drawings and cable schedule. *Optional",
+};
+
+const createDefaultInspectionResults = (): Record<string, string> =>
+  Object.fromEntries(
+    Object.keys(VISUAL_MECHANICAL_INSPECTION_ITEMS).map((id) => [id, "Select One"])
+  );
+
+/** Map legacy saved keys to current NETA section IDs */
+const normalizeInspectionResults = (
+  loaded?: Record<string, string> | null
+): Record<string, string> => {
+  const defaults = createDefaultInspectionResults();
+  if (!loaded) return defaults;
+  const legacyMap: Record<string, string> = {
+    "7.3.1.A.2": "7.3.1.A.2.1",
+    "7.3.1.A.3.1": "7.3.1.A.3",
+    "7.3.1.A.5": "7.3.1.A.5*",
+    "7.3.1.A.6": "7.3.1.A.5*",
+  };
+  const merged = { ...defaults };
+  for (const [key, value] of Object.entries(loaded)) {
+    const targetKey = legacyMap[key] ?? key;
+    if (targetKey in merged && value) {
+      merged[targetKey] = value;
+    }
+  }
+  return merged;
+};
+
 const INSULATION_RESISTANCE_UNITS = [
   { value: "kΩ", label: "Kilo-Ohms" },
   { value: "MΩ", label: "Mega-Ohms" },
@@ -993,6 +1028,29 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         table.electrical-tests-table colgroup col:nth-child(16) { width: 5.2% !important; }
         table.electrical-tests-table colgroup col:nth-child(17) { width: 7.7% !important; }
         table.electrical-tests-table td:nth-child(15) input { margin-right: 1px !important; }
+
+        /* Visual and Mechanical Inspection table */
+        table.visual-mechanical-table,
+        table.visual-mechanical-table th,
+        table.visual-mechanical-table td {
+          border-width: 1.5px !important;
+          border-style: solid !important;
+          border-color: black !important;
+          border-collapse: collapse !important;
+          font-size: 9px !important;
+        }
+        table.visual-mechanical-table thead th:first-child,
+        table.visual-mechanical-table tbody td:first-child { width: 15% !important; text-align: left !important; }
+        table.visual-mechanical-table thead th:nth-child(2),
+        table.visual-mechanical-table tbody td:nth-child(2) { width: 70% !important; text-align: left !important; }
+        table.visual-mechanical-table thead th:nth-child(3),
+        table.visual-mechanical-table tbody td:nth-child(3) { width: 15% !important; text-align: center !important; }
+        table.visual-mechanical-table select {
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+          background-image: none !important;
+        }
       }
     `;
     document.head.appendChild(style);
@@ -1026,14 +1084,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
     ratedVoltage: "",
     length: "",
     numberOfCables: 12,
-    inspectionResults: {
-      "7.3.1.A.1": "Select One",
-      "7.3.1.A.2": "Select One",
-      "7.3.1.A.3.1": "Select One",
-      "7.3.1.A.4": "Select One",
-      "7.3.1.A.5": "Select One",
-      "7.3.1.A.6": "Select One",
-    },
+    inspectionResults: createDefaultInspectionResults(),
     testVoltage: "1000V",
     testSets: [],
     testEquipment: {
@@ -1243,6 +1294,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           humidity: reportData.data.humidity ?? prevData.humidity,
           testSets: reportData.data.testSets ?? prevData.testSets,
           testEquipment: reportData.data.testEquipment ?? prevData.testEquipment,
+          inspectionResults: normalizeInspectionResults(reportData.data.inspectionResults),
           jobNumber: prevData.jobNumber,
           customer: prevData.customer,
           address: prevData.address,
@@ -1263,6 +1315,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           humidity: reportData.report_data.humidity ?? prevData.humidity,
           testSets: reportData.report_data.testSets ?? prevData.testSets,
         testEquipment: reportData.report_data.testEquipment ?? prevData.testEquipment,
+        inspectionResults: normalizeInspectionResults(reportData.report_data.inspectionResults),
         user: reportData.report_data.user ?? prevData.user,
         }));
         
@@ -2015,6 +2068,51 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 </tbody>
               </table>
             </div>
+        </div>
+
+        {/* Visual and Mechanical Inspection Section */}
+        <div className="mb-6">
+          <h2 className="section-visual-mechanical text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
+              <colgroup>
+                <col style={{ width: '15%' }} />
+                <col style={{ width: '70%' }} />
+                <col style={{ width: '15%' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">NETA Section</th>
+                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Description</th>
+                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Results</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                {Object.entries(VISUAL_MECHANICAL_INSPECTION_ITEMS).map(([section, description]) => (
+                  <tr key={section} className="hover:bg-gray-50 dark:hover:bg-dark-200">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{section}</td>
+                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{description}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="print:hidden">
+                        <select
+                          id={`inspection-${section}`}
+                          value={formData.inspectionResults[section] ?? 'Select One'}
+                          onChange={(e) => handleInspectionChange(section, e.target.value)}
+                          disabled={!isEditMode}
+                          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                        >
+                          {INSPECTION_RESULTS_OPTIONS.map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="hidden print:block text-center">{formData.inspectionResults[section] ?? ''}</div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
           
         {/* Electrical Tests Section */}

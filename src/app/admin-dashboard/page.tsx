@@ -268,20 +268,19 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
-      <div className="flex items-center">
-        <Button 
-          variant="outline" 
-          className="mr-4"
+      <div className="flex items-center gap-4">
+        <Button
+          variant="outline"
           onClick={handleBackClick}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           {currentView === 'dashboard' ? 'Back to Portal' : 'Back to Dashboard'}
         </Button>
-        <h1 className="text-2xl font-bold">
-          {currentView === 'dashboard' ? 'Admin Dashboard' : (
-            currentView === 'inProgressDashboard' ? 'In Progress Dashboard' :
+        {currentView !== 'dashboard' && (
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {currentView === 'inProgressDashboard' ? 'In Progress Dashboard' :
             currentView === 'userManagement' ? 'User Management' :
-            currentView === 'systemHealth' ? 'System Health' : 
+            currentView === 'systemHealth' ? 'System Health' :
             currentView === 'systemLogs' ? 'System Logs' :
             currentView === 'portalConfig' ? 'Portal Configuration' :
             currentView === 'dataBackup' ? 'Data Backup' :
@@ -291,9 +290,9 @@ export const AdminDashboard: React.FC = () => {
             currentView === 'notifDevControls' ? 'Notification Dev Controls' :
             currentView === 'integrations' ? 'Integrations' :
             currentView === 'quickbooks' ? 'QuickBooks Dashboard' :
-            'Admin Dashboard'
-          )}
-        </h1>
+            'Admin'}
+          </h2>
+        )}
       </div>
       {renderView()}
     </div>

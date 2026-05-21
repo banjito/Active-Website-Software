@@ -460,16 +460,6 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         </div>
       )}
       
-      {/* Title section */}
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-dark-900 mobile-dashboard-title">
-          {divisionName} Dashboard
-        </h1>
-        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-dark-400 mobile-text-sm">
-          {`Welcome to the ${divisionName} portal`}
-        </p>
-      </div>
-      
       {/* Quick Actions Section - Add for NETA Divisions */}
       {isNETADivision && (
         <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mobile-gap-2">

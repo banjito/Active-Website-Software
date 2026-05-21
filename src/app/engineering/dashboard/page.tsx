@@ -14,8 +14,6 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, Button } from '@/components/ui';
-import { PageLayout } from '@/components/ui/PageLayout';
-import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/lib/AuthContext';
 import { useDivision } from '@/App';
 
@@ -34,11 +32,11 @@ export default function EngineeringDashboard() {
   }, [setDivision]);
 
   return (
-    <PageLayout
-      title="Engineering Portal"
-      subtitle="Design management, technical documentation, and standards compliance"
-      actions={<Badge className="!bg-[#f26722] !text-white">Engineering</Badge>}
-    >
+    <div className="space-y-6">
+      <p className="text-gray-600 dark:text-dark-400">
+        Design management, technical documentation, and standards compliance
+      </p>
+
       {/* Quick Actions Section */}
       <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
@@ -239,6 +237,6 @@ export default function EngineeringDashboard() {
           </div>
         </Card>
       </div>
-    </PageLayout>
+    </div>
   );
 } 

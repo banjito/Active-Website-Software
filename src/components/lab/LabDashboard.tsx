@@ -210,10 +210,6 @@ export function LabDashboard({ division }: LabDashboardProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold">Lab Portal Dashboard</h2>
-      </div>
-      
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           <p>{error}</p>

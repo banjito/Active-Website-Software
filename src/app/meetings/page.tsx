@@ -97,7 +97,7 @@ export default function MeetingsPage() {
           const idx = Math.max(0, Math.min((saved.currentIndex ?? 0), defaultAgenda.length - 1));
           setAgenda(defaultAgenda);
           setCurrentIndex(idx);
-          setSecondsRemaining(((defaultAgenda[idx]?.durationMin || 5) * 60) ?? (saved.secondsRemaining ?? 300));
+          setSecondsRemaining(saved.secondsRemaining ?? (defaultAgenda[idx]?.durationMin || 5) * 60);
           setIssues(Array.isArray(saved.issues) ? saved.issues : []);
           setTodos(Array.isArray(saved.todos) ? saved.todos : []);
           setMetrics(Array.isArray(saved.metrics) ? saved.metrics : []);

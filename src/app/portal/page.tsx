@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { Button } from "../../components/ui/Button"
 import Card from "../../components/ui/Card"
-import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card"
+import { CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs"
 import { Badge } from "../../components/ui"
 import { ChevronRight, Building, MapPin, Bell, User as UserIcon, Settings, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Phone, Loader2, BookOpen, Gauge, AlertTriangle, MoreVertical, Check, AlertCircle, Image as ImageIcon, Bookmark } from "lucide-react"
@@ -1810,7 +1810,7 @@ export default function PortalLanding() {
       )}
 
       {/* Hero Section */}
-      <section className={`relative overflow-hidden border-b bg-gray-50 dark:bg-black dark:border-dark-200 ${!portalPreferences.showWelcome && !isEditMode ? 'hidden' : ''}`}>
+      <section className={`relative overflow-hidden border-none bg-white dark:bg-black ${!portalPreferences.showWelcome && !isEditMode ? 'hidden' : ''}`}>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-16">
             {isEditMode && (
@@ -1830,13 +1830,11 @@ export default function PortalLanding() {
                 </button>
               </div>
             )}
-            <div className="inline-flex px-2.5 py-1 rounded-full bg-orange-50 text-orange-500 dark:bg-dark-700/20 dark:text-white text-sm font-medium mb-6">
-              Welcome
-            </div>
-            <h1 className="text-[56px] font-bold tracking-tight text-gray-900 dark:text-white mb-4">AMP Portal System</h1>
-            <p className="text-lg text-gray-600 dark:text-white mb-8 max-w-[640px]">
-              Access the tools and resources you need through our streamlined portal system.
-            </p>
+            <img
+              src="/ampOS_full_logo.svg"
+              alt="ampOS"
+              className="h-[5rem] w-auto mb-4 dark:brightness-0 dark:invert"
+            />
             <div className="flex gap-3">
               <Button 
                 className="bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 px-8 text-base rounded-full inline-flex items-center whitespace-nowrap"
@@ -1893,7 +1891,6 @@ export default function PortalLanding() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Announcements</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Latest updates from your organization</p>
               </div>
             </div>
             <div className="space-y-4">
@@ -2424,10 +2421,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Alabama Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Field services and operations</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2451,10 +2447,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Tennessee Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Field services and operations</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2478,10 +2473,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Georgia Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Field services and operations</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2505,10 +2499,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">International Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">International operations</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2533,10 +2526,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Field Technician Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Aggregate of NETA divisions</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Field Tech</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Field Tech</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2560,10 +2552,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Global Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Field services + Engineering</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">All Portals</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">All Portals</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2587,10 +2578,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Armadillo Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Specialized field services</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Lab Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Lab Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2614,10 +2604,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Scavenger Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Specialized technical operations</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Scavs</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Scavs</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2642,10 +2631,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Office Admins Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Administrative operations and management</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Office Admins</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Office Admins</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2670,10 +2658,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Sales Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Sales operations and management</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Sales Reps</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Sales Reps</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2697,10 +2684,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Engineering Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Engineering and technical resources</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Engineering</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Engineering</Badge>
                 </CardHeader>
                 
                 <CardContent className="px-6" />
@@ -2726,10 +2712,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">HR Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Human resources and employee management</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">HR</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">HR</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2753,10 +2738,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Runway</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Schedule and manage meetings</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">General</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">General</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2780,10 +2764,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Features & Fixes</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">View issues, requests, and timelines</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">General</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">General</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2807,10 +2790,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Help Center</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Guides and documentation for ampOS tasks</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">General</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">General</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2838,10 +2820,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Alabama Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Field services and operations</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2863,10 +2844,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Tennessee Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Field services and operations</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2889,10 +2869,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Georgia Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Field services and operations</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2916,10 +2895,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">International Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">International operations</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">NETA Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2944,10 +2922,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Calibration Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Calibration services and management</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Lab Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Lab Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2971,10 +2948,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Armadillo Division</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Specialized field services</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Lab Technicians</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Lab Technicians</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -2998,10 +2974,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Scavenger Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Specialized technical operations</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Scavs</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Scavs</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -3030,10 +3005,9 @@ export default function PortalLanding() {
                       </div>
                       <div>
                         <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Admin Portal</CardTitle>
-                        <CardDescription className="text-sm text-gray-500 dark:text-white/70">System administration and management</CardDescription>
                       </div>
                     </div>
-                    <Badge className="!bg-purple-500 !text-white px-2.5 py-1 text-xs font-medium">Admin Only</Badge>
+                    <Badge className="!bg-purple-500/85 !text-white px-2.5 py-1 text-xs font-medium">Admin Only</Badge>
                   </CardHeader>
                   <CardContent className="px-6" />
                   <CardFooter className="px-6 pb-6 pt-0">
@@ -3058,10 +3032,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Office Admins Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Administrative operations and management</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Office Admins</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Office Admins</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -3086,10 +3059,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Sales Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Sales operations and management</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Sales Reps</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Sales Reps</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">
@@ -3113,10 +3085,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Engineering Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Engineering and technical resources</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Engineering</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">Engineering</Badge>
                 </CardHeader>
                 
                 <CardContent className="px-6" />
@@ -3142,10 +3113,9 @@ export default function PortalLanding() {
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">HR Portal</CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-white/70">Human resources and employee management</CardDescription>
                     </div>
                   </div>
-                  <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">HR</Badge>
+                  <Badge className="!bg-[#f26722]/85 !text-white px-2.5 py-1 text-xs font-medium">HR</Badge>
                 </CardHeader>
                 <CardContent className="px-6" />
                 <CardFooter className="px-6 pb-6 pt-0">

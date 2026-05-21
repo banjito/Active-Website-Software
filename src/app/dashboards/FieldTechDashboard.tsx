@@ -188,10 +188,9 @@ export const FieldTechDashboard: React.FC = () => {
         <div className="mb-4 p-3 sm:p-4 bg-red-100 text-red-800 rounded-md text-sm">{error}</div>
       )}
 
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-dark-900">Field Tech Portal</h1>
-        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-dark-400">Alabama, Tennessee, Georgia, and International</p>
-      </div>
+      <p className="mb-6 sm:mb-8 text-sm sm:text-base text-gray-600 dark:text-dark-400">
+        Alabama, Tennessee, Georgia, and International
+      </p>
 
       <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">

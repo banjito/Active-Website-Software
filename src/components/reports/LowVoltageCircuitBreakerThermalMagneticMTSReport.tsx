@@ -140,6 +140,8 @@ interface FormData {
       thermal: {
         amperes1: string; // First Amperes column
         multiplierTolerance: string; // e.g., 300%
+        toleranceMinPct?: string; // optional; mirrors ATS shape
+        toleranceMaxPct?: string;
         amperes2: string; // Second Amperes column
         toleranceMin: string;
         toleranceMax: string;
@@ -150,6 +152,8 @@ interface FormData {
       magnetic: {
         amperes1: string;
         multiplierTolerance: string; // e.g., -10% 10%
+        toleranceMinPct?: string; // e.g., -10%
+        toleranceMaxPct?: string; // e.g., 10%
         amperes2: string;
         toleranceMin: string;
         toleranceMax: string;
@@ -283,7 +287,9 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
       results: {
         thermal: {
           amperes1: '',
-          multiplierTolerance: '',
+          multiplierTolerance: '300%',
+          toleranceMinPct: '',
+          toleranceMaxPct: '',
           amperes2: '',
           toleranceMin: '',
           toleranceMax: '',
@@ -293,7 +299,9 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
         },
         magnetic: {
           amperes1: '',
-          multiplierTolerance: '',
+          multiplierTolerance: '-10% 10%',
+          toleranceMinPct: '-10%',
+          toleranceMaxPct: '10%',
           amperes2: '',
           toleranceMin: '',
           toleranceMax: '',
@@ -373,6 +381,30 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
       if (error) throw error;
 
       if (data) {
+        // Normalize primary injection so legacy reports get sensible defaults
+        // for the now-editable multiplier tolerance fields.
+        const loadedPi = data.report_info?.primaryInjection;
+        const normalizedPi = loadedPi
+          ? {
+              ...loadedPi,
+              results: {
+                ...loadedPi.results,
+                thermal: {
+                  ...loadedPi.results?.thermal,
+                  multiplierTolerance: loadedPi.results?.thermal?.multiplierTolerance || '300%',
+                  toleranceMinPct: loadedPi.results?.thermal?.toleranceMinPct ?? '',
+                  toleranceMaxPct: loadedPi.results?.thermal?.toleranceMaxPct ?? '',
+                },
+                magnetic: {
+                  ...loadedPi.results?.magnetic,
+                  multiplierTolerance: loadedPi.results?.magnetic?.multiplierTolerance || '-10% 10%',
+                  toleranceMinPct: loadedPi.results?.magnetic?.toleranceMinPct || '-10%',
+                  toleranceMaxPct: loadedPi.results?.magnetic?.toleranceMaxPct || '10%',
+                },
+              },
+            }
+          : null;
+
         setFormData(prev => ({
           ...prev,
           ...data.report_info,
@@ -380,8 +412,8 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
           visualInspectionItems: data.report_info?.visualInspectionItems || prev.visualInspectionItems,
           // Ensure insulationResistance shape if present
           insulationResistance: data.report_info?.insulationResistance || prev.insulationResistance,
-          // Ensure primaryInjection shape if present
-          primaryInjection: data.report_info?.primaryInjection || prev.primaryInjection,
+          // Ensure primaryInjection shape if present (with backfilled multipliers)
+          primaryInjection: normalizedPi || prev.primaryInjection,
           status: data.status || 'PASS',
           irDlroOnly: data.report_info?.irDlroOnly === true,
         }));
@@ -452,38 +484,85 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
     return (numeric * tcf).toFixed(2);
   };
 
-  // Calculate second amperes value using the Excel formula: =IF(G73="","",IF(G73="N/A", "N/A", G73*J73))
-  const calculateSecondAmperes = (firstAmperes: string, multiplier: string): string => {
-    if (!firstAmperes || firstAmperes === '') return '';
-    if (firstAmperes === 'N/A') return 'N/A';
-    
-    // For magnetic, just copy the first amperes value
-    if (multiplier === '-10% 10%') {
-      return firstAmperes;
+  // Helper: parse a single multiplier like "300%", "3", "3x", "2.5 x"
+  const parseMultiplier = (input: string): number | null => {
+    if (!input) return null;
+    const s = input.trim().toLowerCase();
+    const percentMatch = s.match(/^([+-]?[\d.]+)\s*%$/);
+    if (percentMatch) {
+      const v = Number(percentMatch[1]);
+      return isNaN(v) ? null : v / 100;
     }
-    
-    // For thermal, multiply by 3.0 (300%)
-    if (multiplier === '300%') {
-      const result = Number(firstAmperes) * 3.0;
-      return isNaN(result) ? '' : result.toString();
+    const factorMatch = s.match(/^([+-]?[\d.]+)\s*(x)?$/);
+    if (factorMatch) {
+      const v = Number(factorMatch[1]);
+      return isNaN(v) ? null : v;
     }
-    
-    return firstAmperes;
+    return null;
   };
 
-  // Calculate tolerance values for magnetic row
-  // Min: =IF(G74="","",IF(N74="N/A", "N/A", (J74*N74)+N74)) where J74 is -0.1 (-10%)
-  // Max: =IF(G74="","",IF(N74="N/A", "N/A", (L74*N74)+N74)) where L74 is 0.1 (10%)
-  const calculateMagneticTolerance = (amperes2: string, isMin: boolean): string => {
+  // Helper: parse tolerance range like "-10% 10%" or "-15 5%" -> decimals [-0.1, 0.1]
+  const parseToleranceRange = (input: string): { min: number; max: number } | null => {
+    if (!input) return null;
+    const tokens = input
+      .replace(/,/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
+    const nums: number[] = [];
+    for (const t of tokens) {
+      const m = t.match(/^([+-]?[\d.]+)\s*%?$/);
+      if (m) {
+        const v = Number(m[1]);
+        if (!isNaN(v)) nums.push(v);
+      }
+    }
+    if (nums.length >= 2) {
+      const a = nums[0] / 100;
+      const b = nums[1] / 100;
+      return { min: Math.min(a, b), max: Math.max(a, b) };
+    }
+    if (/±|\+\/-/.test(input)) {
+      const plusMinus = input.match(/([\d.]+)\s*%/);
+      if (plusMinus) {
+        const v = Number(plusMinus[1]);
+        if (!isNaN(v)) {
+          return { min: -v / 100, max: v / 100 };
+        }
+      }
+    }
+    return null;
+  };
+
+  // Calculate second amperes value. If a tolerance range is provided
+  // (e.g. magnetic "-10% 10%"), the value is unchanged; otherwise multiply.
+  const calculateSecondAmperes = (firstAmperes: string, multiplierOrTolerance: string): string => {
+    if (!firstAmperes || firstAmperes === '') return '';
+    if (firstAmperes === 'N/A') return 'N/A';
+
+    const tol = parseToleranceRange(multiplierOrTolerance);
+    if (tol) return firstAmperes;
+
+    const mult = parseMultiplier(multiplierOrTolerance);
+    if (mult === null) return firstAmperes;
+
+    const base = Number(firstAmperes);
+    if (isNaN(base)) return '';
+    const result = base * mult;
+    return isNaN(result) ? '' : result.toString();
+  };
+
+  // Calculate tolerance values from a tolerance range string.
+  // Min: base * (1 + minTol), Max: base * (1 + maxTol). Defaults to ±10%.
+  // Result is rounded to the nearest hundredth.
+  const calculateMagneticTolerance = (amperes2: string, toleranceRange: string, isMin: boolean): string => {
     if (!amperes2 || amperes2 === '') return '';
     if (amperes2 === 'N/A') return 'N/A';
-    
     const baseValue = Number(amperes2);
     if (isNaN(baseValue)) return '';
-    
-    const tolerance = isMin ? -0.1 : 0.1; // -10% or +10%
-    const result = (tolerance * baseValue) + baseValue;
-    return result.toString();
+    const parsed = parseToleranceRange(toleranceRange) || { min: -0.1, max: 0.1 };
+    const delta = isMin ? parsed.min : parsed.max;
+    const result = baseValue * (1 + delta);
+    return (Math.round(result * 100) / 100).toFixed(2);
   };
 
   // Handle save/update
@@ -1305,191 +1384,269 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
             </div>
           </div>
 
-          {/* Primary Injection Results */}
-            <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table">
-                <colgroup>
-                  <col style={{ width: '16%' }} /> {/* Function */}
-                  <col style={{ width: '10%' }} /> {/* Amperes 1 */}
-                  <col style={{ width: '12%' }} /> {/* Multiplier Tolerance */}
-                  <col style={{ width: '10%' }} /> {/* Amperes 2 */}
-                  <col style={{ width: '8%' }} />  {/* Tol Min */}
-                  <col style={{ width: '8%' }} />  {/* Tol Max */}
-                  <col style={{ width: '12%' }} /> {/* Pole 1 */}
-                  <col style={{ width: '12%' }} /> {/* Pole 2 */}
-                  <col style={{ width: '12%' }} /> {/* Pole 3 */}
-                </colgroup>
-                <caption className="caption-top p-2 text-lg font-medium text-gray-900 dark:text-white">Primary Injection</caption>
+          {/* Primary Injection Results - Settings Table (top) */}
+          <div className="overflow-x-auto">
+            <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table primary-injection-settings">
+              <colgroup>
+                <col style={{ width: '18%' }} /> {/* Function */}
+                <col style={{ width: '15%' }} /> {/* Amperes 1 */}
+                <col style={{ width: '22%' }} /> {/* Multiplier Tolerance */}
+                <col style={{ width: '15%' }} /> {/* Amperes 2 */}
+                <col style={{ width: '15%' }} /> {/* Tol Min */}
+                <col style={{ width: '15%' }} /> {/* Tol Max */}
+              </colgroup>
+              <caption className="caption-top p-2 text-lg font-medium text-gray-900 dark:text-white">Primary Injection</caption>
               <thead className="bg-gray-50 dark:bg-dark-150">
                 <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Function</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Amperes</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Multiplier Tolerance</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Amperes</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Tolerance</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Pole</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Function</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Amperes</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Multiplier Tolerance</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Amperes</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={2}>Tolerance</th>
                 </tr>
                 <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Min</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Max</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 1</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 2</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 3</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Min</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Max</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                 {/* Thermal Row */}
                 <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">Thermal</td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
-                    <input 
-                      type="text" 
-                      value={formData.primaryInjection.results.thermal.amperes1} 
-                      onChange={(e) => handleChange('primaryInjection.results.thermal.amperes1', e.target.value)} 
-                      readOnly={!isEditing} 
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">Thermal</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <input
+                      type="text"
+                      value={formData.primaryInjection.results.thermal.amperes1}
+                      onChange={(e) => handleChange('primaryInjection.results.thermal.amperes1', e.target.value)}
+                      readOnly={!isEditing}
+                      className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                     />
                   </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">300%</td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
-                    <input 
-                      type="text" 
-                      value={calculateSecondAmperes(formData.primaryInjection.results.thermal.amperes1, '300%')} 
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <input
+                      type="text"
+                      value={formData.primaryInjection.results.thermal.multiplierTolerance}
+                      onChange={(e) => handleChange('primaryInjection.results.thermal.multiplierTolerance', e.target.value)}
+                      readOnly={!isEditing}
+                      className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                    />
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <input
+                      type="text"
+                      value={calculateSecondAmperes(formData.primaryInjection.results.thermal.amperes1, formData.primaryInjection.results.thermal.multiplierTolerance)}
                       readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
                     />
                   </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
-                    <input 
-                      type="text" 
-                      value={formData.primaryInjection.results.thermal.toleranceMin} 
-                      onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMin', e.target.value)} 
-                      readOnly={!isEditing} 
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <input
+                      type="text"
+                      value={formData.primaryInjection.results.thermal.toleranceMin}
+                      onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMin', e.target.value)}
+                      readOnly={!isEditing}
+                      className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                     />
                   </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
-                    <input 
-                      type="text" 
-                      value={formData.primaryInjection.results.thermal.toleranceMax} 
-                      onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMax', e.target.value)} 
-                      readOnly={!isEditing} 
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <input
+                      type="text"
+                      value={formData.primaryInjection.results.thermal.toleranceMax}
+                      onChange={(e) => handleChange('primaryInjection.results.thermal.toleranceMax', e.target.value)}
+                      readOnly={!isEditing}
+                      className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                     />
                   </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
-                      <div className="flex items-center justify-center space-x-2">
-                        <input 
-                          type="text" 
-                          value={formData.primaryInjection.results.thermal.pole1.sec} 
-                          onChange={(e) => handleChange('primaryInjection.results.thermal.pole1.sec', e.target.value)} 
-                          readOnly={!isEditing} 
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
-                        />
-                        <span className="text-xs">sec.</span>
-                      </div>
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
-                      <div className="flex items-center justify-center space-x-2">
-                        <input 
-                          type="text" 
-                          value={formData.primaryInjection.results.thermal.pole2.sec} 
-                          onChange={(e) => handleChange('primaryInjection.results.thermal.pole2.sec', e.target.value)} 
-                          readOnly={!isEditing} 
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
-                        />
-                        <span className="text-xs">sec.</span>
-                      </div>
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
-                      <div className="flex items-center justify-center space-x-2">
-                        <input 
-                          type="text" 
-                          value={formData.primaryInjection.results.thermal.pole3.sec} 
-                          onChange={(e) => handleChange('primaryInjection.results.thermal.pole3.sec', e.target.value)} 
-                          readOnly={!isEditing} 
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
-                        />
-                        <span className="text-xs">sec.</span>
-                      </div>
-                    </td>
                 </tr>
                 {/* Magnetic Row */}
                 <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">Magnetic</td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
-                    <input 
-                      type="text" 
-                      value={formData.primaryInjection.results.magnetic.amperes1} 
-                      onChange={(e) => handleChange('primaryInjection.results.magnetic.amperes1', e.target.value)} 
-                      readOnly={!isEditing} 
-                        className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">Magnetic</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <input
+                      type="text"
+                      value={formData.primaryInjection.results.magnetic.amperes1}
+                      onChange={(e) => handleChange('primaryInjection.results.magnetic.amperes1', e.target.value)}
+                      readOnly={!isEditing}
+                      className={`w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                     />
                   </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">-10% 10%</td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
-                    <input 
-                      type="text" 
-                      value={calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%')} 
-                      readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
-                    />
-                  </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
-                    <input 
-                      type="text" 
-                      value={calculateMagneticTolerance(calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%'), true)} 
-                      readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
-                    />
-                  </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
-                    <input 
-                      type="text" 
-                      value={calculateMagneticTolerance(calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, '-10% 10%'), false)} 
-                      readOnly
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
-                    />
-                  </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
-                      <div className="flex items-center justify-center space-x-2">
-                        <input 
-                          type="text" 
-                          value={formData.primaryInjection.results.magnetic.pole1.a} 
-                          onChange={(e) => handleChange('primaryInjection.results.magnetic.pole1.a', e.target.value)} 
-                          readOnly={!isEditing} 
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="flex items-center">
+                        <input
+                          type="text"
+                          value={(formData.primaryInjection.results.magnetic.toleranceMinPct || '').replace(/%/g, '')}
+                          onChange={(e) => {
+                            const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                            handleChange('primaryInjection.results.magnetic.toleranceMinPct', v ? `${v}%` : '');
+                            const combined = `${v ? `${v}%` : ''} ${formData.primaryInjection.results.magnetic.toleranceMaxPct || ''}`.trim();
+                            handleChange('primaryInjection.results.magnetic.multiplierTolerance', combined);
+                          }}
+                          readOnly={!isEditing}
+                          className={`tol-pct-input w-full p-2 text-center border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                         />
-                        <span className="text-xs">A</span>
+                        <span className="ml-1 text-sm text-gray-900 dark:text-white">%</span>
                       </div>
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
-                      <div className="flex items-center justify-center space-x-2">
-                        <input 
-                          type="text" 
-                          value={formData.primaryInjection.results.magnetic.pole2.a} 
-                          onChange={(e) => handleChange('primaryInjection.results.magnetic.pole2.a', e.target.value)} 
-                          readOnly={!isEditing} 
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
+                      <div className="flex items-center">
+                        <input
+                          type="text"
+                          value={(formData.primaryInjection.results.magnetic.toleranceMaxPct || '').replace(/%/g, '')}
+                          onChange={(e) => {
+                            const v = `${e.target.value}`.replace(/[^0-9.-]/g, '');
+                            handleChange('primaryInjection.results.magnetic.toleranceMaxPct', v ? `${v}%` : '');
+                            const combined = `${formData.primaryInjection.results.magnetic.toleranceMinPct || ''} ${v ? `${v}%` : ''}`.trim();
+                            handleChange('primaryInjection.results.magnetic.multiplierTolerance', combined);
+                          }}
+                          readOnly={!isEditing}
+                          className={`tol-pct-input w-full p-2 text-center border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
                         />
-                        <span className="text-xs">A</span>
+                        <span className="ml-1 text-sm text-gray-900 dark:text-white">%</span>
                       </div>
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
-                      <div className="flex items-center justify-center space-x-2">
-                        <input 
-                          type="text" 
-                          value={formData.primaryInjection.results.magnetic.pole3.a} 
-                          onChange={(e) => handleChange('primaryInjection.results.magnetic.pole3.a', e.target.value)} 
-                          readOnly={!isEditing} 
-                          className={`w-12 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
-                        />
-                        <span className="text-xs">A</span>
-                      </div>
-                    </td>
+                    </div>
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <input
+                      type="text"
+                      value={calculateSecondAmperes(formData.primaryInjection.results.magnetic.amperes1, `${formData.primaryInjection.results.magnetic.toleranceMinPct || ''} ${formData.primaryInjection.results.magnetic.toleranceMaxPct || ''}`.trim())}
+                      readOnly
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
+                    />
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <input
+                      type="text"
+                      value={calculateMagneticTolerance(
+                        calculateSecondAmperes(
+                          formData.primaryInjection.results.magnetic.amperes1,
+                          `${formData.primaryInjection.results.magnetic.toleranceMinPct || ''} ${formData.primaryInjection.results.magnetic.toleranceMaxPct || ''}`.trim()
+                        ),
+                        `${formData.primaryInjection.results.magnetic.toleranceMinPct || ''} ${formData.primaryInjection.results.magnetic.toleranceMaxPct || ''}`.trim(),
+                        true
+                      )}
+                      readOnly
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
+                    />
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    <input
+                      type="text"
+                      value={calculateMagneticTolerance(
+                        calculateSecondAmperes(
+                          formData.primaryInjection.results.magnetic.amperes1,
+                          `${formData.primaryInjection.results.magnetic.toleranceMinPct || ''} ${formData.primaryInjection.results.magnetic.toleranceMaxPct || ''}`.trim()
+                        ),
+                        `${formData.primaryInjection.results.magnetic.toleranceMinPct || ''} ${formData.primaryInjection.results.magnetic.toleranceMaxPct || ''}`.trim(),
+                        false
+                      )}
+                      readOnly
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Primary Injection Results - Pole Table (bottom) */}
+          <div className="overflow-x-auto mt-4">
+            <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600 primary-injection-table primary-injection-poles">
+              <colgroup>
+                <col style={{ width: '18%' }} /> {/* Function */}
+                <col style={{ width: '27.33%' }} /> {/* Pole 1 */}
+                <col style={{ width: '27.33%' }} /> {/* Pole 2 */}
+                <col style={{ width: '27.33%' }} /> {/* Pole 3 */}
+              </colgroup>
+              <thead className="bg-gray-50 dark:bg-dark-150">
+                <tr>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Function</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Pole</th>
+                </tr>
+                <tr>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 1</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 2</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">Pole 3</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                {/* Thermal Pole Row */}
+                <tr>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">Thermal</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <input
+                        type="text"
+                        value={formData.primaryInjection.results.thermal.pole1.sec}
+                        onChange={(e) => handleChange('primaryInjection.results.thermal.pole1.sec', e.target.value)}
+                        readOnly={!isEditing}
+                        className={`w-16 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
+                      />
+                      <span className="text-xs">sec.</span>
+                    </div>
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <input
+                        type="text"
+                        value={formData.primaryInjection.results.thermal.pole2.sec}
+                        onChange={(e) => handleChange('primaryInjection.results.thermal.pole2.sec', e.target.value)}
+                        readOnly={!isEditing}
+                        className={`w-16 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
+                      />
+                      <span className="text-xs">sec.</span>
+                    </div>
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <input
+                        type="text"
+                        value={formData.primaryInjection.results.thermal.pole3.sec}
+                        onChange={(e) => handleChange('primaryInjection.results.thermal.pole3.sec', e.target.value)}
+                        readOnly={!isEditing}
+                        className={`w-16 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
+                      />
+                      <span className="text-xs">sec.</span>
+                    </div>
+                  </td>
+                </tr>
+                {/* Magnetic Pole Row */}
+                <tr>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white">Magnetic</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <input
+                        type="text"
+                        value={formData.primaryInjection.results.magnetic.pole1.a}
+                        onChange={(e) => handleChange('primaryInjection.results.magnetic.pole1.a', e.target.value)}
+                        readOnly={!isEditing}
+                        className={`w-16 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
+                      />
+                      <span className="text-xs">A</span>
+                    </div>
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <input
+                        type="text"
+                        value={formData.primaryInjection.results.magnetic.pole2.a}
+                        onChange={(e) => handleChange('primaryInjection.results.magnetic.pole2.a', e.target.value)}
+                        readOnly={!isEditing}
+                        className={`w-16 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
+                      />
+                      <span className="text-xs">A</span>
+                    </div>
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <input
+                        type="text"
+                        value={formData.primaryInjection.results.magnetic.pole3.a}
+                        onChange={(e) => handleChange('primaryInjection.results.magnetic.pole3.a', e.target.value)}
+                        readOnly={!isEditing}
+                        className={`w-16 h-7 text-sm text-center border border-gray-300 dark:border-gray-600 rounded ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : 'bg-white dark:bg-dark-150'} ${!isEditing ? '' : 'focus:border-[#f26722] focus:ring-[#f26722]'}`}
+                      />
+                      <span className="text-xs">A</span>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -2012,17 +2169,22 @@ if (typeof document !== 'undefined') {
         font-family: 'Segoe UI', 'DejaVu Sans', Arial, sans-serif !important;
       }
 
-      /* Primary Injection table explicit widths for PDF */
+      /* Primary Injection tables explicit widths for PDF */
       .primary-injection-table { table-layout: fixed !important; width: 100% !important; }
-      .primary-injection-table col:nth-child(1) { width: 16% !important; }
-      .primary-injection-table col:nth-child(2) { width: 10% !important; }
-      .primary-injection-table col:nth-child(3) { width: 12% !important; }
-      .primary-injection-table col:nth-child(4) { width: 10% !important; }
-      .primary-injection-table col:nth-child(5) { width: 8% !important; }
-      .primary-injection-table col:nth-child(6) { width: 8% !important; }
-      .primary-injection-table col:nth-child(7),
-      .primary-injection-table col:nth-child(8),
-      .primary-injection-table col:nth-child(9) { width: 12% !important; }
+
+      /* Settings table (top): Function | Amperes | Multiplier Tol | Amperes | Tol Min | Tol Max */
+      .primary-injection-settings col:nth-child(1) { width: 18% !important; }
+      .primary-injection-settings col:nth-child(2) { width: 15% !important; }
+      .primary-injection-settings col:nth-child(3) { width: 22% !important; }
+      .primary-injection-settings col:nth-child(4) { width: 15% !important; }
+      .primary-injection-settings col:nth-child(5) { width: 15% !important; }
+      .primary-injection-settings col:nth-child(6) { width: 15% !important; }
+
+      /* Pole table (bottom): Function | Pole 1 | Pole 2 | Pole 3 */
+      .primary-injection-poles col:nth-child(1) { width: 18% !important; }
+      .primary-injection-poles col:nth-child(2),
+      .primary-injection-poles col:nth-child(3),
+      .primary-injection-poles col:nth-child(4) { width: 27.33% !important; }
       
       /* Visual and Mechanical Inspection table - fix Results column truncation */
       .vm-inspection-table { table-layout: fixed !important; width: 100% !important; }
@@ -2055,28 +2217,32 @@ if (typeof document !== 'undefined') {
         overflow-wrap: break-word !important;
       }
       
-      /* Primary Injection table - make cells wider for better fit */
-      table caption:contains("Primary Injection") + thead th,
-      table caption:contains("Primary Injection") + thead + tbody td {
-        min-width: 80px !important;
-        width: auto !important;
-        padding: 6px 8px !important;
+      /* Primary Injection tables: tighten paddings and inputs for PDF */
+      .primary-injection-table th,
+      .primary-injection-table td {
+        padding: 4px 6px !important;
+        font-size: 10px !important;
       }
-      
-      /* Make input fields in primary injection table wider */
-      table caption:contains("Primary Injection") + thead + tbody input {
-        min-width: 60px !important;
+      .primary-injection-table input {
         width: 100% !important;
-        padding: 4px 6px !important;
-        font-size: 9px !important;
+        padding: 2px 4px !important;
+        font-size: 10px !important;
       }
-      
-      /* Ensure proper spacing for the pole columns */
-      table caption:contains("Primary Injection") + thead + tbody td:nth-child(7),
-      table caption:contains("Primary Injection") + thead + tbody td:nth-child(8),
-      table caption:contains("Primary Injection") + thead + tbody td:nth-child(9) {
-        min-width: 70px !important;
-        padding: 4px 6px !important;
+      .primary-injection-poles input {
+        width: 100% !important;
+        max-width: none !important;
+      }
+      /* Two % inputs in Magnetic Multiplier Tolerance */
+      .primary-injection-settings .tol-pct-input {
+        padding: 2px 4px !important;
+        font-size: 10px !important;
+        text-align: center !important;
+      }
+      /* Keep both Primary Injection tables together on the same page */
+      .primary-injection-settings,
+      .primary-injection-poles {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
 
       /* Insulation Resistance (print): shrink left label and units, spread readings */

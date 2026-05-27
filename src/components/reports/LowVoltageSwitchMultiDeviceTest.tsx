@@ -832,21 +832,19 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
           <div className="w-full h-1 bg-[#f26722] mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">Electrical Tests - Measured Insulation Resistance</h2>
           <div style={{ fontSize: '8px', marginBottom: '2px' }}>Test Voltage: {formData.irTestVoltage} | Units: {formData.irUnits}</div>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '7px', tableLayout: 'fixed' }}>
+
+          {/* Part 1: Pole to Pole + Pole to Neutral (7 equal cols) */}
+          <table className="ir-print-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '7.5px', tableLayout: 'fixed' }}>
             <colgroup>
-              <col style={{ width: '7%' }} />
-              <col style={{ width: '7%' }} /><col style={{ width: '7%' }} /><col style={{ width: '7%' }} />
-              <col style={{ width: '7%' }} /><col style={{ width: '7%' }} /><col style={{ width: '7%' }} />
-              <col style={{ width: '7%' }} /><col style={{ width: '7%' }} /><col style={{ width: '7%' }} /><col style={{ width: '7%' }} />
-              <col style={{ width: '7%' }} /><col style={{ width: '7%' }} /><col style={{ width: '7%' }} />
+              <col style={{ width: '14.2857%' }} /><col style={{ width: '14.2857%' }} /><col style={{ width: '14.2857%' }} />
+              <col style={{ width: '14.2857%' }} /><col style={{ width: '14.2857%' }} /><col style={{ width: '14.2857%' }} />
+              <col style={{ width: '14.2858%' }} />
             </colgroup>
             <thead style={{ backgroundColor: '#f0f0f0' }}>
               <tr>
                 <th style={{ border: '1px solid black', padding: '2px' }} rowSpan={2}>Position</th>
                 <th style={{ border: '1px solid black', padding: '2px' }} colSpan={3}>Pole to Pole (closed)</th>
                 <th style={{ border: '1px solid black', padding: '2px' }} colSpan={3}>Pole to Neutral (closed)</th>
-                <th style={{ border: '1px solid black', padding: '2px' }} colSpan={4}>Pole & Neutral to Ground (closed)</th>
-                <th style={{ border: '1px solid black', padding: '2px' }} colSpan={3}>Line to Load (open)</th>
               </tr>
               <tr style={{ backgroundColor: '#f0f0f0' }}>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P1-P2</th>
@@ -855,6 +853,36 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <th style={{ border: '1px solid black', padding: '2px' }}>P1-N</th>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P2-N</th>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P3-N</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formData.irMeasured.map((row, i) => (
+                <tr key={i}>
+                  <td style={{ border: '1px solid black', padding: '2px' }}>{row.position}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p1p2}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p2p3}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p3p1}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p1n}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p2n}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p3n}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Part 2: Pole & Neutral to Ground + Line to Load (8 equal cols @ 12.5%) */}
+          <table className="ir-print-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '7.5px', tableLayout: 'fixed', marginTop: '-1px' }}>
+            <colgroup>
+              <col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} />
+              <col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} />
+            </colgroup>
+            <thead style={{ backgroundColor: '#f0f0f0' }}>
+              <tr>
+                <th style={{ border: '1px solid black', padding: '2px' }} rowSpan={2}>Position</th>
+                <th style={{ border: '1px solid black', padding: '2px' }} colSpan={4}>Pole & Neutral to Ground (closed)</th>
+                <th style={{ border: '1px solid black', padding: '2px' }} colSpan={3}>Line to Load (open)</th>
+              </tr>
+              <tr style={{ backgroundColor: '#f0f0f0' }}>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P1-G</th>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P2-G</th>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P3-G</th>
@@ -868,12 +896,6 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
               {formData.irMeasured.map((row, i) => (
                 <tr key={i}>
                   <td style={{ border: '1px solid black', padding: '2px' }}>{row.position}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p1p2}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p2p3}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p3p1}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p1n}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p2n}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p3n}</td>
                   <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p1g}</td>
                   <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p2g}</td>
                   <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p3g}</td>
@@ -892,21 +914,19 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
           <div className="w-full h-1 bg-[#f26722] mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">Electrical Tests - Temperature Corrected IR Values</h2>
           <div style={{ fontSize: '8px', marginBottom: '2px' }}>Units: {formData.irUnits}</div>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '7px', tableLayout: 'fixed' }}>
+
+          {/* Part 1: Pole to Pole + Pole to Neutral (7 equal cols) */}
+          <table className="ir-print-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '7.5px', tableLayout: 'fixed' }}>
             <colgroup>
-              <col style={{ width: '7%' }} />
-              <col style={{ width: '7%' }} /><col style={{ width: '7%' }} /><col style={{ width: '7%' }} />
-              <col style={{ width: '7%' }} /><col style={{ width: '7%' }} /><col style={{ width: '7%' }} />
-              <col style={{ width: '7%' }} /><col style={{ width: '7%' }} /><col style={{ width: '7%' }} /><col style={{ width: '7%' }} />
-              <col style={{ width: '7%' }} /><col style={{ width: '7%' }} /><col style={{ width: '7%' }} />
+              <col style={{ width: '14.2857%' }} /><col style={{ width: '14.2857%' }} /><col style={{ width: '14.2857%' }} />
+              <col style={{ width: '14.2857%' }} /><col style={{ width: '14.2857%' }} /><col style={{ width: '14.2857%' }} />
+              <col style={{ width: '14.2858%' }} />
             </colgroup>
             <thead style={{ backgroundColor: '#f0f0f0' }}>
               <tr>
                 <th style={{ border: '1px solid black', padding: '2px' }} rowSpan={2}>Position</th>
                 <th style={{ border: '1px solid black', padding: '2px' }} colSpan={3}>Pole to Pole (closed)</th>
                 <th style={{ border: '1px solid black', padding: '2px' }} colSpan={3}>Pole to Neutral (closed)</th>
-                <th style={{ border: '1px solid black', padding: '2px' }} colSpan={4}>Pole & Neutral to Ground (closed)</th>
-                <th style={{ border: '1px solid black', padding: '2px' }} colSpan={3}>Line to Load (open)</th>
               </tr>
               <tr style={{ backgroundColor: '#f0f0f0' }}>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P1-P2</th>
@@ -915,6 +935,36 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 <th style={{ border: '1px solid black', padding: '2px' }}>P1-N</th>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P2-N</th>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P3-N</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formData.irCorrected.map((row, i) => (
+                <tr key={i}>
+                  <td style={{ border: '1px solid black', padding: '2px' }}>{row.position}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p1p2}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p2p3}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p3p1}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p1n}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p2n}</td>
+                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p3n}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Part 2: Pole & Neutral to Ground + Line to Load (8 equal cols @ 12.5%) */}
+          <table className="ir-print-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '7.5px', tableLayout: 'fixed', marginTop: '-1px' }}>
+            <colgroup>
+              <col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} />
+              <col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} /><col style={{ width: '12.5%' }} />
+            </colgroup>
+            <thead style={{ backgroundColor: '#f0f0f0' }}>
+              <tr>
+                <th style={{ border: '1px solid black', padding: '2px' }} rowSpan={2}>Position</th>
+                <th style={{ border: '1px solid black', padding: '2px' }} colSpan={4}>Pole & Neutral to Ground (closed)</th>
+                <th style={{ border: '1px solid black', padding: '2px' }} colSpan={3}>Line to Load (open)</th>
+              </tr>
+              <tr style={{ backgroundColor: '#f0f0f0' }}>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P1-G</th>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P2-G</th>
                 <th style={{ border: '1px solid black', padding: '2px' }}>P3-G</th>
@@ -928,12 +978,6 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
               {formData.irCorrected.map((row, i) => (
                 <tr key={i}>
                   <td style={{ border: '1px solid black', padding: '2px' }}>{row.position}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p1p2}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p2p3}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p3p1}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p1n}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p2n}</td>
-                  <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p3n}</td>
                   <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p1g}</td>
                   <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p2g}</td>
                   <td style={{ border: '1px solid black', padding: '2px', textAlign: 'center' }}>{row.p3g}</td>
@@ -1634,6 +1678,17 @@ if (typeof document !== 'undefined') {
       .insulation-corrected-section table col:nth-child(n+2):nth-child(-n+10) { width: 9% !important; }
       .insulation-measured-section table col:nth-child(11),
       .insulation-corrected-section table col:nth-child(11) { width: 7% !important; }
+
+      /* Print-only IR tables: each table sets its own colgroup widths */
+      .ir-print-table { table-layout: fixed !important; width: 100% !important; }
+      .ir-print-table th, .ir-print-table td {
+        font-size: 7.5px !important;
+        padding: 2px 3px !important;
+        line-height: 1.1 !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        white-space: normal !important;
+      }
 
       /* Switch Data: shrink first col, redistribute others */
       .switch-data-section table { table-layout: fixed !important; }

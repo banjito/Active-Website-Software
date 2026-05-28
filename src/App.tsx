@@ -13,15 +13,6 @@ import PortalLanding from './app/portal/page';
 import UnifiedJobsPage from './app/all-jobs/page';
 import SalesDashboard from './app/sales-dashboard/page';
 import MeetingsPage from './app/meetings/page';
-import MyDataPage from './app/meetings/my-data/page';
-import InsightsPage from './app/meetings/insights/page';
-import DataPage from './app/meetings/data/page';
-import RocksPage from './app/meetings/rocks/page';
-import ToDosPage from './app/meetings/to-dos/page';
-import IssuesPage from './app/meetings/issues/page';
-import HeadlinesPage from './app/meetings/headlines/page';
-import VisionPage from './app/meetings/vision/page';
-import ResponsibilitiesPage from './app/meetings/responsibilities/page';
 
 import Login from './components/auth/Login';
 import JobDiagnostics from './components/jobs/JobDiagnostics';
@@ -34,7 +25,6 @@ import { DemoModeProvider } from './lib/DemoModeContext';
 import DebugTableCheck from './components/debug/debug-table';
 import { Layout } from './components/ui/Layout';
 import SalesLayout from './components/ui/SalesLayout';
-import { MeetingsLayout } from './components/ui/MeetingsLayout';
 import HrLayout from './components/ui/HrLayout';
 import SwitchgearReport from './components/reports/SwitchgearReport';
 import GroundingSystemMaster from './components/reports/GroundingSystemMaster';
@@ -636,18 +626,9 @@ function App() {
                   <Route path="/hr/self-service/manager-portal" element={<RequireAuth><HrLayout><ManagerPortal /></HrLayout></RequireAuth>} />
                   <Route path="/hr/self-service/task-workflows" element={<RequireAuth><HrLayout><TaskWorkflows /></HrLayout></RequireAuth>} />
 
-                  {/* === Meetings Portal Routes === */}
-                  <Route path="/meetings" element={<RequireAuth><MeetingsLayout><MeetingsPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/my-data" element={<RequireAuth><MeetingsLayout><MyDataPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/insights" element={<RequireAuth><MeetingsLayout><InsightsPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/data" element={<RequireAuth><MeetingsLayout><DataPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/rocks" element={<RequireAuth><MeetingsLayout><RocksPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/to-dos" element={<RequireAuth><MeetingsLayout><ToDosPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/todos" element={<RequireAuth><MeetingsLayout><ToDosPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/issues" element={<RequireAuth><MeetingsLayout><IssuesPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/headlines" element={<RequireAuth><MeetingsLayout><HeadlinesPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/vision" element={<RequireAuth><MeetingsLayout><VisionPage /></MeetingsLayout></RequireAuth>} />
-                  <Route path="/meetings/responsibilities" element={<RequireAuth><MeetingsLayout><ResponsibilitiesPage /></MeetingsLayout></RequireAuth>} />
+                  {/* === Meetings (Runway) — coming soon === */}
+                  <Route path="/meetings" element={<RequireAuth><MeetingsPage /></RequireAuth>} />
+                  <Route path="/meetings/*" element={<Navigate to="/meetings" replace />} />
 
                   {/* === Division-Specific Dashboard Routes === */}
                   {/* These specific routes should come before the generic /:division/dashboard route */}

@@ -51,18 +51,7 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
   {
     key: 'meetings',
     label: 'Meetings',
-    options: [
-      { label: 'Runway', path: '/meetings' },
-      { label: 'My Data', path: '/meetings/my-data' },
-      { label: 'Insights', path: '/meetings/insights' },
-      { label: 'Data', path: '/meetings/data' },
-      { label: 'Rocks', path: '/meetings/rocks' },
-      { label: 'To-Dos', path: '/meetings/todos' },
-      { label: 'Issues', path: '/meetings/issues' },
-      { label: 'Headlines', path: '/meetings/headlines' },
-      { label: 'Vision', path: '/meetings/vision' },
-      { label: 'Responsibilities', path: '/meetings/responsibilities' },
-    ],
+    options: [{ label: 'Runway', path: '/meetings' }],
   },
   {
     key: 'field_tech',

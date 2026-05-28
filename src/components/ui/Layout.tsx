@@ -390,6 +390,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const searchParams = new URLSearchParams(location.search);
   const isEmbed = searchParams.get('embed') === 'true';
   const isEmbedded = searchParams.get('embedded') === 'true';
+  const isMeetingsPage =
+    location.pathname === '/meetings' || location.pathname.startsWith('/meetings/');
   
   // If embedded mode, render children without any chrome
   if (isEmbedded) {
@@ -541,8 +543,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         />
       )}
 
-      {/* Sidebar - hidden when My Menu is enabled */}
-      {!myMenuEnabled && (
+      {/* Sidebar - hidden when My Menu is enabled or on Runway (/meetings) */}
+      {!myMenuEnabled && !isMeetingsPage && (
       <div 
         ref={sidebarRef}
         className={`
@@ -602,13 +604,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="w-full px-3 sm:px-4 lg:px-8">
               <div className="flex h-16 lg:h-20 items-center justify-between">
               <div className="flex items-center gap-2 lg:gap-4 min-w-0 flex-1 print:hidden"> {/* <-- Keep print:hidden here too */}
-                {/* Mobile Menu Button */}
+                {/* Mobile Menu Button — hidden when sidebar is not shown */}
+                {!isMeetingsPage && (
                 <button
                   onClick={() => setIsMobileSidebarOpen(true)}
                   className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-100 flex-shrink-0"
                 >
                   <Menu className="h-5 w-5 text-gray-600 dark:text-white" />
                 </button>
+                )}
 
                 {/* Back to Job button - only show on report pages */}
                 {isReportPage && jobId && (

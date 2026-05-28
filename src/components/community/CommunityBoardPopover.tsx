@@ -13,7 +13,7 @@ type Props = {
   triggerClassName?: string;
 };
 
-export function CommunityBoardPopover({ align = 'center', triggerClassName = '' }: Props) {
+export function CommunityBoardPopover({ align = 'end', triggerClassName = '' }: Props) {
   const [open, setOpen] = useState(false);
 
   return (

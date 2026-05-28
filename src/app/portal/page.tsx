@@ -1417,7 +1417,7 @@ export default function PortalLanding() {
                 <Phone className="h-5 w-5 text-gray-600 dark:text-white" />
               </button>
               {isContactsOpen && (
-                <div className="absolute right-0 mt-2 w-[420px] max-w-[calc(100vw-2rem)] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
+                <div className="absolute top-full right-0 mt-2 w-[420px] max-w-[calc(100vw-2rem)] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
                   <div className="p-3 border-b border-gray-200 dark:border-dark-200 flex items-center justify-between shrink-0">
                     <div className="font-medium text-gray-900 dark:text-white">AMP contacts</div>
                     <a
@@ -1487,7 +1487,7 @@ export default function PortalLanding() {
               </button>
 
               {isNotificationsOpen && (
-                <div className="absolute right-0 mt-2 w-96 max-w-[24rem] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                   <div className="p-3 border-b border-gray-200 dark:border-dark-200 flex items-center justify-between">
                     <div className="font-medium text-gray-900 dark:text-white">Notifications</div>
                     <div className="text-xs text-gray-500 dark:text-white">Reports</div>
@@ -1697,7 +1697,7 @@ export default function PortalLanding() {
                 )}
               </button>
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                <div className="absolute top-full right-0 mt-2 w-64 origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                   <div className="py-1">
                     <div className="px-4 py-2 border-b border-gray-200 dark:border-dark-200">
                       <p className="text-sm font-medium text-gray-900 dark:text-dark-900">
@@ -3133,27 +3133,23 @@ export default function PortalLanding() {
         </Tabs>
       </main>
 
+
       {/* Logout Section */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-200 dark:border-dark-200">
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 border-none">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center p-4 rounded-full bg-gray-100 dark:bg-dark-700/20 mb-4">
-            <LogOut className="h-6 w-6 text-gray-600 dark:text-white" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Need to sign out?</h3>
-          <p className="text-sm text-gray-600 dark:text-white mb-6 max-w-md mx-auto">
-            Click the button below to securely sign out of your account and return to the login page.
-          </p>
-          <Button 
+          <Button
             onClick={handleSignOut}
             disabled={isSigningOut}
             variant="outline"
-            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-700/20 hover:text-gray-900 dark:hover:text-white"
+            leftIcon={<LogOut className="h-4 w-4" />}
+            className="gap-2 border-none text-black hover:bg-red-700/90 hover:text-white"
           >
-            <LogOut className="mr-2 h-4 w-4" />
             {isSigningOut ? 'Signing out...' : 'Sign Out'}
           </Button>
         </div>
       </section>
+
+
       {/* Popup */}
       {showPopup && (
         <div 

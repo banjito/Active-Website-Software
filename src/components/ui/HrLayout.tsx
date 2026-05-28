@@ -402,11 +402,11 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
             <Link to="/hr/announcements">
               <Button
                 variant="ghost"
-                className={`w-full justify-start pl-0 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
+                leftIcon={<Megaphone className="h-3.5 w-3.5 text-[#f26722]" />}
+                className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
                   location.pathname.startsWith('/hr/announcements') ? 'bg-black/5 dark:bg-dark-50' : ''
                 }`}
               >
-                <Megaphone className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
                 Announcements
               </Button>
             </Link>
@@ -415,11 +415,11 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
           <Link to="/hr/employee-files">
             <Button
               variant="ghost"
-              className={`w-full justify-start pl-0 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
+              leftIcon={<Folder className="h-3.5 w-3.5 text-[#f26722]" />}
+              className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
                 location.pathname.startsWith('/hr/employee-files') ? 'bg-black/5 dark:bg-dark-50' : ''
               }`}
             >
-              <Folder className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
               Employee Files
             </Button>
           </Link>
@@ -434,11 +434,11 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
               <Link to="/hr/self-service/manager-portal" className="mt-auto">
                 <Button
                   variant="ghost"
-                  className={`w-full justify-start pl-0 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
+                  leftIcon={<Users className="h-3.5 w-3.5 text-[#f26722]" />}
+                  className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
                     location.pathname.startsWith('/hr/self-service/manager-portal') ? 'bg-black/5 dark:bg-dark-50' : ''
                   }`}
                 >
-                  <Users className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
                   Manager Portal
                 </Button>
               </Link>
@@ -492,11 +492,11 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
               <Link to="/hr/self-service/manager-portal">
                 <Button
                   variant="ghost"
-                  className={`w-full justify-start pl-0 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
+                  leftIcon={<Users className="h-3.5 w-3.5 text-[#f26722]" />}
+                  className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
                     location.pathname.startsWith('/hr/self-service/manager-portal') ? 'bg-black/5 dark:bg-dark-50' : ''
                   }`}
                 >
-                  <Users className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
                   Manager Portal
                 </Button>
               </Link>
@@ -504,14 +504,14 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
           )}
         </div>
         {/* Bottom Logout Button */}
-        <div className="p-4 border-t border-black/10 dark:border-dark-200">
+        <div className="p-4 text-center">
           <Button
-            variant="ghost"
-            className="w-full justify-start pl-0 text-left text-xs font-medium text-red-600 hover:bg-black/5 dark:text-red-400 dark:hover:bg-dark-50 !justify-start h-8"
             onClick={handleSignOut}
             disabled={isSigningOut}
+            variant="outline"
+            leftIcon={<LogOut className="h-4 w-4" />}
+            className="border-none w-full justify-start pl-2 text-left text-xs font-medium text-red-600 hover:bg-black/5 dark:text-red-400 dark:hover:bg-dark-50 !justify-start h-8"
           >
-            <LogOut className="mr-2 h-3.5 w-3.5" />
             {isSigningOut ? 'Signing out...' : 'Sign Out'}
           </Button>
         </div>

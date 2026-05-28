@@ -545,6 +545,9 @@ const OilInspectionReport: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
   const { locked } = useReportLocked(currentReportId, jobId, reportSlug);
   
   // Print Mode Detection
@@ -1226,52 +1229,63 @@ const OilInspectionReport: React.FC = () => {
     try {
       setIsAutoSaving(true);
 
-      if (currentReportId) {
-        // Update existing report
+      if (reportIdRef.current) {
         await supabase
           .schema('neta_ops')
           .from(OIL_INSPECTION_TABLE)
           .update(reportData)
-          .eq('id', parseInt(currentReportId));
+          .eq('id', parseInt(reportIdRef.current));
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        // Create new report
-        const result = await supabase
-          .schema('neta_ops')
-          .from(OIL_INSPECTION_TABLE)
-          .insert(reportData)
-          .select()
-          .single();
-
-        if (result.data) {
-          const newReportId = result.data.id.toString();
-          
-          // Create asset entry
-          const assetName = getAssetName(reportSlug, formData.identifier || formData.eqptLocation || '');
-          const assetUrl = `report:/jobs/${jobId}/oil-inspection/${newReportId}`;
-          
-          const { data: assetResult } = await supabase
+        creatingRef.current = true;
+        try {
+          const result = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert({ name: assetName, file_url: assetUrl, user_id: user.id })
+            .from(OIL_INSPECTION_TABLE)
+            .insert(reportData)
             .select()
             .single();
-            
-          if (assetResult) {
-            await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+
+          if (result.data) {
+            const newReportId = result.data.id.toString();
+            reportIdRef.current = newReportId;
+
+            const assetName = getAssetName(reportSlug, formData.identifier || formData.eqptLocation || '');
+            const assetUrl = `report:/jobs/${jobId}/oil-inspection/${newReportId}`;
+
+            const { data: assetResult } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert({ name: assetName, file_url: assetUrl, user_id: user.id })
+              .select()
+              .single();
+
+            if (assetResult) {
+              await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            }
+
+            setCurrentReportId(newReportId);
+            isAutoSaveCreatedRef.current = true;
+            window.history.replaceState({}, '', `/jobs/${jobId}/oil-inspection/${newReportId}`);
+          } else {
+            creatingRef.current = false;
           }
-          
-          // Update state and URL
-          setCurrentReportId(newReportId);
-          isAutoSaveCreatedRef.current = true;
-          window.history.replaceState({}, '', `/jobs/${jobId}/oil-inspection/${newReportId}`);
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error) {
       console.error('Auto-save error:', error);
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, currentReportId, formData, isOmicronMode, reportSlug]);
+  }, [jobId, user?.id, formData, isOmicronMode, reportSlug]);
 
   // Auto-save effect with debounce (placed after autoSave function definition)
   useEffect(() => {

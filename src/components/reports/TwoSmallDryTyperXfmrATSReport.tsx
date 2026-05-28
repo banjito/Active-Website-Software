@@ -200,6 +200,9 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
   
   // Print Mode Detection
   const [searchParams] = useSearchParams();
@@ -727,62 +730,66 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
     try {
       setIsAutoSaving(true);
 
-      if (currentReportId) {
-        // Update existing report
+      if (reportIdRef.current) {
         await supabase
           .schema('neta_ops')
           .from('two_small_dry_type_xfmr_ats_reports')
-          .update(reportPayload)
-          .eq('id', currentReportId);
+          .update(payload)
+          .eq('id', reportIdRef.current);
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        // Create new report
-        const result = await supabase
-          .schema('neta_ops')
-          .from('two_small_dry_type_xfmr_ats_reports')
-          .insert(reportPayload)
-          .select()
-          .single();
-
-        if (result.data) {
-          const newReportId = result.data.id;
-          
-          // Create asset entry
-          const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.nameplate.serialNumber || 'Unnamed'),
-            file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
-            user_id: user.id
-          };
-          
-          const { data: assetResult } = await supabase
+        creatingRef.current = true;
+        try {
+          const result = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
+            .from('two_small_dry_type_xfmr_ats_reports')
+            .insert(payload)
             .select()
             .single();
-            
-          if (assetResult) {
-            await supabase
+
+          if (result.data) {
+            const newReportId = result.data.id;
+            reportIdRef.current = newReportId;
+
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
+              user_id: user.id
+            };
+
+            const { data: assetResult } = await supabase
               .schema('neta_ops')
-              .from('job_assets')
-              .insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id
-              });
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+
+            if (assetResult) {
+              await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            }
+
+            setCurrentReportId(newReportId);
+            isAutoSaveCreatedRef.current = true;
+            window.history.replaceState({}, '', `/jobs/${jobId}/${reportSlug}/${newReportId}`);
+          } else {
+            creatingRef.current = false;
           }
-          
-          // Update state and URL
-          setCurrentReportId(newReportId);
-          isAutoSaveCreatedRef.current = true;
-          window.history.replaceState({}, '', `/jobs/${jobId}/${reportSlug}/${newReportId}`);
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error) {
       console.error('Auto-save error:', error);
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, currentReportId, formData, reportSlug]);
+  }, [jobId, user?.id, formData, reportSlug]);
 
   // Auto-save effect with debounce (MUST be placed AFTER autoSave function definition)
   useEffect(() => {
@@ -838,6 +845,17 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
       table.visual-mechanical-table colgroup col:nth-child(2) { width: 70% !important; }
       table.visual-mechanical-table colgroup col:nth-child(3) { width: 24% !important; }
       .pass-fail-status-box { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      /* Comments tables: force wrapping inside the page */
+      table.comments-print-table { table-layout: fixed !important; width: 100% !important; max-width: 100% !important; }
+      table.comments-print-table td {
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        word-wrap: break-word !important;
+        text-align: left !important;
+        max-width: 0 !important;
+        overflow: hidden !important;
+      }
     }`;
     document.head.appendChild(style);
     return () => { try { document.head.removeChild(style); } catch { /* ignore */ } };
@@ -854,52 +872,80 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
       updated_at: new Date().toISOString(),
     };
 
-    let savedReportId = currentReportId;
-
     try {
-      if (currentReportId) {
-        const { error } = await supabase
+      let result;
+      if (reportIdRef.current) {
+        result = await supabase
           .schema('neta_ops')
           .from('two_small_dry_type_xfmr_ats_reports')
           .update(reportPayload)
-          .eq('id', currentReportId);
-        if (error) throw error;
+          .eq('id', reportIdRef.current)
+          .select()
+          .single();
+      } else if (creatingRef.current) {
+        const deadline = Date.now() + 5000;
+        while (creatingRef.current && !reportIdRef.current && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        if (reportIdRef.current) {
+          result = await supabase
+            .schema('neta_ops')
+            .from('two_small_dry_type_xfmr_ats_reports')
+            .update(reportPayload)
+            .eq('id', reportIdRef.current)
+            .select()
+            .single();
+        } else {
+          throw new Error('Report creation is still in progress. Please try again.');
+        }
       } else {
-        const { data: insertData, error: insertError } = await supabase
-          .schema('neta_ops')
-          .from('two_small_dry_type_xfmr_ats_reports')
-          .insert(reportPayload)
-          .select('id')
-          .single();
-        if (insertError) throw insertError;
-        if (!insertData) throw new Error("Failed to retrieve ID for new report.");
-        savedReportId = insertData.id;
+        creatingRef.current = true;
+        try {
+          result = await supabase
+            .schema('neta_ops')
+            .from('two_small_dry_type_xfmr_ats_reports')
+            .insert(reportPayload)
+            .select()
+            .single();
 
-        const assetData = {
-          name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
-          file_url: `report:/jobs/${jobId}/two-small-dry-typer-xfmr-ats-report/${savedReportId}`,
-          user_id: user.id,
-        };
-        const { data: assetResult, error: assetError } = await supabase
-          .schema('neta_ops')
-          .from('assets')
-          .insert(assetData)
-          .select('id')
-          .single();
+          if (result.data) {
+            reportIdRef.current = result.data.id;
+            setCurrentReportId(result.data.id);
 
-        if (assetError) throw assetError;
-        if (!assetResult) throw new Error("Failed to retrieve ID for new asset.");
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
+              user_id: user.id,
+            };
+            const { data: assetResult, error: assetError } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select('id')
+              .single();
 
-        await supabase
-          .schema('neta_ops')
-          .from('job_assets')
-          .insert({
-            job_id: jobId,
-            asset_id: assetResult.id,
-            user_id: user.id
-          });
+            if (assetError) throw assetError;
+            if (!assetResult) throw new Error('Failed to retrieve ID for new asset.');
+
+            await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({
+                job_id: jobId,
+                asset_id: assetResult.id,
+                user_id: user.id,
+              });
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (saveError) {
+          creatingRef.current = false;
+          throw saveError;
+        }
       }
-      
+
+      if (result?.error) throw result.error;
+
       setIsEditing(false);
       alert(`Report ${currentReportId ? 'updated' : 'saved'} successfully!`);
       if (!currentReportId && savedReportId) {
@@ -1516,7 +1562,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
             
             {/* Print-only Visual Inspection Comments table */}
             <div className="hidden print:block">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+              <table className="comments-print-table w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
                 <thead>
                   <tr>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Visual Inspection Comments</th>
@@ -1524,7 +1570,10 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[60px] align-top">
+                    <td
+                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[60px] align-top whitespace-pre-wrap break-words"
+                      style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', maxWidth: '100%' }}
+                    >
                       {formData.visualInspectionComments || ''}
                     </td>
                   </tr>
@@ -1861,15 +1910,13 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
             
             {/* Print-only Comments table */}
             <div className="hidden print:block">
-              <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
-                <thead>
-                  <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Comments</th>
-                  </tr>
-                </thead>
+              <table className="comments-print-table w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
                 <tbody>
                   <tr>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[80px] align-top">
+                    <td
+                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[80px] align-top whitespace-pre-wrap break-words"
+                      style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', maxWidth: '100%' }}
+                    >
                       {formData.comments || ''}
                     </td>
                   </tr>

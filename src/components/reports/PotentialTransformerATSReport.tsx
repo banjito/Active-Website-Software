@@ -315,6 +315,9 @@ const PotentialTransformerATSReport: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
 
   const [formData, setFormData] = useState<ReportData>({
     customer: '',
@@ -1259,56 +1262,66 @@ const PotentialTransformerATSReport: React.FC = () => {
     try {
       setIsAutoSaving(true);
 
-      if (currentReportId) {
-        // Update existing report
+      if (reportIdRef.current) {
         await supabase
           .schema('neta_ops')
           .from('potential_transformer_ats_reports')
-          .update(reportPayload)
-          .eq('id', currentReportId);
+          .update(payload)
+          .eq('id', reportIdRef.current);
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        // Create new report
-        const { data: insertData, error: insertError } = await supabase
-          .schema('neta_ops')
-          .from('potential_transformer_ats_reports')
-          .insert(reportPayload)
-          .select('id')
-          .single();
-
-        if (!insertError && insertData) {
-          const newReportId = insertData.id;
-          
-          // Create asset entry
-          const assetData = {
-            name: `Potential Transformer ATS - ${formData.identifier || new Date().toLocaleDateString()}`,
-            file_url: `report:/jobs/${jobId}/potential-transformer-ats-report/${newReportId}`,
-            user_id: user.id,
-            created_at: new Date().toISOString()
-          };
-          
-          const { data: assetResult } = await supabase
+        creatingRef.current = true;
+        try {
+          const result = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
-            .select('id')
+            .from('potential_transformer_ats_reports')
+            .insert(payload)
+            .select()
             .single();
-            
-          if (assetResult) {
-            await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+
+          if (result.data) {
+            const newReportId = result.data.id;
+            reportIdRef.current = newReportId;
+
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
+              user_id: user.id
+            };
+
+            const { data: assetResult } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+
+            if (assetResult) {
+              await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            }
+
+            setCurrentReportId(newReportId);
+            isAutoSaveCreatedRef.current = true;
+            window.history.replaceState({}, '', `/jobs/${jobId}/${reportSlug}/${newReportId}`);
+          } else {
+            creatingRef.current = false;
           }
-          
-          // Update state and URL
-          setCurrentReportId(newReportId);
-          isAutoSaveCreatedRef.current = true;
-          window.history.replaceState({}, '', `/jobs/${jobId}/potential-transformer-ats-report/${newReportId}`);
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error) {
       console.error('Auto-save error:', error);
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, currentReportId, formData, status]);
+  }, [jobId, user?.id, formData, status]);
 
   // Auto-save effect with debounce (placed after autoSave function definition)
   useEffect(() => {
@@ -1361,56 +1374,77 @@ const PotentialTransformerATSReport: React.FC = () => {
         comments: formData.comments
       };
 
-      let savedReportId = currentReportId;
-
-      if (currentReportId) {
-        // Update existing report
-        const { error: updateError } = await supabase
+      let result;
+      if (reportIdRef.current) {
+        result = await supabase
           .schema('neta_ops')
           .from('potential_transformer_ats_reports')
           .update(reportPayload)
-          .eq('id', currentReportId);
-
-        if (updateError) throw updateError;
+          .eq('id', reportIdRef.current)
+          .select()
+          .single();
+      } else if (creatingRef.current) {
+        const deadline = Date.now() + 5000;
+        while (creatingRef.current && !reportIdRef.current && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        if (reportIdRef.current) {
+          result = await supabase
+            .schema('neta_ops')
+            .from('potential_transformer_ats_reports')
+            .update(reportPayload)
+            .eq('id', reportIdRef.current)
+            .select()
+            .single();
+        } else {
+          throw new Error('Report creation is still in progress. Please try again.');
+        }
       } else {
-        // Create new report
-        const { data: insertData, error: insertError } = await supabase
-          .schema('neta_ops')
-          .from('potential_transformer_ats_reports')
-          .insert(reportPayload)
-          .select('id')
-          .single();
+        creatingRef.current = true;
+        try {
+          result = await supabase
+            .schema('neta_ops')
+            .from('potential_transformer_ats_reports')
+            .insert(reportPayload)
+            .select()
+            .single();
 
-        if (insertError) throw insertError;
-        savedReportId = insertData.id;
+          if (result.data) {
+            reportIdRef.current = result.data.id;
+            setCurrentReportId(result.data.id);
 
-        // Create asset entry for the report
-        const assetData = {
-          name: `Potential Transformer ATS - ${formData.identifier || new Date().toLocaleDateString()}`,
-          file_url: `report:/jobs/${jobId}/potential-transformer-ats-report/${savedReportId}`,
-          user_id: user.id,
-          created_at: new Date().toISOString()
-        };
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
+              user_id: user.id,
+            };
+            const { data: assetResult, error: assetError } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select('id')
+              .single();
 
-        const { data: assetResult, error: assetError } = await supabase
-          .schema('neta_ops')
-          .from('assets')
-          .insert(assetData)
-          .select('id')
-          .single();
+            if (assetError) throw assetError;
 
-        if (assetError) throw assetError;
-
-        // Link asset to job
-        await supabase
-          .schema('neta_ops')
-          .from('job_assets')
-          .insert({
-            job_id: jobId,
-            asset_id: assetResult.id,
-            user_id: user.id
-          });
+            await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({
+                job_id: jobId,
+                asset_id: assetResult.id,
+                user_id: user.id,
+              });
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (saveError) {
+          creatingRef.current = false;
+          throw saveError;
+        }
       }
+
+      if (result?.error) throw result.error;
 
       setIsEditMode(false); // Exit editing mode
       // Report saved silently

@@ -192,6 +192,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
   
   // Print Mode Detection
   const isPrintMode = searchParams.get('print') === 'true';
@@ -728,62 +731,66 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
     try {
       setIsAutoSaving(true);
 
-      if (currentReportId) {
-        // Update existing report
+      if (reportIdRef.current) {
         await supabase
           .schema('neta_ops')
           .from('two_small_dry_type_xfmr_mts_reports')
-          .update(reportPayload)
-          .eq('id', currentReportId);
+          .update(payload)
+          .eq('id', reportIdRef.current);
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        // Create new report
-        const result = await supabase
-          .schema('neta_ops')
-          .from('two_small_dry_type_xfmr_mts_reports')
-          .insert(reportPayload)
-          .select()
-          .single();
-
-        if (result.data) {
-          const newReportId = result.data.id;
-          
-          // Create asset entry
-          const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.nameplate.serialNumber || 'Unnamed'),
-            file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
-            user_id: user.id
-          };
-          
-          const { data: assetResult } = await supabase
+        creatingRef.current = true;
+        try {
+          const result = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
+            .from('two_small_dry_type_xfmr_mts_reports')
+            .insert(payload)
             .select()
             .single();
-            
-          if (assetResult) {
-            await supabase
+
+          if (result.data) {
+            const newReportId = result.data.id;
+            reportIdRef.current = newReportId;
+
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
+              user_id: user.id
+            };
+
+            const { data: assetResult } = await supabase
               .schema('neta_ops')
-              .from('job_assets')
-              .insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id
-              });
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+
+            if (assetResult) {
+              await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            }
+
+            setCurrentReportId(newReportId);
+            isAutoSaveCreatedRef.current = true;
+            window.history.replaceState({}, '', `/jobs/${jobId}/${reportSlug}/${newReportId}`);
+          } else {
+            creatingRef.current = false;
           }
-          
-          // Update state and URL
-          setCurrentReportId(newReportId);
-          isAutoSaveCreatedRef.current = true;
-          window.history.replaceState({}, '', `/jobs/${jobId}/${reportSlug}/${newReportId}`);
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error) {
       console.error('Auto-save error:', error);
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, currentReportId, formData, reportSlug]);
+  }, [jobId, user?.id, formData, reportSlug]);
 
   // Auto-save effect with debounce (MUST be placed AFTER autoSave function definition)
   useEffect(() => {
@@ -818,52 +825,80 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
       updated_at: new Date().toISOString(),
     };
 
-    let savedReportId = currentReportId;
-
     try {
-      if (currentReportId) {
-        const { error } = await supabase
+      let result;
+      if (reportIdRef.current) {
+        result = await supabase
           .schema('neta_ops')
           .from('two_small_dry_type_xfmr_mts_reports')
           .update(reportPayload)
-          .eq('id', currentReportId);
-        if (error) throw error;
+          .eq('id', reportIdRef.current)
+          .select()
+          .single();
+      } else if (creatingRef.current) {
+        const deadline = Date.now() + 5000;
+        while (creatingRef.current && !reportIdRef.current && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        if (reportIdRef.current) {
+          result = await supabase
+            .schema('neta_ops')
+            .from('two_small_dry_type_xfmr_mts_reports')
+            .update(reportPayload)
+            .eq('id', reportIdRef.current)
+            .select()
+            .single();
+        } else {
+          throw new Error('Report creation is still in progress. Please try again.');
+        }
       } else {
-        const { data: insertData, error: insertError } = await supabase
-          .schema('neta_ops')
-          .from('two_small_dry_type_xfmr_mts_reports')
-          .insert(reportPayload)
-          .select('id')
-          .single();
-        if (insertError) throw insertError;
-        if (!insertData) throw new Error("Failed to retrieve ID for new report.");
-        savedReportId = insertData.id;
+        creatingRef.current = true;
+        try {
+          result = await supabase
+            .schema('neta_ops')
+            .from('two_small_dry_type_xfmr_mts_reports')
+            .insert(reportPayload)
+            .select()
+            .single();
 
-        const assetData = {
-          name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
-          file_url: `report:/jobs/${jobId}/two-small-dry-typer-xfmr-mts-report/${currentReportId}`,
-          user_id: user.id,
-        };
-        const { data: assetResult, error: assetError } = await supabase
-          .schema('neta_ops')
-          .from('assets')
-          .insert(assetData)
-          .select('id')
-          .single();
+          if (result.data) {
+            reportIdRef.current = result.data.id;
+            setCurrentReportId(result.data.id);
 
-        if (assetError) throw assetError;
-        if (!assetResult) throw new Error("Failed to retrieve ID for new asset.");
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
+              user_id: user.id,
+            };
+            const { data: assetResult, error: assetError } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select('id')
+              .single();
 
-        await supabase
-          .schema('neta_ops')
-          .from('job_assets')
-          .insert({
-            job_id: jobId,
-            asset_id: assetResult.id,
-            user_id: user.id
-          });
+            if (assetError) throw assetError;
+            if (!assetResult) throw new Error('Failed to retrieve ID for new asset.');
+
+            await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({
+                job_id: jobId,
+                asset_id: assetResult.id,
+                user_id: user.id,
+              });
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (saveError) {
+          creatingRef.current = false;
+          throw saveError;
+        }
       }
-      
+
+      if (result?.error) throw result.error;
+
       setIsEditing(false);
       alert(`Report ${currentReportId ? 'updated' : 'saved'} successfully!`);
       navigateAfterSave(navigate, jobId, location);
@@ -2497,9 +2532,13 @@ if (typeof document !== 'undefined') {
       table.dielectric-absorption-table th:not(:first-child) { width: 10% !important; min-width: 10% !important; max-width: 10% !important; }
       
       /* Alternative approach for browsers that don't support :has() */
-      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table) { table-layout: fixed !important; width: 100% !important; }
-      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table) td:first-child { width: 35% !important; }
-      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table) td:not(:first-child) { width: 13% !important; }
+      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table) { table-layout: fixed !important; width: 100% !important; }
+      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table) td:first-child { width: 35% !important; }
+      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table) td:not(:first-child) { width: 13% !important; }
+
+      /* Job Information table - force 6 equal columns and wrap text normally */
+      table.job-info-print-table { table-layout: fixed !important; width: 100% !important; }
+      table.job-info-print-table td { width: 16.6667% !important; min-width: 0 !important; max-width: 16.6667% !important; white-space: normal !important; overflow-wrap: break-word !important; word-break: normal !important; }
 
       /* Center header text for IR and corrected tables (A-G, etc.) */
       .ir-table th, .ir-corrected-table th { text-align: center !important; }

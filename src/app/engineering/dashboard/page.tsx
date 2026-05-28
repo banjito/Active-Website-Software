@@ -33,9 +33,6 @@ export default function EngineeringDashboard() {
 
   return (
     <div className="space-y-6">
-      <p className="text-gray-600 dark:text-dark-400">
-        Design management, technical documentation, and standards compliance
-      </p>
 
       {/* Quick Actions Section */}
       <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -318,6 +318,9 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
 
   // When the reportId in the URL changes (e.g. after "Copy nameplate to new report" navigates),
   // sync state so we load and show the new report instead of keeping the old one
@@ -744,61 +747,75 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         updated_at: new Date().toISOString(),
       };
 
-      if (currentReportId) {
+      if (reportIdRef.current) {
         const { error } = await supabase
           .schema('neta_ops')
           .from('lv_molded_case_circuit_breaker_ats25')
           .update(dataToSave)
-          .eq('id', currentReportId);
+          .eq('id', reportIdRef.current);
 
         if (error) throw error;
-      } else if (!isAutoSaveCreatedRef.current) {
-        isAutoSaveCreatedRef.current = true;
-        const assetName = getAssetName(reportSlug, formData.breakerIdentifier);
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
+      } else {
+        creatingRef.current = true;
+        try {
+          const assetName = getAssetName(reportSlug, formData.breakerIdentifier);
 
-        const { data: newReport, error } = await supabase
-          .schema('neta_ops')
-          .from('lv_molded_case_circuit_breaker_ats25')
-          .insert({
-            ...dataToSave,
-            created_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
-
-        if (error) {
-          isAutoSaveCreatedRef.current = false;
-          throw error;
-        }
-
-        if (newReport) {
-          setCurrentReportId(newReport.id);
-          const { data: assetResult } = await supabase
+          const { data: newReport, error } = await supabase
             .schema('neta_ops')
-            .from('assets')
+            .from('lv_molded_case_circuit_breaker_ats25')
             .insert({
-              name: assetName,
-              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
-              template_type: 'ATS',
-              status: 'in_progress',
+              ...dataToSave,
+              created_at: new Date().toISOString(),
             })
             .select()
             .single();
 
-          // Link asset to job
-          if (assetResult) {
-            await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user?.id });
+          if (error) {
+            creatingRef.current = false;
+            throw error;
           }
 
-          window.history.replaceState(null, '', `/jobs/${jobId}/${reportSlug}/${newReport.id}`);
+          if (newReport) {
+            reportIdRef.current = newReport.id;
+            isAutoSaveCreatedRef.current = true;
+            setCurrentReportId(newReport.id);
+            const { data: assetResult } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert({
+                name: assetName,
+                file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
+                template_type: 'ATS',
+                status: 'in_progress',
+              })
+              .select()
+              .single();
+
+            if (assetResult) {
+              await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user?.id });
+            }
+
+            window.history.replaceState(null, '', `/jobs/${jobId}/${reportSlug}/${newReport.id}`);
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (err) {
       console.error('Auto-save error:', err);
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [formData, jobId, currentReportId, isEditing, user]);
+  }, [formData, jobId, isEditing, user]);
 
   // Debounce auto-save
   useEffect(() => {

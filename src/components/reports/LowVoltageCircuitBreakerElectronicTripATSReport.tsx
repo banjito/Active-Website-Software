@@ -255,6 +255,9 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
   
   // Print Mode Detection
   const [searchParams] = useSearchParams();
@@ -1294,60 +1297,70 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
     try {
       let result;
-      if (currentReportId) {
-        // Update existing report
+      if (reportIdRef.current) {
         result = await supabase
           .schema('neta_ops')
           .from('low_voltage_circuit_breaker_electronic_trip_ats')
           .update(reportPayload)
-          .eq('id', currentReportId)
+          .eq('id', reportIdRef.current)
           .select();
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        // Create new report
-        result = await supabase
-          .schema('neta_ops')
-          .from('low_voltage_circuit_breaker_electronic_trip_ats')
-          .insert(reportPayload)
-          .select()
-          .maybeSingle();
-
-        if (result.data) {
-          const newReportId = result.data.id;
-          isAutoSaveCreatedRef.current = true;
-          setCurrentReportId(newReportId);
-          
-          // Create asset entry
-          const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
-            file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-report/${newReportId}`,
-            user_id: user.id
-          };
-          
-          const { data: assetResult, error: assetError } = await supabase
+        creatingRef.current = true;
+        try {
+          result = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
+            .from('low_voltage_circuit_breaker_electronic_trip_ats')
+            .insert(reportPayload)
             .select()
-            .single();
-            
-          if (!assetError && assetResult) {
-            await supabase
+            .maybeSingle();
+
+          if (result.data) {
+            const newReportId = result.data.id;
+            reportIdRef.current = newReportId;
+            isAutoSaveCreatedRef.current = true;
+            setCurrentReportId(newReportId);
+
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
+              file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-report/${newReportId}`,
+              user_id: user.id
+            };
+
+            const { data: assetResult, error: assetError } = await supabase
               .schema('neta_ops')
-              .from('job_assets')
-              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+
+            if (!assetError && assetResult) {
+              await supabase
+                .schema('neta_ops')
+                .from('job_assets')
+                .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            }
+
+            window.history.replaceState({}, '', `/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-report/${newReportId}`);
+          } else {
+            creatingRef.current = false;
           }
-          
-          // Update URL without navigation
-          window.history.replaceState({}, '', `/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-report/${newReportId}`);
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error: any) {
       console.error('Autosave error:', error);
-      // Silently fail - don't show error to user
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, isEditing, isAutoSaving, formData, currentReportId, reportSlug]);
+  }, [jobId, user?.id, isEditing, isAutoSaving, formData, reportSlug]);
 
   // Autosave effect - triggers after user stops typing for 2 seconds
   React.useEffect(() => {

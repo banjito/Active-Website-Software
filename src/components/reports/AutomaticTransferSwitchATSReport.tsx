@@ -163,6 +163,9 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false); // Track if report was created via autosave
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
   
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
@@ -443,13 +446,12 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
     try {
       let result: any;
-      if (currentReportId) {
-        // Update existing report
+      if (reportIdRef.current) {
         result = await supabase
           .schema('neta_ops')
           .from('automatic_transfer_switch_ats_reports')
           .update(fullPayload)
-          .eq('id', currentReportId)
+          .eq('id', reportIdRef.current)
           .select()
           .single();
         if (result?.error && String(result.error.message || '').toLowerCase().includes("data")) {
@@ -457,62 +459,73 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
             .schema('neta_ops')
             .from('automatic_transfer_switch_ats_reports')
             .update(basePayload)
-            .eq('id', currentReportId)
+            .eq('id', reportIdRef.current)
             .select()
             .single();
         }
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        // Create new report
-        result = await supabase
-          .schema('neta_ops')
-          .from('automatic_transfer_switch_ats_reports')
-          .insert(fullPayload)
-          .select()
-          .single();
-        if (result?.error && String(result.error.message || '').toLowerCase().includes("data")) {
+        creatingRef.current = true;
+        try {
           result = await supabase
             .schema('neta_ops')
             .from('automatic_transfer_switch_ats_reports')
-            .insert(basePayload)
+            .insert(fullPayload)
             .select()
             .single();
-        }
-
-        if (result.data) {
-          const newReportId = result.data.id;
-          isAutoSaveCreatedRef.current = true; // Mark that we created this via autosave
-          setCurrentReportId(newReportId);
-          
-          // Create asset entry
-          const assetData = {
-            name: '35-Automatic Transfer Switch ATS - ' + (formData.identifier || formData.eqptLocation || 'Unnamed'),
-            file_url: 'report:/jobs/' + jobId + '/automatic-transfer-switch-ats-report/' + newReportId,
-            user_id: user.id,
-          };
-          const { data: assetResult, error: assetError } = await supabase
-            .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
-            .select()
-            .single();
-          if (!assetError && assetResult) {
-            await supabase
+          if (result?.error && String(result.error.message || '').toLowerCase().includes("data")) {
+            result = await supabase
               .schema('neta_ops')
-              .from('job_assets')
-              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+              .from('automatic_transfer_switch_ats_reports')
+              .insert(basePayload)
+              .select()
+              .single();
           }
-          
-          // Update URL without navigation
-          window.history.replaceState({}, '', `/jobs/${jobId}/automatic-transfer-switch-ats-report/${newReportId}`);
+
+          if (result.data) {
+            const newReportId = result.data.id;
+            reportIdRef.current = newReportId;
+            isAutoSaveCreatedRef.current = true;
+            setCurrentReportId(newReportId);
+
+            const assetData = {
+              name: '35-Automatic Transfer Switch ATS - ' + (formData.identifier || formData.eqptLocation || 'Unnamed'),
+              file_url: 'report:/jobs/' + jobId + '/automatic-transfer-switch-ats-report/' + newReportId,
+              user_id: user.id,
+            };
+            const { data: assetResult, error: assetError } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+            if (!assetError && assetResult) {
+              await supabase
+                .schema('neta_ops')
+                .from('job_assets')
+                .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            }
+
+            window.history.replaceState({}, '', `/jobs/${jobId}/automatic-transfer-switch-ats-report/${newReportId}`);
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error: any) {
       console.error('Autosave error:', error);
-      // Silently fail - don't show error to user
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, isEditing, isAutoSaving, formData, currentReportId]);
+  }, [jobId, user?.id, isEditing, isAutoSaving, formData]);
 
   // Autosave effect - triggers after user stops typing for 2 seconds
   useEffect(() => {
@@ -579,13 +592,12 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
  
     try {
       let result: any;
-      if (currentReportId) {
-        // Try with full payload first; retry with legacy if 'data' column is missing
+      if (reportIdRef.current) {
         result = await supabase
           .schema('neta_ops')
           .from('automatic_transfer_switch_ats_reports')
           .update(fullPayload)
-          .eq('id', currentReportId)
+          .eq('id', reportIdRef.current)
           .select()
           .single();
         if (result?.error && String(result.error.message || '').toLowerCase().includes("data")) {
@@ -593,48 +605,74 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
             .schema('neta_ops')
             .from('automatic_transfer_switch_ats_reports')
             .update(basePayload)
-            .eq('id', currentReportId)
+            .eq('id', reportIdRef.current)
             .select()
             .single();
         }
-      } else {
+      } else if (creatingRef.current) {
+        const deadline = Date.now() + 5000;
+        while (creatingRef.current && !reportIdRef.current && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        if (!reportIdRef.current) {
+          throw new Error('Report creation is still in progress. Please try again.');
+        }
         result = await supabase
           .schema('neta_ops')
           .from('automatic_transfer_switch_ats_reports')
-          .insert(fullPayload)
+          .update(fullPayload)
+          .eq('id', reportIdRef.current)
           .select()
           .single();
-        if (result?.error && String(result.error.message || '').toLowerCase().includes("data")) {
+      } else {
+        creatingRef.current = true;
+        try {
           result = await supabase
             .schema('neta_ops')
             .from('automatic_transfer_switch_ats_reports')
-            .insert(basePayload)
+            .insert(fullPayload)
             .select()
             .single();
-        }
- 
-        if (result.data) {
-          const assetData = {
-            name: '35-Automatic Transfer Switch ATS - ' + (formData.identifier || formData.eqptLocation || 'Unnamed'),
-            file_url: 'report:/jobs/' + jobId + '/automatic-transfer-switch-ats-report/' + result.data.id,
-            user_id: user.id,
-          };
-          const { data: assetResult, error: assetError } = await supabase
-            .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
-            .select()
-            .single();
-          if (assetError) throw assetError;
-          await supabase
-            .schema('neta_ops')
-            .from('job_assets')
-            .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+          if (result?.error && String(result.error.message || '').toLowerCase().includes("data")) {
+            result = await supabase
+              .schema('neta_ops')
+              .from('automatic_transfer_switch_ats_reports')
+              .insert(basePayload)
+              .select()
+              .single();
+          }
+
+          if (result.data) {
+            reportIdRef.current = result.data.id;
+            setCurrentReportId(result.data.id);
+
+            const assetData = {
+              name: '35-Automatic Transfer Switch ATS - ' + (formData.identifier || formData.eqptLocation || 'Unnamed'),
+              file_url: 'report:/jobs/' + jobId + '/automatic-transfer-switch-ats-report/' + result.data.id,
+              user_id: user.id,
+            };
+            const { data: assetResult, error: assetError } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+            if (assetError) throw assetError;
+            await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (saveError) {
+          creatingRef.current = false;
+          throw saveError;
         }
       }
       if (result.error) throw result.error;
       setIsEditing(false);
-      alert('Report ' + (currentReportId ? 'updated' : 'saved') + ' successfully!');
+      alert('Report ' + (reportIdRef.current ? 'updated' : 'saved') + ' successfully!');
       navigateAfterSave(navigate, jobId, location);
     } catch (error: any) {
       console.error('Error saving report:', error);

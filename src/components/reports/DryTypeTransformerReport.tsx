@@ -206,6 +206,9 @@ const DryTypeTransformerReport: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
   
   // Print Mode Detection
   const [searchParams] = useSearchParams();
@@ -727,60 +730,70 @@ const DryTypeTransformerReport: React.FC = () => {
 
     try {
       let result;
-      if (currentReportId) {
-        // Update existing report
+      if (reportIdRef.current) {
         result = await supabase
           .schema('neta_ops')
           .from('transformer_reports')
           .update(reportData)
-          .eq('id', currentReportId)
+          .eq('id', reportIdRef.current)
           .select();
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        // Create new report
-        result = await supabase
-          .schema('neta_ops')
-          .from('transformer_reports')
-          .insert(reportData)
-          .select()
-          .maybeSingle();
-
-        if (result.data) {
-          const newReportId = result.data.id;
-          isAutoSaveCreatedRef.current = true;
-          setCurrentReportId(newReportId);
-          
-          // Create asset entry
-          const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
-            file_url: `report:/jobs/${jobId}/dry-type-transformer/${newReportId}`,
-            user_id: user.id
-          };
-          
-          const { data: assetResult, error: assetError } = await supabase
+        creatingRef.current = true;
+        try {
+          result = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
+            .from('transformer_reports')
+            .insert(reportData)
             .select()
-            .single();
-            
-          if (!assetError && assetResult) {
-            await supabase
+            .maybeSingle();
+
+          if (result.data) {
+            const newReportId = result.data.id;
+            reportIdRef.current = newReportId;
+            isAutoSaveCreatedRef.current = true;
+            setCurrentReportId(newReportId);
+
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
+              file_url: `report:/jobs/${jobId}/dry-type-transformer/${newReportId}`,
+              user_id: user.id
+            };
+
+            const { data: assetResult, error: assetError } = await supabase
               .schema('neta_ops')
-              .from('job_assets')
-              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+
+            if (!assetError && assetResult) {
+              await supabase
+                .schema('neta_ops')
+                .from('job_assets')
+                .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            }
+
+            window.history.replaceState({}, '', `/jobs/${jobId}/dry-type-transformer/${newReportId}`);
+          } else {
+            creatingRef.current = false;
           }
-          
-          // Update URL without navigation
-          window.history.replaceState({}, '', `/jobs/${jobId}/dry-type-transformer/${newReportId}`);
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error: any) {
       console.error('Autosave error:', error);
-      // Silently fail - don't show error to user
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, isEditing, isAutoSaving, formData, currentReportId, reportSlug]);
+  }, [jobId, user?.id, isEditing, isAutoSaving, formData, reportSlug]);
 
   // Autosave effect - triggers after user stops typing
   React.useEffect(() => {

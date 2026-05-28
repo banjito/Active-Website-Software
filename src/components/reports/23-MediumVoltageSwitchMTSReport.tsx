@@ -158,6 +158,9 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
 
   const reportSlug = '23-medium-voltage-switch-mts-report';
   const reportTitle = getReportName(reportSlug);
@@ -337,63 +340,66 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
     try {
       setIsAutoSaving(true);
 
-      if (currentReportId) {
-        // Update existing report
+      if (reportIdRef.current) {
         await supabase
           .schema('neta_ops')
           .from('medium_voltage_switch_mts_reports')
           .update(payload)
-          .eq('id', currentReportId);
+          .eq('id', reportIdRef.current);
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        // Create new report
-        const result = await supabase
-          .schema('neta_ops')
-          .from('medium_voltage_switch_mts_reports')
-          .insert(payload)
-          .select()
-          .single();
-
-        if (result.data) {
-          const newReportId = result.data.id;
-          
-          // Create asset entry
-          const assetData = {
-            name: getAssetName(reportSlug, form.identifier || form.eqptLocation || 'Unnamed'),
-            file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
-            user_id: user.id,
-            template_type: 'MTS'
-          } as const;
-          
-          const { data: assetResult } = await supabase
+        creatingRef.current = true;
+        try {
+          const result = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
+            .from('medium_voltage_switch_mts_reports')
+            .insert(payload)
             .select()
             .single();
-            
-          if (assetResult) {
-            await supabase
+
+          if (result.data) {
+            const newReportId = result.data.id;
+            reportIdRef.current = newReportId;
+
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
+              user_id: user.id
+            };
+
+            const { data: assetResult } = await supabase
               .schema('neta_ops')
-              .from('job_assets')
-              .insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id
-              });
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+
+            if (assetResult) {
+              await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            }
+
+            setCurrentReportId(newReportId);
+            isAutoSaveCreatedRef.current = true;
+            window.history.replaceState({}, '', `/jobs/${jobId}/${reportSlug}/${newReportId}`);
+          } else {
+            creatingRef.current = false;
           }
-          
-          // Update state and URL
-          setCurrentReportId(newReportId);
-          isAutoSaveCreatedRef.current = true;
-          window.history.replaceState({}, '', `/jobs/${jobId}/${reportSlug}/${newReportId}`);
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error) {
       console.error('Auto-save error:', error);
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, currentReportId, form, status, reportSlug]);
+  }, [jobId, user?.id, form, status, reportSlug]);
 
   // Auto-save effect with debounce (MUST be placed AFTER autoSave function definition)
   useEffect(() => {
@@ -424,40 +430,66 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
       };
 
       let result;
-      if (currentReportId) {
+      if (reportIdRef.current) {
         result = await supabase
           .schema('neta_ops')
           .from('medium_voltage_switch_mts_reports')
           .update(payload)
-          .eq('id', currentReportId)
+          .eq('id', reportIdRef.current)
           .select()
           .single();
-      } else {
-        result = await supabase
-          .schema('neta_ops')
-          .from('medium_voltage_switch_mts_reports')
-          .insert(payload)
-          .select()
-          .single();
-
-        if (result.data) {
-          const assetData = {
-            name: getAssetName(reportSlug, form.identifier || form.eqptLocation || ''),
-            file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
-            user_id: user.id,
-            template_type: 'MTS'
-          } as const;
-          const { data: assetResult, error: assetError } = await supabase
+      } else if (creatingRef.current) {
+        const deadline = Date.now() + 5000;
+        while (creatingRef.current && !reportIdRef.current && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        if (reportIdRef.current) {
+          result = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
-            .select('id')
+            .from('medium_voltage_switch_mts_reports')
+            .update(payload)
+            .eq('id', reportIdRef.current)
+            .select()
             .single();
-          if (assetError) throw assetError;
-          await supabase
+        } else {
+          throw new Error('Report creation is still in progress. Please try again.');
+        }
+      } else {
+        creatingRef.current = true;
+        try {
+          result = await supabase
             .schema('neta_ops')
-            .from('job_assets')
-            .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            .from('medium_voltage_switch_mts_reports')
+            .insert(payload)
+            .select()
+            .single();
+
+          if (result.data) {
+            reportIdRef.current = result.data.id;
+            setCurrentReportId(result.data.id);
+            const assetData = {
+              name: getAssetName(reportSlug, form.identifier || form.eqptLocation || ''),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
+              user_id: user.id,
+              template_type: 'MTS',
+            };
+            const { data: assetResult, error: assetError } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select('id')
+              .single();
+            if (assetError) throw assetError;
+            await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (saveError) {
+          creatingRef.current = false;
+          throw saveError;
         }
       }
 

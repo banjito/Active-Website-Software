@@ -227,6 +227,9 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
   // Mutex shared between autoSave and handleSave so they cannot both insert
   // concurrently. Without this, a manual Save click during the 2-second
   // autoSave debounce window can create a duplicate report row + orphaned
@@ -380,51 +383,62 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
         report_data: formData,
         updated_at: new Date().toISOString(),
       };
-      if (currentReportId) {
+      if (reportIdRef.current) {
         const { error: updateError } = await supabase
           .schema('neta_ops')
           .from('emergency_systems_engine_generator_ats25')
           .update(dataToSave)
-          .eq('id', currentReportId);
+          .eq('id', reportIdRef.current);
         if (updateError) throw updateError;
-      } else if (!isAutoSaveCreatedRef.current) {
-        isAutoSaveCreatedRef.current = true;
-        const assetName = getAssetName(reportSlug, formData.identifier);
-        const { data: newReport, error: insertError } = await supabase
-          .schema('neta_ops')
-          .from('emergency_systems_engine_generator_ats25')
-          .insert({ ...dataToSave, created_at: new Date().toISOString() })
-          .select()
-          .single();
-        if (insertError) {
-          isAutoSaveCreatedRef.current = false;
-          throw insertError;
-        }
-        if (newReport) {
-          setCurrentReportId(newReport.id);
-          const { data: assetResult, error: assetErr } = await supabase
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
+      } else {
+        creatingRef.current = true;
+        try {
+          const assetName = getAssetName(reportSlug, formData.identifier);
+          const { data: newReport, error: insertError } = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert({
-              name: assetName,
-              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
-              template_type: 'ATS',
-              status: 'in_progress',
-            })
+            .from('emergency_systems_engine_generator_ats25')
+            .insert({ ...dataToSave, created_at: new Date().toISOString() })
             .select()
             .single();
-          if (assetErr) {
-            console.error('Auto-save asset insert failed:', assetErr);
-          } else if (assetResult) {
-            const { error: linkErr } = await supabase
-              .schema('neta_ops')
-              .from('job_assets')
-              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user?.id });
-            if (linkErr) {
-              console.error('Auto-save job_assets link failed:', linkErr);
-            }
+          if (insertError) {
+            creatingRef.current = false;
+            throw insertError;
           }
-          window.history.replaceState(null, '', `/jobs/${jobId}/${reportSlug}/${newReport.id}`);
+          if (newReport) {
+            reportIdRef.current = newReport.id;
+            isAutoSaveCreatedRef.current = true;
+            setCurrentReportId(newReport.id);
+            const { data: assetResult, error: assetErr } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert({
+                name: assetName,
+                file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
+                template_type: 'ATS',
+                status: 'in_progress',
+              })
+              .select()
+              .single();
+            if (assetErr) {
+              console.error('Auto-save asset insert failed:', assetErr);
+            } else if (assetResult) {
+              const { error: linkErr } = await supabase
+                .schema('neta_ops')
+                .from('job_assets')
+                .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user?.id });
+              if (linkErr) {
+                console.error('Auto-save job_assets link failed:', linkErr);
+              }
+            }
+            window.history.replaceState(null, '', `/jobs/${jobId}/${reportSlug}/${newReport.id}`);
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (err) {
@@ -432,8 +446,12 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
     } finally {
       savingInFlightRef.current = false;
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [formData, jobId, currentReportId, isEditing, user]);
+  }, [formData, jobId, isEditing, user]);
 
   useEffect(() => {
     if (isEditing && jobId) {

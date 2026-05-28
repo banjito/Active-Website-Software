@@ -113,6 +113,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
 
   const [formData, setFormData] = useState<ReportData>({
@@ -358,72 +361,87 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
     try {
       setIsAutoSaving(true);
 
-      if (currentReportId) {
+      if (reportIdRef.current) {
         const { error } = await supabase
           .schema('neta_ops')
           .from('medium_voltage_switch_sf6_reports')
           .update(payload)
-          .eq('id', currentReportId);
-        
+          .eq('id', reportIdRef.current);
+
         if (error) {
           console.error('Auto-save update error:', error);
           throw error;
         }
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        const { data, error } = await supabase
-          .schema('neta_ops')
-          .from('medium_voltage_switch_sf6_reports')
-          .insert(payload)
-          .select('id')
-          .single();
-
-        if (error) {
-          console.error('Auto-save insert error:', error);
-          throw error;
-        }
-
-        if (data) {
-          const newReportId = data.id;
-          
-          const assetData = {
-            name: `Medium Voltage Switch SF6 - ${formData.identifier || formData.eqptLocation || ''}`,
-            file_url: `report:/jobs/${jobId}/medium-voltage-switch-sf6/${newReportId}`,
-            user_id: user.id
-          };
-          
-          const { data: assetResult, error: assetError } = await supabase
+        creatingRef.current = true;
+        try {
+          const { data, error } = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
+            .from('medium_voltage_switch_sf6_reports')
+            .insert(payload)
             .select('id')
             .single();
-          
-          if (assetError) {
-            console.error('Auto-save asset error:', assetError);
+
+          if (error) {
+            console.error('Auto-save insert error:', error);
+            throw error;
           }
-            
-          if (assetResult) {
-            const { error: linkError } = await supabase
+
+          if (data) {
+            const newReportId = data.id;
+            reportIdRef.current = newReportId;
+
+            const assetData = {
+              name: `Medium Voltage Switch SF6 - ${formData.identifier || formData.eqptLocation || ''}`,
+              file_url: `report:/jobs/${jobId}/medium-voltage-switch-sf6/${newReportId}`,
+              user_id: user.id
+            };
+
+            const { data: assetResult, error: assetError } = await supabase
               .schema('neta_ops')
-              .from('job_assets')
-              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
-            
-            if (linkError) {
-              console.error('Auto-save job_assets link error:', linkError);
+              .from('assets')
+              .insert(assetData)
+              .select('id')
+              .single();
+
+            if (assetError) {
+              console.error('Auto-save asset error:', assetError);
             }
+
+            if (assetResult) {
+              const { error: linkError } = await supabase
+                .schema('neta_ops')
+                .from('job_assets')
+                .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+
+              if (linkError) {
+                console.error('Auto-save job_assets link error:', linkError);
+              }
+            }
+
+            setCurrentReportId(newReportId);
+            isAutoSaveCreatedRef.current = true;
+            window.history.replaceState({}, '', `/jobs/${jobId}/medium-voltage-switch-sf6/${newReportId}`);
+          } else {
+            creatingRef.current = false;
           }
-          
-          setCurrentReportId(newReportId);
-          isAutoSaveCreatedRef.current = true;
-          window.history.replaceState({}, '', `/jobs/${jobId}/medium-voltage-switch-sf6/${newReportId}`);
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error) {
       console.error('Auto-save error:', error);
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, currentReportId, formData, status]);
+  }, [jobId, user?.id, formData, status]);
 
   // Auto-save effect with debounce
   useEffect(() => {

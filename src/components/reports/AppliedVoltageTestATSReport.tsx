@@ -122,6 +122,9 @@ const AppliedVoltageTestATSReport: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
 
   const reportSlug = 'applied-voltage-test-ats-report';
   const reportName = getReportName(reportSlug);
@@ -335,12 +338,12 @@ const AppliedVoltageTestATSReport: React.FC = () => {
 
     try {
       let result: any;
-      if (currentReportId) {
+      if (reportIdRef.current) {
         result = await supabase
           .schema('neta_ops')
           .from('applied_voltage_test_ats_reports')
           .update(fullPayload)
-          .eq('id', currentReportId)
+          .eq('id', reportIdRef.current)
           .select()
           .single();
         if (result?.error && String(result.error.message || '').toLowerCase().includes('data')) {
@@ -348,59 +351,73 @@ const AppliedVoltageTestATSReport: React.FC = () => {
             .schema('neta_ops')
             .from('applied_voltage_test_ats_reports')
             .update(basePayload)
-            .eq('id', currentReportId)
+            .eq('id', reportIdRef.current)
             .select()
             .single();
         }
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        result = await supabase
-          .schema('neta_ops')
-          .from('applied_voltage_test_ats_reports')
-          .insert(fullPayload)
-          .select()
-          .single();
-        if (result?.error && String(result.error.message || '').toLowerCase().includes('data')) {
+        creatingRef.current = true;
+        try {
           result = await supabase
             .schema('neta_ops')
             .from('applied_voltage_test_ats_reports')
-            .insert(basePayload)
+            .insert(fullPayload)
             .select()
             .single();
-        }
-
-        if (result.data) {
-          const newReportId = result.data.id;
-          isAutoSaveCreatedRef.current = true;
-          setCurrentReportId(newReportId);
-
-          // Create asset entry
-          const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.serialNumber || 'Unnamed'),
-            file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
-            user_id: user.id,
-          };
-          const { data: assetResult, error: assetError } = await supabase
-            .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
-            .select()
-            .single();
-          if (!assetError && assetResult) {
-            await supabase
+          if (result?.error && String(result.error.message || '').toLowerCase().includes('data')) {
+            result = await supabase
               .schema('neta_ops')
-              .from('job_assets')
-              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+              .from('applied_voltage_test_ats_reports')
+              .insert(basePayload)
+              .select()
+              .single();
           }
 
-          window.history.replaceState({}, '', `/jobs/${jobId}/${reportSlug}/${newReportId}`);
+          if (result.data) {
+            const newReportId = result.data.id;
+            reportIdRef.current = newReportId;
+            isAutoSaveCreatedRef.current = true;
+            setCurrentReportId(newReportId);
+
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.serialNumber || 'Unnamed'),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
+              user_id: user.id,
+            };
+            const { data: assetResult, error: assetError } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+            if (!assetError && assetResult) {
+              await supabase
+                .schema('neta_ops')
+                .from('job_assets')
+                .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            }
+
+            window.history.replaceState({}, '', `/jobs/${jobId}/${reportSlug}/${newReportId}`);
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error) {
       console.error('Autosave error:', error);
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, isEditing, isAutoSaving, formData, currentReportId, reportSlug]);
+  }, [jobId, user?.id, isEditing, isAutoSaving, formData, reportSlug]);
 
   // Autosave effect
   useEffect(() => {
@@ -439,12 +456,12 @@ const AppliedVoltageTestATSReport: React.FC = () => {
 
     try {
       let result: any;
-      if (currentReportId) {
+      if (reportIdRef.current) {
         result = await supabase
           .schema('neta_ops')
           .from('applied_voltage_test_ats_reports')
           .update(fullPayload)
-          .eq('id', currentReportId)
+          .eq('id', reportIdRef.current)
           .select()
           .single();
         if (result?.error && String(result.error.message || '').toLowerCase().includes('data')) {
@@ -452,48 +469,74 @@ const AppliedVoltageTestATSReport: React.FC = () => {
             .schema('neta_ops')
             .from('applied_voltage_test_ats_reports')
             .update(basePayload)
-            .eq('id', currentReportId)
+            .eq('id', reportIdRef.current)
             .select()
             .single();
         }
-      } else {
+      } else if (creatingRef.current) {
+        const deadline = Date.now() + 5000;
+        while (creatingRef.current && !reportIdRef.current && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        if (!reportIdRef.current) {
+          throw new Error('Report creation is still in progress. Please try again.');
+        }
         result = await supabase
           .schema('neta_ops')
           .from('applied_voltage_test_ats_reports')
-          .insert(fullPayload)
+          .update(fullPayload)
+          .eq('id', reportIdRef.current)
           .select()
           .single();
-        if (result?.error && String(result.error.message || '').toLowerCase().includes('data')) {
+      } else {
+        creatingRef.current = true;
+        try {
           result = await supabase
             .schema('neta_ops')
             .from('applied_voltage_test_ats_reports')
-            .insert(basePayload)
+            .insert(fullPayload)
             .select()
             .single();
-        }
+          if (result?.error && String(result.error.message || '').toLowerCase().includes('data')) {
+            result = await supabase
+              .schema('neta_ops')
+              .from('applied_voltage_test_ats_reports')
+              .insert(basePayload)
+              .select()
+              .single();
+          }
 
-        if (result.data) {
-          const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.serialNumber || 'Unnamed'),
-            file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
-            user_id: user.id,
-          };
-          const { data: assetResult, error: assetError } = await supabase
-            .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
-            .select()
-            .single();
-          if (assetError) throw assetError;
-          await supabase
-            .schema('neta_ops')
-            .from('job_assets')
-            .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+          if (result.data) {
+            reportIdRef.current = result.data.id;
+            setCurrentReportId(result.data.id);
+
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.serialNumber || 'Unnamed'),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
+              user_id: user.id,
+            };
+            const { data: assetResult, error: assetError } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+            if (assetError) throw assetError;
+            await supabase
+              .schema('neta_ops')
+              .from('job_assets')
+              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (saveError) {
+          creatingRef.current = false;
+          throw saveError;
         }
       }
       if (result.error) throw result.error;
       setIsEditing(false);
-      alert('Report ' + (currentReportId ? 'updated' : 'saved') + ' successfully!');
+      alert('Report ' + (reportIdRef.current ? 'updated' : 'saved') + ' successfully!');
       navigateAfterSave(navigate, jobId, location);
     } catch (error: any) {
       console.error('Error saving report:', error);

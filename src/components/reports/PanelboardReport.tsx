@@ -200,6 +200,9 @@ const PanelboardReport: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(initialReportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
   const [searchParams] = useSearchParams();
   const isPrintMode = searchParams.get('print') === 'true';
   const { locked } = useReportLocked(currentReportId, jobId, 'panelboard-report');
@@ -1027,63 +1030,66 @@ const PanelboardReport: React.FC = () => {
     try {
       setIsAutoSaving(true);
 
-      if (currentReportId) {
-        // Update existing report
+      if (reportIdRef.current) {
         await supabase
           .schema('neta_ops')
           .from('panelboard_reports')
-          .update(reportData)
-          .eq('id', currentReportId);
+          .update(payload)
+          .eq('id', reportIdRef.current);
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
       } else {
-        // Create new report
-        const { data: newReport, error: insertError } = await supabase
-          .schema('neta_ops')
-          .from('panelboard_reports')
-          .insert(reportData)
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-
-        if (newReport) {
-          // Create asset entry
-          const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
-            file_url: `report:/jobs/${jobId}/panelboard-report/${newReport.id}`,
-            user_id: user.id
-          };
-
-          const { data: assetResult, error: assetError } = await supabase
+        creatingRef.current = true;
+        try {
+          const result = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
+            .from('panelboard_reports')
+            .insert(payload)
             .select()
             .single();
 
-          if (assetError) throw assetError;
+          if (result.data) {
+            const newReportId = result.data.id;
+            reportIdRef.current = newReportId;
 
-          // Link asset to job
-          await supabase
-            .schema('neta_ops')
-            .from('job_assets')
-            .insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
               user_id: user.id
-            });
+            };
 
-          // Update state and URL
-          setCurrentReportId(newReport.id);
-          isAutoSaveCreatedRef.current = true;
-          window.history.replaceState({}, '', `/jobs/${jobId}/panelboard-report/${newReport.id}`);
+            const { data: assetResult } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select()
+              .single();
+
+            if (assetResult) {
+              await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+            }
+
+            setCurrentReportId(newReportId);
+            isAutoSaveCreatedRef.current = true;
+            window.history.replaceState({}, '', `/jobs/${jobId}/${reportSlug}/${newReportId}`);
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (error) {
       console.error('Auto-save error:', error);
     } finally {
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, currentReportId, formData]);
+  }, [jobId, user?.id, formData]);
 
   // Save report
   const handleSave = async () => {
@@ -1130,50 +1136,73 @@ const PanelboardReport: React.FC = () => {
 
     try {
       let result;
-      if (currentReportId) {
-        // Update existing report
+      if (reportIdRef.current) {
         result = await supabase
           .schema('neta_ops')
           .from('panelboard_reports')
           .update(reportData)
-          .eq('id', currentReportId)
+          .eq('id', reportIdRef.current)
           .select()
           .single();
+      } else if (creatingRef.current) {
+        const deadline = Date.now() + 5000;
+        while (creatingRef.current && !reportIdRef.current && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        if (reportIdRef.current) {
+          result = await supabase
+            .schema('neta_ops')
+            .from('panelboard_reports')
+            .update(reportData)
+            .eq('id', reportIdRef.current)
+            .select()
+            .single();
+        } else {
+          throw new Error('Report creation is still in progress. Please try again.');
+        }
       } else {
-        // Create new report
-        result = await supabase
-          .schema('neta_ops')
-          .from('panelboard_reports')
-          .insert(reportData)
-          .select()
-          .single();
+        creatingRef.current = true;
+        try {
+          result = await supabase
+            .schema('neta_ops')
+            .from('panelboard_reports')
+            .insert(reportData)
+            .select()
+            .single();
 
-        // Create asset entry
-        if (result.data) {
-                      const assetData = {
-              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
-              file_url: `report:/jobs/${jobId}/panelboard-report/${result.data.id}`,
+          if (result.data) {
+            reportIdRef.current = result.data.id;
+            setCurrentReportId(result.data.id);
+            const assetData = {
+            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
+            file_url: `report:/jobs/${jobId}/panelboard-report/${result.data.id}`,
             user_id: user.id
-          };
-
-          const { data: assetResult, error: assetError } = await supabase
+            };
+            
+            const { data: assetResult, error: assetError } = await supabase
             .schema('neta_ops')
             .from('assets')
             .insert(assetData)
             .select()
             .single();
-
-          if (assetError) throw assetError;
-
-          // Link asset to job
-          await supabase
+            
+            if (assetError) throw assetError;
+            
+            // Link asset to job
+            await supabase
             .schema('neta_ops')
             .from('job_assets')
             .insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id
+            job_id: jobId,
+            asset_id: assetResult.id,
+            user_id: user.id
             });
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (saveError) {
+          creatingRef.current = false;
+          throw saveError;
         }
       }
 

@@ -34,9 +34,14 @@ const [isEditing, setIsEditing] = useState(!initialReportId);
 const [isAutoSaving, setIsAutoSaving] = useState(false);
 const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 const isAutoSaveCreatedRef = React.useRef(false);
+const reportIdRef = React.useRef<string | undefined>(initialReportId);
+const creatingRef = React.useRef(false);
+const pendingSaveRef = React.useRef(false);
 ```
 
 **Note**: Use `React.useRef` instead of importing `useRef` separately to avoid import issues.
+
+**Concurrent-insert guard (required):** `reportIdRef`, `creatingRef`, and `pendingSaveRef` prevent duplicate report rows when multiple autosaves fire before the first INSERT returns. See [Concurrent-insert guard](#concurrent-insert-guard) below.
 
 ---
 
@@ -311,6 +316,89 @@ Add the "Auto Saving Enabled" badge to the header:
   )}
 </div>
 ```
+
+---
+
+## Concurrent-insert guard
+
+### Problem
+
+Autosave uses a 500ms debounce. If the user keeps typing, a second autosave can start **before** the first `INSERT` finishes. The code used to check `currentReportId` from React state to decide insert vs update. State updates are async, so both calls saw “no report id yet” and both ran `INSERT` — creating duplicate rows (sometimes milliseconds apart).
+
+### Solution
+
+Use **refs** (synchronous) instead of state for the insert/update gate:
+
+| Ref | Purpose |
+|-----|---------|
+| `reportIdRef` | Holds the report UUID as soon as the first insert succeeds |
+| `creatingRef` | `true` while an insert is in flight; blocks a second insert |
+| `pendingSaveRef` | If a save was skipped because an insert was in flight, queue one trailing save after insert completes |
+
+### autoSave pattern
+
+```typescript
+if (reportIdRef.current) {
+  await supabase.from(TABLE).update(payload).eq('id', reportIdRef.current);
+} else if (creatingRef.current) {
+  pendingSaveRef.current = true;
+} else {
+  creatingRef.current = true;
+  try {
+    const result = await supabase.from(TABLE).insert(payload).select().single();
+    if (result.data) {
+      reportIdRef.current = result.data.id;
+      setCurrentReportId(result.data.id);
+      // asset + job_assets + URL replaceState (unchanged)
+    } else {
+      creatingRef.current = false;
+    }
+  } catch (e) {
+    creatingRef.current = false;
+    throw e;
+  }
+}
+// in finally:
+if (pendingSaveRef.current) {
+  pendingSaveRef.current = false;
+  setTimeout(() => autoSave(), 0);
+}
+```
+
+Remove `currentReportId` from the `autoSave` `useCallback` dependency array; use `reportIdRef` inside the callback instead.
+
+### handleSave pattern
+
+Use the same `reportIdRef` / `creatingRef` checks. If `creatingRef.current` is true when the user clicks Save, wait briefly for the in-flight insert, then update:
+
+```typescript
+} else if (creatingRef.current) {
+  const deadline = Date.now() + 5000;
+  while (creatingRef.current && !reportIdRef.current && Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  if (reportIdRef.current) {
+    // update path
+  } else {
+    throw new Error('Report creation is still in progress. Please try again.');
+  }
+}
+```
+
+### URL param sync
+
+If the report uses `reportId` from the URL (not `initialReportId`), sync the ref when the param changes:
+
+```typescript
+useEffect(() => {
+  setCurrentReportId(reportId);
+  reportIdRef.current = reportId;
+}, [reportId]);
+```
+
+### Reports updated (May 2026)
+
+All report components that use `autoSaveTimerRef` / `isAutoSaveCreatedRef` were patched with this guard, including `PanelboardAssembliesATS25Report.tsx` (confirmed duplicate source in production).
 
 ---
 

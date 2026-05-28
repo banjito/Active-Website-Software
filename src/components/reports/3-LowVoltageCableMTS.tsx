@@ -404,6 +404,9 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
   const isPrintMode = searchParams.get('print') === 'true';
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(reportId);
+  const creatingRef = React.useRef(false);
+  const pendingSaveRef = React.useRef(false);
   // Mutex shared between autoSave and handleSave so they cannot both insert
   // concurrently. Without this, a manual Save click during the auto-save
   // debounce window can create a duplicate report row + orphaned asset.
@@ -412,6 +415,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
   // Keep currentReportId in sync if URL param changes
   useEffect(() => {
     setCurrentReportId(reportId);
+    reportIdRef.current = reportId;
     isAutoSaveCreatedRef.current = false;
   }, [reportId]);
 
@@ -1468,53 +1472,64 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         updated_at: new Date().toISOString(),
       };
 
-      if (currentReportId) {
+      if (reportIdRef.current) {
         const { error: updateError } = await supabase
           .schema('neta_ops')
           .from('low_voltage_cable_test_3sets')
           .update(payload)
-          .eq('id', currentReportId);
+          .eq('id', reportIdRef.current);
         if (updateError) throw updateError;
-      } else if (!isAutoSaveCreatedRef.current) {
-        isAutoSaveCreatedRef.current = true;
-        const insertPayload = { ...payload, created_at: new Date().toISOString() };
-        const { data: insertData, error: insertError } = await supabase
-          .schema('neta_ops')
-          .from('low_voltage_cable_test_3sets')
-          .insert(insertPayload)
-          .select('id')
-          .single();
-        if (insertError) {
-          isAutoSaveCreatedRef.current = false;
-          throw insertError;
-        }
-        if (insertData) {
-          const newId = insertData.id as string;
-          setCurrentReportId(newId);
-
-          const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || ''),
-            file_url: `report:/jobs/${jobId}/${reportSlug}/${newId}`,
-            user_id: user.id,
-            created_at: new Date().toISOString(),
-          };
-          const { data: assetResult, error: assetError } = await supabase
+      } else if (creatingRef.current) {
+        pendingSaveRef.current = true;
+      } else {
+        creatingRef.current = true;
+        try {
+          const insertPayload = { ...payload, created_at: new Date().toISOString() };
+          const { data: insertData, error: insertError } = await supabase
             .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
+            .from('low_voltage_cable_test_3sets')
+            .insert(insertPayload)
             .select('id')
             .single();
-          if (assetError) {
-            console.error('Auto-save asset insert failed:', assetError);
-          } else if (assetResult) {
-            const { error: linkError } = await supabase
-              .schema('neta_ops')
-              .from('job_assets')
-              .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
-            if (linkError) console.error('Auto-save job_assets link failed:', linkError);
+          if (insertError) {
+            creatingRef.current = false;
+            throw insertError;
           }
+          if (insertData) {
+            const newId = insertData.id as string;
+            reportIdRef.current = newId;
+            isAutoSaveCreatedRef.current = true;
+            setCurrentReportId(newId);
 
-          window.history.replaceState(null, '', `/jobs/${jobId}/${reportSlug}/${newId}`);
+            const assetData = {
+              name: getAssetName(reportSlug, formData.identifier || ''),
+              file_url: `report:/jobs/${jobId}/${reportSlug}/${newId}`,
+              user_id: user.id,
+              created_at: new Date().toISOString(),
+            };
+            const { data: assetResult, error: assetError } = await supabase
+              .schema('neta_ops')
+              .from('assets')
+              .insert(assetData)
+              .select('id')
+              .single();
+            if (assetError) {
+              console.error('Auto-save asset insert failed:', assetError);
+            } else if (assetResult) {
+              const { error: linkError } = await supabase
+                .schema('neta_ops')
+                .from('job_assets')
+                .insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
+              if (linkError) console.error('Auto-save job_assets link failed:', linkError);
+            }
+
+            window.history.replaceState(null, '', `/jobs/${jobId}/${reportSlug}/${newId}`);
+          } else {
+            creatingRef.current = false;
+          }
+        } catch (insertError) {
+          creatingRef.current = false;
+          throw insertError;
         }
       }
     } catch (err) {
@@ -1522,8 +1537,12 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
     } finally {
       savingInFlightRef.current = false;
       setIsAutoSaving(false);
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        setTimeout(() => autoSave(), 0);
+      }
     }
-  }, [jobId, user?.id, isEditMode, currentReportId, buildSavePayload, formData.identifier, reportSlug]);
+  }, [jobId, user?.id, isEditMode, buildSavePayload, formData.identifier, reportSlug]);
 
   // Debounced auto-save trigger when form data, status, or edit mode changes
   useEffect(() => {

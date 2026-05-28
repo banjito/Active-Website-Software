@@ -217,6 +217,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(!reportId);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   
   // Update initial state to match the new FormData structure
   const [formData, setFormData] = useState<FormData>({
@@ -568,6 +569,8 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
   // Handle save/update
   const handleSave = async () => {
     if (!jobId || !user?.id) return;
+    if (isSaving) return;
+    setIsSaving(true);
 
     try {
       const reportData = {
@@ -634,6 +637,8 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
       navigateAfterSave(navigate, jobId, location);
     } catch (error) {
       console.error('Error saving report:', error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -776,10 +781,10 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
               ) : (
                 <button
                   onClick={handleSave}
-                  disabled={!isEditing}
-                  className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700'}`}
+                  disabled={!isEditing || isSaving}
+                  className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? 'hidden' : 'hover:bg-orange-700'} ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
-                  Save Report
+                  {isSaving ? 'Saving...' : 'Save Report'}
                 </button>
               )}
             </div>
@@ -1891,26 +1896,25 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
           </div>
           
           {/* Comments subsection within Test Equipment */}
-          <div className="mt-6">
+          <div className="mt-6 comments-section">
             <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white print:text-black print:font-bold">Comments</h3>
             <textarea
               value={formData.comments}
               onChange={(e) => handleChange('comments', e.target.value)}
               readOnly={!isEditing}
               rows={4}
-              className={`form-textarea resize-none w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''} print:hidden`}
+              className={`form-textarea resize-none w-full whitespace-pre-wrap break-words ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''} print:hidden`}
             />
             {/* Print-only comments box */}
-            <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border">
-                <tbody>
-                  <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border" style={{ minHeight: '100px' }}>
-                      <div className="mt-0">{formData.comments || ''}</div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="hidden print:block comments-print-wrapper" style={{ width: '100%' }}>
+              <div
+                className="comments-cell border border-gray-300 print:border-black print:border"
+                style={{ width: '100%', boxSizing: 'border-box', padding: '8px', minHeight: '100px' }}
+              >
+                <div className="comments-text whitespace-pre-wrap break-words text-sm">
+                  {formData.comments || '\u00A0'}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1919,8 +1923,10 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
       {!isPrintMode && isEditing && (
         <div className="mb-6 print:hidden flex justify-center">
           <button
+            disabled={isSaving}
             onClick={async () => {
               if (!jobId || !user?.id) return;
+              if (isSaving) return;
               
               try {
                 // Save the report first
@@ -2273,6 +2279,33 @@ if (typeof document !== 'undefined') {
 
       /* Keep Test Equipment section together */
       .mb-6.print\\:mb-2:has(h2:contains("Test Equipment Used")) { page-break-inside: avoid !important; break-inside: avoid !important; }
+
+      /* Comments — wrap long text and preserve line breaks */
+      .comments-section { page-break-inside: avoid !important; break-inside: avoid !important; display: block !important; width: 100% !important; }
+      .comments-section h3 { page-break-after: avoid !important; }
+      .comments-print-wrapper {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      .comments-section .comments-cell {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: 100px !important;
+        padding: 8px !important;
+        overflow: hidden !important;
+      }
+      .comments-section .comments-text {
+        display: block !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        line-height: 1.4 !important;
+        max-width: 100% !important;
+      }
     }
   `;
   document.head.appendChild(style);

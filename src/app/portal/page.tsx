@@ -4,7 +4,7 @@ import Card from "../../components/ui/Card"
 import { CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs"
 import { Badge } from "../../components/ui"
-import { ChevronRight, Building, MapPin, User as UserIcon, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Loader2, BookOpen, MoreVertical, Check, AlertCircle, Image as ImageIcon } from "lucide-react"
+import { ChevronRight, Building, MapPin, User as UserIcon, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Loader2, BookOpen, MoreVertical, Check, AlertCircle, Image as ImageIcon, Download, Plane  } from "lucide-react"
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react"
 import { useAuth } from "../../lib/AuthContext"
 import { useDivision } from '../../App'
@@ -885,25 +885,19 @@ export default function PortalLanding() {
             />
             <div className="flex gap-3">
               <Button 
-                className="bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 px-8 text-base rounded-full inline-flex items-center whitespace-nowrap"
-                onClick={handleWelcome}
-              >
-                Get Started <span className="ml-1">›</span>
-              </Button>
-              <Button 
                 variant="outline" 
                 className="h-11 px-5 text-base rounded-md border-gray-200 text-gray-600 hover:text-gray-900 dark:border-dark-300 dark:text-white dark:hover:text-white dark:hover:bg-dark-700/20"
                 onClick={handleAbout}
               >
                 Learn More
               </Button>
-              <a
-                href="/assets/offline-software.zip"
-                download
-                className="inline-flex items-center justify-center h-11 px-5 text-base rounded-md border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:border-dark-300 dark:text-white dark:hover:text-white dark:hover:bg-dark-700/20"
+              <Button
+              onClick={() => window.open('/assets/offline-software.zip', '_blank')}
+              className="inline-flex items-center justify-center h-11 px-5 !text-gray-600 rounded-md bg-transparent border border-gray-200 hover:bg-gray-100"
+              leftIcon={<Download className="h-5 w-5 text-gray-600" />}
               >
-                Get Offline Software
-              </a>
+                Offline Software
+              </Button>
             </div>
           </div>
         </div>
@@ -1779,7 +1773,7 @@ export default function PortalLanding() {
                 <CardHeader className="flex flex-row items-start justify-between p-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-full bg-gray-50 dark:bg-dark-700/20">
-                      <Calendar className="h-5 w-5 text-gray-500 dark:text-white" />
+                      <Plane className="h-5 w-5 text-gray-500 dark:text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Runway</CardTitle>
@@ -2180,14 +2174,14 @@ export default function PortalLanding() {
 
 
       {/* Logout Section */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 border-none">
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 border-none">
         <div className="text-center">
           <Button
             onClick={handleSignOut}
             disabled={isSigningOut}
             variant="outline"
             leftIcon={<LogOut className="h-4 w-4" />}
-            className="gap-2 border-none text-black hover:bg-red-700/90 hover:text-white"
+            className="gap-2 border-2 border-gray-200 text-black hover:bg-red-700/90 hover:text-white"
           >
             {isSigningOut ? 'Signing out...' : 'Sign Out'}
           </Button>

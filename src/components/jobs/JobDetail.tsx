@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, ClipboardCheck, Calendar, DollarSign, Building, User, Phone, Mail, MapPin, Clock, AlertTriangle, CheckCircle, Image, Maximize2, Minimize2, Save, Edit3, Download, Eye, Star, StarOff, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, ClipboardCheck, Calendar, DollarSign, Building, User, Phone, Mail, MapPin, Clock, AlertTriangle, CheckCircle, Image, Maximize2, Minimize2, Save, Edit3, Download, Eye, Star, MessageCircle, SquareArrowOutUpRight } from 'lucide-react';
 import { supabase, isConnectionError } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import { isSuperUser } from '../../lib/roles';
@@ -1174,6 +1174,8 @@ export default function JobDetail() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedApprovedIds, setSelectedApprovedIds] = useState<Set<string>>(new Set());
+  const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(new Set());
+  const [isArchiving, setIsArchiving] = useState(false);
   const [isBatchUploading, setIsBatchUploading] = useState(false);
   const [batchUploadProgress, setBatchUploadProgress] = useState(0);
   const [batchUploadStatus, setBatchUploadStatus] = useState<string>('');
@@ -4435,6 +4437,95 @@ export default function JobDetail() {
     });
   };
 
+  const handleToggleAssetSelection = (assetId: string) => {
+    setSelectedAssetIds(prev => {
+      const next = new Set(prev);
+      if (next.has(assetId)) next.delete(assetId); else next.add(assetId);
+      return next;
+    });
+  };
+
+  const handleSelectAllVisibleAssets = () => {
+    setSelectedAssetIds(prev => {
+      const visibleIds = filteredJobAssets.map(a => a.id);
+      const allSelected = visibleIds.length > 0 && visibleIds.every(vid => prev.has(vid));
+      if (allSelected) {
+        // Deselect all visible
+        const next = new Set(prev);
+        visibleIds.forEach(vid => next.delete(vid));
+        return next;
+      }
+      // Select all visible
+      const next = new Set(prev);
+      visibleIds.forEach(vid => next.add(vid));
+      return next;
+    });
+  };
+
+  const handleArchiveSelected = async () => {
+    const targetStatus: Asset['status'] = assetStatusFilter === 'archived' ? 'not started' : 'archived';
+    const actionWord = targetStatus === 'archived' ? 'archive' : 'restore';
+
+    const selectedAssets = jobAssets.filter(a => selectedAssetIds.has(a.id));
+    if (selectedAssets.length === 0) {
+      toast({
+        title: 'No Reports Selected',
+        description: `Please select reports to ${actionWord}.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const confirmed = confirm(
+      `Are you sure you want to ${actionWord} ${selectedAssets.length} selected report${selectedAssets.length !== 1 ? 's' : ''}?`
+    );
+    if (!confirmed) return;
+
+    try {
+      setIsArchiving(true);
+      const assetIds = selectedAssets.map(a => a.id);
+
+      const { error } = await supabase
+        .schema('neta_ops')
+        .from('assets')
+        .update({ status: targetStatus })
+        .in('id', assetIds);
+
+      if (error) {
+        throw new Error(`Failed to ${actionWord} reports: ${error.message}`);
+      }
+
+      setJobAssets(prev => prev.map(a =>
+        assetIds.includes(a.id) ? { ...a, status: targetStatus } : a
+      ));
+      setFilteredJobAssets(prev => prev.map(a =>
+        assetIds.includes(a.id) ? { ...a, status: targetStatus } : a
+      ));
+
+      setSelectedAssetIds(new Set());
+
+      window.dispatchEvent(new CustomEvent('assetStatusChanged', {
+        detail: { assetIds, newStatus: targetStatus, jobId: id }
+      }));
+
+      await fetchJobAssets();
+
+      toast({
+        title: targetStatus === 'archived' ? 'Reports Archived' : 'Reports Restored',
+        description: `Successfully ${targetStatus === 'archived' ? 'archived' : 'restored'} ${selectedAssets.length} report${selectedAssets.length !== 1 ? 's' : ''}.`,
+      });
+    } catch (error: any) {
+      console.error(`Error during batch ${actionWord}:`, error);
+      toast({
+        title: 'Update Failed',
+        description: error.message || `An error occurred while trying to ${actionWord} reports.`,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
   const handlePrintSelectedApprovedReports = async () => {
     if (isPrinting) return;
     setIsPrinting(true);
@@ -6032,10 +6123,14 @@ ${newBodyHtml}
               variant="outline"
               onClick={toggleShortcut}
               disabled={shortcutBusy}
-              className={`flex items-center gap-2 ${isShortcut ? 'border-yellow-400 text-yellow-600 dark:text-yellow-400' : ''}`}
+              className={isShortcut ? 'border-yellow-400 text-yellow-600 dark:text-yellow-400' : ''}
               title={isShortcut ? 'Remove from My Shortcuts' : 'Add to My Shortcuts'}
+              leftIcon={
+                <Star
+                  className={`h-5 w-5 shrink-0 ${isShortcut ? 'fill-current' : 'fill-none'}`}
+                />
+              }
             >
-              {isShortcut ? <Star className="h-5 w-5" /> : <StarOff className="h-5 w-5" />}
               {isShortcut ? 'In Shortcuts' : 'Add to Shortcuts'}
             </Button>
           )}
@@ -6048,9 +6143,8 @@ ${newBodyHtml}
                 setIsEditing(true);
                 setEditFormData(job);
               }}
-              className="flex items-center gap-2"
+              leftIcon={<Pencil className="h-5 w-5 shrink-0" />}
             >
-              <Pencil className="h-5 w-5 min-w-[20px] flex-shrink-0" />
               Edit Job
             </Button>
           )}
@@ -7360,9 +7454,8 @@ ${newBodyHtml}
                       <div className="flex space-x-2 relative" ref={dropdownRef}>
                         <Button 
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                          className="flex items-center gap-2"
+                          leftIcon={<Plus className="h-5 w-5 shrink-0" />}
                         >
-                          <Plus className="h-5 w-5 min-w-[20px] flex-shrink-0" />
                           Add Asset
                         </Button>
                         
@@ -7569,14 +7662,10 @@ ${newBodyHtml}
                     </div>
 
                     {/* Linked assets section */}
-                    <Card>
                       <CardHeader>
                         <div className="flex justify-between">
                           <div>
                             <CardTitle>Linked Reports</CardTitle>
-                            <CardDescription>
-                              Reports and documents that have been linked to this job
-                            </CardDescription>
                           </div>
                           <div className="w-1/3">
                             <Input
@@ -7750,6 +7839,39 @@ ${newBodyHtml}
                               )}
                             </div>
                           )}
+
+                          {/* Batch archive controls - appear once at least one report is selected */}
+                          {selectedAssetIds.size > 0 && (
+                            <div className="mt-4 flex items-center gap-2 flex-wrap">
+                              <Button
+                                variant="secondary"
+                                onClick={() => setSelectedAssetIds(new Set())}
+                              >
+                                Cancel Selection
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                onClick={handleSelectAllVisibleAssets}
+                              >
+                                {filteredJobAssets.length > 0 && filteredJobAssets.every(a => selectedAssetIds.has(a.id))
+                                  ? 'Deselect All'
+                                  : 'Select All'}
+                              </Button>
+                              <Button
+                                onClick={handleArchiveSelected}
+                                disabled={isArchiving}
+                                className={assetStatusFilter === 'archived'
+                                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                                  : 'bg-red-600 hover:bg-red-700 text-white'}
+                              >
+                                {isArchiving
+                                  ? 'Working...'
+                                  : assetStatusFilter === 'archived'
+                                    ? `Restore Selected (${selectedAssetIds.size})`
+                                    : `Archive Selected (${selectedAssetIds.size})`}
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </CardHeader>
                       <CardContent>
@@ -7833,7 +7955,7 @@ ${newBodyHtml}
                                               <TableHead>Submitted</TableHead>
                                               <TableHead>Approved/Issued</TableHead>
                                               <TableHead>Sent</TableHead>
-                                              <TableHead className="text-right">Actions</TableHead>
+                                              <TableHead className="text-right">Open</TableHead>
                                             </TableRow>
                                           </TableHeader>
                                           <TableBody>
@@ -7847,6 +7969,13 @@ ${newBodyHtml}
                                               .map((asset) => (
                                                 <TableRow key={asset.id}>
                                                   <TableCell className="font-medium">
+                                                    <input
+                                                      type="checkbox"
+                                                      className="mr-2"
+                                                      title="Select for archive"
+                                                      checked={selectedAssetIds.has(asset.id)}
+                                                      onChange={() => handleToggleAssetSelection(asset.id)}
+                                                    />
                                                     {asset.status === 'approved' && (
                                                       asset.file_url?.startsWith('report:') || 
                                                       (asset.file_url && !asset.file_url.startsWith('report:/') && asset.file_url.toLowerCase().endsWith('.pdf'))
@@ -7854,6 +7983,7 @@ ${newBodyHtml}
                                                       <input
                                                         type="checkbox"
                                                         className="mr-2"
+                                                        title="Select for print/sent"
                                                         checked={selectedApprovedIds.has(asset.id)}
                                                         onChange={() => handleToggleApprovedSelection(asset.id)}
                                                       />
@@ -7980,9 +8110,10 @@ ${newBodyHtml}
                                                       ) : asset.file_url.startsWith('report:') ? (
                                                         <Link 
                                                           to={getReportEditPath(asset)}
-                                                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                          className="inline-flex text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                          aria-label="Open"
                                                         >
-                                                          Open Report
+                                                          <SquareArrowOutUpRight className="h-5 w-5" />
                                                         </Link>
                                                       ) : (
                                                         <>
@@ -8074,20 +8205,14 @@ ${newBodyHtml}
                           </div>
                         )}
                       </CardContent>
-                    </Card>
-
                   </div>
                 )}
                 
                 {activeTab === 'reports' && job && (
                   isAdmin ? (
                     <div className="space-y-6">
-                      <Card>
                         <CardHeader>
-                          <CardTitle>Technical Reports</CardTitle>
-                          <CardDescription>
-                            Review and approve technical reports for this job
-                          </CardDescription>
+                          <CardTitle>Report Approvals</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <ReportApprovalWorkflow 
@@ -8099,11 +8224,9 @@ ${newBodyHtml}
                             }}
                           />
                         </CardContent>
-                      </Card>
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      <Card>
                         <CardHeader>
                           <CardTitle>Technical Reports</CardTitle>
                           <CardDescription>Report approval requires Admin role.</CardDescription>
@@ -8113,7 +8236,6 @@ ${newBodyHtml}
                             You do not have permission to access the report approval view. Please contact an administrator if you believe this is an error.
                           </div>
                         </CardContent>
-                      </Card>
                     </div>
                   )
                 )}

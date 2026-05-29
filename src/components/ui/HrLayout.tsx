@@ -1,15 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../lib/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { Link, useLocation, Navigate } from 'react-router-dom';
 import { usePermissions } from '@/hooks/usePermissions';
 import {
   LogOut,
-  MapPin,
-  User as UserIcon,
-  Settings,
   FileText,
-  Eye,
   Users,
   Briefcase,
   FileCheck,
@@ -44,10 +40,7 @@ import {
   UserCheck
 } from "lucide-react"
 import { Button } from './Button';
-import { ThemeToggle } from '../theme/theme-toggle';
-import { SettingsPopup } from './SettingsPopup';
-import { ProfileView } from '../profile/ProfileView';
-import { AboutPopup } from './AboutPopup';
+import { HeaderBar } from './HeaderBar';
 import { SidebarShortcuts } from '@/components/shortcuts/SidebarShortcuts';
 import { useMyMenuEnabled } from '@/lib/userPrefs';
 
@@ -74,7 +67,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
   const userRole = getUserRole();
   const isHrFullAccess = userRole === 'Admin' || userRole === 'Super Admin';
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Force a fresh role check from the server when entering the HR portal so role changes take effect immediately
   const hasRefreshed = useRef(false);
@@ -94,11 +86,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     }
   }, [user]);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
-  const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
   const [myMenuEnabled] = useMyMenuEnabled(user?.id);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     recruiting: false,
@@ -146,19 +133,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     }));
   };
 
-  // Effect to close profile dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-        setIsProfileMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [profileMenuRef]);
-
   const searchParams = new URLSearchParams(location.search);
   const isEmbed = searchParams.get('embed') === 'true';
 
@@ -185,21 +159,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     }
   };
 
-  const handleViewProfile = () => {
-    setIsProfileMenuOpen(false);
-    setIsProfileViewOpen(true);
-  };
-
-  const handleSettings = () => {
-    setIsProfileMenuOpen(false);
-    setSettingsMenuOpen(true);
-  };
-
-  const handleAbout = () => {
-    setIsProfileMenuOpen(false);
-    setIsAboutOpen(true);
-  };
-
   if (isEmbed) {
     return (
       <div className="min-h-screen bg-white dark:bg-dark-150">
@@ -219,7 +178,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       <div>
         <button
           onClick={() => toggleSection(section.key)}
-          className={`w-full flex items-center justify-between px-2 py-1.5 text-xs font-medium text-muted-foreground dark:text-dark-500 mt-3 mb-1 hover:text-gray-900 dark:hover:text-white transition-colors ${
+          className={`w-full flex items-center justify-between px-2 h-8 text-xs font-medium text-muted-foreground dark:text-dark-500 hover:text-gray-900 dark:hover:text-white transition-colors ${
             hasActiveItem ? 'text-gray-900 dark:text-white' : ''
           }`}
         >
@@ -234,7 +193,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
           )}
         </button>
         {isExpanded && (
-          <div className="flex flex-col gap-0.5 pl-2">
+          <div className="flex flex-col gap-1 pl-2 mt-1">
             {section.items.map((item) => (
               <Link key={item.path} to={item.path}>
                 <Button
@@ -375,20 +334,17 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-background dark:bg-dark-background">
+    <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background">
+      {!myMenuEnabled && (
+        <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-gray-200 dark:border-dark-200">
+          <HeaderBar />
+        </div>
+      )}
+
+      <div className="flex min-h-0 flex-1">
       {/* Sidebar - hidden when My Menu is enabled */}
       {!myMenuEnabled && (
-      <div className="w-64 min-w-[16rem] flex-shrink-0 flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200 flex">
-        {/* Logo */}
-        <div className="flex h-16 items-center border-b border-black/10 dark:border-dark-200 px-6">
-          <Link to="/portal">
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
-              alt="AMP Logo"
-              className="h-8 cursor-pointer hover:opacity-80 transition-opacity"
-            />
-          </Link>
-        </div>
+      <div className="w-64 min-w-[16rem] flex-shrink-0 flex flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200">
         {/* Sidebar Links */}
         <div className="flex flex-col gap-1 p-4 flex-grow overflow-y-auto">
           {myMenuEnabled && (
@@ -431,7 +387,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                   <CollapsibleSection key={section.key} section={section} />
                 ))}
               </div>
-              <Link to="/hr/self-service/manager-portal" className="mt-auto">
+              <Link to="/hr/self-service/manager-portal">
                 <Button
                   variant="ghost"
                   leftIcon={<Users className="h-3.5 w-3.5 text-[#f26722]" />}
@@ -442,9 +398,18 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                   Manager Portal
                 </Button>
               </Link>
+              <Button
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+                variant="ghost"
+                leftIcon={<LogOut className="h-3.5 w-3.5" />}
+                className="w-full justify-start pl-2 text-left text-xs font-medium text-red-600 hover:bg-black/5 dark:text-red-400 dark:hover:bg-dark-50 !justify-start h-8"
+              >
+                {isSigningOut ? 'Signing out...' : 'Sign Out'}
+              </Button>
             </>
           ) : (
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
               <Link to="/hr/onboarding/your-onboarding">
                 <Button
                   variant="ghost"
@@ -504,6 +469,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
           )}
         </div>
         {/* Bottom Logout Button */}
+        {!isHrFullAccess && (
         <div className="p-4 text-center">
           <Button
             onClick={handleSignOut}
@@ -515,132 +481,14 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
             {isSigningOut ? 'Signing out...' : 'Sign Out'}
           </Button>
         </div>
+        )}
       </div>
       )}
 
-      {/* Main Content Area */}
-      <div className="flex flex-col flex-1 min-w-0">
-        {/* Header */}
-        {!myMenuEnabled && (
-          <header className="sticky top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-sm dark:bg-dark-150/75 dark:border-dark-200 print:hidden">
-            <div className="w-full px-4 sm:px-6 lg:px-8">
-              <div className="flex h-20 items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0">
-                {myMenuEnabled && (
-                  <Link to="/portal" className="flex-shrink-0 hidden sm:block">
-                    <img
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
-                      alt="AMP Logo"
-                      className="h-8 lg:h-10 mr-2"
-                    />
-                  </Link>
-                )}
-                <h2 className="text-base lg:text-lg font-semibold truncate">HR Portal</h2>
-              </div>
-              <div className="flex items-center">
-                <div className="relative" ref={profileMenuRef}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full w-10 h-10 hover:bg-gray-100 dark:hover:bg-dark-50 p-0 overflow-hidden"
-                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  >
-                    {user?.user_metadata?.profileImage ? (
-                      <img
-                        src={user.user_metadata.profileImage}
-                        alt="Profile"
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <UserIcon className="h-5 w-5 text-gray-600 dark:text-dark-400" />
-                    )}
-                  </Button>
-                  {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-64 origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                      <div className="py-1">
-                        <div className="px-4 py-2 border-b border-gray-200 dark:border-dark-200">
-                          <p className="text-sm font-medium text-gray-900 dark:text-dark-900">
-                            {user?.user_metadata?.name || 'User'}
-                          </p>
-                          <p className="text-sm text-gray-500 dark:text-dark-400 truncate">
-                            {user?.user_metadata?.role || 'No role assigned'}
-                          </p>
-                          <p className="text-xs text-gray-400 dark:text-dark-500 truncate mt-1">
-                            {user?.email || 'Loading...'}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => navigate('/portal')}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
-                        >
-                          <MapPin className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
-                          Back to Portal
-                        </button>
-                        <button
-                          onClick={handleViewProfile}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
-                        >
-                          <Eye className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
-                          View Profile
-                        </button>
-                        <button
-                          onClick={handleSettings}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
-                        >
-                          <Settings className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
-                          Settings
-                        </button>
-                        <button
-                          onClick={handleAbout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
-                        >
-                          <FileText className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
-                          About
-                        </button>
-                        <button
-                          onClick={handleSignOut}
-                          disabled={isSigningOut}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
-                        >
-                          <LogOut className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
-                          {isSigningOut ? 'Signing out...' : 'Sign Out'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          </header>
-        )}
-
-        {/* Settings Popup */}
-        <SettingsPopup 
-          isOpen={settingsMenuOpen}
-          onClose={() => setSettingsMenuOpen(false)}
-          onAbout={handleAbout}
-          currentUser={user}
-        />
-
-        {/* Page Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 min-w-0 overflow-y-auto p-6">
           {children}
         </main>
       </div>
-
-      {/* Profile View Modal */}
-      {isProfileViewOpen && (
-        <ProfileView 
-          isOpen={isProfileViewOpen} 
-          onClose={() => setIsProfileViewOpen(false)} 
-        />
-      )}
-
-      <AboutPopup
-        isOpen={isAboutOpen}
-        onClose={() => setIsAboutOpen(false)}
-      />
     </div>
   );
 };

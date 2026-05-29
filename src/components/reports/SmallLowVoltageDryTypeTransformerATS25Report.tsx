@@ -524,7 +524,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
             reportIdRef.current = newReportId;
 
             const assetData = {
-              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
+              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
               file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
               user_id: user.id
             };

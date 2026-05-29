@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { isSuperUser } from '@/lib/roles';
 import { Bug, Lightbulb, Clock, Trophy, BarChart3, EyeOff, Eye } from 'lucide-react';
 import IssueNotes from '@/components/feedback/IssueNotes';
+import { HeaderBar } from '@/components/ui/HeaderBar';
 
 type Issue = {
   id: string;
@@ -591,7 +592,11 @@ const FeaturesFixesPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 flex justify-center">
+    <div className="min-h-screen bg-background text-foreground dark:bg-black dark:text-white">
+      <div className="sticky top-0 z-30 w-full shrink-0 border-b border-gray-200 dark:border-dark-200">
+        <HeaderBar />
+      </div>
+      <div className="p-6 flex justify-center">
       <div className="max-w-7xl w-full space-y-6">
         <div className="flex justify-between items-center mb-2">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Features & Fixes</h1>
@@ -1377,6 +1382,7 @@ const FeaturesFixesPage: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

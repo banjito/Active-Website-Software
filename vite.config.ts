@@ -41,12 +41,12 @@ export default defineConfig(({ mode }) => {
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
-    include: ['pdfjs-dist/build/pdf', 'pdfjs-dist/web/pdf_viewer']
+    include: ['pdfjs-dist/build/pdf.mjs', 'pdfjs-dist/web/pdf_viewer.mjs']
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "pdfjs-dist": path.resolve(__dirname, "./node_modules/pdfjs-dist/legacy/build/pdf.js")
+      "pdfjs-dist": path.resolve(__dirname, "./node_modules/pdfjs-dist/legacy/build/pdf.mjs")
     }
   },
   build: {

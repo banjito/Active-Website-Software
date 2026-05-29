@@ -637,6 +637,7 @@ function App() {
                   <Route path="/north_alabama/dashboard" element={<RequireAuth><Layout><NorthAlabamaDashboard /></Layout></RequireAuth>} />
                   <Route path="/tennessee/dashboard" element={<RequireAuth><Layout><TennesseeDashboard /></Layout></RequireAuth>} />
                   <Route path="/georgia/dashboard" element={<RequireAuth><Layout><GeorgiaDashboard /></Layout></RequireAuth>} />
+                  <Route path="/international/dashboard" element={<RequireAuth><Layout><InternationalDashboard /></Layout></RequireAuth>} />
                   <Route path="/engineering/dashboard" element={<RequireAuth><Layout><EngineeringDashboard /></Layout></RequireAuth>} />
                   <Route path="/calibration/dashboard" element={<RequireAuth><Layout><CalibrationDashboard /></Layout></RequireAuth>} />
                   <Route path="/armadillo/dashboard" element={<RequireAuth><ArmadilloRedirect /></RequireAuth>} />

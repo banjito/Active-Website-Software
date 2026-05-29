@@ -23,9 +23,28 @@ import { SidebarShortcuts } from '@/components/shortcuts/SidebarShortcuts';
 import { useMyMenuEnabled } from '@/lib/userPrefs';
 import { useMobileDetection } from '../../hooks/useMobileDetection';
 import { CommunityBoardPopover } from '@/components/community/CommunityBoardPopover';
+import { HeaderBar } from './HeaderBar';
 
 interface LayoutProps {
   children: React.ReactNode;
+}
+
+/** Job sub-routes that use Layout but are not equipment report forms. */
+const NON_REPORT_JOB_SUBROUTES = new Set([
+  'generated-document',
+  'deliverable',
+  'custom-form',
+]);
+
+/** True when viewing an equipment report form (components/reports), e.g. /jobs/:id/switchgear-report/:reportId */
+function isReportFormPath(pathname: string): boolean {
+  const parts = pathname.split('/').filter(Boolean);
+  const jobsIndex = parts.indexOf('jobs');
+  if (jobsIndex === -1) return false;
+  if (parts.length < jobsIndex + 3) return false;
+  const reportSlug = parts[jobsIndex + 2];
+  if (!reportSlug || NON_REPORT_JOB_SUBROUTES.has(reportSlug)) return false;
+  return true;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
@@ -61,11 +80,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, [location.pathname, isOnDivisionJobsOrDashboard]);
   const useGlobalJobs = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('useGlobalJobs') === 'true';
   
-  // Check if currently on a report page and extract job ID
-  const isReportPage = location.pathname.includes('/jobs/') && 
-    location.pathname.split('/').length > 3 && 
-    !location.pathname.endsWith('/jobs') &&
-    location.pathname.split('/')[3] !== '';
+  const isReportPage = isReportFormPath(location.pathname);
   
   const getJobIdFromReportPath = (): string | null => {
     if (!isReportPage) return null;
@@ -392,7 +407,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isEmbedded = searchParams.get('embedded') === 'true';
   const isMeetingsPage =
     location.pathname === '/meetings' || location.pathname.startsWith('/meetings/');
-  
+  const useHeaderBarLayout = !myMenuEnabled && !isMeetingsPage && !isReportPage;
+
   // If embedded mode, render children without any chrome
   if (isEmbedded) {
     return <div className="min-h-screen w-full">{children}</div>;
@@ -533,18 +549,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     );
   }
 
-  return (
-    <div className="flex min-h-screen bg-background dark:bg-dark-background">
-      {/* Mobile Overlay */}
-      {isMobileSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setIsMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar - hidden when My Menu is enabled or on Runway (/meetings) */}
-      {!myMenuEnabled && !isMeetingsPage && (
+  const sidebar = !myMenuEnabled && !isMeetingsPage ? (
       <div 
         ref={sidebarRef}
         className={`
@@ -552,25 +557,36 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           transform transition-transform duration-300 ease-in-out lg:transform-none
           ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           flex-shrink-0 print:hidden
+          ${useHeaderBarLayout ? 'lg:top-auto' : ''}
         `}
         style={{ minWidth: '16rem', maxWidth: '16rem' }}
       >
-        <div className="flex h-16 lg:h-20 items-center border-b border-black/10 dark:border-dark-200 px-4 lg:px-6">
-          <Link to="/portal" onClick={() => setIsMobileSidebarOpen(false)}>
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
-              alt="AMP Logo"
-              className="h-10 lg:h-12 cursor-pointer hover:opacity-80 transition-opacity"
-            />
-          </Link>
-          {/* Mobile Close Button */}
-          <button
-            onClick={() => setIsMobileSidebarOpen(false)}
-            className="ml-auto lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-100"
-          >
-            <X className="h-5 w-5 text-gray-600 dark:text-white" />
-          </button>
-        </div>
+        {useHeaderBarLayout ? (
+          <div className="flex h-12 items-center justify-end border-b border-black/10 dark:border-dark-200 px-4 lg:hidden">
+            <button
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-100"
+            >
+              <X className="h-5 w-5 text-gray-600 dark:text-white" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex h-16 lg:h-20 items-center border-b border-black/10 dark:border-dark-200 px-4 lg:px-6">
+            <Link to="/portal" onClick={() => setIsMobileSidebarOpen(false)}>
+              <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
+                alt="AMP Logo"
+                className="h-10 lg:h-12 cursor-pointer hover:opacity-80 transition-opacity"
+              />
+            </Link>
+            <button
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="ml-auto lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-100"
+            >
+              <X className="h-5 w-5 text-gray-600 dark:text-white" />
+            </button>
+          </div>
+        )}
         <div className="flex flex-col gap-1 p-3 lg:p-4 flex-grow overflow-y-auto mobile-space-y-1 min-w-0">
           {myMenuEnabled && (
             <>
@@ -595,12 +611,27 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Button>
         </div>
       </div>
-      )}
+  ) : null;
 
-      {/* Main Content Area */}
-      <div className={`flex flex-col flex-1 ${!myMenuEnabled ? 'lg:ml-0' : ''} min-w-0`}>
-        {!myMenuEnabled && (
-          <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/75 backdrop-blur-sm dark:bg-dark-150/75 dark:border-dark-200 shadow-sm print:hidden"> {/* <-- Add print:hidden to entire header */}
+  const mainContent = (
+        <main className="flex-1 min-w-0 p-3 sm:p-4 lg:p-6 overflow-x-auto overflow-y-auto">
+          {isReportLocked && (
+            <div className="report-locked-banner print:hidden mb-4 px-4 py-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg flex items-center gap-3" aria-hidden="true">
+              <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <div>
+                <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">Report Locked</p>
+                <p className="text-xs text-yellow-700 dark:text-yellow-300">This report has been approved or sent and cannot be edited. To make changes, the report status must be changed first.</p>
+              </div>
+            </div>
+          )}
+          {children}
+        </main>
+  );
+
+  const legacyHeader = !myMenuEnabled && !useHeaderBarLayout ? (
+          <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/75 backdrop-blur-sm dark:bg-dark-150/75 dark:border-dark-200 shadow-sm print:hidden">
             <div className="w-full px-3 sm:px-4 lg:px-8">
               <div className="flex h-16 lg:h-20 items-center justify-between">
               <div className="flex items-center gap-2 lg:gap-4 min-w-0 flex-1 print:hidden"> {/* <-- Keep print:hidden here too */}
@@ -718,32 +749,56 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </div>
           </header>
-        )}
+  ) : null;
 
-        {/* Settings Popup */}
-        <SettingsPopup
-          isOpen={settingsMenuOpen}
-          onClose={() => setSettingsMenuOpen(false)}
-          onAbout={handleAbout}
-          currentUser={user}
+  return (
+    <div className={`flex min-h-screen bg-background dark:bg-dark-background ${useHeaderBarLayout ? 'flex-col' : ''}`}>
+      {isMobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
         />
+      )}
 
-        <main className="flex-1 min-w-0 p-3 sm:p-4 lg:p-6 overflow-x-auto overflow-y-auto">
-          {/* Locked report banner - shown when report is approved or sent */}
-          {isReportLocked && (
-            <div className="report-locked-banner print:hidden mb-4 px-4 py-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg flex items-center gap-3" aria-hidden="true">
-              <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <div>
-                <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">Report Locked</p>
-                <p className="text-xs text-yellow-700 dark:text-yellow-300">This report has been approved or sent and cannot be edited. To make changes, the report status must be changed first.</p>
-              </div>
+      {useHeaderBarLayout && (
+        <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-gray-200 dark:border-dark-200">
+          <HeaderBar />
+        </div>
+      )}
+
+      {useHeaderBarLayout ? (
+        <div className="flex min-h-0 flex-1 min-w-0">
+          {sidebar}
+          <div className="flex flex-col flex-1 min-w-0">
+            <div className="flex items-center px-3 py-2 border-b border-gray-200 dark:border-dark-200 lg:hidden print:hidden">
+              <button
+                type="button"
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-100"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5 text-gray-600 dark:text-white" />
+              </button>
             </div>
-          )}
-          {children}
-        </main>
-      </div>
+            {mainContent}
+          </div>
+        </div>
+      ) : (
+        <>
+          {sidebar}
+          <div className={`flex flex-col flex-1 ${!myMenuEnabled ? 'lg:ml-0' : ''} min-w-0`}>
+            {legacyHeader}
+            {mainContent}
+          </div>
+        </>
+      )}
+
+      <SettingsPopup
+        isOpen={settingsMenuOpen}
+        onClose={() => setSettingsMenuOpen(false)}
+        onAbout={handleAbout}
+        currentUser={user}
+      />
 
       {/* Profile View Modal */}
       {isProfileViewOpen && (

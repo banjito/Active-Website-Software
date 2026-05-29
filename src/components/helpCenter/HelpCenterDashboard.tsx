@@ -36,7 +36,6 @@ import {
   Sparkles,
   HelpCircle,
   Settings,
-  ArrowLeft,
   X,
   ExternalLink,
   Briefcase,
@@ -62,6 +61,7 @@ import {
 } from '@/lib/types/helpCenter';
 import { UploadPdfModal } from './UploadPdfModal';
 import { PdfViewerModal } from './PdfViewerModal';
+import { HeaderBar } from '@/components/ui/HeaderBar';
 
 // Portal category icons
 const PORTAL_ICONS: Record<PortalCategory, React.ReactNode> = {
@@ -329,18 +329,12 @@ export const HelpCenterDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-dark-200">
-      {/* Header */}
+      <div className="sticky top-0 z-30 w-full shrink-0 border-b border-gray-200 dark:border-dark-200">
+        <HeaderBar />
+      </div>
+
       <div className="bg-white dark:bg-dark-150 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
-          {/* Back button */}
-          <button
-            onClick={() => navigate('/portal')}
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#f26722] dark:hover:text-[#f26722] transition-colors mb-6"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Portal</span>
-          </button>
-          
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-gradient-to-br from-[#f26722] to-[#ff8c4a] rounded-xl flex items-center justify-center shadow-lg">

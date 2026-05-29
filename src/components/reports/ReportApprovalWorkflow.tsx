@@ -12,7 +12,7 @@ import { toast } from '@/components/ui/toast';
 import { 
   ClipboardCheck, 
   FilePlus, 
-  FileCheck, 
+  Trash, 
   FileX, 
   Clock, 
   CheckCircle, 
@@ -21,7 +21,7 @@ import {
   Search,
   RotateCw,
   Eye,
-  Download,
+  Send,
   Clock1,
   History,
   UserCheck
@@ -1597,9 +1597,9 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
         <h2 className="text-2xl font-bold">
           {isJobSpecific ? "Job Report Approval" : "Technical Report Approval Workflow"}
         </h2>
-        <Button onClick={handleRefresh} variant="outline" size="sm">
-          <RotateCw className="h-4 w-4 mr-2" />
-          Refresh
+        <Button onClick={handleRefresh} variant="outline" size="sm"
+        leftIcon={<RotateCw className="h-5 w-5" />}>
+          <span className="text-md mr-2">Refresh</span>
         </Button>
       </div>
 
@@ -1680,7 +1680,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
             Approved
           </TabsTrigger>
           <TabsTrigger value="sent">
-            <Download className="mr-2 h-4 w-4" />
+            <Send className="mr-2 h-4 w-4" />
             Sent
           </TabsTrigger>
           <TabsTrigger value="rejected">
@@ -1692,7 +1692,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
             Accepted
           </TabsTrigger>
           <TabsTrigger value="archived">
-            <FileCheck className="mr-2 h-4 w-4" />
+            <Trash className="mr-2 h-4 w-4" />
             Archived
           </TabsTrigger>
         </TabsList>
@@ -1708,7 +1708,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
             </div>
           ) : reports.length === 0 ? (
             <div className="text-center py-10 border rounded-md">
-              <FileCheck className="mx-auto h-10 w-10 text-gray-400" />
+              <Trash className="mx-auto h-10 w-10 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No reports found</h3>
               <p className="mt-1 text-sm text-gray-500">
                 There are no reports with the current filter criteria.

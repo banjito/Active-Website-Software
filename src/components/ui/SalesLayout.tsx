@@ -1,19 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../lib/AuthContext';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  LogOut,
-  MapPin,
-  User as UserIcon,
-  Settings,
-  FileText,
-  Eye
-} from "lucide-react"
+import { Link, useLocation } from 'react-router-dom';
+import { LogOut } from "lucide-react"
 import { Button } from './Button';
-import { ThemeToggle } from '../theme/theme-toggle';
-import { SettingsPopup } from './SettingsPopup';
-import { ProfileView } from '../profile/ProfileView';
-import { AboutPopup } from './AboutPopup';
+import { HeaderBar } from './HeaderBar';
 import { SidebarShortcuts } from '@/components/shortcuts/SidebarShortcuts';
 import { useMyMenuEnabled } from '@/lib/userPrefs';
 
@@ -24,32 +14,13 @@ interface SalesLayoutProps {
 export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
-  const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
   const [myMenuEnabled] = useMyMenuEnabled(user?.id);
-
-  // Effect to close profile dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-        setIsProfileMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [profileMenuRef]);
 
   const searchParams = new URLSearchParams(location.search);
   const isEmbed = searchParams.get('embed') === 'true';
 
-  if (!user) return <div className="min-h-screen">{children}</div>; // Should be handled by RequireAuth but good fallback
+  if (!user) return <div className="min-h-screen">{children}</div>;
 
   const handleSignOut = async () => {
     try {
@@ -64,21 +35,6 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
     }
   };
 
-  const handleViewProfile = () => {
-    setIsProfileMenuOpen(false);
-    setIsProfileViewOpen(true);
-  };
-
-  const handleSettings = () => {
-    setIsProfileMenuOpen(false);
-    setSettingsMenuOpen(true);
-  };
-
-  const handleAbout = () => {
-    setIsProfileMenuOpen(false);
-    setIsAboutOpen(true);
-  };
-
   if (isEmbed) {
     return (
       <div className="min-h-screen bg-white dark:bg-dark-150">
@@ -90,253 +46,120 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="flex min-h-screen bg-background dark:bg-dark-background">
-      {/* Sidebar - hidden when My Menu is enabled */}
+    <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background">
       {!myMenuEnabled && (
-      <div className="w-64 min-w-64 flex-shrink-0 flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200 flex">
-        {/* Logo */}
-        <div className="flex h-20 items-center border-b border-black/10 dark:border-dark-200 px-6">
-          <Link to="/portal">
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
-              alt="AMP Logo"
-              className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
-            />
-          </Link>
+        <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-gray-200 dark:border-dark-200">
+          <HeaderBar />
         </div>
-        {/* Sidebar Links */}
-        <div className="flex flex-col gap-1 p-4 flex-grow">
-          {myMenuEnabled && (
-            <>
-              <SidebarShortcuts />
-              <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500 mt-3">MENU</h2>
-            </>
-          )}
-          <div className="flex flex-col gap-1">
-            {/* Sales Dashboard Link */}
-            <Link to="/sales-dashboard">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname === '/sales-dashboard' ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                Sales Dashboard
-              </Button>
-            </Link>
-            
-            {/* Opportunities Link */}
-            <Link to="/sales-dashboard/opportunities">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname === '/sales-dashboard/opportunities' ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                Opportunities
-              </Button>
-            </Link>
-            {/* Opportunities Calendar Link */}
-            <Link to="/sales-dashboard/opportunities/calendar">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname === '/sales-dashboard/opportunities/calendar' ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                Proposal due calendar
-              </Button>
-            </Link>
-            
-
-            
-            {/* Sales Goals Link - NEW */}
-            <Link to="/sales/goals">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname.startsWith('/sales/goals') ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                Sales Goals
-              </Button>
-            </Link>
-            
-            {/* Customers Link - now using sales-specific path */}
-            <Link to="/sales-dashboard/customers" state={{ from: 'sales' }}>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname.startsWith('/customers') || location.pathname.startsWith('/sales-dashboard/customers') ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                Customers
-              </Button>
-            </Link>
-            
-            {/* Contacts Link - now using sales-specific path */}
-            <Link to="/sales-dashboard/contacts" state={{ from: 'sales' }}>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname.startsWith('/contacts') || location.pathname.startsWith('/sales-dashboard/contacts') ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                Contacts
-              </Button>
-            </Link>
-            
-            {/* Estimating Preset Settings Link */}
-            <Link to="/sales/estimating-presets">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                  location.pathname === '/sales/estimating-presets' ? 'bg-black/5 dark:bg-dark-50' : ''
-                }`}
-              >
-                Estimating Preset Settings
-              </Button>
-            </Link>
-          </div>
-        </div>
-        {/* Bottom Logout Button */}
-        <div className="p-4 border-t border-black/10 dark:border-dark-200">
-          <Button
-            variant="ghost"
-            className="w-full justify-start pl-0 text-left font-medium text-red-600 hover:bg-black/5 dark:text-red-400 dark:hover:bg-dark-50 !justify-start"
-            onClick={handleSignOut}
-            disabled={isSigningOut}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            {isSigningOut ? 'Signing out...' : 'Sign Out'}
-          </Button>
-        </div>
-      </div>
       )}
 
-      {/* Main Content Area */}
-      <div className="flex flex-col flex-1 min-w-0">
-        {/* Header (Same as in Layout.tsx) */}
+      <div className="flex min-h-0 flex-1">
         {!myMenuEnabled && (
-          <header className="sticky top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-sm dark:bg-dark-150/75 dark:border-dark-200 print:hidden">
-            <div className="w-full px-4 sm:px-6 lg:px-8">
-              <div className="flex h-20 items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0">
-                {myMenuEnabled && (
-                  <Link to="/portal" className="flex-shrink-0 hidden sm:block">
-                    <img
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
-                      alt="AMP Logo"
-                      className="h-8 lg:h-10 mr-2"
-                    />
-                  </Link>
-                )}
-                <h2 className="text-base lg:text-lg font-semibold truncate">Sales Portal</h2>
-              </div>
-              <div className="flex items-center">
-                <div className="relative" ref={profileMenuRef}>
+          <div className="w-64 min-w-64 flex-shrink-0 flex flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200">
+            <div className="flex flex-col gap-1 p-4 flex-grow overflow-y-auto">
+              {myMenuEnabled && (
+                <>
+                  <SidebarShortcuts />
+                  <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500 mt-3">MENU</h2>
+                </>
+              )}
+              <div className="flex flex-col gap-1">
+                <Link to="/sales-dashboard">
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="rounded-full w-10 h-10 hover:bg-gray-100 dark:hover:bg-dark-50 p-0 overflow-hidden"
-                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                      location.pathname === '/sales-dashboard' ? 'bg-black/5 dark:bg-dark-50' : ''
+                    }`}
                   >
-                    {user?.user_metadata?.profileImage ? (
-                      <img
-                        src={user.user_metadata.profileImage}
-                        alt="Profile"
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <UserIcon className="h-5 w-5 text-gray-600 dark:text-dark-400" />
-                    )}
+                    Sales Dashboard
                   </Button>
-                  {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-64 origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                      <div className="py-1">
-                        <div className="px-4 py-2 border-b border-gray-200 dark:border-dark-200">
-                          <p className="text-sm font-medium text-gray-900 dark:text-dark-900">
-                            {user?.user_metadata?.name || 'User'}
-                          </p>
-                          <p className="text-sm text-gray-500 dark:text-dark-400 truncate">
-                            {user?.user_metadata?.role || 'No role assigned'}
-                          </p>
-                          <p className="text-xs text-gray-400 dark:text-dark-500 truncate mt-1">
-                            {user?.email || 'Loading...'}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => navigate('/portal')}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
-                        >
-                          <MapPin className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
-                          Back to Portal
-                        </button>
-                        <button
-                          onClick={handleViewProfile}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
-                        >
-                          <Eye className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
-                          View Profile
-                        </button>
-                        <button
-                          onClick={handleSettings}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
-                        >
-                          <Settings className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
-                          Settings
-                        </button>
-                        <button
-                          onClick={handleAbout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
-                        >
-                          <FileText className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
-                          About
-                        </button>
-                        <button
-                          onClick={handleSignOut}
-                          disabled={isSigningOut}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
-                        >
-                          <LogOut className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
-                          {isSigningOut ? 'Signing out...' : 'Sign Out'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                </Link>
+
+                <Link to="/sales-dashboard/opportunities">
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                      location.pathname === '/sales-dashboard/opportunities' ? 'bg-black/5 dark:bg-dark-50' : ''
+                    }`}
+                  >
+                    Opportunities
+                  </Button>
+                </Link>
+
+                <Link to="/sales-dashboard/opportunities/calendar">
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                      location.pathname === '/sales-dashboard/opportunities/calendar' ? 'bg-black/5 dark:bg-dark-50' : ''
+                    }`}
+                  >
+                    Proposal due calendar
+                  </Button>
+                </Link>
+
+                <Link to="/sales/goals">
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                      location.pathname.startsWith('/sales/goals') ? 'bg-black/5 dark:bg-dark-50' : ''
+                    }`}
+                  >
+                    Sales Goals
+                  </Button>
+                </Link>
+
+                <Link to="/sales-dashboard/customers" state={{ from: 'sales' }}>
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                      location.pathname.startsWith('/customers') || location.pathname.startsWith('/sales-dashboard/customers') ? 'bg-black/5 dark:bg-dark-50' : ''
+                    }`}
+                  >
+                    Customers
+                  </Button>
+                </Link>
+
+                <Link to="/sales-dashboard/contacts" state={{ from: 'sales' }}>
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                      location.pathname.startsWith('/contacts') || location.pathname.startsWith('/sales-dashboard/contacts') ? 'bg-black/5 dark:bg-dark-50' : ''
+                    }`}
+                  >
+                    Contacts
+                  </Button>
+                </Link>
+
+                <Link to="/sales/estimating-presets">
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                      location.pathname === '/sales/estimating-presets' ? 'bg-black/5 dark:bg-dark-50' : ''
+                    }`}
+                  >
+                    Estimating Preset Settings
+                  </Button>
+                </Link>
               </div>
             </div>
+            <div className="p-4 border-t border-black/10 dark:border-dark-200">
+              <Button
+                variant="ghost"
+                className="w-full justify-start pl-0 text-left font-medium text-red-600 hover:bg-black/5 dark:text-red-400 dark:hover:bg-dark-50 !justify-start"
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                {isSigningOut ? 'Signing out...' : 'Sign Out'}
+              </Button>
+            </div>
           </div>
-          </header>
         )}
 
-        {/* Settings Popup */}
-        <SettingsPopup 
-          isOpen={settingsMenuOpen}
-          onClose={() => setSettingsMenuOpen(false)}
-          onAbout={handleAbout}
-          currentUser={user}
-        />
-
-        {/* Page Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 min-w-0 overflow-y-auto p-6">
           {children}
         </main>
       </div>
-
-      {/* Profile View Modal */}
-      {isProfileViewOpen && (
-        <ProfileView 
-          isOpen={isProfileViewOpen} 
-          onClose={() => setIsProfileViewOpen(false)} 
-        />
-      )}
-
-      <AboutPopup
-        isOpen={isAboutOpen}
-        onClose={() => setIsAboutOpen(false)}
-      />
     </div>
   );
 };

@@ -17,6 +17,7 @@ import NotificationDevControls from '@/components/admin/NotificationDevControls'
 import InProgressDashboard from '@/components/admin/InProgressDashboard';
 import IntegrationsSettings from '@/components/admin/IntegrationsSettings';
 import QuickBooksDashboard from '@/components/admin/QuickBooksDashboard';
+import { HeaderBar } from '@/components/ui/HeaderBar';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -267,34 +268,38 @@ export const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          onClick={handleBackClick}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {currentView === 'dashboard' ? 'Back to Portal' : 'Back to Dashboard'}
-        </Button>
-        {currentView !== 'dashboard' && (
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {currentView === 'inProgressDashboard' ? 'In Progress Dashboard' :
-            currentView === 'userManagement' ? 'User Management' :
-            currentView === 'systemHealth' ? 'System Health' :
-            currentView === 'systemLogs' ? 'System Logs' :
-            currentView === 'portalConfig' ? 'Portal Configuration' :
-            currentView === 'dataBackup' ? 'Data Backup' :
-            currentView === 'encryptionSettings' ? 'Encryption Settings' :
-            currentView === 'roleManagement' ? 'Role Management' :
-            currentView === 'permissionManagement' ? 'Permission Management' :
-            currentView === 'notifDevControls' ? 'Notification Dev Controls' :
-            currentView === 'integrations' ? 'Integrations' :
-            currentView === 'quickbooks' ? 'QuickBooks Dashboard' :
-            'Admin'}
-          </h2>
-        )}
+    <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background">
+      <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-gray-200 dark:border-dark-200">
+        <HeaderBar />
       </div>
-      {renderView()}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 space-y-6 max-w-6xl mx-auto">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={handleBackClick}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {currentView === 'dashboard' ? 'Back to Portal' : 'Back to Dashboard'}
+            </Button>
+            {currentView !== 'dashboard' && (
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {currentView === 'inProgressDashboard' ? 'In Progress Dashboard' :
+                currentView === 'userManagement' ? 'User Management' :
+                currentView === 'systemHealth' ? 'System Health' :
+                currentView === 'systemLogs' ? 'System Logs' :
+                currentView === 'portalConfig' ? 'Portal Configuration' :
+                currentView === 'dataBackup' ? 'Data Backup' :
+                currentView === 'encryptionSettings' ? 'Encryption Settings' :
+                currentView === 'roleManagement' ? 'Role Management' :
+                currentView === 'permissionManagement' ? 'Permission Management' :
+                currentView === 'notifDevControls' ? 'Notification Dev Controls' :
+                currentView === 'integrations' ? 'Integrations' :
+                currentView === 'quickbooks' ? 'QuickBooks Dashboard' :
+                'Admin'}
+              </h2>
+            )}
+          </div>
+          {renderView()}
+        </div>
+      </div>
     </div>
   );
 };

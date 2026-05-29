@@ -19,7 +19,7 @@ import { SettingsPopup } from '@/components/ui/SettingsPopup';
 import { ProfileView } from '@/components/profile/ProfileView';
 import { AboutPopup } from '@/components/ui/AboutPopup';
 import { ShortcutService, Shortcut } from '@/services/ShortcutService';
-import { ShortcutManagerDndKit } from '@/components/shortcuts/ShortcutManagerDndKit';
+import { ShortcutsDropdown } from '@/components/shortcuts/ShortcutsDropdown';
 import { supabase } from '@/lib/supabase';
 import { fetchAmpContacts } from '@/services/ampContactsService';
 import type { AmpContact } from '@/services/ampContactsService';
@@ -93,7 +93,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
   const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [headerShortcuts, setHeaderShortcuts] = useState<Shortcut[]>([]);
-  const [isShortcutManagerOpen, setIsShortcutManagerOpen] = useState(false);
   const [isShortcutMenuOpen, setIsShortcutMenuOpen] = useState(false);
   const [hiddenShortcutCount, setHiddenShortcutCount] = useState(0);
   const shortcutsBarRef = useRef<HTMLDivElement>(null);
@@ -217,10 +216,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
     }
   };
 
-  const handleShortcutManagerClose = () => {
-    setIsShortcutManagerOpen(false);
-    loadHeaderShortcuts();
-  };
+  // Refresh the header shortcut tabs whenever the dropdown closes (edits made inside it)
+  useEffect(() => {
+    if (!isShortcutMenuOpen) loadHeaderShortcuts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isShortcutMenuOpen]);
 
   useEffect(() => {
     const container = shortcutsBarRef.current;
@@ -616,43 +616,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
               </button>
 
               {isShortcutMenuOpen && (
-                <div className="absolute top-full right-0 mt-2 w-64 origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 flex flex-col max-h-[28rem]">
-                  <div className="p-3 border-b border-gray-200 dark:border-dark-200 shrink-0">
-                    <div className="font-medium text-gray-900 dark:text-white">Shortcuts</div>
-                  </div>
-                  <div className="overflow-y-auto flex-1 min-h-0 py-1">
-                    {headerShortcuts.length === 0 ? (
-                      <div className="px-4 py-3 text-sm text-gray-500 dark:text-white">
-                        No shortcuts yet.
-                      </div>
-                    ) : (
-                      headerShortcuts.map((shortcut) => (
-                        <button
-                          key={shortcut.id}
-                          onClick={() => {
-                            setIsShortcutMenuOpen(false);
-                            handleHeaderShortcutClick(shortcut.url);
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-[#f26722] dark:hover:text-[#f26722] truncate"
-                          title={shortcut.url}
-                        >
-                          {shortcut.title}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                  <div className="border-t border-gray-200 dark:border-dark-200 p-1 shrink-0">
-                    <button
-                      onClick={() => {
-                        setIsShortcutMenuOpen(false);
-                        setIsShortcutManagerOpen(true);
-                      }}
-                      className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-200 rounded-md"
-                    >
-                      <Settings className="mr-2 h-4 w-4 text-[#f26722]" />
-                      Manage Shortcuts
-                    </button>
-                  </div>
+                <div className="absolute top-full right-0 mt-2 z-50">
+                  <ShortcutsDropdown
+                    onNavigate={(url) => {
+                      setIsShortcutMenuOpen(false);
+                      handleHeaderShortcutClick(url);
+                    }}
+                  />
                 </div>
               )}
             </div>
@@ -1111,8 +1081,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
       <ProfileView isOpen={isProfileViewOpen} onClose={() => setIsProfileViewOpen(false)} />
 
       <AboutPopup isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
-
-      <ShortcutManagerDndKit isOpen={isShortcutManagerOpen} onClose={handleShortcutManagerClose} />
     </>
   );
 };

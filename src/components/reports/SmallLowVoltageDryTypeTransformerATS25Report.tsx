@@ -710,6 +710,11 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
       .overflow-x-auto { overflow: visible !important; }
       .job-info-onscreen { display: none !important; }
       .job-info-print { display: block !important; }
+      table.vm-inspection-table { table-layout: fixed !important; width: 100% !important; }
+      table.vm-inspection-table col:nth-child(1) { width: 12% !important; }
+      table.vm-inspection-table col:nth-child(2) { width: 68% !important; }
+      table.vm-inspection-table col:nth-child(3) { width: 20% !important; }
+      table.vm-inspection-table th:nth-child(2), table.vm-inspection-table td:nth-child(2) { white-space: normal !important; overflow-wrap: anywhere !important; word-break: break-word !important; text-align: left !important; }
     }`;
     document.head.appendChild(style);
     return () => { try { document.head.removeChild(style); } catch { /* ignore */ } };
@@ -1065,7 +1070,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed vm-inspection-table">
                 <colgroup>
                   <col style={{ width: '12%' }} />
                   <col style={{ width: '68%' }} />
@@ -1421,11 +1426,13 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
           </div>
 
           {/* Comments */}
-          <div className="mb-6">
+          <div className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments:</h2>
             <textarea value={formData.comments} onChange={e => setFormData(p => ({ ...p, comments: e.target.value }))} rows={4} readOnly={!isEditing} className={`form-textarea w-full resize-none ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''} print:hidden`} />
-            <div className="hidden print:block"><table className="w-full table-fixed border-collapse border border-gray-300 print:border-black"><tbody><tr><td className="p-2 align-top border border-gray-300 print:border-black"><div className="mt-0">{formData.comments || ''}</div></td></tr></tbody></table></div>
+            {formData.comments?.trim() && (
+              <div className="hidden print:block"><table className="w-full table-fixed border-collapse border border-gray-300 print:border-black"><tbody><tr><td className="p-2 align-top border border-gray-300 print:border-black"><div className="mt-0">{formData.comments}</div></td></tr></tbody></table></div>
+            )}
           </div>
         </div>
       </div>

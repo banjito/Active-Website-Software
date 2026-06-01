@@ -1369,7 +1369,7 @@ export default function JobList() {
       <Dialog
         open={isOpen}
         onClose={() => setIsOpen(false)}
-        className="fixed inset-0 z-10 overflow-y-auto"
+        className="fixed inset-0 z-50 overflow-y-auto"
       >
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
@@ -1605,7 +1605,7 @@ export default function JobList() {
           setNewCustomer({ company_name: '', name: '', email: '', phone: '', address: '' });
           setNewContact({ first_name: '', last_name: '', email: '', phone: '' });
         }}
-        className="fixed inset-0 z-10 overflow-y-auto"
+        className="fixed inset-0 z-50 overflow-y-auto"
       >
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />

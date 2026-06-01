@@ -164,6 +164,9 @@ function formatDivisionName(division: string): string {
   return divisionMap[division] || division;
 }
 
+const OPPORTUNITY_MODAL_PANEL_CLASS =
+  'relative bg-white dark:bg-dark-150 rounded-lg max-w-xl w-full mx-auto p-6 shadow-xl max-h-[70vh] overflow-y-scroll [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#d1d5db_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:hover:bg-gray-500 dark:[scrollbar-color:#4b5563_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600';
+
 export default function OpportunityList() {
   const { user, loading: authLoading, softRefresh } = useAuth();
   const { maskCustomerName } = useDemoMode();
@@ -1964,12 +1967,12 @@ export default function OpportunityList() {
       <Dialog
         open={isOpen}
         onClose={() => setIsOpen(false)}
-        className="fixed inset-0 z-10 overflow-y-auto"
+        className="fixed inset-0 z-50 overflow-y-auto"
       >
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-screen p-4">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
-          <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-md w-full mx-auto p-6 shadow-xl">
+          <div className={OPPORTUNITY_MODAL_PANEL_CLASS}>
             <div className="absolute top-0 right-0 pt-4 pr-4">
               <button
                 type="button"
@@ -2376,12 +2379,12 @@ export default function OpportunityList() {
           setNewCustomer({ company_name: '', name: '', email: '', phone: '', address: '' });
           setNewContact({ first_name: '', last_name: '', email: '', phone: '' });
         }}
-        className="fixed inset-0 z-10 overflow-y-auto"
+        className="fixed inset-0 z-50 overflow-y-auto"
       >
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-screen p-4">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
-          <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-md w-full mx-auto p-6 shadow-xl">
+          <div className={OPPORTUNITY_MODAL_PANEL_CLASS}>
             <div className="absolute top-0 right-0 pt-4 pr-4">
               <button
                 type="button"

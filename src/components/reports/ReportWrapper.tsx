@@ -43,6 +43,21 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         }
         
         @media print {
+          html, body {
+            min-height: 0 !important;
+            height: auto !important;
+            padding-bottom: 0 !important;
+          }
+
+          .min-h-screen, .screen-min-height {
+            min-height: 0 !important;
+            height: auto !important;
+          }
+
+          #report-container {
+            padding-bottom: 0 !important;
+          }
+
           /* ============================================ */
           /* PAGE SETUP - MINIMUM MARGINS                */
           /* ============================================ */
@@ -1743,7 +1758,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         {children}
       </div>
       {actuallyShowPreview && (
-        <div className="w-full lg:w-[48%] max-w-[820px] lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)]">
+        <div className="w-full lg:w-[48%] max-w-[820px] lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] print:hidden">
           <div className="mb-2 text-xs text-gray-600 dark:text-gray-300">
             <div className="flex items-center gap-2">
               <span className="font-medium">Preview URL:</span>

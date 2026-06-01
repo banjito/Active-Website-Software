@@ -1263,32 +1263,33 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
           </div>
         </div>
 
-        {/* Comments */}
-        <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
-            Comments
-          </h2>
-          <textarea
-            value={formData.comments}
-            onChange={(e) => handleChange(null, 'comments', e.target.value)}
-            rows={1}
-            readOnly={!isEditing}
-            className={`form-textarea w-full resize-none print:hidden ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
-            placeholder="Enter comments here..."
-          />
-          {/* Print-only comments box */}
-          <div className="hidden print:block">
-            <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
-              <tbody>
-                <tr>
-                  <td className="p-2 align-top border border-gray-300 print:border-black" style={{ height: '100px', verticalAlign: 'top' }}>
-                    {formData.comments || ''}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          {/* Comments */}
+          <div className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
+            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
+              Comments
+            </h2>
+            <textarea
+              value={formData.comments}
+              onChange={(e) => handleChange(null, 'comments', e.target.value)}
+              rows={1}
+              readOnly={!isEditing}
+              className={`form-textarea w-full resize-none print:hidden ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+              placeholder="Enter comments here..."
+            />
+            {formData.comments?.trim() && (
+              <div className="hidden print:block">
+                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                  <tbody>
+                    <tr>
+                      <td className="p-2 align-top border border-gray-300 print:border-black" style={{ height: '100px', verticalAlign: 'top' }}>
+                        {formData.comments}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
         </div>
 
         {/* Electrical Tests - Turns Ratio */}

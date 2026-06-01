@@ -1799,7 +1799,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
               </svg>
             </div>
           </div>
-          <div className="hidden overflow-x-scroll turns-ratio-scroll-old" style={{ 
+          <div className="hidden print:hidden overflow-x-scroll turns-ratio-scroll-old" style={{ 
             scrollbarWidth: 'auto', 
             scrollbarColor: '#f26722 #e5e7eb',
             WebkitOverflowScrolling: 'touch',
@@ -2037,7 +2037,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
         </section>
 
-        <section className="mb-6">
+        <section className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
           <div className="w-full h-1 bg-[#f26722] mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
           <div className="print:hidden">
@@ -2051,23 +2051,22 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
             />
           </div>
           
-          {/* Print-only Comments table */}
+          {formData.comments?.trim() && (
           <div className="hidden print:block">
-            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
-              <thead>
-                <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Comments</th>
-                </tr>
-              </thead>
+            <table className="comments-print-table w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
               <tbody>
                 <tr>
-                  <td className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[80px] align-top">
-                    {formData.comments || ''}
+                  <td
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[80px] align-top whitespace-pre-wrap break-words"
+                    style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', maxWidth: '100%' }}
+                  >
+                    {formData.comments}
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          )}
         </section>      {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (
         <div className="mb-6 print:hidden flex justify-center">
@@ -2208,7 +2207,20 @@ if (typeof document !== 'undefined') {
     
     @media print {
       * { color: black !important; background: white !important; box-sizing: border-box !important; }
-      body { margin: 0 !important; padding: 10px !important; font-family: Arial, sans-serif !important; font-size: 12px !important; }
+      html, body {
+        margin: 0 !important;
+        padding: 10px !important;
+        min-height: 0 !important;
+        height: auto !important;
+        font-family: Arial, sans-serif !important;
+        font-size: 12px !important;
+      }
+
+      .min-h-screen, .screen-min-height, .pb-20 {
+        min-height: 0 !important;
+        height: auto !important;
+        padding-bottom: 0 !important;
+      }
       
       /* Remove padding on main content wrapper to prevent blank page */
       .p-6 { padding: 0 !important; }
@@ -2322,13 +2334,13 @@ if (typeof document !== 'undefined') {
         border-collapse: collapse; 
         width: 100%; 
         font-size: 12px !important;
-        page-break-inside: avoid;
+        page-break-inside: auto;
       }
       th, td { 
         border: 1px solid black !important; 
         padding: 3px !important; 
-        page-break-inside: avoid;
-        min-height: 24px !important;
+        page-break-inside: auto;
+        min-height: 0 !important;
         vertical-align: top !important;
       }
       th { 
@@ -2365,8 +2377,8 @@ if (typeof document !== 'undefined') {
       
       /* Section styling */
       section { 
-        page-break-inside: avoid !important; 
-        margin-bottom: 20px !important; 
+        page-break-inside: auto !important; 
+        margin-bottom: 12px !important; 
       }
       
       /* Page break utilities */
@@ -2396,10 +2408,10 @@ if (typeof document !== 'undefined') {
         min-width: auto !important;
         max-width: 100% !important;
         table-layout: fixed !important;
-        margin: 10px 0 20px 0 !important;
+        margin: 8px 0 12px 0 !important;
         border-collapse: collapse !important;
-        transform: scale(0.58) !important;
-        transform-origin: left top !important;
+        transform: none !important;
+        font-size: 9px !important;
       }
       
       /* Turns Ratio column sizing - match insulation resistance table */
@@ -2418,9 +2430,10 @@ if (typeof document !== 'undefined') {
 
       table.turns-ratio-table input, 
       table.turns-ratio-table select { 
-        font-size: 10px !important; 
-        padding: 8px 6px !important;
-        width: 100% !important;
+        font-size: 9px !important; 
+        padding: 1px 2px !important;
+        width: 88% !important;
+        margin: 0 auto !important;
         box-sizing: border-box !important;
         border: none !important;
         background: transparent !important;
@@ -2428,8 +2441,8 @@ if (typeof document !== 'undefined') {
       }
       
       table.turns-ratio-table td { 
-        padding: 8px 6px !important;
-        font-size: 10px !important;
+        padding: 2px !important;
+        font-size: 9px !important;
         overflow: hidden !important;
         text-overflow: clip !important;
         white-space: nowrap !important;
@@ -2443,9 +2456,9 @@ if (typeof document !== 'undefined') {
         background-color: #f3f4f6 !important;
         white-space: normal !important;
         word-break: break-word !important;
-        line-height: 1.2 !important;
-        font-size: 10px !important;
-        padding: 8px 6px !important;
+        line-height: 1.1 !important;
+        font-size: 9px !important;
+        padding: 2px !important;
         text-align: center !important;
         font-weight: bold !important;
         border: 1px solid black !important;
@@ -2532,9 +2545,23 @@ if (typeof document !== 'undefined') {
       table.dielectric-absorption-table th:not(:first-child) { width: 10% !important; min-width: 10% !important; max-width: 10% !important; }
       
       /* Alternative approach for browsers that don't support :has() */
-      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table) { table-layout: fixed !important; width: 100% !important; }
-      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table) td:first-child { width: 35% !important; }
-      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table) td:not(:first-child) { width: 13% !important; }
+      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table):not(.comments-print-table) { table-layout: fixed !important; width: 100% !important; }
+      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table):not(.comments-print-table) td:first-child { width: 35% !important; }
+      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table):not(.comments-print-table) td:not(:first-child) { width: 13% !important; }
+
+      /* Comments tables: full width with text wrap for long content */
+      table.comments-print-table { table-layout: fixed !important; width: 100% !important; max-width: 100% !important; }
+      table.comments-print-table td {
+        width: 100% !important;
+        max-width: 100% !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        word-wrap: break-word !important;
+        text-align: left !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+      }
 
       /* Job Information table - force 6 equal columns and wrap text normally */
       table.job-info-print-table { table-layout: fixed !important; width: 100% !important; }
@@ -2609,10 +2636,10 @@ if (typeof document !== 'undefined') {
       min-width: auto !important;
       max-width: 100% !important;
       table-layout: fixed !important;
-      margin: 10px 0 20px 0 !important;
+      margin: 8px 0 12px 0 !important;
       border-collapse: collapse !important;
-      transform: scale(0.55) !important; /* keep in sync with @media print */
-      transform-origin: left top !important;
+      transform: none !important;
+      font-size: 9px !important;
     }
     .force-print table.turns-ratio-table col.tr-tap { width: 5% !important; }
     .force-print table.turns-ratio-table col.tr-nameplate { width: 9% !important; }

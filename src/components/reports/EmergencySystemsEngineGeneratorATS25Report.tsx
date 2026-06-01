@@ -1141,20 +1141,21 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           </div>
 
           {/* Comments */}
-          <div className="mb-6">
+          <div className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <textarea value={formData.comments} onChange={(e) => handleChange('comments', e.target.value)} readOnly={!isEditing} rows={4} className={`form-input w-full print:hidden ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} placeholder="Enter any comments or notes..." />
-            {/* Print-only: Comments in bordered box */}
-            <div className="hidden print:block">
-              <table className="w-full border-collapse border border-gray-300 print:border-black text-[0.85rem]">
-                <tbody>
-                  <tr>
-                    <td className="p-3 align-top border border-gray-300 print:border-black min-h-[80px] whitespace-pre-wrap text-black">{formData.comments || ''}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            {formData.comments?.trim() && (
+              <div className="hidden print:block">
+                <table className="w-full border-collapse border border-gray-300 print:border-black text-[0.85rem]">
+                  <tbody>
+                    <tr>
+                      <td className="p-3 align-top border border-gray-300 print:border-black min-h-[80px] whitespace-pre-wrap text-black">{formData.comments}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           {/* Mark Ready to Review Button - flips the linked asset's status to

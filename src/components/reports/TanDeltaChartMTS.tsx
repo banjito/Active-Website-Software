@@ -609,7 +609,7 @@ const TanDeltaChartMTS: React.FC = () => {
           </div>
 
           {/* Comments */}
-          <div className="mb-6">
+          <div className={`mb-6 print:break-inside-avoid ${!comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <div className="print:hidden comments-onscreen">
@@ -622,19 +622,20 @@ const TanDeltaChartMTS: React.FC = () => {
                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[150px] ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
               />
             </div>
-            {/* Print-only Comments table */}
+            {comments?.trim() && (
             <div className="hidden print:block">
               <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
                 <tbody>
                   <tr>
                     <td className="p-2 align-top border border-gray-300 print:border-black">
                       <div className="font-semibold">Comments</div>
-                      <div className="mt-0">{comments || ''}</div>
+                      <div className="mt-0">{comments}</div>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
+            )}
           </div>
 
           {/* Tan Delta Test Data */}

@@ -1896,7 +1896,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
             </div>
           </section>
 
-          <section className="mb-6">
+          <section className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <textarea 
@@ -1908,7 +1908,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                 className={`form-textarea w-full text-sm print:hidden ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
             />
             
-            {/* Print-only Comments table */}
+            {formData.comments?.trim() && (
             <div className="hidden print:block">
               <table className="comments-print-table w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
                 <tbody>
@@ -1917,12 +1917,13 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                       className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm min-h-[80px] align-top whitespace-pre-wrap break-words"
                       style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', maxWidth: '100%' }}
                     >
-                      {formData.comments || ''}
+                      {formData.comments}
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
+            )}
           </section>
         </div>
       </div>      {/* Mark Ready to Review Button */}

@@ -2071,7 +2071,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
             </section>
 
             {/* Comments */}
-            <section className="mb-6 comments-section">
+            <section className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
               <div className="w-full h-1 bg-[#f26722] mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
               <textarea
@@ -2081,19 +2081,20 @@ const LiquidFilledTransformerReport: React.FC = () => {
                 readOnly={!isEditing}
                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''} print:hidden`}
               />
-              {/* Print-only comments table */}
-              <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
-                  <tbody>
-                    <tr>
-                      <td className="p-2 align-top border border-gray-300 print:border-black">
-                        <div className="font-semibold">Comments</div>
-                        <div className="mt-0">{formData.comments || ''}</div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              {formData.comments?.trim() && (
+                <div className="hidden print:block">
+                  <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                    <tbody>
+                      <tr>
+                        <td className="p-2 align-top border border-gray-300 print:border-black">
+                          <div className="font-semibold">Comments</div>
+                          <div className="mt-0">{formData.comments}</div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </section>
           </div>
         </div>

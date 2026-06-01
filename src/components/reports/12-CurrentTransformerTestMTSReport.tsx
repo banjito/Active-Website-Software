@@ -1447,10 +1447,10 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
       </div>
 
       {/* Comments Section */}
-      <div className="mb-6 comments-section">
+      <div className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         
-        {/* Table for print mode - always rendered but only visible in print */}
+        {formData.comments?.trim() && (
         <table className="hidden print:table" style={{ width: '100%', marginTop: '10px', border: '1px solid black' }}>
           <tbody>
             <tr>
@@ -1462,11 +1462,12 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
                 color: 'black',
                 border: '1px solid black'
               }}>
-                {formData.comments && formData.comments.trim() !== '' ? formData.comments : '(No comments)'}
+                {formData.comments}
               </td>
             </tr>
           </tbody>
         </table>
+        )}
         
         {/* Textarea for screen mode - hidden in print */}
         <textarea

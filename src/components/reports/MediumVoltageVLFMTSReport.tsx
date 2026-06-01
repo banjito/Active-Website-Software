@@ -1370,7 +1370,7 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
             </tbody>
           </table>
 
-          {/* Comments (print) — own page with spacing above heading */}
+          {formData.comments?.trim() && (
           <div className="comments-section-print print:break-before-page mt-6 print:mt-8">
             <div className="w-full h-1 bg-[#f26722] mb-3 print:mb-4"></div>
             <h2 className="text-xl font-semibold mb-2 print:mb-3 text-black border-b border-black pb-1 font-bold comments-print-heading">Comments</h2>
@@ -1385,13 +1385,14 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
                     style={{ wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}
                   >
                     <div className="text-sm whitespace-pre-wrap break-words">
-                      {formData.comments || 'No comments'}
+                      {formData.comments}
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          )}
         </div>
       </section>
       

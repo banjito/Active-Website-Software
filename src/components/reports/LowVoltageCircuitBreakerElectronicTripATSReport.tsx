@@ -3477,6 +3477,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           </div>
 
           {/* Print-Only Comments Table */}
+          {formData.comments?.trim() && (
           <div className="hidden print:block">
             <h2 className="text-xl font-semibold mb-4 text-black border-b border-black pb-2 font-bold">Comments</h2>
             <table className="w-full border-collapse border border-black mb-6">
@@ -3489,6 +3490,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
               </tbody>
             </table>
           </div>
+          )}
         </div>
       </div>      {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (

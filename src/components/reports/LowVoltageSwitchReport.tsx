@@ -2243,7 +2243,7 @@ export default function LowVoltageSwitchReport() {
           </section>
 
           {/* Comments */}
-          <section className="mb-6">
+          <section className={`mb-6 print:break-inside-avoid ${!formData.comments.enclosure?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <div className="space-y-4">
@@ -2255,8 +2255,11 @@ export default function LowVoltageSwitchReport() {
                   onChange={(e) => handleChange('comments', { ...formData.comments, enclosure: e.target.value })}
                   readOnly={!isEditing}
                   rows={6}
-                  className="form-textarea w-full"
+                  className="form-textarea w-full print:hidden"
                 />
+                {formData.comments.enclosure?.trim() && (
+                  <div className="hidden print:block whitespace-pre-wrap">{formData.comments.enclosure}</div>
+                )}
               </div>
             </div>
           </section>

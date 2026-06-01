@@ -1080,7 +1080,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
       </div>
 
       {/* Comments */}
-      <div className="mb-6">
+      <div className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-comments">Comments</h2>
         <textarea
@@ -1091,7 +1091,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
           className={`form-textarea w-full resize-none print:hidden ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
           placeholder="Enter comments here..."
         />
-        {/* Print-only comments table */}
+        {formData.comments?.trim() && (
         <div className="hidden print:block">
           <table className="w-full border-collapse table-fixed">
             <thead>
@@ -1106,6 +1106,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
             </tbody>
           </table>
         </div>
+        )}
       </div>
       </div>      {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (

@@ -1438,7 +1438,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
           </div>
         </div>
 
-        <div className="mb-6">
+        <div className={`mb-6 print:break-inside-avoid ${!formData.testEquipment.comments?.trim() ? 'print:hidden' : ''}`}>
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
           <textarea
             value={formData.testEquipment.comments}
@@ -1448,9 +1448,12 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
             }))}
             readOnly={!isEditMode}
             rows={6}
-            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
             placeholder="Enter comments here..."
           />
+          {formData.testEquipment.comments?.trim() && (
+            <div className="hidden print:block whitespace-pre-wrap">{formData.testEquipment.comments}</div>
+          )}
         </div>
       </div>
     </div>

@@ -1673,7 +1673,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         </div>
 
       {/* Comments */}
-      <section className="mb-6 section-comments">
+      <section className={`mb-6 section-comments print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
           Comments
@@ -1686,19 +1686,20 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           className={`form-textarea w-full resize-none ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''} print:hidden`}
           placeholder="Enter comments here..."
         />
-        {/* Print-only comments box */}
+        {formData.comments?.trim() && (
         <div className="hidden print:block">
           <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
             <tbody>
               <tr>
                 <td className="p-2 align-top border border-gray-300 print:border-black">
                   <div className="font-semibold">Comments</div>
-                  <div className="mt-0">{formData.comments || ''}</div>
+                  <div className="mt-0">{formData.comments}</div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+        )}
       </section>
       </div>
       </div>      {/* Mark Ready to Review Button */}

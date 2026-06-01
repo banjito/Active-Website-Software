@@ -1788,7 +1788,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
            </div>
 
           {/* --- Comments Section --- */}
-          <div className="mb-6 comments-section">
+          <div className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <div className="mb-4 print:hidden">
@@ -1800,18 +1800,19 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
                 rows={4}
               />
             </div>
-            {/* Print-only comments box */}
+            {formData.comments?.trim() && (
             <div className="hidden print:block mt-2">
               <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border">
                 <tbody>
                   <tr>
                     <td className="p-2 align-top border border-gray-300 print:border-black print:border" style={{ minHeight: '140px' }}>
-                      <div className="mt-0">{formData.comments || ''}</div>
+                      <div className="mt-0">{formData.comments}</div>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         </div>
       </div>      {/* Mark Ready to Review Button */}

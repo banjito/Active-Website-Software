@@ -712,9 +712,9 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
           {/* Removed print-only summary */}
 
           {/* Comments */}
-          <section className="p-0 mb-6">
+          <section className={`p-0 mb-6 print:break-inside-avoid ${!comments?.trim() ? 'print:hidden' : ''}`}>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
-            <textarea value={comments} onChange={e=>setComments(e.target.value)} readOnly={!isEditing} className={`form-textarea min-h-[120px] ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+            <textarea value={comments} onChange={e=>setComments(e.target.value)} readOnly={!isEditing} className={`form-textarea min-h-[120px] print:hidden ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
           </section>
 
           {/* Ground Test Equipment - table lookup at bottom like other reports */}

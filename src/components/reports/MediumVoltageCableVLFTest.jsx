@@ -3546,7 +3546,7 @@ const MediumVoltageCableVLFTest = () => {
           </div>
           
           {/* Comments */}
-          <div>
+          <div className={`print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Additional Comments</h3>
             {/* On-screen form - hidden in print */}
             <div className="print:hidden comments-onscreen">
@@ -3559,19 +3559,20 @@ const MediumVoltageCableVLFTest = () => {
                 placeholder="Enter any additional comments"
               />
             </div>
-            
-            {/* Print-only table */}
+
+            {formData.comments?.trim() && (
             <div className="hidden print:block">
               <table className="w-full border border-gray-300 print:border-black print-comment-table" style={{tableLayout: 'fixed', width: '100%'}}>
                 <tbody>
                   <tr>
                     <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top" style={{wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap'}}>
-                      {formData.comments || 'No additional comments'}
+                      {formData.comments}
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         </div>
       </section>

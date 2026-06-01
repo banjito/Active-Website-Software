@@ -2071,7 +2071,8 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
               </tbody>
             </table>
 
-            {/* Print-Only Comments Table (immediately under Test Equipment) */}
+            {formData.comments?.trim() && (
+            <>
             <div className="w-full h-1 bg-[#f26722] mb-1 mt-2"></div>
             <h2 className="text-xl font-semibold mb-4 text-black border-b border-black pb-2 font-bold">Comments</h2>
             <table className="w-full border-collapse border border-black mb-6">
@@ -2083,6 +2084,8 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                 </tr>
               </tbody>
             </table>
+            </>
+            )}
           </div>
 
         </div>

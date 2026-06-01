@@ -3400,7 +3400,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
           </div>
 
           {/* Comments Section */}
-          <div className="mb-6">
+          <div className={`mb-6 print:break-inside-avoid ${!formData.testEquipment.comments?.trim() ? 'print:hidden' : ''}`}>
             <h2 className="section-comments text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <textarea
               id="equipmentComments"
@@ -3418,19 +3418,20 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
               placeholder="Enter any additional comments..."
               readOnly={!isEditMode}
             />
-            {/* Print-only Comments table */}
+            {formData.testEquipment.comments?.trim() && (
             <div className="hidden print:block">
               <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
                 <tbody>
                   <tr>
                     <td className="p-2 align-top border border-gray-300 print:border-black print:border">
                       <div className="font-semibold">Comments</div>
-                      <div className="mt-1 whitespace-pre-wrap">{formData.testEquipment.comments || ''}</div>
+                      <div className="mt-1 whitespace-pre-wrap">{formData.testEquipment.comments}</div>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         </div>      {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditMode && (

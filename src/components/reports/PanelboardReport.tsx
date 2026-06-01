@@ -2379,7 +2379,7 @@ const PanelboardReport: React.FC = () => {
       </div>
 
       {/* Comments */}
-      <div className="mb-32 comments-section" style={{ marginBottom: '150px' }}>
+      <div className={`mb-32 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`} style={{ marginBottom: '150px' }}>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         <div className="space-y-4">
         <textarea
@@ -2390,19 +2390,20 @@ const PanelboardReport: React.FC = () => {
             placeholder="Enter any additional comments, observations, or notes about the inspection..."
             className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[250px] ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''} print:hidden`}
         />
-        {/* Print-only comments box */}
+        {formData.comments?.trim() && (
         <div className="hidden print:block">
           <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
             <tbody>
               <tr>
                 <td className="p-2 align-top border border-gray-300 print:border-black">
                   <div className="font-semibold">Comments</div>
-                  <div className="mt-0">{formData.comments || ''}</div>
+                  <div className="mt-0">{formData.comments}</div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+        )}
         </div>
       </div>      {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (

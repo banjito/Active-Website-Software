@@ -3314,7 +3314,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           </div>
 
           {/* --- Comments Section --- */}
-          <div className="mb-6">
+          <div className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <textarea
@@ -3325,9 +3325,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
               className={`form-input w-full print:hidden ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
               placeholder="Enter any comments or notes..."
             />
+            {formData.comments?.trim() && (
             <div className="hidden print:block border border-gray-300 print:border-black p-3 min-h-[4rem] text-sm text-gray-900 print:text-black whitespace-pre-wrap">
-              {formData.comments?.trim() ? formData.comments.trim() : 'N/A'}
+              {formData.comments}
             </div>
+            )}
           </div>
 
           {/* Function Legend and Trip Type Legend */}

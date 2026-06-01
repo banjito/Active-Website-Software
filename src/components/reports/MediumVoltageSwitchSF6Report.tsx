@@ -1618,24 +1618,25 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
           </div>
         </div>
 
-        {        /* Comments */}
-        <div className="mb-6 print:mb-2">
+        {/* Comments */}
+        <div className={`mb-6 print:mb-2 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
           <h2 className="section-comments text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
           <textarea rows={10} className={`w-full form-textarea resize-vertical min-h-[250px] print:hidden ${!isEditMode ? 'bg-gray-100 dark:bg-dark-150' : ''}`} value={formData.comments} onChange={(e) => handleChange('comments', e.target.value)} readOnly={!isEditMode} />
           
-          {/* Print-only Comments table */}
+          {formData.comments?.trim() && (
           <div className="hidden print:block">
             <table className="w-full border-collapse border border-black">
               <tbody>
                 <tr>
                   <td className="border border-black px-2 py-2 align-top">
                     <div className="font-semibold mb-1">Comments:</div>
-                    <div className="whitespace-pre-wrap">{formData.comments || ''}</div>
+                    <div className="whitespace-pre-wrap">{formData.comments}</div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          )}
         </div>
       </div>
     </div>

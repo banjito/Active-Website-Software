@@ -1896,7 +1896,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
           </div>
           
           {/* Comments subsection within Test Equipment */}
-          <div className="mt-6 comments-section">
+          <div className={`mt-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white print:text-black print:font-bold">Comments</h3>
             <textarea
               value={formData.comments}
@@ -1905,17 +1905,18 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
               rows={4}
               className={`form-textarea resize-none w-full whitespace-pre-wrap break-words ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''} print:hidden`}
             />
-            {/* Print-only comments box */}
+            {formData.comments?.trim() && (
             <div className="hidden print:block comments-print-wrapper" style={{ width: '100%' }}>
               <div
                 className="comments-cell border border-gray-300 print:border-black print:border"
                 style={{ width: '100%', boxSizing: 'border-box', padding: '8px', minHeight: '100px' }}
               >
                 <div className="comments-text whitespace-pre-wrap break-words text-sm">
-                  {formData.comments || '\u00A0'}
+                  {formData.comments}
                 </div>
               </div>
             </div>
+            )}
           </div>
         </div>
          </div>

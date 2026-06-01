@@ -1217,23 +1217,24 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
   );
 
   const comments = (
-    <section className="mb-6">
+    <section className={`mb-6 print:break-inside-avoid ${!form.comments?.trim() ? 'print:hidden' : ''}`}>
       <div className="w-full h-1 bg-[#f26722] mb-4"></div>
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Comments</h2>
       <textarea className="form-textarea w-full print:hidden" rows={4} value={form.comments} onChange={e => setForm(p => ({ ...p, comments: e.target.value }))} readOnly={!isEditMode} />
-      {/* Print-only Comments table */}
+      {form.comments?.trim() && (
       <div className="hidden print:block">
         <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
           <tbody>
             <tr>
               <td className="p-2 align-top border border-gray-300 print:border-black">
                 <div className="font-semibold">Comments</div>
-                <div className="mt-0 whitespace-pre-wrap">{form.comments || ''}</div>
+                <div className="mt-0 whitespace-pre-wrap">{form.comments}</div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+      )}
     </section>
   );
 

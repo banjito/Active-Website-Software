@@ -779,6 +779,47 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     });
   };
 
+  const MAX_RATIO_POLARITY_ROWS = 12;
+
+  const handleAddRatioPolarityRow = () => {
+    setFormData(prev => {
+      if (prev.electricalTests.ratioPolarity.length >= MAX_RATIO_POLARITY_ROWS) return prev;
+      const currentType = prev.electricalTests.ratioPolarity[0]?.testType ?? 'voltage';
+      const newItem = {
+        id: `rp-${Date.now()}`,
+        identifier: '',
+        ratio: '',
+        testType: currentType,
+        testValue: '',
+        pri: '',
+        sec: '',
+        measuredRatio: '',
+        ratioDev: '',
+        polarity: 'Select One',
+      };
+      return {
+        ...prev,
+        electricalTests: {
+          ...prev.electricalTests,
+          ratioPolarity: [...prev.electricalTests.ratioPolarity, newItem],
+        },
+      };
+    });
+  };
+
+  const handleRemoveRatioPolarityRow = () => {
+    setFormData(prev => {
+      if (prev.electricalTests.ratioPolarity.length <= 1) return prev;
+      return {
+        ...prev,
+        electricalTests: {
+          ...prev.electricalTests,
+          ratioPolarity: prev.electricalTests.ratioPolarity.slice(0, -1),
+        },
+      };
+    });
+  };
+
   // Auto-save function
   const autoSave = React.useCallback(async () => {
     if (!jobId || !user?.id) return;
@@ -1460,7 +1501,29 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         
         {/* Ratio and Polarity Table */}
         <div>
-          <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-100">Ratio and Polarity</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100">Ratio and Polarity</h3>
+            {isEditing && (
+              <div className="flex gap-2 print:hidden">
+                <button
+                  type="button"
+                  onClick={handleAddRatioPolarityRow}
+                  disabled={formData.electricalTests.ratioPolarity.length >= MAX_RATIO_POLARITY_ROWS}
+                  className="px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-md hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Add Row
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemoveRatioPolarityRow}
+                  disabled={formData.electricalTests.ratioPolarity.length <= 1}
+                  className="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Remove Row
+                </button>
+              </div>
+            )}
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse ratio-polarity-table" style={{ tableLayout: 'fixed' }}>
               <colgroup>
@@ -1775,7 +1838,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
       </div>
 
         {/* Comments Section */}
-        <div className="mb-6">
+        <div className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
           <h2 id="comments-heading" className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         <textarea
           value={formData.comments}
@@ -1785,6 +1848,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           className={`form-textarea w-full print:hidden ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
           placeholder="Enter comments here..."
         />
+        {formData.comments?.trim() && (
         <div className="hidden print:block">
           <table className="w-full border-collapse table-fixed">
             <thead>
@@ -1799,6 +1863,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
             </tbody>
           </table>
         </div>
+        )}
         </div>
       </div>      {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (

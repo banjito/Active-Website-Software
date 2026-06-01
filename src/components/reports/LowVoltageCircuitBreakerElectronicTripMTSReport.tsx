@@ -3081,13 +3081,15 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
           </div>
 
           {/* Print-Only Comments Table */}
+          {formData.comments?.trim() && (
           <div className="hidden print:block mb-6 comments-print-section">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-black border-b border-black pb-2 font-bold">Comments</h2>
             <div className="comments-cell border-2 border-black px-4 py-4 text-sm" style={{minHeight: '120px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.5'}}>
-              {formData.comments || '\u00A0'}
+              {formData.comments}
             </div>
           </div>
+          )}
          </div>
        </div>      {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (

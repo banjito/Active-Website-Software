@@ -620,33 +620,34 @@ const TanDeltaTestMTSForm: React.FC = () => {
           </div>
  
           {/* Comments Section */}
-          <div className="mb-6 comments-section">
+          <div className={`mb-6 comments-section print:break-inside-avoid ${!comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             {/* On-screen form - hidden in print */}
             <div className="print:hidden comments-onscreen">
-              <textarea 
-                rows={8} 
-                className="form-input resize-vertical" 
+              <textarea
+                rows={8}
+                className="form-input resize-vertical"
                 disabled={!isEditing}
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
                 placeholder="Enter any additional comments or notes..."
               />
             </div>
-            
-            {/* Print-only table */}
+
+            {comments?.trim() && (
             <div className="hidden print:block">
               <table className="w-full border border-gray-300 print:border-black">
                 <tbody>
                   <tr>
                     <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
-                      {comments || 'No comments'}
+                      {comments}
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         </div>
       </div>

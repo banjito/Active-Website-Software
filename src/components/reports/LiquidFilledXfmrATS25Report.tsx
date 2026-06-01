@@ -1334,11 +1334,13 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
           </div>
 
           {/* Comments */}
-          <div className="mb-6">
+          <div className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments:</h2>
             <textarea value={formData.comments} onChange={e => setFormData(p => ({ ...p, comments: e.target.value }))} rows={4} readOnly={!isEditing} className={`form-textarea w-full resize-none ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''} print:hidden`} />
-            <div className="hidden print:block"><table className="w-full table-fixed border-collapse border border-gray-300 print:border-black"><tbody><tr><td className="p-2 align-top border border-gray-300 print:border-black"><div className="mt-0">{formData.comments || ''}</div></td></tr></tbody></table></div>
+            {formData.comments?.trim() && (
+              <div className="hidden print:block"><table className="w-full table-fixed border-collapse border border-gray-300 print:border-black"><tbody><tr><td className="p-2 align-top border border-gray-300 print:border-black"><div className="mt-0">{formData.comments}</div></td></tr></tbody></table></div>
+            )}
           </div>
         </div>
       </div>      {/* Mark Ready to Review Button */}

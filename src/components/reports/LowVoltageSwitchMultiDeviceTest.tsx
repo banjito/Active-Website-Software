@@ -1074,12 +1074,13 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
           </table>
         </div>
 
-        {/* Comments */}
+        {formData.comments?.trim() && (
         <div>
           <div className="w-full h-1 bg-[#f26722] mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">Comments</h2>
-          <div style={{ border: '1px solid black', padding: '4px', fontSize: '8px', minHeight: '30px', whiteSpace: 'pre-wrap' }}>{formData.comments || ''}</div>
+          <div style={{ border: '1px solid black', padding: '4px', fontSize: '8px', minHeight: '30px', whiteSpace: 'pre-wrap' }}>{formData.comments}</div>
         </div>
+        )}
       </div>
 
       {/* Main content wrapper - screen only */}

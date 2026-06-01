@@ -2967,7 +2967,7 @@ const MediumVoltageVLFReport: React.FC = () => {
       </section>
       
       {/* Comments */}
-      <section className="mb-6 print:mb-2 comments-section">
+      <section className={`mb-6 print:mb-2 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
         <div className="w-full h-1 bg-[#f26722] mb-4 print:mb-1"></div>
         <h2 className="text-xl font-semibold mb-4 print:mb-1 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">Comments</h2>
         {/* On-screen form - hidden in print */}
@@ -2980,19 +2980,20 @@ const MediumVoltageVLFReport: React.FC = () => {
             className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical ${!isEditMode ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
           />
         </div>
-        
-        {/* Print-only table */}
+
+        {formData.comments?.trim() && (
         <div className="hidden print:block">
           <table className="w-full border border-gray-300 print:border-black">
             <tbody>
               <tr>
                 <td className="p-2 border border-gray-300 print:border-black min-h-[100px] align-top">
-                  {formData.comments || 'No comments'}
+                  {formData.comments}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+        )}
       </section>
         </div>
       </div>      {/* Mark Ready to Review Button */}

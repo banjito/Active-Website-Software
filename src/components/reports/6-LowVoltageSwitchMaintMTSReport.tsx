@@ -1505,7 +1505,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
           </section>
 
           {/* Comments */}
-          <section className="mb-6">
+          <section className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments:
@@ -1519,7 +1519,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                 className={`form-textarea w-full ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
-            {/* Print-only Comments table */}
+            {formData.comments?.trim() && (
             <div className="hidden print:block">
               <table className="min-w-full border-collapse border border-black">
                 <thead>
@@ -1530,12 +1530,13 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                 <tbody>
                   <tr>
                     <td className="px-3 py-2 border border-black text-black text-sm min-h-[80px] align-top">
-                      {formData.comments || ''}
+                      {formData.comments}
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
+            )}
           </section>
         </div>
       </div>      {/* Mark Ready to Review Button */}

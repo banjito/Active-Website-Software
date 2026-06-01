@@ -1801,7 +1801,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         </div>
         </div>
       </div>      {/* Mark Ready to Review Button */}
-      {!isPrintMode && isEditMode && (
+      {!isPrintMode && isEditing && (
         <div className="mb-6 print:hidden flex justify-center">
           <button
             onClick={async () => {

@@ -1634,7 +1634,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
           </div>
 
           {/* Comments */}
-          <div className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
+          <div className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
               Comments
@@ -1649,12 +1649,12 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
               />
               {formData.comments?.trim() && (
               <div className="hidden print:block mt-2">
-                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
                   <tbody>
                     <tr>
                       <td className="p-2 align-top border border-gray-300 print:border-black">
                         <div className="font-semibold">Comments</div>
-                        <div className="mt-0">{formData.comments}</div>
+                        <div className="mt-0 whitespace-pre-wrap break-words">{formData.comments}</div>
                       </td>
                     </tr>
                   </tbody>

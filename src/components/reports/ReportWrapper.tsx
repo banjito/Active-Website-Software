@@ -34,6 +34,52 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             min-height: calc(100vh + 100px);
           }
         }
+
+        /* ============================================ */
+        /* COMMENT TEXT WRAPPING - all reports         */
+        /* ============================================ */
+        #report-container .comments-section textarea,
+        #report-container .section-comments textarea,
+        #report-container .comments-print-section textarea,
+        #report-container .comments-section-print textarea,
+        #report-container .comments-onscreen textarea,
+        #report-container .visual-mechanical-comments textarea,
+        #report-container .electrical-comments-section textarea,
+        #report-container .comments-cell,
+        #report-container .comments-text,
+        #report-container .comments-print-wrapper,
+        #report-container .comments-section td,
+        #report-container .section-comments td,
+        #report-container .comments-section table td,
+        #report-container .section-comments table td,
+        #report-container .comments-section table td div,
+        #report-container .section-comments table td div,
+        #report-container .comments-print-section td,
+        #report-container .comments-section-print table td,
+        #report-container .comments-section-print table td div,
+        #report-container table.hidden.print\\:table td,
+        #report-container table.comments-print-table td,
+        #report-container h2.section-comments ~ table td,
+        #report-container h2.section-comments ~ div table td,
+        #report-container div.hidden.print\\:block:not(.job-info-print) > table td,
+        #report-container div.hidden.print\\:block:not(.job-info-print) > table td div,
+        #report-container div.hidden.print\\:block:not(.job-info-print) h2 + table td {
+          white-space: pre-wrap !important;
+          overflow-wrap: break-word !important;
+          word-wrap: break-word !important;
+          word-break: break-word !important;
+        }
+        #report-container .comments-section table,
+        #report-container .section-comments table,
+        #report-container table.hidden.print\\:table,
+        #report-container table.comments-print-table,
+        #report-container div.hidden.print\\:block:not(.job-info-print) > table.table-fixed,
+        #report-container h2.section-comments ~ table,
+        #report-container h2.section-comments ~ div table {
+          table-layout: fixed !important;
+          width: 100% !important;
+          max-width: 100% !important;
+        }
         
         /* Remove min-height for embedded/print preview mode */
         .force-print .screen-min-height,
@@ -675,16 +721,50 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
 
           /* Force text wrapping in comment/conclusion/recommendation print boxes */
           #report-container table.print-comment-table,
-          .is-windows #report-container table.print-comment-table {
+          .is-windows #report-container table.print-comment-table,
+          #report-container .comments-section table,
+          #report-container .section-comments table,
+          #report-container table.hidden.print\\:table,
+          #report-container table.comments-print-table,
+          #report-container div.hidden.print\\:block:not(.job-info-print) > table,
+          #report-container h2.section-comments ~ table,
+          #report-container h2.section-comments ~ div table {
             table-layout: fixed !important;
             width: 100% !important;
             max-width: 100% !important;
           }
           #report-container table.print-comment-table td,
+          .is-windows #report-container table.print-comment-table td,
+          #report-container .comments-section textarea,
+          #report-container .section-comments textarea,
+          #report-container .comments-print-section textarea,
+          #report-container .comments-section-print textarea,
+          #report-container .comments-onscreen textarea,
+          #report-container .visual-mechanical-comments textarea,
+          #report-container .electrical-comments-section textarea,
+          #report-container .comments-cell,
+          #report-container .comments-text,
+          #report-container .comments-section td,
+          #report-container .section-comments td,
+          #report-container .comments-section table td,
+          #report-container .section-comments table td,
+          #report-container .comments-section table td div,
+          #report-container .section-comments table td div,
+          #report-container .comments-print-section td,
+          #report-container .comments-section-print table td,
+          #report-container .comments-section-print table td div,
+          #report-container table.hidden.print\\:table td,
+          #report-container table.comments-print-table td,
+          #report-container h2.section-comments ~ table td,
+          #report-container h2.section-comments ~ div table td,
+          #report-container div.hidden.print\\:block:not(.job-info-print) > table td,
+          #report-container div.hidden.print\\:block:not(.job-info-print) > table td div,
+          #report-container div.hidden.print\\:block:not(.job-info-print) h2 + table td,
           .is-windows #report-container table.print-comment-table td {
             word-wrap: break-word !important;
             overflow-wrap: break-word !important;
             white-space: pre-wrap !important;
+            word-break: break-word !important;
             max-width: 100% !important;
             overflow: hidden !important;
           }
@@ -1068,16 +1148,49 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
 
         /* Force text wrapping in comment/conclusion/recommendation print boxes */
         .force-print #report-container table.print-comment-table,
-        .force-print.is-windows #report-container table.print-comment-table {
+        .force-print.is-windows #report-container table.print-comment-table,
+        .force-print #report-container .comments-section table,
+        .force-print #report-container .section-comments table,
+        .force-print #report-container table.hidden.print\\:table,
+        .force-print #report-container table.comments-print-table,
+        .force-print #report-container div.hidden.print\\:block:not(.job-info-print) > table,
+        .force-print #report-container h2.section-comments ~ table,
+        .force-print #report-container h2.section-comments ~ div table {
           table-layout: fixed !important;
           width: 100% !important;
           max-width: 100% !important;
         }
         .force-print #report-container table.print-comment-table td,
-        .force-print.is-windows #report-container table.print-comment-table td {
+        .force-print.is-windows #report-container table.print-comment-table td,
+        .force-print #report-container .comments-section textarea,
+        .force-print #report-container .section-comments textarea,
+        .force-print #report-container .comments-print-section textarea,
+        .force-print #report-container .comments-section-print textarea,
+        .force-print #report-container .comments-onscreen textarea,
+        .force-print #report-container .visual-mechanical-comments textarea,
+        .force-print #report-container .electrical-comments-section textarea,
+        .force-print #report-container .comments-cell,
+        .force-print #report-container .comments-text,
+        .force-print #report-container .comments-section td,
+        .force-print #report-container .section-comments td,
+        .force-print #report-container .comments-section table td,
+        .force-print #report-container .section-comments table td,
+        .force-print #report-container .comments-section table td div,
+        .force-print #report-container .section-comments table td div,
+        .force-print #report-container .comments-print-section td,
+        .force-print #report-container .comments-section-print table td,
+        .force-print #report-container .comments-section-print table td div,
+        .force-print #report-container table.hidden.print\\:table td,
+        .force-print #report-container table.comments-print-table td,
+        .force-print #report-container h2.section-comments ~ table td,
+        .force-print #report-container h2.section-comments ~ div table td,
+        .force-print #report-container div.hidden.print\\:block:not(.job-info-print) > table td,
+        .force-print #report-container div.hidden.print\\:block:not(.job-info-print) > table td div,
+        .force-print #report-container div.hidden.print\\:block:not(.job-info-print) h2 + table td {
           word-wrap: break-word !important;
           overflow-wrap: break-word !important;
           white-space: pre-wrap !important;
+          word-break: break-word !important;
           max-width: 100% !important;
           overflow: hidden !important;
         }

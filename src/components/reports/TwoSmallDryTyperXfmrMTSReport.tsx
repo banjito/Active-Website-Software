@@ -1991,7 +1991,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
         </section>
 
-        <section className={`mb-6 print:mb-3 ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
+        <section className={`mb-6 comments-section print:mb-3 ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
           <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
           <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">Comments</h2>
           <div className="print:hidden">

@@ -1566,7 +1566,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         </div>
         {/* Print-only compact table */}
         <div className="hidden print:block">
-          <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+          <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
             <colgroup>
               <col style={{ width: '25%' }} />
               <col style={{ width: '25%' }} />
@@ -2069,7 +2069,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       </section>
       
       {/* Comments */}
-      <section className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
+      <section className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
         <div className="w-full h-1 bg-[#f26722] mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
         {/* On-screen textarea - hidden in print */}
@@ -2085,12 +2085,12 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         </div>
         {formData.comments?.trim() && (
         <div className="hidden print:block">
-          <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+          <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
             <tbody>
               <tr>
                 <td className="p-2 align-top border border-gray-300 print:border-black">
                   <div className="font-semibold">Comments</div>
-                  <div className="mt-1">{formData.comments}</div>
+                  <div className="mt-1 whitespace-pre-wrap break-words">{formData.comments}</div>
                 </td>
               </tr>
             </tbody>

@@ -425,6 +425,13 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         /* Ensure all text is black for maximum readability */
         * { color: black !important; }
 
+        /* Section headings: single underline in print (orange bar hidden via print:hidden) */
+        .max-w-7xl h2 {
+          border-bottom: 1px solid black !important;
+          padding-bottom: 2px !important;
+          margin-bottom: 4px !important;
+        }
+
         /* Visual & Mechanical table standardization like Panelboard */
         table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
         table.visual-mechanical-table thead { display: table-header-group !important; }
@@ -931,8 +938,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
       {/* Job Information */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">Job Information</h2>
+          <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-job-info">Job Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
             <div><label className="form-label">Customer:</label><input type="text" value={maskCustomerName(formData.customerName)} readOnly className="form-input bg-gray-100 dark:bg-dark-150 w-full" /></div>
@@ -972,8 +979,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
       {/* Nameplate Data */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-nameplate-data">Nameplate Data</h2>
+          <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-nameplate-data">Nameplate Data</h2>
           
           <div className="grid grid-cols-3 gap-4 print:hidden nameplate-onscreen">
             <div><label className="form-label">Manufacturer:</label><input type="text" value={formData.nameplate.manufacturer} onChange={e => handleInputChange('nameplate.manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
@@ -1011,8 +1018,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
       {/* Visual and Mechanical Inspection */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">Visual and Mechanical Inspection</h2>
+          <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-visual-mechanical">Visual and Mechanical Inspection</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
             <colgroup>
@@ -1049,9 +1056,9 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
       {/* Electrical Tests - Measured Insulation Resistance */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
         <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold flex-grow">Electrical Tests - Measured Insulation Resistance Values</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">Electrical Tests - Measured Insulation Resistance Values</h2>
           <div className="flex items-center space-x-4">
             <div className="print:hidden">
               <button
@@ -1169,8 +1176,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
       
       {/* Electrical Tests - Temperature Corrected Insulation Resistance */}
         <div className="mb-6">
-        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Values</h2>
+        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold">Temperature Corrected Values</h2>
         <div className="overflow-x-auto section-temp-corrected">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed ir-corrected-table">
             <colgroup>
@@ -1253,9 +1260,9 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
       {/* Electrical Tests - Contact Resistance */}
         <div className="mb-6">
-        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
         <div className="mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold flex-grow">Contact Resistance</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">Contact Resistance</h2>
         </div>
         <div className="overflow-x-auto section-contact-resistance">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed contact-resistance-table">
@@ -1345,9 +1352,9 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
       {/* Electrical Tests - Dielectric Withstand */}
         <div className="mb-6">
-        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold flex-grow">Dielectric Withstand</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">Dielectric Withstand</h2>
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
             <select
@@ -1441,8 +1448,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
       {/* Test Equipment Used */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
+          <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-test-equipment">
             Test Equipment Used
           </h2>
           <div className="grid grid-cols-1 gap-6 print:hidden test-eqpt-onscreen">
@@ -1618,7 +1625,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           
           {/* Print-only compact Test Equipment table */}
           <div className="hidden print:block">
-            <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+            <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
               <colgroup>
                 <col style={{ width: '33.33%' }} />
                 <col style={{ width: '33.33%' }} />
@@ -1674,8 +1681,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
       {/* Comments */}
       <section className={`mb-6 section-comments print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
-        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
+        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-comments">
           Comments
         </h2>
         <textarea
@@ -1688,12 +1695,12 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         />
         {formData.comments?.trim() && (
         <div className="hidden print:block">
-          <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+          <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
             <tbody>
               <tr>
                 <td className="p-2 align-top border border-gray-300 print:border-black">
                   <div className="font-semibold">Comments</div>
-                  <div className="mt-0">{formData.comments}</div>
+                  <div className="mt-0 whitespace-pre-wrap break-words">{formData.comments}</div>
                 </td>
               </tr>
             </tbody>

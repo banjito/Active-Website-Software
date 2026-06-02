@@ -1494,7 +1494,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                 />
                 {/* Print-only comments box */}
                 <div className="hidden print:block">
-                  <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                  <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
                     <tbody>
                       <tr>
                         <td className="p-2 align-top border border-gray-300 print:border-black">
@@ -1710,7 +1710,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                 />
                 {/* Print-only comments box */}
                 <div className="hidden print:block">
-                  <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                  <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
                     <tbody>
                       <tr>
                         <td className="p-2 align-top border border-gray-300 print:border-black">

@@ -2079,7 +2079,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             <table className="w-full border-collapse border border-black mb-6">
               <tbody>
                 <tr>
-                  <td className="border border-black px-4 py-8 text-sm align-top" style={{minHeight: '150px', height: '150px'}}>
+                  <td className="border border-black px-4 py-8 text-sm align-top whitespace-pre-wrap break-words" style={{minHeight: '150px', height: '150px'}}>
                     {formData.comments}
                   </td>
                 </tr>

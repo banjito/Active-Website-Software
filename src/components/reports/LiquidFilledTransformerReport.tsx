@@ -2040,7 +2040,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
               </div>
               {/* Print-only compact Test Equipment table */}
               <div className="hidden print:block">
-                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
                   <colgroup>
                     <col style={{ width: '30%' }} />
                     <col style={{ width: '25%' }} />
@@ -2084,12 +2084,12 @@ const LiquidFilledTransformerReport: React.FC = () => {
               />
               {formData.comments?.trim() && (
                 <div className="hidden print:block">
-                  <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+                  <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
                     <tbody>
                       <tr>
                         <td className="p-2 align-top border border-gray-300 print:border-black">
                           <div className="font-semibold">Comments</div>
-                          <div className="mt-0">{formData.comments}</div>
+                          <div className="mt-0 whitespace-pre-wrap break-words">{formData.comments}</div>
                         </td>
                       </tr>
                     </tbody>

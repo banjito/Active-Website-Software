@@ -1614,7 +1614,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
             </div>
             {/* Print-only compact table */}
             <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black">
+              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
                 <colgroup><col style={{ width: '33.33%' }} /><col style={{ width: '33.33%' }} /><col style={{ width: '33.33%' }} /></colgroup>
                 <tbody>
                   <tr>
@@ -1638,12 +1638,12 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
           </div>
 
           {/* Comments */}
-          <div className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
+          <div className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
             <textarea value={formData.comments} onChange={e => setFormData(p => ({ ...p, comments: e.target.value }))} rows={4} readOnly={!isEditing} className={`form-textarea w-full resize-none ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''} print:hidden`} />
             {formData.comments?.trim() && (
-              <div className="hidden print:block"><table className="w-full table-fixed border-collapse border border-gray-300 print:border-black"><tbody><tr><td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Comments</div><div className="mt-0">{formData.comments}</div></td></tr></tbody></table></div>
+              <div className="hidden print:block"><table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table"><tbody><tr><td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Comments</div><div className="mt-0 whitespace-pre-wrap break-words">{formData.comments}</div></td></tr></tbody></table></div>
             )}
           </div>
         </div>

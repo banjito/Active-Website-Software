@@ -4,6 +4,7 @@
 
 // @ts-ignore deno: remote module types resolved at runtime
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { getDigestRecipientEmails } from '../_shared/digestRecipients.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -131,8 +132,6 @@ serve(async (req) => {
     // Calculate total value
     const totalValue = enrichedPOs.reduce((sum, po) => sum + (po.value || 0), 0)
 
-    // Build email content
-    const notificationEmail = Deno.env.get('WEEKLY_REPORT_EMAIL') || Deno.env.get('REVIEW_NOTIFICATION_EMAIL') || 'john.chambers@ampqes.com'
     const emailSubject = `Weekly PO Report - ${enrichedPOs.length} POs Entered (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()})`
 
     const emailHtml = `
@@ -216,6 +215,22 @@ Uploaded: ${new Date(po.uploaded_date).toLocaleDateString('en-US', { month: 'sho
 This is an automated weekly report from AMP Quality Energy Services
 Generated on ${new Date().toLocaleString()}
     `
+
+    const recipientEmails = await getDigestRecipientEmails(supabase, 'weeklyReports')
+    if (recipientEmails.length === 0) {
+      console.log('No subscribers for weekly reports digest; skipping email')
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'No digest subscribers configured for weekly reports',
+          poCount: enrichedPOs.length,
+          emailSent: false
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
+    const notificationEmail = recipientEmails.join(', ')
 
     // Send via Postmark
     const postmarkApiKey = Deno.env.get('POSTMARK_API_KEY')

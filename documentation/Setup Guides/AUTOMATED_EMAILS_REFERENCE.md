@@ -8,11 +8,11 @@ Quick reference for all automated email notifications in the ampOS system.
 
 | Email Name | Trigger | Frequency | Time (CST) | Recipients | Status |
 |------------|---------|-----------|------------|------------|--------|
-| **Daily Review Notification** | Scheduled | Daily | 12:00 PM | REVIEW_NOTIFICATION_EMAIL | ✅ Active |
-| **Daily Ready-to-Bill Report** | Scheduled | Daily | 8:00 AM | accounting@ampqes.com | 🆕 New |
+| **Daily Review Notification** | Scheduled | Daily | 12:00 PM | Users opted in via Settings (`dailyReview`) | ✅ Active |
+| **Daily Ready-to-Bill Report** | Scheduled | Daily | 8:00 AM | Opted-in users + `ACCOUNTING_NOTIFICATION_EMAIL` | ✅ Active |
 | **Ready to Bill Notification** | Event (status change) | Immediate | On trigger | accounting@ampqes.com | ✅ Active |
-| **Weekly PO Report** | Scheduled | Monday | 8:00 AM | WEEKLY_REPORT_EMAIL | 🆕 New |
-| **Weekly Jobs Status Report** | Scheduled | Monday | 8:00 AM | WEEKLY_REPORT_EMAIL | 🆕 New |
+| **Weekly PO Report** | Scheduled | Monday | 8:00 AM | Users opted in via Settings (`weeklyReports`) | ✅ Active |
+| **Weekly Jobs Status Report** | Scheduled | Monday | 8:00 AM | Users opted in via Settings (`weeklyReports`) | ✅ Active |
 
 ---
 
@@ -114,6 +114,48 @@ Quick reference for all automated email notifications in the ampOS system.
 
 ---
 
+## User email digest preferences
+
+Scheduled digests (daily review, daily ready-to-bill, weekly PO + jobs status) use **per-user opt-out** stored in `common.user_preferences.notification_preferences.automatedEmails`:
+
+| Toggle (Settings → Email digests) | JSON key | Edge functions |
+|-----------------------------------|----------|----------------|
+| Daily review digest | `dailyReview` | `daily-review-notification` |
+| Daily ready-to-bill digest | `dailyReadyToBill` | `daily-ready-to-bill-report` |
+| Weekly reports digest | `weeklyReports` | `weekly-po-report`, `weekly-jobs-status-report` |
+
+**Rules:**
+- Users need a `user_preferences` row to receive digests (open Settings and save, or run the seed script).
+- Missing `automatedEmails` keys inside an existing row count as **on** (opt-out).
+- Daily ready-to-bill always includes `ACCOUNTING_NOTIFICATION_EMAIL` (default `accounting@ampqes.com`) even if no user row exists.
+- Instant/event emails (e.g. ready-to-bill on status change) are **not** controlled by these toggles.
+
+**One-time seed (preserve current recipients after deploy):**
+
+```bash
+REVIEW_NOTIFICATION_EMAIL=person@ampqes.com \
+WEEKLY_REPORT_EMAIL=person@ampqes.com \
+ACCOUNTING_NOTIFICATION_EMAIL=accounting@ampqes.com \
+SUPABASE_URL=https://YOUR_PROJECT.supabase.co \
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key \
+node scripts/seed-digest-email-preferences.js
+```
+
+SQL alternative: `Database Scripts/Setup & Configuration/seed_digest_email_preferences.sql`
+
+**Redeploy edge functions** after changing recipient logic:
+
+```bash
+supabase functions deploy daily-review-notification
+supabase functions deploy daily-ready-to-bill-report
+supabase functions deploy weekly-po-report
+supabase functions deploy weekly-jobs-status-report
+```
+
+Shared recipient helper: `supabase/functions/_shared/digestRecipients.ts`
+
+---
+
 ## 🔧 Environment Variables
 
 All email functions use these shared environment variables:
@@ -122,8 +164,9 @@ All email functions use these shared environment variables:
 |----------|---------|----------|---------|
 | `POSTMARK_API_KEY` | Postmark email service API key | ✅ Yes | - |
 | `POSTMARK_FROM` | Sender email address | No | john.chambers@ampqes.com |
-| `REVIEW_NOTIFICATION_EMAIL` | Daily review recipient | Yes | - |
-| `WEEKLY_REPORT_EMAIL` | Weekly reports recipient | No | Falls back to REVIEW_NOTIFICATION_EMAIL |
+| `REVIEW_NOTIFICATION_EMAIL` | Used by **seed script only** (legacy recipient) | No | - |
+| `WEEKLY_REPORT_EMAIL` | Used by **seed script only** | No | Falls back to `REVIEW_NOTIFICATION_EMAIL` |
+| `ACCOUNTING_NOTIFICATION_EMAIL` | Always CC'd on daily ready-to-bill digest | No | accounting@ampqes.com |
 | `SUPABASE_URL` | Supabase project URL | ✅ Yes | - |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key | ✅ Yes | - |
 
@@ -244,17 +287,11 @@ As Needed:
 
 ### Change Email Recipients
 
-**Single Recipient:**
-Set environment variable in Supabase:
-```
-WEEKLY_REPORT_EMAIL=newemail@company.com
-```
+**Scheduled digests:** Each user opens **Settings → Email digests** and toggles the reports they want. New subscribers must save once in Settings (or be added via the seed script).
 
-**Multiple Recipients:**
-Edit the edge function file and change the `To:` line:
-```typescript
-To: 'email1@company.com, email2@company.com',
-```
+**Accounting on daily ready-to-bill:** Set `ACCOUNTING_NOTIFICATION_EMAIL` in Supabase (always included).
+
+**Bootstrap existing recipients:** Run `scripts/seed-digest-email-preferences.js` with `REVIEW_NOTIFICATION_EMAIL` / `WEEKLY_REPORT_EMAIL` from your current secrets.
 
 ### Change Schedule Times
 

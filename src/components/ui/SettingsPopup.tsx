@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { User as UserIcon, FileText, X, Edit3 } from "lucide-react";
-import { ThemeToggle } from '../theme/theme-toggle';
 import { EditProfilePopup } from '../profile/EditProfilePopup';
+import { EmailDigestPreferences } from '../settings/EmailDigestPreferences';
+
 interface SettingsPopupProps {
   isOpen: boolean;
   onClose: () => void;
   onAbout?: () => void;
   onEnterEditMode?: () => void;
   currentUser?: {
+    id?: string;
     name?: string;
     email?: string;
     role?: string;
@@ -65,6 +67,13 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({
               <UserIcon className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
               Edit Profile
             </button>
+
+            {currentUser?.id && (
+              <EmailDigestPreferences
+                userId={currentUser.id}
+                userEmail={currentUser.email}
+              />
+            )}
             
             {/* Theme Toggle - Hidden until fully flushed out */}
             {/* <div className="flex items-center w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-50 rounded-md">

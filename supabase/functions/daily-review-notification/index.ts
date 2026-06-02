@@ -1,6 +1,7 @@
 /// <reference lib="dom" />
 // @ts-ignore deno: types are resolved at runtime
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { getDigestRecipientEmails } from '../_shared/digestRecipients.ts'
 // Local TS linting shim (for non-Deno editors)
 declare const Deno: {
   env: { get: (name: string) => string | undefined }
@@ -155,9 +156,22 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     console.log(`Prepared ${jobsWithReports.length} jobs for email notification`)
 
-    // Recipient
-    const notificationEmail = Deno.env.get('REVIEW_NOTIFICATION_EMAIL')
-    if (!notificationEmail) throw new Error('REVIEW_NOTIFICATION_EMAIL environment variable not set')
+    const recipientEmails = await getDigestRecipientEmails(supabase, 'dailyReview')
+    if (recipientEmails.length === 0) {
+      console.log('No subscribers for daily review digest; skipping email')
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'No digest subscribers configured for daily review',
+          jobsCount: jobsWithReports.length,
+          reportsCount: jobsWithReports.reduce((sum, j) => sum + j.reports_count, 0),
+          emailSent: false
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
+    const notificationEmail = recipientEmails.join(', ')
 
     // Email content
     const totalReports = jobsWithReports.reduce((sum, j) => sum + j.reports_count, 0)

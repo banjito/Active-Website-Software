@@ -19,6 +19,14 @@ export interface JobNotification {
   };
 }
 
+export type DigestKey = 'dailyReview' | 'dailyReadyToBill' | 'weeklyReports';
+
+export interface AutomatedEmailPreferences {
+  dailyReview: boolean;
+  dailyReadyToBill: boolean;
+  weeklyReports: boolean;
+}
+
 export interface NotificationPreferences {
   enableNotifications: boolean;
   emailNotifications: boolean;
@@ -29,8 +37,15 @@ export interface NotificationPreferences {
     cost_update: boolean;
     sla_violation: boolean;
     new_job: boolean;
-  }
+  };
+  automatedEmails?: AutomatedEmailPreferences;
 }
+
+export const DEFAULT_AUTOMATED_EMAILS: AutomatedEmailPreferences = {
+  dailyReview: true,
+  dailyReadyToBill: true,
+  weeklyReports: true,
+};
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {
   enableNotifications: true,
@@ -42,8 +57,27 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
     cost_update: true,
     sla_violation: true,
     new_job: true
-  }
+  },
+  automatedEmails: { ...DEFAULT_AUTOMATED_EMAILS },
 };
+
+/** Merge stored JSON with defaults (in-app + digest email prefs). */
+export function mergeNotificationPreferences(
+  stored: Partial<NotificationPreferences> | null | undefined
+): NotificationPreferences {
+  return {
+    ...DEFAULT_PREFERENCES,
+    ...stored,
+    notificationTypes: {
+      ...DEFAULT_PREFERENCES.notificationTypes,
+      ...stored?.notificationTypes,
+    },
+    automatedEmails: {
+      ...DEFAULT_AUTOMATED_EMAILS,
+      ...stored?.automatedEmails,
+    },
+  };
+}
 
 // Get user notification preferences
 // Gracefully degrades to DEFAULT_PREFERENCES when the table doesn't exist or
@@ -63,19 +97,21 @@ export const getUserNotificationPreferences = async (userId: string): Promise<No
       // PGRST301 = RLS denied, 42P01 = table missing, 42501 = permission denied
       // (usually a trigger/policy referencing the `users` table)
       if (code === 'PGRST301' || code === '42P01' || code === '42501') {
-        return DEFAULT_PREFERENCES;
+        return mergeNotificationPreferences(null);
       }
       throw error;
     }
 
-    return data?.notification_preferences || DEFAULT_PREFERENCES;
+    return mergeNotificationPreferences(
+      data?.notification_preferences as Partial<NotificationPreferences> | undefined
+    );
   } catch (error) {
     // Don't log benign permission/missing-table errors -- just fall back.
     const code = (error as any)?.code;
     if (code !== 'PGRST301' && code !== '42P01' && code !== '42501') {
       console.error('Error getting notification preferences:', error);
     }
-    return DEFAULT_PREFERENCES;
+    return mergeNotificationPreferences(null);
   }
 };
 

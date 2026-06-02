@@ -1122,6 +1122,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
         onAbout={handleAbout}
         onEnterEditMode={onEnterEditMode}
         currentUser={{
+          id: user?.id,
           name: user?.user_metadata?.name,
           email: user?.email,
           role: user?.user_metadata?.role,

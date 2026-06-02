@@ -1,4 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import {
+  getAccountingDigestEmail,
+  getDigestRecipientEmails,
+} from '../_shared/digestRecipients.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -50,9 +54,24 @@ serve(async (req) => {
         )
       }
 
+      const recipientEmails = await getDigestRecipientEmails(supabase, 'dailyReadyToBill', {
+        alwaysInclude: [getAccountingDigestEmail()],
+      })
+      if (recipientEmails.length === 0) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: 'No digest subscribers for daily ready-to-bill',
+            jobCount: 0,
+            emailSent: false,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        )
+      }
+
       const fromEmail = (Deno.env.get('POSTMARK_FROM') ?? 'john.chambers@ampqes.com').trim()
       const fromHeader = fromEmail.includes('<') ? fromEmail : `AMP System <${fromEmail}>`
-      const toEmail = 'accounting@ampqes.com'
+      const toEmail = recipientEmails.join(', ')
 
       const emailSubject = 'Daily Ready-to-Bill Report - No Jobs'
       const emailHtml = `
@@ -231,9 +250,24 @@ Generated on ${new Date().toLocaleString()}
       )
     }
 
+    const recipientEmails = await getDigestRecipientEmails(supabase, 'dailyReadyToBill', {
+      alwaysInclude: [getAccountingDigestEmail()],
+    })
+    if (recipientEmails.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'No digest subscribers for daily ready-to-bill',
+          jobCount: jobs.length,
+          emailSent: false,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
     const fromEmail = (Deno.env.get('POSTMARK_FROM') ?? 'john.chambers@ampqes.com').trim()
     const fromHeader = fromEmail.includes('<') ? fromEmail : `AMP System <${fromEmail}>`
-    const toEmail = 'accounting@ampqes.com'
+    const toEmail = recipientEmails.join(', ')
 
     const pmRes = await fetch('https://api.postmarkapp.com/email', {
       method: 'POST',

@@ -4,6 +4,7 @@
 
 // @ts-ignore deno: remote module types resolved at runtime
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { getDigestRecipientEmails } from '../_shared/digestRecipients.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -111,8 +112,6 @@ serve(async (req) => {
     const readyToBillJobs = enrichedJobs.filter(j => j.status === 'ready_to_bill')
     const billedJobs = enrichedJobs.filter(j => j.status === 'billed')
 
-    // Build email content
-    const notificationEmail = Deno.env.get('WEEKLY_REPORT_EMAIL') || Deno.env.get('REVIEW_NOTIFICATION_EMAIL') || 'john.chambers@ampqes.com'
     const emailSubject = `Weekly Jobs Status Report - ${inProgressJobs.length + readyToBillJobs.length} Active Jobs, ${billedJobs.length} Recently Billed`
 
     const renderJobList = (jobs: JobData[], statusLabel: string, statusColor: string) => {
@@ -239,6 +238,22 @@ ${renderJobListText(billedJobs, 'BILLED')}
 This is an automated weekly report from AMP Quality Energy Services
 Generated on ${new Date().toLocaleString()}
     `
+
+    const recipientEmails = await getDigestRecipientEmails(supabase, 'weeklyReports')
+    if (recipientEmails.length === 0) {
+      console.log('No subscribers for weekly reports digest; skipping email')
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'No digest subscribers configured for weekly reports',
+          jobCount: enrichedJobs.length,
+          emailSent: false
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
+    const notificationEmail = recipientEmails.join(', ')
 
     // Send via Postmark
     const postmarkApiKey = Deno.env.get('POSTMARK_API_KEY')

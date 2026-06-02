@@ -55,6 +55,11 @@ const visualInspectionOptions = [
 const insulationResistanceUnitsOptions = ["kΩ", "MΩ", "GΩ"];
 const testVoltageOptions = ["250V", "500V", "1000V", "2500V", "5000V"];
 const passFailOptions = ["PASS", "FAIL", "N/A"];
+const TURNS_RATIO_WINDING_LABELS = {
+  h1h2: 'H1-H2 / X1-X0',
+  h2h3: 'H2-H3 / X0-X3',
+  h3h1: 'H3-H1 / X0-X1',
+} as const;
 const connectionOptions = ["Delta", "Wye", "Single Phase"];
 const materialOptions = ["Aluminum", "Copper"];
 
@@ -973,12 +978,12 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="print-report-header print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 print:pb-2 print:mb-4">
         <div style={{ width: '120px', display: 'flex', justifyContent: 'flex-start' }}>
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 35, marginLeft: '5px', marginTop: '2px' }} />
         </div>
         <div className="flex-1 text-center">
-          <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
+          <h1 className="text-2xl font-bold text-black mb-1 print:text-sm print:mb-0 print:leading-snug">{reportName}</h1>
         </div>
         <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c', width: '120px' }}>
           NETA - MTS 7.2.1.1
@@ -1007,15 +1012,16 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         </div>
       </div>
       {/* End Print Header */}
-      
+
+      <div className="two-small-xfmr-mts-print-root w-full">
       {/* Header with title and buttons */}
       <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
         {renderHeader()}
       </div>
           
-      <section className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+      <section className="mb-6 print:mb-3">
+          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">Job Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
             <div>
               <label htmlFor="customer" className="form-label">Customer:</label>
@@ -1080,7 +1086,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
           
           {/* Print-only Job Information table */}
-          <div className="hidden print:block">
+          <div className="report-section-content hidden print:block">
             <JobInfoPrintTable
               data={{
                 customer: maskCustomerName(formData.customer),
@@ -1098,9 +1104,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
         </section>
 
-        <section className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
+        <section className="mb-6 print:mb-3">
+          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">Nameplate Data</h2>
           
           {/* On-screen form - hidden in print */}
           <div className="space-y-4 print:hidden nameplate-onscreen">
@@ -1386,7 +1392,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
 
           {/* Print-only Nameplate Data tables */}
-          <div className="hidden print:block space-y-4">
+          <div className="report-section-content hidden print:block space-y-3">
             {/* Table 1: Basic Information - stacked label then value in each cell */}
             <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 nameplate-table">
               <colgroup>
@@ -1529,10 +1535,10 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
         </section>
 
-        <section className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
-          <div className="overflow-x-auto">
+        <section className="mb-6 print:mb-3">
+          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">Visual and Mechanical Inspection</h2>
+          <div className="report-section-content overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
               <colgroup>
                 <col style={{ width: '6%' }} />
@@ -1579,7 +1585,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
           
           {/* Print-only Visual Inspection Comments table */}
-          <div className="hidden print:block mt-4">
+          <div className={`report-section-content hidden print:block mt-3 ${!formData.visualInspectionComments?.trim() ? 'print:hidden' : ''}`}>
             <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
               <thead>
                 <tr>
@@ -1597,58 +1603,70 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
         </section>
 
-        <section className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Measured Insulation Resistance</h2>
-          <div className="overflow-x-auto mb-4">
-            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+        <section className="mb-6 print:mb-3">
+          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">Electrical Tests - Measured Insulation Resistance</h2>
+          <div className="report-section-content w-full max-w-full overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 insulation-resistance-table" style={{ tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: '16%' }} />
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '9%' }} />
+                <col style={{ width: '9%' }} />
+                <col style={{ width: '7%' }} />
+                <col style={{ width: '9%' }} />
+                <col style={{ width: '9%' }} />
+                <col style={{ width: '7%' }} />
+                <col style={{ width: '9%' }} />
+                <col style={{ width: '7%' }} />
+              </colgroup>
               <thead>
                 <tr>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Winding Tested</th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Test Voltage (VDC)</th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">0.5 Min.</th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">1 Min.</th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Units</th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">0.5 Min.</th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">1 Min.</th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Units</th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Value</th>
-                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Units</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Winding Tested</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal leading-tight">Test V<br />(VDC)</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">0.5 Min.</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">1 Min.</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Units</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">0.5 Min.</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">1 Min.</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Units</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Value</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Units</th>
                 </tr>
                 <tr>
-                  <th className="px-3 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
-                  <th className="px-3 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
-                  <th colSpan={3} className="px-3 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Measured Insulation Resistance</th>
-                  <th colSpan={3} className="px-3 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Corrected Insulation Resistance to 20° C</th>
-                  <th colSpan={2} className="px-3 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Table 100.5 Min. Value</th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
+                  <th className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
+                  <th colSpan={3} className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal leading-tight">Measured</th>
+                  <th colSpan={3} className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal leading-tight">Corrected @ 20°C</th>
+                  <th colSpan={2} className="px-1 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal leading-tight">Table 100.5</th>
                 </tr>
               </thead>
               <tbody>
                 {formData.insulationResistance.tests.map((test, index) => (
                   <tr key={index}>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">{test.winding}</td>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600">
-                      <select value={test.testVoltage} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'testVoltage', e.target.value)} disabled={!isEditing} className={`form-select w-full text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
+                    <td className="px-1 py-1 text-xs text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal leading-tight">{test.winding}</td>
+                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                      <select value={test.testVoltage} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'testVoltage', e.target.value)} disabled={!isEditing} className={`form-select w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
                         {testVoltageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                       </select>
                     </td>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measured0_5Min} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'measured0_5Min', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measured1Min} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'measured1Min', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600">
-                      <select value={test.units} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'units', e.target.value)} disabled={!isEditing} className={`form-select w-full text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
+                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measured0_5Min} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'measured0_5Min', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
+                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measured1Min} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'measured1Min', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
+                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                      <select value={test.units} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'units', e.target.value)} disabled={!isEditing} className={`form-select w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
                         {insulationResistanceUnitsOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                       </select>
                     </td>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={calculateCorrectedIRValue(test.measured0_5Min, getTCF(formData.temperature.celsius))} readOnly className="form-input w-full text-center text-sm bg-gray-100 dark:bg-dark-150" /></td>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={calculateCorrectedIRValue(test.measured1Min, getTCF(formData.temperature.celsius))} readOnly className="form-input w-full text-center text-sm bg-gray-100 dark:bg-dark-150" /></td>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600"> 
-                      <select value={test.correctedUnits} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'correctedUnits', e.target.value)} disabled={!isEditing} className={`form-select w-full text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
+                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600"><input type="text" value={calculateCorrectedIRValue(test.measured0_5Min, getTCF(formData.temperature.celsius))} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
+                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600"><input type="text" value={calculateCorrectedIRValue(test.measured1Min, getTCF(formData.temperature.celsius))} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
+                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600"> 
+                      <select value={test.correctedUnits} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'correctedUnits', e.target.value)} disabled={!isEditing} className={`form-select w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
                         {insulationResistanceUnitsOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                       </select>
                     </td>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.tableMinimum} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'tableMinimum', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                    <td className="px-3 py-2 border border-gray-300 dark:border-gray-600">
-                      <select value={test.tableMinimumUnits} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'tableMinimumUnits', e.target.value)} disabled={!isEditing} className={`form-select w-full text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
+                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600"><input type="text" value={test.tableMinimum} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'tableMinimum', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
+                    <td className="px-1 py-1 border border-gray-300 dark:border-gray-600">
+                      <select value={test.tableMinimumUnits} onChange={(e) => handleNestedArrayChange('insulationResistance', index, 'tableMinimumUnits', e.target.value)} disabled={!isEditing} className={`form-select w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
                         {insulationResistanceUnitsOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                       </select>
                     </td>
@@ -1658,7 +1676,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
             </table>
           </div>
           
-          <div className="mt-6">
+          <div className="report-section-content mt-3">
             <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 dielectric-absorption-table">
               <thead>
                 <tr>
@@ -1707,15 +1725,14 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
         </section>
 
-        <section className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Turns Ratio</h2>
-          <div className="flex justify-end mb-4">
-              <label htmlFor="turnsRatio.secondaryWindingVoltage" className="form-label mr-2">Secondary Winding Voltage (L-N for Wye, L-L for Delta):</label>
+        <section className="mb-6 print:mb-3">
+          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">Electrical Tests - Turns Ratio</h2>
+          <div className="report-section-content flex justify-end mb-3 turns-ratio-secondary-label text-xs print:text-[8px]">
               <input id="turnsRatio.secondaryWindingVoltage" type="text" name="turnsRatio.secondaryWindingVoltage" value={formData.turnsRatio.secondaryWindingVoltage} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input w-24 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /> <span className="ml-1">V</span>
           </div>
           {/* Compact vertical layout table */}
-          <div className="overflow-x-auto turns-ratio-scroll">
+          <div className="report-section-content overflow-x-auto turns-ratio-scroll">
             <table className="w-full border-collapse turns-ratio-table" style={{ tableLayout: 'fixed' }}>
               <colgroup>
                 <col style={{ width: '18%' }} />
@@ -1746,7 +1763,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           {Array.from({length: 7}, (_, i) => i + 1).map(num => <option key={num} value={num.toString()}>{num}</option>)}
                         </select>
                       </td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">H1-H2 / X1-X2(X0)</td>
+                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">{TURNS_RATIO_WINDING_LABELS.h1h2}</td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measuredH1H2} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH1H2', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.devH1H2} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
@@ -1759,7 +1776,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     <tr>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 font-medium text-xs">Nameplate V.</td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.nameplateVoltage} onChange={e => handleNestedArrayChange('turnsRatio', index, 'nameplateVoltage', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">H2-H3 / Y1-Y2(Y0)</td>
+                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">{TURNS_RATIO_WINDING_LABELS.h2h3}</td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measuredH2H3} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH2H3', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.devH2H3} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
@@ -1772,7 +1789,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                     <tr>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 font-medium text-xs">Calc. Ratio</td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.calculatedRatio} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">H3-H1 / Z1-Z2(Z0)</td>
+                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">{TURNS_RATIO_WINDING_LABELS.h3h1}</td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measuredH3H1} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH3H1', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.devH3H1} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
@@ -1826,9 +1843,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                           <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Tap</th>
                           <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal">Nameplate<br/>Voltage<br/>Ratio</th>
                           <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal">Calculated<br/>Ratio</th>
-                          <th colSpan={3} className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">H1-H2 / X1-X2(X0)</th>
-                          <th colSpan={3} className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">H2-H3 / Y1-Y2(Y0)</th>
-                          <th colSpan={3} className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">H3-H1 / Z1-Z2(Z0)</th>
+                          <th colSpan={3} className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">{TURNS_RATIO_WINDING_LABELS.h1h2}</th>
+                          <th colSpan={3} className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">{TURNS_RATIO_WINDING_LABELS.h2h3}</th>
+                          <th colSpan={3} className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">{TURNS_RATIO_WINDING_LABELS.h3h1}</th>
                       </tr>
                       <tr>
                           <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
@@ -1886,9 +1903,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
         </section>
 
-        <section className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+        <section className="mb-6 print:mb-3">
+          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">Test Equipment Used</h2>
           <div className="space-y-4 print:hidden test-eqpt-onscreen">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="min-w-0">
@@ -2009,7 +2026,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
           
           {/* Print-only Test Equipment Used table */}
-          <div className="hidden print:block">
+          <div className="report-section-content hidden print:block">
             <table className="w-full border-collapse border border-black test-equipment-table" style={{ tableLayout: 'fixed' }}>
               <colgroup>
                 <col style={{ width: '50%' }} />
@@ -2037,9 +2054,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
         </section>
 
-        <section className={`mb-6 print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+        <section className={`mb-6 print:mb-3 ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
+          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">Comments</h2>
           <div className="print:hidden">
             <textarea 
                 name="comments" 
@@ -2052,7 +2069,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           </div>
           
           {formData.comments?.trim() && (
-          <div className="hidden print:block">
+          <div className="report-section-content hidden print:block">
             <table className="comments-print-table w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
               <tbody>
                 <tr>
@@ -2067,7 +2084,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
             </table>
           </div>
           )}
-        </section>      {/* Mark Ready to Review Button */}
+        </section>
+      </div>
+      {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (
         <div className="mb-6 print:hidden flex justify-center">
           <button
@@ -2209,11 +2228,85 @@ if (typeof document !== 'undefined') {
       * { color: black !important; background: white !important; box-sizing: border-box !important; }
       html, body {
         margin: 0 !important;
-        padding: 10px !important;
+        padding: 6px !important;
         min-height: 0 !important;
         height: auto !important;
         font-family: Arial, sans-serif !important;
-        font-size: 12px !important;
+        font-size: 9px !important;
+      }
+
+      /* Single-page layout: compact all report sections */
+      #report-container:has(.two-small-xfmr-mts-print-root) {
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      .two-small-xfmr-mts-print-root {
+        font-size: 8px !important;
+        line-height: 1.1 !important;
+      }
+      .two-small-xfmr-mts-print-root section {
+        margin-bottom: 10px !important;
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+        page-break-before: auto !important;
+        page-break-after: auto !important;
+      }
+      .two-small-xfmr-mts-print-root .report-section-divider {
+        display: block !important;
+        background-color: #f26722 !important;
+        height: 3px !important;
+        min-height: 3px !important;
+        margin-bottom: 6px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .two-small-xfmr-mts-print-root .report-section-heading,
+      .two-small-xfmr-mts-print-root section > h2 {
+        font-size: 9px !important;
+        margin-bottom: 6px !important;
+        margin-top: 0 !important;
+        padding-bottom: 2px !important;
+      }
+      .two-small-xfmr-mts-print-root .report-section-content {
+        margin-top: 0 !important;
+      }
+      .two-small-xfmr-mts-print-root .report-section-content + .report-section-content {
+        margin-top: 8px !important;
+      }
+      .two-small-xfmr-mts-print-root .report-section-content.space-y-3 > * + * {
+        margin-top: 8px !important;
+      }
+      .two-small-xfmr-mts-print-root table {
+        font-size: 7px !important;
+        margin: 0 0 2px 0 !important;
+      }
+      .two-small-xfmr-mts-print-root th,
+      .two-small-xfmr-mts-print-root td {
+        padding: 1px 2px !important;
+        font-size: 7px !important;
+        line-height: 1.1 !important;
+      }
+      .two-small-xfmr-mts-print-root table input,
+      .two-small-xfmr-mts-print-root table select {
+        font-size: 7px !important;
+        min-height: 0 !important;
+        height: auto !important;
+        padding: 0 1px !important;
+        border: none !important;
+        background: transparent !important;
+      }
+      .two-small-xfmr-mts-print-root .nameplate-table .text-sm,
+      .two-small-xfmr-mts-print-root .nameplate-table div {
+        font-size: 7px !important;
+        margin-top: 0 !important;
+      }
+      .two-small-xfmr-mts-print-root .turns-ratio-secondary-label {
+        margin-bottom: 6px !important;
+        font-size: 7px !important;
+      }
+      .two-small-xfmr-mts-print-root .report-section-content.overflow-x-auto {
+        margin-bottom: 0 !important;
+        overflow: visible !important;
       }
 
       .min-h-screen, .screen-min-height, .pb-20 {
@@ -2226,12 +2319,15 @@ if (typeof document !== 'undefined') {
       .p-6 { padding: 0 !important; }
       .flex.justify-center { justify-content: flex-start !important; }
       .max-w-7xl { max-width: 100% !important; }
-      .space-y-6 > * + * { margin-top: 8px !important; }
+      .space-y-6 > * + * { margin-top: 4px !important; }
+      .two-small-xfmr-mts-print-root .space-y-6 > * + * { margin-top: 0 !important; }
       
       /* Ensure print header doesn't cause page break */
+      .print-report-header,
       .print\\:flex.hidden { 
         display: flex !important; 
-        margin-bottom: 10px !important;
+        padding-bottom: 6px !important;
+        margin-bottom: 14px !important;
         page-break-after: avoid !important;
       }
 
@@ -2239,7 +2335,24 @@ if (typeof document !== 'undefined') {
       .shadow, .shadow-md, .shadow-lg { box-shadow: none !important; }
 
       /* Section headers */
-      section > h2 { border-bottom: 1px solid black !important; padding-bottom: 2px !important; margin-bottom: 6px !important; font-weight: bold !important; }
+      section > h2,
+      .report-section-heading {
+        border-bottom: 1px solid black !important;
+        padding-bottom: 2px !important;
+        margin-bottom: 0.75rem !important;
+        font-weight: bold !important;
+      }
+      .report-section-divider {
+        background-color: #f26722 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .report-section-content + .report-section-content {
+        margin-top: 0.75rem !important;
+      }
+      .report-section-content.space-y-3 > * + * {
+        margin-top: 0.75rem !important;
+      }
 
       /* Ensure Tailwind print:flex headers render in print */
       .print\\:flex { display: flex !important; }
@@ -2354,10 +2467,11 @@ if (typeof document !== 'undefined') {
       table input, table select {
         width: 95% !important;
         max-width: 95% !important;
-        min-width: 40px !important;
-        height: 18px !important;
-        padding: 1px 3px !important;
-        font-size: 11px !important;
+        min-width: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 1px 2px !important;
+        font-size: 7px !important;
         margin: 0 !important;
         line-height: 1 !important;
         vertical-align: top !important;
@@ -2378,7 +2492,10 @@ if (typeof document !== 'undefined') {
       /* Section styling */
       section { 
         page-break-inside: auto !important; 
-        margin-bottom: 12px !important; 
+        margin-bottom: 4px !important; 
+      }
+      .two-small-xfmr-mts-print-root section {
+        margin-bottom: 10px !important;
       }
       
       /* Page break utilities */
@@ -2408,10 +2525,14 @@ if (typeof document !== 'undefined') {
         min-width: auto !important;
         max-width: 100% !important;
         table-layout: fixed !important;
-        margin: 8px 0 12px 0 !important;
+        margin: 0 0 2px 0 !important;
         border-collapse: collapse !important;
         transform: none !important;
-        font-size: 9px !important;
+        font-size: 7px !important;
+      }
+      .two-small-xfmr-mts-print-root table.turns-ratio-table {
+        font-size: 7px !important;
+        margin: 0 !important;
       }
       
       /* Turns Ratio column sizing - match insulation resistance table */
@@ -2476,26 +2597,31 @@ if (typeof document !== 'undefined') {
       
       /* Test Equipment Table - better spacing for print */
       .test-equipment-table {
-        margin-top: 10px !important;
-        margin-bottom: 20px !important;
+        margin-top: 2px !important;
+        margin-bottom: 2px !important;
         width: 100% !important;
       }
       
       .test-equipment-table th {
         background-color: #f3f4f6 !important;
-        font-size: 10px !important;
-        padding: 8px 12px !important;
+        font-size: 7px !important;
+        padding: 2px 4px !important;
         text-align: left !important;
         font-weight: bold !important;
         border: 1px solid black !important;
       }
       
       .test-equipment-table td {
-        font-size: 10px !important;
-        padding: 8px 12px !important;
+        font-size: 7px !important;
+        padding: 2px 4px !important;
         text-align: left !important;
         border: 1px solid black !important;
         vertical-align: middle !important;
+      }
+      .two-small-xfmr-mts-print-root .test-equipment-table td,
+      .two-small-xfmr-mts-print-root .test-equipment-table td div {
+        font-size: 7px !important;
+        line-height: 1.1 !important;
       }
       
       .test-equipment-table td.font-medium {
@@ -2505,7 +2631,8 @@ if (typeof document !== 'undefined') {
       /* Better page break handling */
       .bg-white, .dark\\:bg-dark-150 {
         background-color: white !important;
-        page-break-inside: avoid;
+        page-break-inside: auto !important;
+        break-inside: auto !important;
       }
       
       /* Ensure proper spacing */
@@ -2526,8 +2653,8 @@ if (typeof document !== 'undefined') {
       /* Visual & Mechanical table widths for readability */
       table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
       table.visual-mechanical-table thead { display: table-header-group !important; }
-      table.visual-mechanical-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-      table.visual-mechanical-table th, table.visual-mechanical-table td { font-size: 8px !important; padding: 2px 3px !important; vertical-align: middle !important; }
+      table.visual-mechanical-table tr { page-break-inside: auto !important; break-inside: auto !important; }
+      table.visual-mechanical-table th, table.visual-mechanical-table td { font-size: 7px !important; padding: 1px 2px !important; vertical-align: middle !important; }
       /* Center header text for ID/DESCRIPTION/etc */
       table.visual-mechanical-table th { text-align: center !important; }
       table.visual-mechanical-table td { text-align: center !important; }
@@ -2537,8 +2664,36 @@ if (typeof document !== 'undefined') {
       table.visual-mechanical-table colgroup col:nth-child(3) { width: 24% !important; }
       table.visual-mechanical-table td:nth-child(2) { white-space: normal !important; word-break: break-word !important; }
       
+      /* Insulation resistance table - fit within page width */
+      table.insulation-resistance-table {
+        table-layout: fixed !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 9px !important;
+      }
+      table.insulation-resistance-table th,
+      table.insulation-resistance-table td {
+        padding: 1px 2px !important;
+        font-size: 7px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        line-height: 1.1 !important;
+      }
+      table.insulation-resistance-table input,
+      table.insulation-resistance-table select {
+        font-size: 7px !important;
+        padding: 1px 2px !important;
+        min-width: 0 !important;
+        width: 100% !important;
+      }
+
       /* Dielectric Absorption table - make first column wider for "Calculated As:" text */
-      table.dielectric-absorption-table { table-layout: fixed !important; width: 100% !important; }
+      table.dielectric-absorption-table { table-layout: fixed !important; width: 100% !important; font-size: 7px !important; }
+      table.dielectric-absorption-table th,
+      table.dielectric-absorption-table td {
+        padding: 1px 2px !important;
+        font-size: 7px !important;
+      }
       table.dielectric-absorption-table td:first-child { width: 50% !important; min-width: 50% !important; max-width: 50% !important; }
       table.dielectric-absorption-table td:not(:first-child) { width: 10% !important; min-width: 10% !important; max-width: 10% !important; }
       table.dielectric-absorption-table th:first-child { width: 50% !important; min-width: 50% !important; max-width: 50% !important; }

@@ -15,6 +15,8 @@ import {
 interface EmailDigestPreferencesProps {
   userId: string;
   userEmail?: string;
+  /** Tighter layout for profile settings sub-menu */
+  compact?: boolean;
 }
 
 const DIGEST_OPTIONS: {
@@ -39,7 +41,11 @@ const DIGEST_OPTIONS: {
   },
 ];
 
-export function EmailDigestPreferences({ userId, userEmail }: EmailDigestPreferencesProps) {
+export function EmailDigestPreferences({
+  userId,
+  userEmail,
+  compact = false,
+}: EmailDigestPreferencesProps) {
   const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
   const [hasSavedRow, setHasSavedRow] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -109,35 +115,41 @@ export function EmailDigestPreferences({ userId, userEmail }: EmailDigestPrefere
 
   const automated = preferences?.automatedEmails ?? DEFAULT_AUTOMATED_EMAILS;
 
+  const iconClass = compact ? 'h-4 w-4' : 'h-5 w-5';
+  const inset = compact ? 'px-3' : 'px-4';
+  const descPad = compact ? '' : 'ml-7';
+
   return (
-    <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-      <div className="flex items-center gap-2 mb-1">
-        <Mail className="h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+    <div className={`${inset} py-3 border-t border-gray-200 dark:border-gray-700`}>
+      <div className={`flex items-center gap-2 mb-1 ${compact ? '' : ''}`}>
+        <Mail className={`${iconClass} text-gray-400 dark:text-[#f26722] shrink-0`} />
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Email digests</h3>
       </div>
-      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 ml-7">
+      <p className={`text-xs text-gray-500 dark:text-gray-400 mb-3 ${descPad}`}>
         Scheduled ampOS summary emails
         {userEmail ? (
           <>
             {' '}
-            sent to <span className="font-medium text-gray-700 dark:text-gray-300">{userEmail}</span>
+            to <span className="font-medium text-gray-700 dark:text-gray-300">{userEmail}</span>
           </>
         ) : null}
         .
         {!hasSavedRow && !loading
-          ? ' Adjust a toggle below to start or stop digests.'
+          ? ' Adjust a toggle to start or stop.'
           : ' Turn off any you do not want.'}
       </p>
 
       {loading ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400 ml-7">Loading…</p>
+        <p className={`text-sm text-gray-500 dark:text-gray-400 ${descPad}`}>Loading…</p>
       ) : (
-        <div className="space-y-3 ml-7">
+        <div className={`space-y-2.5 ${descPad}`}>
           {DIGEST_OPTIONS.map(({ key, label, description }) => (
-            <div key={key} className="flex items-start justify-between gap-4">
+            <div key={key} className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-gray-900 dark:text-white">{label}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+                {!compact && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+                )}
               </div>
               <Switch
                 checked={automated[key] !== false}

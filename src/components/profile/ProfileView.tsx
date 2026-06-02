@@ -1117,11 +1117,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       )}
 
       <div 
-        className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 pt-0 pb-6 overflow-y-auto min-h-screen"
+        className={`fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 pt-4 pb-6 overflow-y-auto min-h-screen ${
+          isEditProfileOpen ? 'pointer-events-none' : ''
+        }`}
         onClick={handleBackdropClick}
+        aria-hidden={isEditProfileOpen}
       >
         <div 
-          className="relative w-full max-w-3xl max-h-[calc(100vh-2rem)] bg-white dark:bg-dark-150 rounded-xl shadow-2xl overflow-hidden flex flex-col my-auto mt-6"
+          className="w-full max-w-3xl max-h-[calc(100vh-2rem)] flex flex-col bg-white dark:bg-dark-150 rounded-xl shadow-2xl overflow-hidden my-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Sticky header with close button - always visible */}

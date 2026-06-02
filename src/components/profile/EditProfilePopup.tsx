@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { User as UserIcon, X, Upload, ChevronLeft, ChevronRight, Mail, MapPin, Briefcase, Calendar, LinkIcon, Check, Camera, ChevronDown, Eye, Image, Phone, Target } from "lucide-react";
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
@@ -814,14 +815,20 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <>
-      <div className={`fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto ${isCropping ? 'hidden' : ''}`}>
+      <div
+        className={`fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto ${isCropping ? 'hidden' : ''}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           className="w-full max-w-3xl max-h-[calc(100vh-2rem)] flex flex-col bg-white dark:bg-dark-150 rounded-xl shadow-2xl overflow-hidden my-auto"
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Header - fixed height */}
           <div className="relative flex-shrink-0">
@@ -1322,7 +1329,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       <AnimatePresence>
         {isCropping && imgSrc && (
           <motion.div 
-            className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[90] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1385,4 +1392,6 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       )}
     </>
   );
+
+  return createPortal(modalContent, document.body);
 }; 

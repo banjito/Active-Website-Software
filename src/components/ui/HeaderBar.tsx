@@ -12,11 +12,12 @@ import {
   AlertTriangle,
   Bookmark,
   ClipboardCheck,
+  ChevronLeft,
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { useDivision } from '@/App';
-import { SettingsPopup } from '@/components/ui/SettingsPopup';
+import { SettingsSubmenu } from '@/components/ui/SettingsSubmenu';
 import { ProfileView } from '@/components/profile/ProfileView';
 import { AboutPopup } from '@/components/ui/AboutPopup';
 import { ShortcutService, Shortcut } from '@/services/ShortcutService';
@@ -93,7 +94,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
   const [calibrationNeedsList, setCalibrationNeedsList] = useState<CalibrationEquipmentItem[]>([]);
   const [calibrationOutList, setCalibrationOutList] = useState<CalibrationEquipmentItem[]>([]);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+  const [isSettingsSubmenuOpen, setIsSettingsSubmenuOpen] = useState(false);
   const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [headerShortcuts, setHeaderShortcuts] = useState<Shortcut[]>([]);
@@ -127,6 +128,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
     function handleClickOutside(event: MouseEvent) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setIsProfileMenuOpen(false);
+        setIsSettingsSubmenuOpen(false);
       }
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setIsNotificationsOpen(false);
@@ -165,13 +167,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
     setIsProfileViewOpen(true);
   };
 
-  const handleSettings = () => {
-    setIsProfileMenuOpen(false);
-    setSettingsMenuOpen(true);
+  const handleSettingsToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsSettingsSubmenuOpen((open) => !open);
   };
 
   const handleAbout = () => {
     setIsProfileMenuOpen(false);
+    setIsSettingsSubmenuOpen(false);
     setIsAboutOpen(true);
   };
 
@@ -1035,7 +1038,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
             <div className="relative flex h-10 w-10 items-center justify-center" ref={profileMenuRef}>
               <button
                 className="rounded-full w-10 h-10 bg-gray-100 dark:bg-dark-150 hover:bg-gray-200 dark:hover:bg-gray-600 p-0 overflow-hidden flex items-center justify-center border border-gray-300 dark:border-gray-600"
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                onClick={() => {
+                  const next = !isProfileMenuOpen;
+                  setIsProfileMenuOpen(next);
+                  if (!next) setIsSettingsSubmenuOpen(false);
+                }}
               >
                 {user?.user_metadata?.profileImage ? (
                   <img
@@ -1048,7 +1055,23 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                 )}
               </button>
               {isProfileMenuOpen && (
-                <div className="absolute top-full right-0 mt-2 w-64 origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                <div className="absolute top-full right-0 mt-2 z-50">
+                  <div className="relative w-64">
+                    {isSettingsSubmenuOpen && (
+                      <div className="absolute right-full top-0 mr-2">
+                        <SettingsSubmenu
+                          onClose={() => setIsSettingsSubmenuOpen(false)}
+                          onAbout={handleAbout}
+                          onEnterEditMode={onEnterEditMode}
+                          currentUser={{
+                            id: user?.id,
+                            email: user?.email,
+                            user_metadata: user?.user_metadata,
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className="rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                   <div className="py-1">
                     <div className="px-4 py-2 border-b border-gray-200 dark:border-dark-200">
                       <p className="text-sm font-medium text-gray-900 dark:text-dark-900">
@@ -1069,10 +1092,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                       View Profile
                     </button>
                     <button
-                      onClick={handleSettings}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                      type="button"
+                      onClick={handleSettingsToggle}
+                      className={`flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50 ${
+                        isSettingsSubmenuOpen ? 'bg-gray-100 dark:bg-dark-50' : ''
+                      }`}
                     >
-                      <Settings className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                      <Settings
+                      leftIcon={<ChevronLeft className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />}
+                      className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
                       Settings
                     </button>
                     {canSeeDemoMode && (
@@ -1109,25 +1137,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                       {isSigningOut ? 'Signing out...' : 'Sign Out'}
                     </button>
                   </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
-
-      <SettingsPopup
-        isOpen={settingsMenuOpen}
-        onClose={() => setSettingsMenuOpen(false)}
-        onAbout={handleAbout}
-        onEnterEditMode={onEnterEditMode}
-        currentUser={{
-          id: user?.id,
-          name: user?.user_metadata?.name,
-          email: user?.email,
-          role: user?.user_metadata?.role,
-        }}
-      />
 
       <ProfileView isOpen={isProfileViewOpen} onClose={() => setIsProfileViewOpen(false)} />
 

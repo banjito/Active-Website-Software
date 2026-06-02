@@ -9,6 +9,7 @@ import {
   MapPin,
   User as UserIcon,
   Settings,
+  ChevronLeft,
   Eye,
   ArrowLeft,
   Menu,
@@ -16,7 +17,7 @@ import {
 } from "lucide-react"
 import { Button } from './Button';
 import { ThemeToggle } from '../theme/theme-toggle';
-import { SettingsPopup } from './SettingsPopup';
+import { SettingsSubmenu } from './SettingsSubmenu';
 import { ProfileView } from '../profile/ProfileView';
 import { AboutPopup } from './AboutPopup';
 import { useMobileDetection } from '../../hooks/useMobileDetection';
@@ -53,7 +54,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { isMobile, deviceType } = useMobileDetection();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+  const [isSettingsSubmenuOpen, setIsSettingsSubmenuOpen] = useState(false);
   const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -351,6 +352,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     function handleClickOutside(event: MouseEvent) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setIsProfileMenuOpen(false);
+        setIsSettingsSubmenuOpen(false);
       }
       // Close mobile sidebar when clicking outside
       if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
@@ -388,13 +390,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     setIsProfileViewOpen(true);
   };
 
-  const handleSettings = () => {
-    setIsProfileMenuOpen(false);
-    setSettingsMenuOpen(true);
+  const handleSettingsToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsSettingsSubmenuOpen((open) => !open);
   };
 
   const handleAbout = () => {
     setIsProfileMenuOpen(false);
+    setIsSettingsSubmenuOpen(false);
     setIsAboutOpen(true);
   };
 
@@ -658,7 +661,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     variant="ghost"
                     size="icon"
                     className="rounded-full w-8 h-8 lg:w-10 lg:h-10 hover:bg-gray-100 dark:hover:bg-dark-50 p-0 overflow-hidden"
-                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    onClick={() => {
+                      const next = !isProfileMenuOpen;
+                      setIsProfileMenuOpen(next);
+                      if (!next) setIsSettingsSubmenuOpen(false);
+                    }}
                   >
                     {user?.user_metadata?.profileImage ? (
                       <img
@@ -672,7 +679,22 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </Button>
 
                   {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 lg:w-64 origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                    <div className="absolute right-0 mt-2 z-50">
+                      <div className="relative w-56 lg:w-64">
+                        {isSettingsSubmenuOpen && (
+                          <div className="absolute right-full top-0 mr-2">
+                            <SettingsSubmenu
+                              onClose={() => setIsSettingsSubmenuOpen(false)}
+                              onAbout={handleAbout}
+                              currentUser={{
+                                id: user?.id,
+                                email: user?.email,
+                                user_metadata: user?.user_metadata,
+                              }}
+                            />
+                          </div>
+                        )}
+                        <div className="rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
                         <div className="px-4 py-2 border-b border-gray-200 dark:border-dark-200">
                           <p className="text-sm font-medium text-gray-900 dark:text-dark-900">
@@ -700,11 +722,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                           View Profile
                         </button>
                         <button
-                          onClick={handleSettings}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          type="button"
+                          onClick={handleSettingsToggle}
+                          className={`flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50 ${
+                            isSettingsSubmenuOpen ? 'bg-gray-100 dark:bg-dark-50' : ''
+                          }`}
                         >
                           <Settings className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
                           Settings
+                          <ChevronLeft className="ml-auto h-4 w-4 text-gray-400 shrink-0" />
                         </button>
                         <button
                           onClick={handleAbout}
@@ -721,6 +747,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                           <LogOut className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
                           {isSigningOut ? 'Signing out...' : 'Sign Out'}
                         </button>
+                      </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -772,13 +800,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </>
       )}
-
-      <SettingsPopup
-        isOpen={settingsMenuOpen}
-        onClose={() => setSettingsMenuOpen(false)}
-        onAbout={handleAbout}
-        currentUser={user}
-      />
 
       {/* Profile View Modal */}
       {isProfileViewOpen && (

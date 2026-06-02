@@ -1728,178 +1728,115 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         <section className="mb-6 print:mb-3">
           <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
           <h2 className="report-section-heading text-xl font-semibold mb-3 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">Electrical Tests - Turns Ratio</h2>
-          <div className="report-section-content flex justify-end mb-3 turns-ratio-secondary-label text-xs print:text-[8px]">
-              <input id="turnsRatio.secondaryWindingVoltage" type="text" name="turnsRatio.secondaryWindingVoltage" value={formData.turnsRatio.secondaryWindingVoltage} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input w-24 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /> <span className="ml-1">V</span>
+          <div className="report-section-content flex justify-start items-center gap-2 mb-3 turns-ratio-secondary-label text-xs print:text-[8px]">
+            <label htmlFor="turnsRatio.secondaryWindingVoltage" className="form-label mb-0 whitespace-nowrap">Secondary Winding Voltage (L-N for Wye, L-L for Delta):</label>
+            <input id="turnsRatio.secondaryWindingVoltage" type="text" name="turnsRatio.secondaryWindingVoltage" value={formData.turnsRatio.secondaryWindingVoltage} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input w-24 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+            <span>V</span>
           </div>
-          {/* Compact vertical layout table */}
-          <div className="report-section-content overflow-x-auto turns-ratio-scroll">
-            <table className="w-full border-collapse turns-ratio-table" style={{ tableLayout: 'fixed' }}>
-              <colgroup>
-                <col style={{ width: '18%' }} />
-                <col style={{ width: '15%' }} />
-                <col style={{ width: '22%' }} />
-                <col style={{ width: '15%' }} />
-                <col style={{ width: '15%' }} />
-                <col style={{ width: '15%' }} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
-                  <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Value</th>
-                  <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Winding</th>
-                  <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Measured</th>
-                  <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">% Dev.</th>
-                  <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Pass/Fail</th>
-                </tr>
-              </thead>
-              <tbody>
-                {formData.turnsRatio.tests.map((test, index) => (
-                  <React.Fragment key={index}>
-                    {/* Row 1: Tap + H1-H2 */}
-                    <tr>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 font-medium text-xs">Tap</td>
+
+          <div className="report-section-content space-y-3">
+            {/* Setup: Tap, Nameplate V., Calc. Ratio — separate from test results */}
+            <div className="overflow-x-auto">
+              <table className="w-full max-w-md border-collapse turns-ratio-setup-table" style={{ tableLayout: 'fixed' }}>
+                <thead>
+                  <tr>
+                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Tap</th>
+                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Nameplate V.</th>
+                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Calc. Ratio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {formData.turnsRatio.tests.map((test, index) => (
+                    <tr key={`setup-${index}`}>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
                         <select value={test.tap} onChange={e => handleNestedArrayChange('turnsRatio', index, 'tap', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
-                          {Array.from({length: 7}, (_, i) => i + 1).map(num => <option key={num} value={num.toString()}>{num}</option>)}
+                          {Array.from({ length: 7 }, (_, i) => i + 1).map(num => (
+                            <option key={num} value={num.toString()}>{num}</option>
+                          ))}
                         </select>
                       </td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">{TURNS_RATIO_WINDING_LABELS.h1h2}</td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measuredH1H2} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH1H2', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.devH1H2} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
                       <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
-                        <select value={test.passFailH1H2} onChange={e => handleNestedArrayChange('turnsRatio', index, 'passFailH1H2', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
-                          {passFailOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
+                        <input type="text" value={test.nameplateVoltage} onChange={e => handleNestedArrayChange('turnsRatio', index, 'nameplateVoltage', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                      </td>
+                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                        <input type="text" value={test.calculatedRatio} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" />
                       </td>
                     </tr>
-                    {/* Row 2: Nameplate Voltage + H2-H3 */}
-                    <tr>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 font-medium text-xs">Nameplate V.</td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.nameplateVoltage} onChange={e => handleNestedArrayChange('turnsRatio', index, 'nameplateVoltage', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">{TURNS_RATIO_WINDING_LABELS.h2h3}</td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measuredH2H3} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH2H3', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.devH2H3} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
-                        <select value={test.passFailH2H3} onChange={e => handleNestedArrayChange('turnsRatio', index, 'passFailH2H3', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
-                          {passFailOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
-                      </td>
-                    </tr>
-                    {/* Row 3: Calculated Ratio + H3-H1 */}
-                    <tr>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 font-medium text-xs">Calc. Ratio</td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.calculatedRatio} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">{TURNS_RATIO_WINDING_LABELS.h3h1}</td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measuredH3H1} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH3H1', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.devH3H1} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
-                      <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
-                        <select value={test.passFailH3H1} onChange={e => handleNestedArrayChange('turnsRatio', index, 'passFailH3H1', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
-                          {passFailOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
-                      </td>
-                    </tr>
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Hidden old horizontal table for reference - remove after testing */}
-          <div className="hidden mb-2 print:hidden">
-            <div className="flex items-center justify-center gap-2 text-xs text-gray-600 dark:text-gray-400 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded px-3 py-1.5">
-              <svg className="w-4 h-4 text-[#f26722]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-              </svg>
-              <span className="font-medium text-gray-700 dark:text-gray-300">Scroll horizontally to view all test results</span>
-              <svg className="w-4 h-4 text-[#f26722]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </div>
-          </div>
-          <div className="hidden print:hidden overflow-x-scroll turns-ratio-scroll-old" style={{ 
-            scrollbarWidth: 'auto', 
-            scrollbarColor: '#f26722 #e5e7eb',
-            WebkitOverflowScrolling: 'touch',
-            paddingBottom: '4px',
-            marginBottom: '8px'
-          }}>
-              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 turns-ratio-table-old" style={{ minWidth: '1400px' }}>
-                  <colgroup>
-                    <col style={{ width: '60px', minWidth: '60px' }} className="tr-tap" />
-                    <col style={{ width: '140px', minWidth: '140px' }} className="tr-nameplate" />
-                    <col style={{ width: '140px', minWidth: '140px' }} className="tr-calc" />
-                    <col style={{ width: '120px', minWidth: '120px' }} className="tr-h1-meas" />
-                    <col style={{ width: '90px', minWidth: '90px' }} className="tr-h1-dev" />
-                    <col style={{ width: '100px', minWidth: '100px' }} className="tr-h1-pf" />
-                    <col style={{ width: '120px', minWidth: '120px' }} className="tr-h2-meas" />
-                    <col style={{ width: '90px', minWidth: '90px' }} className="tr-h2-dev" />
-                    <col style={{ width: '100px', minWidth: '100px' }} className="tr-h2-pf" />
-                    <col style={{ width: '120px', minWidth: '120px' }} className="tr-h3-meas" />
-                    <col style={{ width: '90px', minWidth: '90px' }} className="tr-h3-dev" />
-                    <col style={{ width: '100px', minWidth: '100px' }} className="tr-h3-pf" />
-                  </colgroup>
-                  <thead>
-                      <tr>
-                          <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Tap</th>
-                          <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal">Nameplate<br/>Voltage<br/>Ratio</th>
-                          <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 whitespace-normal">Calculated<br/>Ratio</th>
-                          <th colSpan={3} className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">{TURNS_RATIO_WINDING_LABELS.h1h2}</th>
-                          <th colSpan={3} className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">{TURNS_RATIO_WINDING_LABELS.h2h3}</th>
-                          <th colSpan={3} className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">{TURNS_RATIO_WINDING_LABELS.h3h1}</th>
-                      </tr>
-                      <tr>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600"></th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Measured</th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">% Dev.</th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Pass/Fail</th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Measured</th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">% Dev.</th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Pass/Fail</th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Measured</th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">% Dev.</th>
-                          <th className="px-2 py-1 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Pass/Fail</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {formData.turnsRatio.tests.map((test, index) => (
-                          <tr key={index}>
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
-                                  <select value={test.tap} onChange={e => handleNestedArrayChange('turnsRatio', index, 'tap', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
-                                      {Array.from({length: 7}, (_, i) => i + 1).map(num => <option key={num} value={num.toString()}>{num}</option>)}
-                                  </select>
-                              </td>
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.nameplateVoltage} onChange={e => handleNestedArrayChange('turnsRatio', index, 'nameplateVoltage', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.calculatedRatio} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
-                              
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measuredH1H2} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH1H2', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.devH1H2} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
-                                  <select value={test.passFailH1H2} onChange={e => handleNestedArrayChange('turnsRatio', index, 'passFailH1H2', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
-                                      {passFailOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                                  </select>
-                              </td>
-
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measuredH2H3} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH2H3', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.devH2H3} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
-                                  <select value={test.passFailH2H3} onChange={e => handleNestedArrayChange('turnsRatio', index, 'passFailH2H3', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
-                                      {passFailOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                                  </select>
-                              </td>
-
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.measuredH3H1} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH3H1', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></td>
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600"><input type="text" value={test.devH3H1} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" /></td>
-                              <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
-                                  <select value={test.passFailH3H1} onChange={e => handleNestedArrayChange('turnsRatio', index, 'passFailH3H1', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
-                                      {passFailOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                                  </select>
-                              </td>
-                          </tr>
-                      ))}
-                  </tbody>
+                  ))}
+                </tbody>
               </table>
+            </div>
+
+            {/* Test results: Winding, Measured, % Dev., Pass/Fail */}
+            <div className="overflow-x-auto turns-ratio-scroll">
+              <table className="w-full border-collapse turns-ratio-results-table" style={{ tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '28%' }} />
+                  <col style={{ width: '22%' }} />
+                  <col style={{ width: '20%' }} />
+                  <col style={{ width: '20%' }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Tap</th>
+                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Winding</th>
+                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Measured</th>
+                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">% Dev.</th>
+                    <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Pass/Fail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {formData.turnsRatio.tests.map((test, index) => (
+                    <React.Fragment key={`results-${index}`}>
+                      <tr>
+                        <td rowSpan={3} className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium align-middle">{test.tap}</td>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">{TURNS_RATIO_WINDING_LABELS.h1h2}</td>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                          <input type="text" value={test.measuredH1H2} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH1H2', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                        </td>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                          <input type="text" value={test.devH1H2} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" />
+                        </td>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                          <select value={test.passFailH1H2} onChange={e => handleNestedArrayChange('turnsRatio', index, 'passFailH1H2', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
+                            {passFailOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">{TURNS_RATIO_WINDING_LABELS.h2h3}</td>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                          <input type="text" value={test.measuredH2H3} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH2H3', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                        </td>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                          <input type="text" value={test.devH2H3} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" />
+                        </td>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                          <select value={test.passFailH2H3} onChange={e => handleNestedArrayChange('turnsRatio', index, 'passFailH2H3', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
+                            {passFailOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600 text-xs text-center font-medium">{TURNS_RATIO_WINDING_LABELS.h3h1}</td>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                          <input type="text" value={test.measuredH3H1} onChange={e => handleNestedArrayChange('turnsRatio', index, 'measuredH3H1', e.target.value)} readOnly={!isEditing} className={`form-input w-full text-center text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                        </td>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                          <input type="text" value={test.devH3H1} readOnly className="form-input w-full text-center text-xs bg-gray-100 dark:bg-dark-150" />
+                        </td>
+                        <td className="px-2 py-2 border border-gray-300 dark:border-gray-600">
+                          <select value={test.passFailH3H1} onChange={e => handleNestedArrayChange('turnsRatio', index, 'passFailH3H1', e.target.value)} disabled={!isEditing} className={`form-select w-full text-xs ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
+                            {passFailOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                          </select>
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -2304,9 +2241,13 @@ if (typeof document !== 'undefined') {
         margin-bottom: 6px !important;
         font-size: 7px !important;
       }
-      .two-small-xfmr-mts-print-root .report-section-content.overflow-x-auto {
+      .two-small-xfmr-mts-print-root .report-section-content.overflow-x-auto,
+      .two-small-xfmr-mts-print-root .report-section-content.turns-ratio-scroll {
         margin-bottom: 0 !important;
         overflow: visible !important;
+      }
+      .two-small-xfmr-mts-print-root .report-section-content.space-y-3 > * + * {
+        margin-top: 8px !important;
       }
 
       .min-h-screen, .screen-min-height, .pb-20 {
@@ -2520,7 +2461,8 @@ if (typeof document !== 'undefined') {
         max-width: 100% !important;
       }
       
-      table.turns-ratio-table {
+      table.turns-ratio-setup-table,
+      table.turns-ratio-results-table {
         width: 100% !important;
         min-width: auto !important;
         max-width: 100% !important;
@@ -2530,28 +2472,20 @@ if (typeof document !== 'undefined') {
         transform: none !important;
         font-size: 7px !important;
       }
-      .two-small-xfmr-mts-print-root table.turns-ratio-table {
+      table.turns-ratio-setup-table {
+        max-width: 420px !important;
+      }
+      .two-small-xfmr-mts-print-root table.turns-ratio-setup-table,
+      .two-small-xfmr-mts-print-root table.turns-ratio-results-table {
         font-size: 7px !important;
         margin: 0 !important;
       }
-      
-      /* Turns Ratio column sizing - match insulation resistance table */
-      table.turns-ratio-table col.tr-tap { width: 5% !important; }
-      table.turns-ratio-table col.tr-nameplate { width: 9% !important; }
-      table.turns-ratio-table col.tr-calc { width: 9% !important; }
-      table.turns-ratio-table col.tr-h1-meas,
-      table.turns-ratio-table col.tr-h2-meas,
-      table.turns-ratio-table col.tr-h3-meas { width: 9.5% !important; }
-      table.turns-ratio-table col.tr-h1-dev,
-      table.turns-ratio-table col.tr-h2-dev,
-      table.turns-ratio-table col.tr-h3-dev { width: 7.5% !important; }
-      table.turns-ratio-table col.tr-h1-pf,
-      table.turns-ratio-table col.tr-h2-pf,
-      table.turns-ratio-table col.tr-h3-pf { width: 8% !important; }
 
-      table.turns-ratio-table input, 
-      table.turns-ratio-table select { 
-        font-size: 9px !important; 
+      table.turns-ratio-setup-table input,
+      table.turns-ratio-setup-table select,
+      table.turns-ratio-results-table input,
+      table.turns-ratio-results-table select {
+        font-size: 7px !important;
         padding: 1px 2px !important;
         width: 88% !important;
         margin: 0 auto !important;
@@ -2560,39 +2494,32 @@ if (typeof document !== 'undefined') {
         background: transparent !important;
         text-align: center !important;
       }
-      
-      table.turns-ratio-table td { 
+
+      table.turns-ratio-setup-table td,
+      table.turns-ratio-results-table td {
         padding: 2px !important;
-        font-size: 9px !important;
+        font-size: 7px !important;
         overflow: hidden !important;
         text-overflow: clip !important;
-        white-space: nowrap !important;
+        white-space: normal !important;
+        word-break: break-word !important;
         border: 1px solid black !important;
         text-align: center !important;
         vertical-align: middle !important;
       }
 
-      /* Turns Ratio headers - match insulation resistance table exactly */
-      table.turns-ratio-table th {
+      table.turns-ratio-setup-table th,
+      table.turns-ratio-results-table th {
         background-color: #f3f4f6 !important;
         white-space: normal !important;
         word-break: break-word !important;
         line-height: 1.1 !important;
-        font-size: 9px !important;
+        font-size: 7px !important;
         padding: 2px !important;
         text-align: center !important;
         font-weight: bold !important;
         border: 1px solid black !important;
         vertical-align: middle !important;
-      }
-
-      /* Make header text more compact - convert br to space */
-      table.turns-ratio-table th br {
-        display: inline !important;
-      }
-      
-      table.turns-ratio-table th br::after {
-        content: " " !important;
       }
       
       /* Test Equipment Table - better spacing for print */
@@ -2700,9 +2627,9 @@ if (typeof document !== 'undefined') {
       table.dielectric-absorption-table th:not(:first-child) { width: 10% !important; min-width: 10% !important; max-width: 10% !important; }
       
       /* Alternative approach for browsers that don't support :has() */
-      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table):not(.comments-print-table) { table-layout: fixed !important; width: 100% !important; }
-      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table):not(.comments-print-table) td:first-child { width: 35% !important; }
-      table:not(.turns-ratio-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table):not(.comments-print-table) td:not(:first-child) { width: 13% !important; }
+      table:not(.turns-ratio-setup-table):not(.turns-ratio-results-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table):not(.comments-print-table) { table-layout: fixed !important; width: 100% !important; }
+      table:not(.turns-ratio-setup-table):not(.turns-ratio-results-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table):not(.comments-print-table) td:first-child { width: 35% !important; }
+      table:not(.turns-ratio-setup-table):not(.turns-ratio-results-table):not(.visual-mechanical-table):not(.dielectric-absorption-table):not(.job-info-print-table):not(.comments-print-table) td:not(:first-child) { width: 13% !important; }
 
       /* Comments tables: full width with text wrap for long content */
       table.comments-print-table { table-layout: fixed !important; width: 100% !important; max-width: 100% !important; }
@@ -2786,62 +2713,47 @@ if (typeof document !== 'undefined') {
       width: 100% !important;
       max-width: 100% !important;
     }
-    .force-print table.turns-ratio-table {
+    .force-print table.turns-ratio-setup-table,
+    .force-print table.turns-ratio-results-table {
       width: 100% !important;
       min-width: auto !important;
       max-width: 100% !important;
       table-layout: fixed !important;
-      margin: 8px 0 12px 0 !important;
+      margin: 4px 0 !important;
       border-collapse: collapse !important;
       transform: none !important;
       font-size: 9px !important;
     }
-    .force-print table.turns-ratio-table col.tr-tap { width: 5% !important; }
-    .force-print table.turns-ratio-table col.tr-nameplate { width: 9% !important; }
-    .force-print table.turns-ratio-table col.tr-calc { width: 9% !important; }
-    .force-print table.turns-ratio-table col.tr-h1-meas,
-    .force-print table.turns-ratio-table col.tr-h2-meas,
-    .force-print table.turns-ratio-table col.tr-h3-meas { width: 9.5% !important; }
-    .force-print table.turns-ratio-table col.tr-h1-dev,
-    .force-print table.turns-ratio-table col.tr-h2-dev,
-    .force-print table.turns-ratio-table col.tr-h3-dev { width: 7.5% !important; }
-    .force-print table.turns-ratio-table col.tr-h1-pf,
-    .force-print table.turns-ratio-table col.tr-h2-pf,
-    .force-print table.turns-ratio-table col.tr-h3-pf { width: 8% !important; }
-    .force-print table.turns-ratio-table input,
-    .force-print table.turns-ratio-table select { 
-      font-size: 10px !important; 
-      padding: 8px 6px !important;
+    .force-print table.turns-ratio-setup-table input,
+    .force-print table.turns-ratio-setup-table select,
+    .force-print table.turns-ratio-results-table input,
+    .force-print table.turns-ratio-results-table select {
+      font-size: 9px !important;
+      padding: 4px 2px !important;
       width: 100% !important;
       box-sizing: border-box !important;
       border: none !important;
       background: transparent !important;
       text-align: center !important;
     }
-    .force-print table.turns-ratio-table td { 
-      padding: 8px 6px !important;
-      font-size: 10px !important;
-      overflow: hidden !important;
-      text-overflow: clip !important;
-      white-space: nowrap !important;
+    .force-print table.turns-ratio-setup-table td,
+    .force-print table.turns-ratio-results-table td {
+      padding: 4px 2px !important;
+      font-size: 9px !important;
       border: 1px solid black !important;
       text-align: center !important;
       vertical-align: middle !important;
     }
-    .force-print table.turns-ratio-table th {
+    .force-print table.turns-ratio-setup-table th,
+    .force-print table.turns-ratio-results-table th {
       background-color: #f3f4f6 !important;
-      white-space: normal !important;
-      word-break: break-word !important;
-      line-height: 1.2 !important;
-      font-size: 10px !important;
-      padding: 8px 6px !important;
+      font-size: 9px !important;
+      padding: 4px 2px !important;
       text-align: center !important;
       font-weight: bold !important;
       border: 1px solid black !important;
       vertical-align: middle !important;
     }
-    .force-print table.turns-ratio-table th br { display: inline !important; }
-    .force-print table.turns-ratio-table th br::after { content: " " !important; }
 
     /* Mirror Test Equipment table spacing */
     .force-print .test-equipment-table { width: 100% !important; margin: 10px 0 20px 0 !important; }

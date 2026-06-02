@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/Label';
 import { useAuth } from '@/lib/AuthContext';
 import { ShortcutService, Shortcut, MAX_SHORTCUTS } from '@/services/ShortcutService';
 import { Badge } from '@/components/ui';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ShortcutFormData {
   title: string;
@@ -214,7 +215,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({ isOpen, onClos
 
           {loading && !isFormOpen ? (
             <div className="flex justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#f26722]"></div>
+              <LoadingSpinner size="sm" />
             </div>
           ) : shortcuts.length === 0 ? (
             <div className="text-center py-6 border border-dashed border-gray-300 rounded-md dark:border-gray-600">

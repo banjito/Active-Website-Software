@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle, FileText, Clock, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface JobGroup {
   jobId: string;
@@ -121,7 +122,7 @@ export const ApprovedShortcuts: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-6">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#f26722]"></div>
+        <LoadingSpinner size="sm" />
         <span className="ml-2 text-gray-600 dark:text-white">Loading approved reports...</span>
       </div>
     );

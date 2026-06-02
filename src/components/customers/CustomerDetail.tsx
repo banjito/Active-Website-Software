@@ -10,6 +10,7 @@ import { Customer, CustomerCategory, getCustomerById, updateCustomer, getCategor
 import CustomerDocumentManagement from './CustomerDocumentManagement';
 import CustomerHealthMonitoring from './CustomerHealth';
 import { toast } from '../../components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface Contact {
   id: string;
@@ -896,7 +897,7 @@ export default function CustomerDetail() {
                   <div className="p-6">
                     {notesLoading ? (
                       <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#f26722]"></div>
+                        <LoadingSpinner size="sm" />
                       </div>
                     ) : notes.length === 0 ? (
                       <div className="text-center py-8">

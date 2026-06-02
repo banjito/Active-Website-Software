@@ -8,6 +8,7 @@ import {
   getReviewUrgencyColorClass,
   type JobWithReportsReadyForReview,
 } from '@/lib/reviewShortcuts';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ReviewShortcutsDropdownProps {
   onNavigate: (url: string) => void;
@@ -78,7 +79,7 @@ export const ReviewShortcutsDropdown: React.FC<ReviewShortcutsDropdownProps> = (
       <div className="max-h-80 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#f26722]" />
+            <LoadingSpinner size="xs" />
             <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">Loading…</span>
           </div>
         ) : error ? (

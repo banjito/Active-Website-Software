@@ -47,6 +47,7 @@ import {
   StepBlockConfig,
   VideoBlockConfig,
 } from '@/lib/types/helpCenter';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const GuideViewer: React.FC = () => {
   const { guideId } = useParams<{ guideId: string }>();
@@ -181,7 +182,7 @@ export const GuideViewer: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-dark-200">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f26722]"></div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

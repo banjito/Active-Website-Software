@@ -11,6 +11,7 @@ import { jobRequisitionsService, JobRequisition, RequisitionApprover, getJobRequ
 import { toast } from '../../../components/ui/toast';
 import { useAuth } from '../../../lib/AuthContext';
 import { supabase } from '../../../lib/supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface AppUser {
   id: string;
@@ -388,7 +389,7 @@ export const RequisitionApprovals: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]"></div>
+              <LoadingSpinner size="md" />
               <p className="mt-4 text-gray-600 dark:text-gray-400">Loading pending approvals...</p>
             </div>
           </CardContent>

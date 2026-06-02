@@ -7,6 +7,7 @@ import { useDivision } from '../../App';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Pagination } from '../ui/Pagination';
 import { DIVISION_OPTIONS } from '../../services/customerService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface Contact {
   id: string;
@@ -644,7 +645,7 @@ export default function ContactList() {
           </div>
           {searchLoading && (
             <div className="flex items-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#f26722]"></div>
+              <LoadingSpinner size="xs" />
             </div>
           )}
           <button

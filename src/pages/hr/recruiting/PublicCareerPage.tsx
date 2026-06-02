@@ -9,6 +9,7 @@ import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/Dialog';
 import { Search, MapPin, Briefcase, DollarSign, Upload, X, FileText, Mail, Phone, User, Shirt, ChevronDown, ChevronUp } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const PublicCareerPage: React.FC = () => {
   const [approvedRequisitions, setApprovedRequisitions] = useState<JobRequisition[]>([]);
@@ -357,7 +358,7 @@ export const PublicCareerPage: React.FC = () => {
         {loading ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12">
             <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]"></div>
+              <LoadingSpinner size="md" />
               <p className="mt-4 text-gray-600 dark:text-gray-400">Loading job openings...</p>
             </div>
           </div>

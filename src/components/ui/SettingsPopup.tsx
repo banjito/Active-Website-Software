@@ -2,10 +2,6 @@ import React, { useState } from 'react';
 import { User as UserIcon, FileText, X, Edit3 } from "lucide-react";
 import { ThemeToggle } from '../theme/theme-toggle';
 import { EditProfilePopup } from '../profile/EditProfilePopup';
-import { Switch } from '../ui/Switch';
-import { useAuth } from '@/lib/AuthContext';
-import { useMyMenuEnabled } from '@/lib/userPrefs';
-
 interface SettingsPopupProps {
   isOpen: boolean;
   onClose: () => void;
@@ -31,8 +27,6 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({
   currentUser
 }) => {
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const { user } = useAuth();
-  const [myMenuEnabled, setMyMenuEnabled] = useMyMenuEnabled(user?.id);
 
   if (!isOpen) return null;
 
@@ -76,15 +70,6 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({
             {/* <div className="flex items-center w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-50 rounded-md">
               <ThemeToggle />
             </div> */}
-
-          {/* Enable My Menu */}
-          <div className="flex items-center justify-between w-full px-4 py-3 text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-50 rounded-md">
-            <div className="flex flex-col">
-              <span className="font-medium">Enable My Menu</span>
-              <span className="text-xs text-gray-500 dark:text-dark-400">Use your custom sidebar shortcuts</span>
-            </div>
-            <Switch checked={!!myMenuEnabled} onCheckedChange={setMyMenuEnabled} />
-          </div>
 
             {/* Enter Edit Mode - Only show if callback is provided (portal page) */}
             {onEnterEditMode && (

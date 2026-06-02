@@ -47,7 +47,6 @@ import TechnicianProfilesPage from './pages/TechnicianProfilesPage';
 import CustomerCategoriesPage from './pages/CustomerCategoriesPage';
 import ReportsPage from './app/[division]/reports/page';
 import AdminDashboard from './app/admin-dashboard/page';
-import FloatingMyMenu from './components/shortcuts/FloatingMyMenu';
 import FloatingIssueReporter from './components/feedback/FloatingIssueReporter';
 import SchedulingPage from './app/scheduling/page';
 import FieldEquipmentPage from './app/[division]/field-equipment/page';
@@ -785,9 +784,6 @@ function App() {
                   <Route path="/jobs/:id/applied-voltage-test-ats-report/:reportId?" element={<RequireAuth><Layout><AppliedVoltageTestATSReport /></Layout></RequireAuth>} />
                 </Routes>
                 
-                {/* Persistent My Menu Drawer */}
-                <FloatingMyMenu />
-
                 {/* Persistent Issue Reporter */}
                 <FloatingIssueReporter />
                 

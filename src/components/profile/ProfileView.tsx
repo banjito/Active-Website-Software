@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/Dialog';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ProfileViewProps {
   isOpen: boolean;
@@ -956,7 +957,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div className="bg-white dark:bg-dark-150 rounded-xl p-8 flex items-center gap-3">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#f26722]"></div>
+          <LoadingSpinner size="sm" />
           <p className="text-gray-600 dark:text-white">Loading profile...</p>
         </div>
       </div>

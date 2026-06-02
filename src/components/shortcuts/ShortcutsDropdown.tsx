@@ -31,6 +31,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ShortcutsDropdownProps {
   onNavigate: (url: string) => void;
@@ -350,7 +351,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({ onNavigate
           <div className="p-1.5">
             {loading && shortcuts.length === 0 ? (
               <div className="flex justify-center py-10">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#f26722] border-b-transparent" />
+                <LoadingSpinner size="xs" />
               </div>
             ) : shortcuts.length === 0 ? (
               <div className="px-4 py-10 text-center">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { AlertTriangle, Filter, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 type EvaluationResult = 'PASS' | 'FAIL' | 'LIMITED SERVICE';
 
@@ -365,7 +366,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]"></div>
+        <LoadingSpinner size="md" />
         <span className="ml-3 text-gray-500 dark:text-gray-400">Loading report evaluations...</span>
       </div>
     );

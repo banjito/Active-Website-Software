@@ -5,6 +5,7 @@ import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { offersService, Offer } from '../../../services/hr/offersService';
 import { toast } from '../../../components/ui/toast';
 import { FileText, PenTool, CheckCircle, XCircle, Download, Paperclip } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const PublicOfferSigning: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -344,7 +345,7 @@ export const PublicOfferSigning: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]"></div>
+          <LoadingSpinner size="md" />
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading offer letter...</p>
         </div>
       </div>

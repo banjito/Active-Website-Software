@@ -22,6 +22,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ShortcutFormData {
   title: string;
@@ -402,7 +403,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({ isOpen, 
             </div>
           ) : loading ? (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#f26722]"></div>
+              <LoadingSpinner size="sm" />
             </div>
           ) : shortcuts.length === 0 ? (
             <div className="text-center py-8 border border-dashed border-gray-300 rounded-md dark:border-gray-600">

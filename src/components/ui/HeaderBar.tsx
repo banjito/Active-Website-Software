@@ -27,6 +27,7 @@ import { supabase } from '@/lib/supabase';
 import { fetchAmpContacts } from '@/services/ampContactsService';
 import type { AmpContact } from '@/services/ampContactsService';
 import { CommunityBoardPopover } from '@/components/community/CommunityBoardPopover';
+import { navigateFromShortcut } from '@/lib/shortcutNavigation';
 
 type ReviewNotification = {
   jobId: string;
@@ -222,39 +223,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReviewMenuOpen]);
 
-  const setDivisionFromShortcutPath = (path: string) => {
-    const segment = path.replace(/^\//, '').split('/')[0];
-    if (!segment) return;
-    const pathToDivision: Record<string, string> = {
-      'field-tech': 'field_tech',
-      north_alabama: 'north_alabama',
-      tennessee: 'tennessee',
-      georgia: 'georgia',
-      international: 'international',
-      calibration: 'calibration',
-      armadillo: 'armadillo',
-      scavenger: 'scavenger',
-      'sales-dashboard': 'sales',
-      sales: 'sales',
-      engineering: 'engineering',
-      hr: 'hr',
-      lab: 'lab',
-      office: 'office',
-      'admin-dashboard': 'admin',
-      admin: 'admin',
-      meetings: 'meetings',
-    };
-    if (pathToDivision[segment]) setDivision(pathToDivision[segment]);
-    else setDivision(null);
-  };
-
   const handleHeaderShortcutClick = (url: string) => {
-    if (url.startsWith('http')) {
-      window.open(url, '_blank');
-    } else {
-      setDivisionFromShortcutPath(url);
-      navigate(url);
-    }
+    navigateFromShortcut(url, navigate, setDivision);
   };
 
   // Refresh the header shortcut tabs whenever the dropdown closes (edits made inside it)
@@ -811,7 +781,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                 {(Object.values(unseenCounts).some((c) => c > 0) ||
                   calibrationNeedsList.length > 0 ||
                   calibrationOutList.length > 0) && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] leading-[18px] text-center">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#f26722] text-white text-[10px] leading-[18px] text-center">
                     {Math.min(
                       99,
                       Object.values(unseenCounts).reduce((a, b) => a + b, 0) +

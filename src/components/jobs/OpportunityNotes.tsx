@@ -4,6 +4,7 @@ import { supabase, ensureValidSession } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import { toast } from '../ui/toast';
 import { ProfileView } from '../profile/ProfileView';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface OpportunityNote {
   id: string;
@@ -297,7 +298,7 @@ export default function OpportunityNotes({ opportunityId }: OpportunityNotesProp
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]" />
+        <LoadingSpinner size="md" />
       </div>
     );
   }

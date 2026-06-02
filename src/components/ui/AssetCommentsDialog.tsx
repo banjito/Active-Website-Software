@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { MessageCircle, X, AlertCircle, Clock, User } from 'lucide-react';
 import { format } from 'date-fns';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface AssetCommentsDialogProps {
   isOpen: boolean;
@@ -231,7 +232,7 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
         <div className="p-6 overflow-y-auto max-h-[60vh]">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#f26722]"></div>
+              <LoadingSpinner size="sm" />
               <span className="ml-2 text-gray-600 dark:text-white">Loading comments...</span>
             </div>
           ) : error ? (

@@ -41,8 +41,6 @@ import {
 } from "lucide-react"
 import { Button } from './Button';
 import { HeaderBar } from './HeaderBar';
-import { SidebarShortcuts } from '@/components/shortcuts/SidebarShortcuts';
-import { useMyMenuEnabled } from '@/lib/userPrefs';
 
 interface HrLayoutProps {
   children: React.ReactNode;
@@ -86,7 +84,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     }
   }, [user]);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [myMenuEnabled] = useMyMenuEnabled(user?.id);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     recruiting: false,
     offers: false,
@@ -335,24 +332,14 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background">
-      {!myMenuEnabled && (
-        <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-gray-200 dark:border-dark-200">
-          <HeaderBar />
-        </div>
-      )}
+      <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-gray-200 dark:border-dark-200">
+        <HeaderBar />
+      </div>
 
       <div className="flex min-h-0 flex-1">
-      {/* Sidebar - hidden when My Menu is enabled */}
-      {!myMenuEnabled && (
       <div className="w-64 min-w-[16rem] flex-shrink-0 flex flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200">
         {/* Sidebar Links */}
         <div className="flex flex-col gap-1 p-4 flex-grow overflow-y-auto">
-          {myMenuEnabled && (
-            <>
-              <SidebarShortcuts />
-              <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500 mt-3">MENU</h2>
-            </>
-          )}
           {/* Standalone top-level items */}
           {isHrFullAccess && (
             <Link to="/hr/announcements">
@@ -483,7 +470,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
         </div>
         )}
       </div>
-      )}
 
         <main className="flex-1 min-w-0 overflow-y-auto p-6">
           {children}

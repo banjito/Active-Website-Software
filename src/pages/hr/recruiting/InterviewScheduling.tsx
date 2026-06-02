@@ -14,6 +14,7 @@ import { interviewStagesService, InterviewStage, InterviewStageQuestion } from '
 import { useAuth } from '../../../lib/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { toast } from '../../../components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const InterviewScheduling: React.FC = () => {
   const { user } = useAuth();
@@ -1063,7 +1064,7 @@ ${interviewFormData.overallFeedback || 'N/A'}
         <CardContent>
           {loading ? (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]"></div>
+              <LoadingSpinner size="md" />
               <p className="mt-4 text-gray-600 dark:text-gray-400">Loading interviews...</p>
             </div>
           ) : filteredInterviews.length === 0 ? (

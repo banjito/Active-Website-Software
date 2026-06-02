@@ -16,6 +16,7 @@ import { onboardingService } from '../../../services/hr/onboardingService';
 import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const CandidateTracking: React.FC = () => {
   const navigate = useNavigate();
@@ -755,7 +756,7 @@ export const CandidateTracking: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]"></div>
+              <LoadingSpinner size="md" />
               <p className="mt-4 text-gray-600 dark:text-gray-400">Loading candidates...</p>
             </div>
           </CardContent>
@@ -1550,7 +1551,7 @@ export const CandidateTracking: React.FC = () => {
                   <div className="border-t border-gray-200 dark:border-gray-700 p-4">
                     {loadingInterviews ? (
                       <div className="text-center py-8">
-                        <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-[#f26722]"></div>
+                        <LoadingSpinner size="sm" />
                         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading interviews...</p>
                       </div>
                     ) : candidateInterviews.length === 0 ? (

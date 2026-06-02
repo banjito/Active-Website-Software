@@ -427,36 +427,6 @@ export function useEstimateTabOrder(opportunityId: string) {
   };
 }
 
-/**
- * Hook for my menu preferences (replaces userPrefs.ts)
- */
-export function useMyMenuPreferences() {
-  const { preferences, updatePreference } = useUserPreferences();
-  
-  const enabled = preferences.myMenu?.enabled ?? false;
-  const position = preferences.myMenu?.position ?? { x: 8, y: 8 };
-
-  const setEnabled = useCallback(async (value: boolean) => {
-    return updatePreference('myMenu.enabled', value);
-  }, [updatePreference]);
-
-  const setPosition = useCallback(async (pos: { x: number; y: number }) => {
-    return updatePreference('myMenu.position', pos);
-  }, [updatePreference]);
-
-  const resetPosition = useCallback(async () => {
-    return updatePreference('myMenu.position', { x: 8, y: 8 });
-  }, [updatePreference]);
-
-  return {
-    enabled,
-    position,
-    setEnabled,
-    setPosition,
-    resetPosition
-  };
-}
-
 // Utility functions
 function setNestedValue(obj: any, path: string, value: any): void {
   const parts = path.split('.');

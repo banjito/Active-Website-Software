@@ -26,4 +26,6 @@ export { Textarea, TextArea } from './Textarea';
 export { toast } from './toast';
 export { ScrollArea } from './ScrollArea';
 export { Switch } from './Switch';
-export { Slider } from './Slider'; 
+export { Slider } from './Slider';
+export { LoadingSpinner } from './LoadingSpinner';
+export type { LoadingSpinnerProps, LoadingSpinnerSize, LoadingSpinnerVariant } from './LoadingSpinner'; 

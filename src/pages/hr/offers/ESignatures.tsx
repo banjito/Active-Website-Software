@@ -6,6 +6,7 @@ import { FileCheck, CheckCircle, XCircle, PenTool, Download, Eye } from 'lucide-
 import { offersService, Offer, ESignature } from '../../../services/hr/offersService';
 import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const ESignatures: React.FC = () => {
   const { user } = useAuth();
@@ -196,7 +197,7 @@ export const ESignatures: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]"></div>
+          <LoadingSpinner size="md" />
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>

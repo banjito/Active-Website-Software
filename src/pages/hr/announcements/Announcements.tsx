@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2, X, Pin, PinOff, Eye, EyeOff, Clock, Megaphone, Fi
 import { format } from 'date-fns';
 import { toast } from '../../../components/ui/toast';
 import { onboardingService, ESignForm } from '../../../services/hr/onboardingService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface Announcement {
   id: string;
@@ -424,7 +425,7 @@ export function Announcements() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]"></div>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

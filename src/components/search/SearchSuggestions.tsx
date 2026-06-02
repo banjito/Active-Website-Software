@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SearchIcon } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface SearchSuggestionsProps {
   query: string;
@@ -109,7 +110,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
     <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-150 shadow-lg rounded-md border border-gray-200 dark:border-dark-300">
       {loading ? (
         <div className="p-3 text-center">
-          <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-[#f26722] border-r-transparent"></div>
+          <LoadingSpinner size="xs" />
           <span className="ml-2 text-sm text-gray-500 dark:text-dark-400">Searching...</span>
         </div>
       ) : (

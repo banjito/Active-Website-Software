@@ -10,6 +10,7 @@ import { DivisionAnalyticsDialog } from '../analytics/DivisionAnalyticsDialog';
 import { addDefaultFilesToJob } from '../../lib/services/defaultJobFiles';
 import { useUserPreferences } from '../../hooks/useUserPreferences';
 import { withPgTimeoutRetry } from '../../lib/retryPgTimeout';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface Customer {
   id: string;
@@ -1611,7 +1612,7 @@ export default function OpportunityList() {
   if (loading) {
     return (
       <div className="p-6 flex flex-col items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722] mb-4"></div>
+        <LoadingSpinner size="md" className="mb-4" />
         <div className="text-gray-900 dark:text-gray-100">Loading opportunities...</div>
       </div>
     );
@@ -1689,7 +1690,7 @@ export default function OpportunityList() {
               />
               {searchLoading && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#f26722]"></div>
+                  <LoadingSpinner size="xs" />
                 </div>
               )}
               {searchTerm && !searchLoading && (

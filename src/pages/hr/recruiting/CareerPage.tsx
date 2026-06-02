@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Globe, Eye, Edit, Plus, Search, MapPin, Briefcase, DollarSign } from 'lucide-react';
 import { jobRequisitionsService, JobRequisition, getJobRequisitionDisplayHtml } from '../../../services/hr/jobRequisitionsService';
 import { toast } from '../../../components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const CareerPage: React.FC = () => {
   const [postedRequisitions, setPostedRequisitions] = useState<JobRequisition[]>([]);
@@ -131,7 +132,7 @@ export const CareerPage: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]"></div>
+              <LoadingSpinner size="md" />
               <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
             </div>
           </CardContent>

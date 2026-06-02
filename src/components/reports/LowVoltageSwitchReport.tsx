@@ -10,6 +10,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const getVisualInspectionDescription = (section: string): string => {
   const descriptions: Record<string, string> = {
@@ -1065,7 +1066,7 @@ export default function LowVoltageSwitchReport() {
     }
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-orange-500"></div></div>;
+  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingSpinner size="2xl" /></div>;
   if (error) return <div className="text-red-500 p-4">{error}</div>;
 
   return (

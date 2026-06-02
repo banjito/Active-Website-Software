@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { toast } from '@/components/ui/toast';
 import { ProfileView } from '@/components/profile/ProfileView';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface IssueNote {
   id: string;
@@ -245,7 +246,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]" />
+        <LoadingSpinner size="md" />
       </div>
     );
   }

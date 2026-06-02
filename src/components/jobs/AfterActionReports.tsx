@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge';
 import { toast } from '@/components/ui/toast';
 import { Plus, FileText, Eye, Edit, Trash2, CheckCircle, Clock, AlertTriangle, ClipboardList, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface TimeAllocation {
   category: string;
@@ -597,7 +598,7 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({ jobId, jobNumbe
       {/* Reports list */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f26722]"></div>
+          <LoadingSpinner size="md" />
         </div>
       ) : reports.length === 0 ? (
         <Card className="dark:bg-dark-150">

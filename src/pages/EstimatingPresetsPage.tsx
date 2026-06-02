@@ -15,6 +15,7 @@ import {
   DEFAULT_ESTIMATING_PRESETS 
 } from '../services/estimatingPresetsService';
 import { Save, RotateCcw, Calculator, Truck, Plane, DollarSign, Users, Clock, AlertCircle, CheckCircle } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Input component for currency fields - moved outside to prevent recreation
 const CurrencyInput: React.FC<{
@@ -250,7 +251,7 @@ export default function EstimatingPresetsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f26722]"></div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

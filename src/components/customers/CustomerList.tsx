@@ -7,16 +7,17 @@ import { useDemoMode } from '../../lib/DemoModeContext';
 import { useDivision } from '../../App';
 import { Pagination } from '../ui/Pagination';
 import { supabase } from '../../lib/supabase';
-import { 
-  Customer, 
-  CustomerCategory, 
-  getCustomers, 
-  createCustomer, 
-  updateCustomer, 
+import {
+  Customer,
+  CustomerCategory,
+  getCustomers,
+  createCustomer,
+  updateCustomer,
   deleteCustomer,
   getCategories,
   DIVISION_OPTIONS
 } from '../../services/customerService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ContactInfo {
   id: string;
@@ -536,7 +537,7 @@ export default function CustomerList() {
           </div>
           {searchLoading && (
             <div className="flex items-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#f26722]"></div>
+              <LoadingSpinner size="xs" />
             </div>
           )}
           <button
@@ -1109,7 +1110,7 @@ export default function CustomerList() {
 
             {contactsPopupLoading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#f26722]"></div>
+                <LoadingSpinner size="sm" />
                 <span className="ml-2 text-sm text-gray-500 dark:text-gray-300">Loading contacts...</span>
               </div>
             ) : contactsPopupData.length === 0 ? (

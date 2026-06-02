@@ -12,6 +12,7 @@ import {
   ReportSearchResult
 } from '../../context/SearchContext';
 import { useDivision } from '../../App';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Component to display an individual search result
 const SearchResultCard = ({ 
@@ -262,7 +263,7 @@ export const SearchResults: React.FC = () => {
   if (loading) {
     return (
       <div className="mt-4 p-8 text-center">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#f26722] border-r-transparent"></div>
+        <LoadingSpinner size="md" />
         <p className="mt-2 text-sm text-gray-500 dark:text-dark-400">Searching...</p>
       </div>
     );

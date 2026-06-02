@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Settings, ExternalLink, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/AuthContext';
+import { useDivision } from '@/App';
+import { navigateFromShortcut } from '@/lib/shortcutNavigation';
 import { ShortcutService, Shortcut } from '@/services/ShortcutService';
 import { ShortcutManager } from './ShortcutManager';
 import { ShortcutManagerDndKit } from './ShortcutManagerDndKit';
@@ -10,6 +12,7 @@ import { ShortcutManagerDndKit } from './ShortcutManagerDndKit';
 export const ShortcutDisplay: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { setDivision } = useDivision();
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,11 +51,7 @@ export const ShortcutDisplay: React.FC = () => {
   };
 
   const handleShortcutClick = (url: string) => {
-    if (url.startsWith('http')) {
-      window.open(url, '_blank');
-    } else {
-      navigate(url);
-    }
+    navigateFromShortcut(url, navigate, setDivision);
   };
 
   const openShortcutManager = () => {

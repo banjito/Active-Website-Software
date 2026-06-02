@@ -19,8 +19,6 @@ import { ThemeToggle } from '../theme/theme-toggle';
 import { SettingsPopup } from './SettingsPopup';
 import { ProfileView } from '../profile/ProfileView';
 import { AboutPopup } from './AboutPopup';
-import { SidebarShortcuts } from '@/components/shortcuts/SidebarShortcuts';
-import { useMyMenuEnabled } from '@/lib/userPrefs';
 import { useMobileDetection } from '../../hooks/useMobileDetection';
 import { CommunityBoardPopover } from '@/components/community/CommunityBoardPopover';
 import { HeaderBar } from './HeaderBar';
@@ -61,8 +59,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const [myMenuEnabled] = useMyMenuEnabled(user?.id);
-
   const isFieldTech = division === 'field_tech';
   // Base path for list views (no dashboard in sidebar)
   const basePath = division ? (isFieldTech ? '/field-tech' : `/${division}`) : '';
@@ -407,7 +403,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isEmbedded = searchParams.get('embedded') === 'true';
   const isMeetingsPage =
     location.pathname === '/meetings' || location.pathname.startsWith('/meetings/');
-  const useHeaderBarLayout = !myMenuEnabled && !isMeetingsPage && !isReportPage;
+  const useHeaderBarLayout = !isMeetingsPage && !isReportPage;
 
   // If embedded mode, render children without any chrome
   if (isEmbedded) {
@@ -549,7 +545,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     );
   }
 
-  const sidebar = !myMenuEnabled && !isMeetingsPage ? (
+  const sidebar = !isMeetingsPage ? (
       <div 
         ref={sidebarRef}
         className={`
@@ -588,12 +584,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         )}
         <div className="flex flex-col gap-1 p-3 lg:p-4 flex-grow overflow-y-auto mobile-space-y-1 min-w-0">
-          {myMenuEnabled && (
-            <>
-              <SidebarShortcuts />
-              <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500 mt-3 mb-2 mobile-nav-text">DASHBOARD MENU</h2>
-            </>
-          )}
           <div className="flex flex-col gap-1 min-w-0">
             {renderMenuItems()}
           </div>
@@ -630,7 +620,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </main>
   );
 
-  const legacyHeader = !myMenuEnabled && !useHeaderBarLayout ? (
+  const legacyHeader = !useHeaderBarLayout ? (
           <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/75 backdrop-blur-sm dark:bg-dark-150/75 dark:border-dark-200 shadow-sm print:hidden">
             <div className="w-full px-3 sm:px-4 lg:px-8">
               <div className="flex h-16 lg:h-20 items-center justify-between">
@@ -657,16 +647,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <span className="hidden sm:inline">Back to Job</span>
                     <span className="sm:hidden">Back</span>
                   </Button>
-                )}
-                {/* Persistent AMP logo when My Menu is enabled */}
-                {myMenuEnabled && (
-                  <Link to="/portal" className="flex-shrink-0">
-                    <img
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
-                      alt="AMP Logo"
-                      className="h-7 sm:h-8 lg:h-10 mr-2"
-                    />
-                  </Link>
                 )}
                 <h2 className="text-sm lg:text-lg font-semibold truncate mobile-nav-text">{location.pathname === '/all-jobs' || useGlobalJobs ? 'Global Portal' : (formatDivisionName(division) || 'AMP Portal')}</h2>
               </div>
@@ -786,7 +766,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       ) : (
         <>
           {sidebar}
-          <div className={`flex flex-col flex-1 ${!myMenuEnabled ? 'lg:ml-0' : ''} min-w-0`}>
+          <div className="flex flex-col flex-1 lg:ml-0 min-w-0">
             {legacyHeader}
             {mainContent}
           </div>

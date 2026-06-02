@@ -17,7 +17,6 @@
  *   ui: { estimate-tab-order-{id}: [...], mergeGroups: {...} },
  *   portal: { showWelcome: true, ... },
  *   theme: "dark" | "light",
- *   myMenu: { enabled: true, position: {x, y} },
  *   shortcuts: [...],
  *   misc: { ... }
  * }
@@ -65,10 +64,6 @@ export interface UserPreferences {
     hiddenPortals?: string[];
   };
   theme?: 'dark' | 'light' | 'system';
-  myMenu?: {
-    enabled?: boolean;
-    position?: { x: number; y: number };
-  };
   shortcuts?: any[];
   recentSearches?: string[];
   meetings?: {
@@ -489,24 +484,6 @@ export async function migrateFromLocalStorage(userId: string): Promise<boolean> 
         handler: (key, value, prefs) => {
           if (!prefs.ui) prefs.ui = {};
           prefs.ui[key] = value;
-        }
-      },
-      // My Menu enabled
-      {
-        pattern: /^amp:user:(.+):myMenuEnabled$/,
-        handler: (key, value, prefs) => {
-          if (!prefs.myMenu) prefs.myMenu = {};
-          prefs.myMenu.enabled = value === 'true';
-        }
-      },
-      // Home button position
-      {
-        pattern: /^amp:user:(.+):homeButtonPos$/,
-        handler: (key, value, prefs) => {
-          if (!prefs.myMenu) prefs.myMenu = {};
-          try {
-            prefs.myMenu.position = typeof value === 'string' ? JSON.parse(value) : value;
-          } catch {}
         }
       },
       // Recent searches

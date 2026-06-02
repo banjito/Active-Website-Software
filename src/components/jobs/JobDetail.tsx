@@ -1835,6 +1835,14 @@ export default function JobDetail() {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
     const filterParam = params.get('filter');
+
+    // Report Approvals tab is admin-only; fall back to filtered Reports list
+    if (tabParam === 'reports' && !isAdmin && id) {
+      setActiveTab('assets');
+      setAssetStatusFilter('ready_for_review');
+      navigate(`/jobs/${id}?tab=assets&filter=ready_for_review`, { replace: true });
+      return;
+    }
     
     if (tabParam && ['overview', 'assets', 'deliverables', 'notes', 'sla', 'tracking', 'reports', 'after-action'].includes(tabParam)) {
       setActiveTab(tabParam);
@@ -1844,7 +1852,7 @@ export default function JobDetail() {
     if (filterParam && ['all', 'not started', 'in_progress', 'ready_for_review', 'approved', 'approved_internal_forms', 'issue'].includes(filterParam)) {
       setAssetStatusFilter(filterParam as 'all' | 'not started' | 'in_progress' | 'ready_for_review' | 'approved' | 'approved_internal_forms' | 'issue');
     }
-  }, [location.search]);
+  }, [location.search, isAdmin, id, navigate]);
 
   // Fetch custom form templates for Add Asset dropdown
   useEffect(() => {

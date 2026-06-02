@@ -1206,8 +1206,10 @@ export default function PortalLanding() {
           </div>
         )}
         <div className="flex justify-between items-center mb-2 px-4 sm:px-6 lg:px-8">
-          <h3 className="text-lg font-medium">Review Shortcuts</h3>
-          <div className="flex items-center gap-3">
+          <div>
+            <h3 className="text-lg font-medium">Review Shortcuts</h3>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-2">
               <label 
                 htmlFor="default-review-shortcuts-toggle" 
@@ -1229,17 +1231,20 @@ export default function PortalLanding() {
                 />
               </button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={toggleReviewShortcuts} 
-              className="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-white"
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleReviewShortcuts}
+              className="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-white shrink-0"
+              leftIcon={
+                showReviewShortcuts ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )
+              }
             >
-              {showReviewShortcuts ? (
-                <>Hide <ChevronUp className="ml-1 h-4 w-4" /></>
-              ) : (
-                <>Show <ChevronDown className="ml-1 h-4 w-4" /></>
-              )}
+              {showReviewShortcuts ? 'Hide' : 'Show'}
             </Button>
           </div>
         </div>
@@ -1293,17 +1298,20 @@ export default function PortalLanding() {
                 />
               </button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={toggleIssueShortcuts} 
-              className="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-white"
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleIssueShortcuts}
+              className="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-white shrink-0"
+              leftIcon={
+                showIssueShortcuts ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )
+              }
             >
-              {showIssueShortcuts ? (
-                <>Hide <ChevronUp className="ml-1 h-4 w-4" /></>
-              ) : (
-                <>Show <ChevronDown className="ml-1 h-4 w-4" /></>
-              )}
+              {showIssueShortcuts ? 'Hide' : 'Show'}
             </Button>
           </div>
         </div>
@@ -1357,17 +1365,20 @@ export default function PortalLanding() {
                 />
               </button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={toggleApprovedShortcuts} 
-              className="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-white"
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleApprovedShortcuts}
+              className="text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-white shrink-0"
+              leftIcon={
+                showApprovedShortcuts ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )
+              }
             >
-              {showApprovedShortcuts ? (
-                <>Hide <ChevronUp className="ml-1 h-4 w-4" /></>
-              ) : (
-                <>Show <ChevronDown className="ml-1 h-4 w-4" /></>
-              )}
+              {showApprovedShortcuts ? 'Hide' : 'Show'}
             </Button>
           </div>
         </div>

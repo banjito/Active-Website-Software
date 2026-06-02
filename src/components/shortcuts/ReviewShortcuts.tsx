@@ -1,235 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui';
-import { FileText, Clock, AlertCircle, ChevronRight } from 'lucide-react';
-
-interface JobWithReports {
-  id: string;
-  title: string;
-  job_number: string;
-  division: string;
-  customer_name?: string;
-  company_name?: string;
-  reports_count: number;
-  oldest_report_date: string;
-  reports: Array<{
-    id: string;
-    title: string;
-    submitted_at: string;
-    status: string;
-  }>;
-}
+import { FileText, Clock, AlertCircle, ChevronRight, SquareArrowOutUpRight } from 'lucide-react';
+import {
+  fetchJobsWithReportsForReview,
+  formatReviewTimeAgo,
+  getJobReviewPath,
+  getReviewUrgencyColorClass,
+  type JobWithReportsReadyForReview,
+} from '@/lib/reviewShortcuts';
 
 export const ReviewShortcuts: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [jobsWithReports, setJobsWithReports] = useState<JobWithReports[]>([]);
+  const [jobsWithReports, setJobsWithReports] = useState<JobWithReportsReadyForReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadJobs = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await fetchJobsWithReportsForReview();
+      setJobsWithReports(data);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Error fetching jobs with reports for review:', err);
+      setError(`Failed to load jobs with reports: ${message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
-      fetchJobsWithReportsForReview();
+      void loadJobs();
     }
-  }, [user]);
+  }, [user, loadJobs]);
 
-  // Listen for asset status changes to refresh the component
   useEffect(() => {
     const handleAssetStatusChange = (event: CustomEvent) => {
       const { newStatus } = event.detail;
-      // Only refresh if the status change affects ready_for_review
       if (newStatus === 'ready_for_review' || newStatus === 'in_progress') {
-        console.log('Asset status changed, refreshing ReviewShortcuts');
-        fetchJobsWithReportsForReview();
+        void loadJobs();
       }
     };
 
     window.addEventListener('assetStatusChanged', handleAssetStatusChange as EventListener);
-    
+
     return () => {
       window.removeEventListener('assetStatusChanged', handleAssetStatusChange as EventListener);
     };
-  }, []);
-
-  const fetchJobsWithReportsForReview = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Get all assets that are marked as "ready_for_review" - this is the primary indicator
-      const { data: assetsData, error: assetsError } = await supabase
-        .schema('neta_ops')
-        .from('assets')
-        .select('id, name, created_at, file_url, status, submitted_at, approved_at, sent_at')
-        .eq('status', 'ready_for_review')
-        .order('created_at', { ascending: true });
-
-      if (assetsError) {
-        if (assetsError.code === 'PGRST106' || assetsError.message?.includes('does not exist')) {
-          console.warn('Assets table does not exist yet');
-          setJobsWithReports([]);
-          return;
-        }
-        throw assetsError;
-      }
-
-      if (!assetsData || assetsData.length === 0) {
-        setJobsWithReports([]);
-        return;
-      }
-
-      // Get job_asset links to find which jobs these assets belong to
-      const assetIds = assetsData.map(asset => asset.id);
-      const { data: jobAssetLinks, error: linksError } = await supabase
-        .schema('neta_ops')
-        .from('job_assets')
-        .select('job_id, asset_id')
-        .in('asset_id', assetIds);
-
-      if (linksError) {
-        throw linksError;
-      }
-
-      if (!jobAssetLinks || jobAssetLinks.length === 0) {
-        setJobsWithReports([]);
-        return;
-      }
-
-      // Group assets by job_id
-      const assetsByJob = jobAssetLinks.reduce((acc, link) => {
-        if (!acc[link.job_id]) {
-          acc[link.job_id] = [];
-        }
-        const asset = assetsData.find(a => a.id === link.asset_id);
-        if (asset) {
-          acc[link.job_id].push(asset);
-        }
-        return acc;
-      }, {} as Record<string, typeof assetsData>);
-
-      const jobIds = Object.keys(assetsByJob);
-
-      if (jobIds.length === 0) {
-        setJobsWithReports([]);
-        return;
-      }
-
-      // Fetch job details for jobs that have assets ready for review (excluding soft-deleted jobs)
-      const { data: jobsData, error: jobsError } = await supabase
-        .schema('neta_ops')
-        .from('jobs')
-        .select('id, title, job_number, division, customer_id')
-        .in('id', jobIds)
-        .is('deleted_at', null); // Only fetch non-deleted jobs
-
-      if (jobsError) {
-        throw jobsError;
-      }
-
-      if (!jobsData) {
-        setJobsWithReports([]);
-        return;
-      }
-
-      // Fetch customer information for each job
-      const jobsWithCustomers = await Promise.all(
-        jobsData.map(async (job) => {
-          let customerData = null;
-          if (job.customer_id) {
-            try {
-              const { data: customer, error: customerError } = await supabase
-                .schema('common')
-                .from('customers')
-                .select('name, company_name')
-                .eq('id', job.customer_id)
-                .single();
-
-              if (!customerError && customer) {
-                customerData = customer;
-              }
-            } catch (err) {
-              console.warn(`Error fetching customer for job ${job.id}:`, err);
-            }
-          }
-
-          const jobAssets = assetsByJob[job.id] || [];
-          const oldestAssetDate = jobAssets.length > 0 
-            ? jobAssets.reduce((oldest, asset) => 
-                new Date(asset.created_at) < new Date(oldest) ? asset.created_at : oldest, 
-                jobAssets[0].created_at
-              )
-            : new Date().toISOString();
-
-          // Convert assets to report-like format for display
-          const reportsForDisplay = jobAssets.map(asset => ({
-            id: asset.id,
-            title: asset.name,
-            submitted_at: asset.created_at,
-            status: 'ready_for_review'
-          }));
-
-          return {
-            id: job.id,
-            title: job.title,
-            job_number: job.job_number,
-            division: job.division,
-            customer_name: customerData?.name,
-            company_name: customerData?.company_name,
-            reports_count: jobAssets.length,
-            oldest_report_date: oldestAssetDate,
-            reports: reportsForDisplay
-          };
-        })
-      );
-
-      // Sort by oldest asset date (most urgent first)
-      jobsWithCustomers.sort((a, b) => 
-        new Date(a.oldest_report_date).getTime() - new Date(b.oldest_report_date).getTime()
-      );
-
-      setJobsWithReports(jobsWithCustomers);
-    } catch (error: any) {
-      console.error('Error fetching jobs with reports for review:', error);
-      setError(`Failed to load jobs with reports: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [loadJobs]);
 
   const handleJobClick = (jobId: string) => {
-    navigate(`/jobs/${jobId}?tab=assets&filter=ready_for_review`);
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) {
-      return 'Just now';
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d ago`;
-    }
-  };
-
-  const getUrgencyColor = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours >= 72) { // 3+ days
-      return 'text-red-600 dark:text-red-400';
-    } else if (diffInHours >= 24) { // 1+ days
-      return 'text-yellow-600 dark:text-yellow-400';
-    } else {
-      return 'text-green-600 dark:text-green-400';
-    }
+    navigate(getJobReviewPath(jobId, user));
   };
 
   if (loading) {
@@ -281,9 +108,9 @@ export const ReviewShortcuts: React.FC = () => {
           size="sm"
           onClick={() => navigate('/neta_ops/reports?tab=approval')}
           className="text-[#f26722] hover:text-[#e55611]"
+          leftIcon={<SquareArrowOutUpRight className="ml-1 h-4 w-4" />}
         >
           View All Reports
-          <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
 
@@ -304,7 +131,7 @@ export const ReviewShortcuts: React.FC = () => {
                     {job.division}
                   </Badge>
                 </div>
-                
+
                 {(job.company_name || job.customer_name) && (
                   <p className="text-sm text-gray-600 dark:text-white mb-2">
                     {job.company_name || job.customer_name}
@@ -318,20 +145,19 @@ export const ReviewShortcuts: React.FC = () => {
                       {job.reports_count} report{job.reports_count !== 1 ? 's' : ''}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 text-gray-400 mr-1" />
-                    <span className={`font-medium ${getUrgencyColor(job.oldest_report_date)}`}>
-                      Oldest: {formatTimeAgo(job.oldest_report_date)}
+                    <span className={`font-medium ${getReviewUrgencyColorClass(job.oldest_report_date)}`}>
+                      Oldest: {formatReviewTimeAgo(job.oldest_report_date)}
                     </span>
                   </div>
                 </div>
               </div>
-              
+
               <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 ml-2" />
             </div>
 
-            {/* Show individual reports if there are multiple */}
             {job.reports.length > 1 && (
               <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                 <div className="space-y-1">
@@ -340,8 +166,8 @@ export const ReviewShortcuts: React.FC = () => {
                       <span className="text-gray-600 dark:text-white truncate">
                         {report.title}
                       </span>
-                      <span className={`font-medium ${getUrgencyColor(report.submitted_at)}`}>
-                        {formatTimeAgo(report.submitted_at)}
+                      <span className={`font-medium ${getReviewUrgencyColorClass(report.submitted_at)}`}>
+                        {formatReviewTimeAgo(report.submitted_at)}
                       </span>
                     </div>
                   ))}

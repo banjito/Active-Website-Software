@@ -11,6 +11,7 @@ import {
   Gauge,
   AlertTriangle,
   Bookmark,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
@@ -20,6 +21,8 @@ import { ProfileView } from '@/components/profile/ProfileView';
 import { AboutPopup } from '@/components/ui/AboutPopup';
 import { ShortcutService, Shortcut } from '@/services/ShortcutService';
 import { ShortcutsDropdown } from '@/components/shortcuts/ShortcutsDropdown';
+import { ReviewShortcutsDropdown } from '@/components/shortcuts/ReviewShortcutsDropdown';
+import { fetchJobsWithReportsForReview } from '@/lib/reviewShortcuts';
 import { supabase } from '@/lib/supabase';
 import { fetchAmpContacts } from '@/services/ampContactsService';
 import type { AmpContact } from '@/services/ampContactsService';
@@ -94,9 +97,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [headerShortcuts, setHeaderShortcuts] = useState<Shortcut[]>([]);
   const [isShortcutMenuOpen, setIsShortcutMenuOpen] = useState(false);
+  const [isReviewMenuOpen, setIsReviewMenuOpen] = useState(false);
+  const [reviewJobCount, setReviewJobCount] = useState(0);
   const [hiddenShortcutCount, setHiddenShortcutCount] = useState(0);
   const shortcutsBarRef = useRef<HTMLDivElement>(null);
   const shortcutMenuRef = useRef<HTMLDivElement>(null);
+  const reviewMenuRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const contactsRef = useRef<HTMLDivElement>(null);
@@ -129,6 +135,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
       }
       if (shortcutMenuRef.current && !shortcutMenuRef.current.contains(event.target as Node)) {
         setIsShortcutMenuOpen(false);
+      }
+      if (reviewMenuRef.current && !reviewMenuRef.current.contains(event.target as Node)) {
+        setIsReviewMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -180,6 +189,38 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
       loadHeaderShortcuts();
     }
   }, [user]);
+
+  const loadReviewJobCount = async () => {
+    if (!user) return;
+    try {
+      const jobs = await fetchJobsWithReportsForReview();
+      setReviewJobCount(jobs.length);
+    } catch {
+      setReviewJobCount(0);
+    }
+  };
+
+  useEffect(() => {
+    void loadReviewJobCount();
+    const handleAssetStatusChange = (event: CustomEvent) => {
+      const { newStatus } = event.detail;
+      if (newStatus === 'ready_for_review' || newStatus === 'in_progress') {
+        void loadReviewJobCount();
+      }
+    };
+    window.addEventListener('assetStatusChanged', handleAssetStatusChange as EventListener);
+    return () => {
+      window.removeEventListener('assetStatusChanged', handleAssetStatusChange as EventListener);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  useEffect(() => {
+    if (!isReviewMenuOpen) {
+      void loadReviewJobCount();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReviewMenuOpen]);
 
   const setDivisionFromShortcutPath = (path: string) => {
     const segment = path.replace(/^\//, '').split('/')[0];
@@ -590,7 +631,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
           </div>
 
           <div
-            className="grid shrink-0 ml-4 [grid-template-columns:repeat(5,2.5rem)] gap-x-3 sm:gap-x-4 place-items-center"
+            className="grid shrink-0 ml-4 [grid-template-columns:repeat(6,2.5rem)] gap-x-3 sm:gap-x-4 place-items-center"
             role="toolbar"
             aria-label="Portal shortcuts and account"
           >
@@ -604,6 +645,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                   const next = !isShortcutMenuOpen;
                   setIsShortcutMenuOpen(next);
                   if (next) {
+                    setIsReviewMenuOpen(false);
                     setIsContactsOpen(false);
                     setIsNotificationsOpen(false);
                     setIsProfileMenuOpen(false);
@@ -620,6 +662,44 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                   <ShortcutsDropdown
                     onNavigate={(url) => {
                       setIsShortcutMenuOpen(false);
+                      handleHeaderShortcutClick(url);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="relative flex h-10 w-10 items-center justify-center" ref={reviewMenuRef}>
+              <button
+                type="button"
+                aria-label="Reports ready for review"
+                aria-haspopup="true"
+                aria-expanded={isReviewMenuOpen}
+                title="Reports ready for review"
+                onClick={() => {
+                  const next = !isReviewMenuOpen;
+                  setIsReviewMenuOpen(next);
+                  if (next) {
+                    setIsShortcutMenuOpen(false);
+                    setIsContactsOpen(false);
+                    setIsNotificationsOpen(false);
+                    setIsProfileMenuOpen(false);
+                  }
+                }}
+                className="rounded-full w-10 h-10 p-0 flex items-center justify-center text-gray-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 relative"
+              >
+                <ClipboardCheck className="h-5 w-5" />
+                {reviewJobCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#f26722] text-white text-[10px] leading-[18px] text-center">
+                    {Math.min(99, reviewJobCount)}
+                  </span>
+                )}
+              </button>
+
+              {isReviewMenuOpen && (
+                <div className="absolute top-full right-0 mt-2 z-50">
+                  <ReviewShortcutsDropdown
+                    onNavigate={(url) => {
+                      setIsReviewMenuOpen(false);
                       handleHeaderShortcutClick(url);
                     }}
                   />

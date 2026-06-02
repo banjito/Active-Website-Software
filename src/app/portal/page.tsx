@@ -4,7 +4,7 @@ import Card from "../../components/ui/Card"
 import { CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs"
 import { Badge } from "../../components/ui"
-import { ChevronRight, Building, MapPin, User as UserIcon, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Loader2, BookOpen, MoreVertical, Check, AlertCircle, Image as ImageIcon, Download, Plane  } from "lucide-react"
+import { ChevronRight, Building, MapPin, CircleUserRound, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Loader2, BookOpen, MoreVertical, Check, AlertCircle, Image as ImageIcon, Download, Plane, Globe, BriefcaseBusiness, Omega  } from "lucide-react"
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react"
 import { useAuth } from "../../lib/AuthContext"
 import { useDivision } from '../../App'
@@ -1598,7 +1598,7 @@ export default function PortalLanding() {
                 <CardHeader className="flex flex-row items-start justify-between p-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-full bg-amber-50 dark:bg-dark-700/20">
-                      <Briefcase className="h-5 w-5 text-amber-500 dark:text-white" />
+                      <Globe className="h-5 w-5 text-amber-500 dark:text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Global Portal</CardTitle>
@@ -1704,7 +1704,7 @@ export default function PortalLanding() {
                 <CardHeader className="flex flex-row items-start justify-between p-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-full bg-emerald-50 dark:bg-dark-700/20">
-                      <Building className="h-5 w-5 text-emerald-500 dark:text-white" />
+                      <BriefcaseBusiness className="h-5 w-5 text-emerald-500 dark:text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Sales Portal</CardTitle>
@@ -1730,7 +1730,7 @@ export default function PortalLanding() {
                 <CardHeader className="flex flex-row items-start justify-between p-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-full bg-cyan-50 dark:bg-dark-700/20">
-                      <Building className="h-5 w-5 text-cyan-500 dark:text-white" />
+                      <Omega className="h-5 w-5 text-cyan-500 dark:text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Engineering Portal</CardTitle>
@@ -1758,7 +1758,7 @@ export default function PortalLanding() {
                 <CardHeader className="flex flex-row items-start justify-between p-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-full bg-pink-50 dark:bg-dark-700/20">
-                      <UserIcon className="h-5 w-5 text-pink-500 dark:text-white" />
+                      <CircleUserRound className="h-5 w-5 text-pink-500 dark:text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">HR Portal</CardTitle>
@@ -2131,7 +2131,7 @@ export default function PortalLanding() {
                 <CardHeader className="flex flex-row items-start justify-between p-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-full bg-cyan-50 dark:bg-dark-700/20">
-                      <Building className="h-5 w-5 text-cyan-500 dark:text-white" />
+                      <Omega className="h-5 w-5 text-cyan-500 dark:text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">Engineering Portal</CardTitle>
@@ -2159,7 +2159,7 @@ export default function PortalLanding() {
                 <CardHeader className="flex flex-row items-start justify-between p-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-full bg-pink-50 dark:bg-dark-700/20">
-                      <UserIcon className="h-5 w-5 text-pink-500 dark:text-white" />
+                      <CircleUserRound className="h-5 w-5 text-pink-500 dark:text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-xl font-medium text-gray-900 dark:text-white">HR Portal</CardTitle>

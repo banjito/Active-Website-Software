@@ -56,9 +56,9 @@ const insulationResistanceUnitsOptions = ["kΩ", "MΩ", "GΩ"];
 const testVoltageOptions = ["250V", "500V", "1000V", "2500V", "5000V"];
 const passFailOptions = ["PASS", "FAIL", "N/A"];
 const TURNS_RATIO_WINDING_LABELS = {
-  h1h2: 'H1-H2 / X1-X0',
-  h2h3: 'H2-H3 / X0-X3',
-  h3h1: 'H3-H1 / X0-X1',
+  h1h2: 'H1-H2',
+  h2h3: 'H2-H3',
+  h3h1: 'H3-H1',
 } as const;
 const connectionOptions = ["Delta", "Wye", "Single Phase"];
 const materialOptions = ["Aluminum", "Copper"];

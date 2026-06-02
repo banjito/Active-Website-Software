@@ -10,6 +10,7 @@ import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -985,7 +986,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
           NETA - MTS 7.2.2
           <div className="mt-2">
             <div
-              className={`pass-fail-status-box ${formData.status === 'PASS' ? 'status-pass' : 'status-fail'}`}
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               data-status={formData.status}
               style={{
                 display: 'inline-block',
@@ -1790,11 +1791,13 @@ if (typeof document !== 'undefined') {
         print-color-adjust: exact !important;
         color: white !important;
       }
-      .pass-fail-status-box.status-pass {
+      .pass-fail-status-box.status-pass,
+      .pass-fail-status-box.pass {
         background-color: #22c55e !important;
         border: 2px solid #16a34a !important;
       }
-      .pass-fail-status-box.status-fail {
+      .pass-fail-status-box.status-fail,
+      .pass-fail-status-box.fail {
         background-color: #ef4444 !important;
         border: 2px solid #dc2626 !important;
       }

@@ -9,6 +9,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -482,7 +483,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           NETA - ATS 7.10.1
           <div className="hidden print:block mt-2">
             <div 
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',
@@ -491,8 +492,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                 textAlign: 'center',
                 width: 'fit-content',
                 borderRadius: '6px',
-                border: '2px solid #16a34a',
-                backgroundColor: '#22c55e',
+                
                 color: 'white',
                 WebkitPrintColorAdjust: 'exact',
                 printColorAdjust: 'exact',

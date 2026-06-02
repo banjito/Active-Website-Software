@@ -15,7 +15,7 @@ type SupabaseResult<T> = { data: T | null; error: { code?: string; message?: str
  * Re-runs a Supabase-style call when the error is 57014, with backoff.
  */
 export async function withPgTimeoutRetry<T>(
-  run: () => Promise<SupabaseResult<T>>,
+  run: () => PromiseLike<SupabaseResult<T>>,
   options?: { maxAttempts?: number; baseDelayMs?: number }
 ): Promise<SupabaseResult<T>> {
   const maxAttempts = options?.maxAttempts ?? 4;

@@ -7,6 +7,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 import {
   LineChart,
   Line,
@@ -374,7 +375,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
           NETA - MTS 7.3.3
           <div className="mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

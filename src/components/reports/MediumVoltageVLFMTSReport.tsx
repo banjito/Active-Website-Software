@@ -12,6 +12,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // UI Components
 import { Button } from '../ui/Button';
@@ -815,7 +816,7 @@ if (error) return <div className="flex justify-center items-center h-screen"><di
           NETA - MTS 7.3.3
           <div className="hidden print:block mt-2">
             <div
-              className={`pass-fail-status-box ${formData.status === TestStatus.PASS ? 'pass' : 'fail'}`}
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

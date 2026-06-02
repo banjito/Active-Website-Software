@@ -28,6 +28,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Types
 const TestStatus = {
@@ -1833,7 +1834,7 @@ const MediumVoltageCableVLFTest = () => {
           <div className="mt-2">
             <div
               id="mv-vlf-td-status"
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

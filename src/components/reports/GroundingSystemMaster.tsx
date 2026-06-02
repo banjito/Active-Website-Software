@@ -8,6 +8,7 @@ import { getAssetName, getReportName } from './reportMappings';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '@/components/equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Route slug and DB table placeholders
 const REPORT_SLUG = 'grounding-system-master';
@@ -938,7 +939,7 @@ const GroundingSystemMaster: React.FC = () => {
                       ANSI/NETA Section 7.13
                     </div>
                     <div
-                      className="pass-fail-status-box mt-2"
+                      className={`pass-fail-status-box mt-2 ${getPassFailBadgeClass(r.status)}`}
                       style={{
                         display: 'inline-block',
                         padding: '4px 10px',
@@ -1023,7 +1024,7 @@ const GroundingSystemMaster: React.FC = () => {
                       ANSI/NETA Section 7.13
                     </div>
                     <div
-                      className="pass-fail-status-box mt-2"
+                      className={`pass-fail-status-box mt-2 ${getPassFailBadgeClass(status)}`}
                       style={{
                         display: 'inline-block',
                         padding: '4px 10px',

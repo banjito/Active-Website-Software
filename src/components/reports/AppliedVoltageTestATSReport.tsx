@@ -9,6 +9,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature correction factor lookup table
 const tcfTable: { [key: string]: number } = {
@@ -667,7 +668,7 @@ const AppliedVoltageTestATSReport: React.FC = () => {
           NETA - ATS
           <div className="hidden print:block mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

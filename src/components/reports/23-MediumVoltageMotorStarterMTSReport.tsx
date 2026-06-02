@@ -9,6 +9,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables (reuse from other reports)
 const tcfTable: { [key: string]: number } = {
@@ -657,7 +658,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
           NETA - MTS 7.16.1.2
           <div className="hidden print:block mt-2">
             <div 
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',
@@ -666,8 +667,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
                 textAlign: 'center',
                 width: 'fit-content',
                 borderRadius: '6px',
-                border: '2px solid #16a34a',
-                backgroundColor: '#22c55e',
+                
                 color: 'white',
                 WebkitPrintColorAdjust: 'exact',
                 printColorAdjust: 'exact',
@@ -2358,20 +2358,8 @@ if (typeof document !== 'undefined') {
         print-color-adjust: exact !important;
       }
       
-      /* Force green background for PASS status */
-      div[style*="background-color: #22c55e"] {
-        background-color: #22c55e !important;
-        border: 2px solid #16a34a !important;
-        color: white !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      
       /* Specific class for PASS/FAIL status box */
       .pass-fail-status-box {
-        background-color: #22c55e !important;
-        border: 2px solid #16a34a !important;
-        color: white !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         display: inline-block !important;
@@ -2383,6 +2371,27 @@ if (typeof document !== 'undefined') {
         border-radius: 6px !important;
         box-sizing: border-box !important;
         min-width: 50px !important;
+      }
+      .pass-fail-status-box.pass {
+        background-color: #22c55e !important;
+        border-color: #16a34a !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box.fail {
+        background-color: #ef4444 !important;
+        border-color: #dc2626 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box.limited {
+        background-color: #eab308 !important;
+        border-color: #ca8a04 !important;
+        color: #111827 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       
       /* SUPER-SPECIFIC OVERRIDES - Must be last to override Tailwind */

@@ -10,6 +10,7 @@ import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 const VISUAL_INSPECTION_OPTIONS = [
   'Select One',
@@ -721,7 +722,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         <div className="text-right" style={{ minWidth: 150 }}>
           <div className="font-extrabold text-xl" style={{ color: '#1a4e7c' }}>NETA - ATS 7.1.2</div>
           <div
-            className={`mt-1 inline-block pass-fail-status-box ${formData.status === 'FAIL' ? 'fail' : formData.status === 'LIMITED SERVICE' ? 'limited' : 'pass'}`}
+            className={`mt-1 inline-block pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
             style={{
               padding: '4px 10px',
               fontSize: '12px',

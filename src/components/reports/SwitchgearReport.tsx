@@ -10,6 +10,7 @@ import JobInfoPrintTable from './common/JobInfoPrintTable';
 import NameplatePrintTable from './common/NameplatePrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Add these constants at the top of the file, after the imports
 const visualInspectionOptions = [
@@ -823,7 +824,7 @@ const SwitchgearReport: React.FC = () => {
           NETA - ATS 7.1
           <div className="hidden print:block mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

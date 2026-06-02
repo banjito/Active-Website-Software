@@ -10,6 +10,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import NameplatePrintTable from './common/NameplatePrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables
 const TCF_TABLE: { [key: string]: number } = {
@@ -846,7 +847,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           NETA - MTS 7.1
           <div className="hidden print:block mt-2">
             <div 
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',
@@ -855,8 +856,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                 textAlign: 'center',
                 width: 'fit-content',
                 borderRadius: '6px',
-                border: '2px solid #16a34a',
-                backgroundColor: '#22c55e',
+                
                 color: 'white',
                 WebkitPrintColorAdjust: 'exact',
                 printColorAdjust: 'exact',

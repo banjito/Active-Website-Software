@@ -20,6 +20,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '.
 import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/Card';
 import { getReportName, getAssetName } from './reportMappings';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Types
 enum TestStatus {
@@ -1689,7 +1690,7 @@ const MediumVoltageVLFReport: React.FC = () => {
           NETA - ATS 7.3.3
           <div className="hidden print:block mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',
@@ -3449,9 +3450,6 @@ if (typeof document !== 'undefined') {
 
       /* PASS/FAIL print status box - standardized like other reports */
       .pass-fail-status-box {
-        background-color: #22c55e !important;
-        border: 2px solid #16a34a !important;
-        color: white !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         display: inline-block !important;
@@ -3463,6 +3461,27 @@ if (typeof document !== 'undefined') {
         border-radius: 6px !important;
         box-sizing: border-box !important;
         min-width: 50px !important;
+      }
+      .pass-fail-status-box.pass {
+        background-color: #22c55e !important;
+        border-color: #16a34a !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box.fail {
+        background-color: #ef4444 !important;
+        border-color: #dc2626 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box.limited {
+        background-color: #eab308 !important;
+        border-color: #ca8a04 !important;
+        color: #111827 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       /* ============================================================== */

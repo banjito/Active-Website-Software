@@ -9,6 +9,7 @@ import { ReportWrapper } from './ReportWrapper';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature correction factor lookup (same as other reports e.g. LV Circuit Breaker ATS 25)
 const tcfTable: { [key: string]: number } = {
@@ -744,7 +745,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           NETA - ATS 7.22.1
           <div className="hidden print:block mt-2">
             <div 
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

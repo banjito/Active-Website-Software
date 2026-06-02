@@ -13,6 +13,7 @@ import NameplatePrintTable from './common/NameplatePrintTable';
 import { ArrowLeft } from 'lucide-react';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -380,10 +381,7 @@ const PanelboardReport: React.FC = () => {
         
         /* Specific class for PASS/FAIL status box */
         .pass-fail-status-box {
-          background-color: #22c55e !important;
-          border: 2px solid #16a34a !important;
-          color: white !important;
-          -webkit-print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
           display: inline-block !important;
           padding: 4px 10px !important;
@@ -395,6 +393,27 @@ const PanelboardReport: React.FC = () => {
           box-sizing: border-box !important;
           min-width: 50px !important;
         }
+      .pass-fail-status-box.pass {
+        background-color: #22c55e !important;
+        border-color: #16a34a !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box.fail {
+        background-color: #ef4444 !important;
+        border-color: #dc2626 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pass-fail-status-box.limited {
+        background-color: #eab308 !important;
+        border-color: #ca8a04 !important;
+        color: #111827 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
         
         /* Remove all card styling and shadows */
         .bg-white, .dark\\:bg-dark-150, .rounded-lg, .shadow {
@@ -1452,7 +1471,7 @@ const PanelboardReport: React.FC = () => {
           NETA - ATS 7.1
           <div className="hidden print:block mt-2">
             <div 
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',
@@ -1461,8 +1480,7 @@ const PanelboardReport: React.FC = () => {
                 textAlign: 'center',
                 width: 'fit-content',
                 borderRadius: '6px',
-                border: '2px solid #16a34a',
-                backgroundColor: '#22c55e',
+                
                 color: 'white',
                 WebkitPrintColorAdjust: 'exact',
                 printColorAdjust: 'exact',

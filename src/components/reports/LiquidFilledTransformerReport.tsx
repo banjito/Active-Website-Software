@@ -10,6 +10,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -1024,7 +1025,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
           NETA - ATS 7.2.1.1
           <div className="mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

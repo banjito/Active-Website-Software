@@ -6,6 +6,7 @@ import { navigateAfterSave } from './ReportUtils';
 import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { getReportName } from './reportMappings';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 import {
   LineChart,
   Line,
@@ -356,7 +357,7 @@ const TanDeltaChartMTS: React.FC = () => {
           NETA - MTS 7.3.3
           <div className="mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

@@ -1473,7 +1473,9 @@ export default function OpportunityList() {
       let nextJobNumberNumeric = 26001;
       let gotFromRpc = false;
       try {
-        const { data: fnResult } = await withPgTimeoutRetry(() => supabase.rpc('get_max_job_number'));
+        const { data: fnResult } = await withPgTimeoutRetry(async () =>
+          supabase.rpc('get_max_job_number')
+        );
         const raw = Array.isArray(fnResult) ? (fnResult[0] as any) : fnResult;
         const value =
           typeof raw === 'number' && Number.isFinite(raw)
@@ -1530,13 +1532,14 @@ export default function OpportunityList() {
         opportunity_type: 'time_materials' // Mark as T&M opportunity
       };
 
-      const { data: newOpportunity, error: opportunityError } = await withPgTimeoutRetry(() =>
-        supabase
-          .schema('business')
-          .from('opportunities')
-          .insert(opportunityData)
-          .select('id')
-          .single()
+      const { data: newOpportunity, error: opportunityError } = await withPgTimeoutRetry<{ id: string }>(
+        async () =>
+          supabase
+            .schema('business')
+            .from('opportunities')
+            .insert(opportunityData)
+            .select('id')
+            .single()
       );
 
       if (opportunityError || !newOpportunity) {
@@ -1559,7 +1562,7 @@ export default function OpportunityList() {
         opportunity_id: newOpportunity.id
       };
 
-      const { data: newJob, error: jobError } = await withPgTimeoutRetry(() =>
+      const { data: newJob, error: jobError } = await withPgTimeoutRetry<{ id: string }>(async () =>
         supabase.schema('neta_ops').from('jobs').insert(jobPayload).select('id').single()
       );
 

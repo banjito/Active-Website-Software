@@ -10,6 +10,7 @@ import { ReportWrapper } from './ReportWrapper';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 interface FormData {
   // Job Information
@@ -404,7 +405,7 @@ const GFITripTestReport: React.FC = () => {
         </div>
         <div className="text-right" style={{ minWidth: 150 }}>
           <div
-            className="mt-1 inline-block pass-fail-status-box"
+            className={`mt-1 inline-block pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
             style={{
               padding: '4px 16px',
               fontSize: '12px',

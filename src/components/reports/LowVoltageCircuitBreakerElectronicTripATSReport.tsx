@@ -8,6 +8,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -1957,7 +1958,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           NETA - ATS 7.6.1.2
           <div className="hidden print:block mt-2">
             <div 
-              className={`pass-fail-status-box ${formData.status === 'FAIL' ? 'fail' : formData.status === 'LIMITED SERVICE' ? 'limited' : 'pass'}`}
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',
@@ -4131,15 +4132,6 @@ if (typeof document !== 'undefined') {
       .status-limited-service {
         background-color: #eab308 !important;
         border: 2px solid #ca8a04 !important;
-        color: white !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      
-      /* Force green background for PASS status */
-      div[style*="background-color: #22c55e"] {
-        background-color: #22c55e !important;
-        border: 2px solid #16a34a !important;
         color: white !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;

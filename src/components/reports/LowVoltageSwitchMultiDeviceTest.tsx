@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature Correction Factor (TCF) table and helper (copied from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -656,7 +657,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
           NETA - ATS 7.5.1.1
           <div className="hidden print:block mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

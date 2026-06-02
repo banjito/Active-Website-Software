@@ -8,6 +8,7 @@ import { getAssetName, getReportName } from './reportMappings';
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 const REPORT_SLUG = 'grounding-fall-of-potential-slope-method-test';
 const TABLE_NAME = 'grounding_fall_of_potential_slope_method_test_reports';
@@ -339,7 +340,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                 NETA - MTS 7.13
                 <div className="mt-2">
                   <div 
-                    className="pass-fail-status-box"
+                    className={`pass-fail-status-box ${getPassFailBadgeClass(status)}`}
                     style={{
                       display: 'inline-block',
                       padding: '4px 10px',

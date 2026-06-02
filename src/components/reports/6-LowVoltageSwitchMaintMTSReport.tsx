@@ -8,6 +8,7 @@ import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 interface FormData {
   // Job Information
@@ -824,7 +825,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
           NETA ATS/MTS 7.5.1.1.6
           <div className="hidden print:block mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

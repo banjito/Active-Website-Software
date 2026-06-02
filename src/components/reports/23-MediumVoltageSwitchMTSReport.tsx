@@ -8,6 +8,7 @@ import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { getAssetName, getReportName } from './reportMappings';
 import { navigateAfterSave } from './ReportUtils';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 type PassFail = 'PASS' | 'FAIL';
 
@@ -1261,7 +1262,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           NETA - MTS 7.5.1.2
           <div className="mt-2">
             <div
-              className={`pass-fail-status-box ${status === 'FAIL' ? 'fail' : 'pass'}`}
+              className={`pass-fail-status-box ${getPassFailBadgeClass(status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

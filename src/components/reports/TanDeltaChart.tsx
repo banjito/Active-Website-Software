@@ -6,6 +6,7 @@ import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
 import { useReportLocked } from './useReportLocked';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 import {
   LineChart,
   Line,
@@ -356,7 +357,7 @@ const TanDeltaChart: React.FC = () => {
           NETA - ATS 7.3.3
           <div className="mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

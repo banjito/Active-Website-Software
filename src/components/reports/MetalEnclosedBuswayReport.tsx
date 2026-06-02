@@ -10,6 +10,7 @@ import { useReportLocked } from './useReportLocked';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../../components/equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '../../utils/dateUtils';
+import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Add dropdown option constants
 const INSPECTION_OPTIONS = [
@@ -1243,7 +1244,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
           NETA - ATS 7.4
           <div className="hidden print:block mt-2">
             <div
-              className="pass-fail-status-box"
+              className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
                 display: 'inline-block',
                 padding: '4px 10px',

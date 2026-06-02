@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Plus, Pencil, Trash2, X, ArrowLeft, Award, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, ArrowLeft, Award, RefreshCw, ChevronDown } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { format } from 'date-fns';
 import { supabase, isAuthError } from '../../lib/supabase';
@@ -230,6 +230,14 @@ export default function OpportunityList() {
   const prefsSyncedRef = useRef<boolean>(false); // Track if we've synced from Supabase
   const loadingStartTimeRef = useRef<number>(Date.now()); // Track when loading started
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const topScrollbarRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
+  const [tableScrollWidth, setTableScrollWidth] = useState(0);
+  const [tableViewportWidth, setTableViewportWidth] = useState(0);
+  const [tableScrollLeft, setTableScrollLeft] = useState(0);
+  const [isScrollbarDragging, setIsScrollbarDragging] = useState(false);
+  const scrollbarDragStartXRef = useRef(0);
+  const scrollbarDragStartScrollLeftRef = useRef(0);
   
   // Emergency fallback: if loading takes more than 10 seconds, force fetch
   useEffect(() => {
@@ -252,10 +260,6 @@ export default function OpportunityList() {
     const timer = setTimeout(checkTimeout, 10000);
     return () => clearTimeout(timer);
   }, [loading, user]);
-  const isHeaderDraggingRef = useRef<boolean>(false);
-  const dragStartXRef = useRef<number>(0);
-  const dragStartScrollLeftRef = useRef<number>(0);
-  const [isHeaderGrabbing, setIsHeaderGrabbing] = useState<boolean>(false);
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [creatingCustomer, setCreatingCustomer] = useState(false);
   const [newCustomer, setNewCustomer] = useState<{ company_name: string; name: string; email: string; phone: string; address: string }>({
@@ -273,8 +277,9 @@ export default function OpportunityList() {
     email: '',
     phone: ''
   });
-  const [mergeMode, setMergeMode] = useState<boolean>(false);
   const [selectedForMerge, setSelectedForMerge] = useState<Set<string>>(new Set());
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
   const [showTMModal, setShowTMModal] = useState(false);
   const [TMFormData, setTMFormData] = useState<TMFormData>({
     customer_id: '',
@@ -329,6 +334,63 @@ export default function OpportunityList() {
       navigate(`/sales-dashboard/opportunities/${opportunityId}`);
     }
   }
+
+  async function handleMergeSelected() {
+    const ids = Array.from(selectedForMerge);
+    if (ids.length < 2) return;
+
+    try {
+      await supabase
+        .schema('business')
+        .from('opportunity_merge_members')
+        .delete()
+        .in('opportunity_id', ids);
+
+      const { data: group, error: groupErr } = await supabase
+        .schema('business')
+        .from('opportunity_merge_groups')
+        .insert({ primary_opportunity_id: ids[0], created_by: user?.id || null })
+        .select('id')
+        .single();
+      if (groupErr) throw groupErr;
+
+      const rows = ids.map((opId, idx) => ({
+        merge_group_id: group.id,
+        opportunity_id: opId,
+        is_primary: idx === 0
+      }));
+      const { error: memErr } = await supabase
+        .schema('business')
+        .from('opportunity_merge_members')
+        .upsert(rows, { onConflict: 'opportunity_id' });
+      if (memErr) throw memErr;
+
+      try {
+        localStorage.setItem('opportunity-merge-group', JSON.stringify({ ids, createdAt: new Date().toISOString(), groupId: group.id }));
+      } catch {}
+
+      const params = new URLSearchParams();
+      params.set('ids', ids.join(','));
+      params.set('primary', ids[0]);
+      navigate(`/sales-dashboard/opportunities/merge?${params.toString()}`);
+    } catch (e) {
+      console.error('Failed to create merge group:', e);
+      alert('Failed to merge opportunities. Please try again.');
+    }
+  }
+
+  useEffect(() => {
+    if (!isSortMenuOpen) return;
+
+    function handleOutsideClick(event: MouseEvent) {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
+        setIsSortMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [isSortMenuOpen]);
 
   async function handleOpportunityStatusChange(opportunityId: string, newStatus: string) {
     try {
@@ -943,28 +1005,88 @@ export default function OpportunityList() {
     }
   }, [sortField, sortDirection]);
 
-  // Header drag-to-scroll handlers
-  const handleHeaderMouseDown = (e: React.MouseEvent) => {
+  useEffect(() => {
+    const updateScrollMetrics = () => {
+      if (scrollContainerRef.current) {
+        setTableScrollWidth(scrollContainerRef.current.scrollWidth);
+        setTableViewportWidth(scrollContainerRef.current.clientWidth);
+        setTableScrollLeft(scrollContainerRef.current.scrollLeft);
+      }
+    };
+
+    updateScrollMetrics();
+    window.addEventListener('resize', updateScrollMetrics);
+
+    const resizeObserver = new ResizeObserver(updateScrollMetrics);
+    if (tableRef.current) {
+      resizeObserver.observe(tableRef.current);
+    }
+    if (scrollContainerRef.current) {
+      resizeObserver.observe(scrollContainerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateScrollMetrics);
+      resizeObserver.disconnect();
+    };
+  }, [opportunities.length]);
+
+  const maxTableScrollLeft = Math.max(0, tableScrollWidth - tableViewportWidth);
+  const thumbWidthPct = tableScrollWidth > 0 ? Math.min(100, Math.max((tableViewportWidth / tableScrollWidth) * 100, 10)) : 100;
+  const thumbLeftPct = maxTableScrollLeft > 0 ? (tableScrollLeft / maxTableScrollLeft) * (100 - thumbWidthPct) : 0;
+
+  const setTableScrollPosition = (nextScrollLeft: number) => {
     if (!scrollContainerRef.current) return;
-    isHeaderDraggingRef.current = true;
-    setIsHeaderGrabbing(true);
-    dragStartXRef.current = e.clientX;
-    dragStartScrollLeftRef.current = scrollContainerRef.current.scrollLeft;
-    e.preventDefault();
+    const clamped = Math.max(0, Math.min(nextScrollLeft, maxTableScrollLeft));
+    scrollContainerRef.current.scrollLeft = clamped;
+    setTableScrollLeft(clamped);
   };
 
-  const handleHeaderMouseMove = (e: React.MouseEvent) => {
-    if (!isHeaderDraggingRef.current || !scrollContainerRef.current) return;
-    e.preventDefault();
-    const delta = e.clientX - dragStartXRef.current;
-    scrollContainerRef.current.scrollLeft = dragStartScrollLeftRef.current - delta;
+  const handleCustomScrollbarMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!topScrollbarRef.current || maxTableScrollLeft <= 0) return;
+    const rect = topScrollbarRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const targetRatio = rect.width > 0 ? clickX / rect.width : 0;
+    setTableScrollPosition(targetRatio * maxTableScrollLeft);
   };
 
-  const handleHeaderMouseUp = () => {
-    if (!isHeaderDraggingRef.current) return;
-    isHeaderDraggingRef.current = false;
-    setIsHeaderGrabbing(false);
+  const handleCustomThumbMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (maxTableScrollLeft <= 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setIsScrollbarDragging(true);
+    scrollbarDragStartXRef.current = e.clientX;
+    scrollbarDragStartScrollLeftRef.current = tableScrollLeft;
   };
+
+  useEffect(() => {
+    if (!isScrollbarDragging) return;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!topScrollbarRef.current || maxTableScrollLeft <= 0) return;
+      const rect = topScrollbarRef.current.getBoundingClientRect();
+      const trackWidth = rect.width;
+      if (trackWidth <= 0) return;
+
+      const deltaX = event.clientX - scrollbarDragStartXRef.current;
+      const thumbWidthPx = trackWidth * (thumbWidthPct / 100);
+      const thumbTravel = Math.max(1, trackWidth - thumbWidthPx);
+      const scrollDelta = (deltaX / thumbTravel) * maxTableScrollLeft;
+      setTableScrollPosition(scrollbarDragStartScrollLeftRef.current + scrollDelta);
+    };
+
+    const handleMouseUp = () => {
+      setIsScrollbarDragging(false);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isScrollbarDragging, maxTableScrollLeft, thumbWidthPct, tableScrollLeft]);
 
   async function handleCreateCustomer() {
     if (!user) return;
@@ -1531,6 +1653,28 @@ export default function OpportunityList() {
                 Proposal due calendar
               </Link>
             </p>
+            {selectedForMerge.size > 0 && (
+              <div className="mt-3 flex items-center gap-3 text-sm">
+                <span className="text-gray-600 dark:text-dark-400">
+                  {selectedForMerge.size} selected
+                </span>
+                <button
+                  type="button"
+                  disabled={selectedForMerge.size < 2}
+                  onClick={handleMergeSelected}
+                  className={`rounded-md px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                    selectedForMerge.size < 2
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-dark-200 dark:text-dark-400'
+                      : 'bg-green-600 text-white hover:bg-green-700'
+                  }`}
+                >
+                  Merge selected
+                </button>
+                {selectedForMerge.size < 2 && (
+                  <span className="text-xs text-gray-500 dark:text-dark-400">Pick at least 2 opportunities.</span>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -1554,25 +1698,50 @@ export default function OpportunityList() {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600 dark:text-dark-400">Sort by</label>
-              <select
-                value={sortField}
-                onChange={(e) => setSortField(e.target.value as 'quote_number' | 'opportunity_created_date' | 'proposal_due_date')}
-                className="rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+            <div className="relative" ref={sortMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsSortMenuOpen((prev) => !prev)}
+                className="inline-flex items-center gap-2 rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
               >
-                <option value="quote_number">Quote #</option>
-                <option value="opportunity_created_date">Opportunity Created Date</option>
-                <option value="proposal_due_date">Proposal Due Date</option>
-              </select>
-              <select
-                value={sortDirection}
-                onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
-                className="rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
-              >
-                <option value="asc">Asc</option>
-                <option value="desc">Desc</option>
-              </select>
+                Sort
+                <ChevronDown className={`h-4 w-4 transition-transform ${isSortMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isSortMenuOpen && (
+                <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                      Sort by
+                    </label>
+                    <select
+                      value={sortField}
+                      onChange={(e) => setSortField(e.target.value as 'quote_number' | 'opportunity_created_date' | 'proposal_due_date')}
+                      className="w-full rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    >
+                      <optgroup label="General">
+                        <option value="quote_number">Quote #</option>
+                      </optgroup>
+                      <optgroup label="Dates">
+                        <option value="opportunity_created_date">Opportunity Created Date</option>
+                        <option value="proposal_due_date">Proposal Due Date</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                  <div className="mt-3">
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                      Order
+                    </label>
+                    <select
+                      value={sortDirection}
+                      onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
+                      className="w-full rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    >
+                      <option value="asc">Ascending</option>
+                      <option value="desc">Descending</option>
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
             <button
               type="button"
@@ -1583,7 +1752,7 @@ export default function OpportunityList() {
               className="inline-flex items-center justify-center rounded-md bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add opportunity
+              Add
             </button>
             {/* Only show T&M button to authorized users */}
             {(user?.email === 'william.sasser@ampqes.com' || user?.email === 'john.chambers@ampqes.com' || user?.email === 'anthony.masters@ampqes.com' || user?.email === 'caleb.hipp@ampqes.com' || user?.email === 'zach.freeborn@ampqes.com' || user?.email === 'zecahriah.freeborn@ampqes.com' || user?.email === 'ethan.thoenes@ampqes.com' || user?.email === 'greg.pellerito@ampqes.com' || user?.email === 'michael.bland@ampqes.com' || user?.email === 'kelly.lawton@ampqes.com') && (
@@ -1605,102 +1774,46 @@ export default function OpportunityList() {
                 Add T&M or Emergency Job
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => {
-                setMergeMode((v) => !v);
-                setSelectedForMerge(new Set());
-              }}
-              className={`inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium shadow-sm focus:outline-none ${mergeMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`}
-            >
-              {mergeMode ? 'Cancel merge' : 'Select for merge'}
-            </button>
-            {mergeMode && (
-              <button
-                type="button"
-                disabled={selectedForMerge.size < 2}
-                onClick={async () => {
-                  const ids = Array.from(selectedForMerge);
-                  if (ids.length < 2) return;
-                  try {
-                    // Persist merge group in DB
-                    // 1) Remove any existing memberships for these opportunities
-                    await supabase
-                      .schema('business')
-                      .from('opportunity_merge_members')
-                      .delete()
-                      .in('opportunity_id', ids);
-
-                    // 2) Create merge group
-                    const { data: group, error: groupErr } = await supabase
-                      .schema('business')
-                      .from('opportunity_merge_groups')
-                      .insert({ primary_opportunity_id: ids[0], created_by: user?.id || null })
-                      .select('id')
-                      .single();
-                    if (groupErr) throw groupErr;
-
-                    // 3) Add members
-                    const rows = ids.map((opId, idx) => ({
-                      merge_group_id: group.id,
-                      opportunity_id: opId,
-                      is_primary: idx === 0
-                    }));
-                    const { error: memErr } = await supabase
-                      .schema('business')
-                      .from('opportunity_merge_members')
-                      .upsert(rows, { onConflict: 'opportunity_id' });
-                    if (memErr) throw memErr;
-
-                    // Local cache and navigate to merged view
-                    try {
-                      localStorage.setItem('opportunity-merge-group', JSON.stringify({ ids, createdAt: new Date().toISOString(), groupId: group.id }));
-                    } catch {}
-                    const params = new URLSearchParams();
-                    params.set('ids', ids.join(','));
-                    params.set('primary', ids[0]);
-                    navigate(`/sales-dashboard/opportunities/merge?${params.toString()}`);
-                  } catch (e) {
-                    console.error('Failed to create merge group:', e);
-                    alert('Failed to merge opportunities. Please try again.');
-                  }
-                }}
-                className={`inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium shadow-sm focus:outline-none ${selectedForMerge.size < 2 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
-              >
-                Merge selected
-              </button>
-            )}
           </div>
         </div>
 
         <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-dark-200 overflow-hidden">
-          <p className="px-4 pt-2 pb-1 text-xs text-gray-500 dark:text-dark-400">
-            Click and drag the header to scroll left and right.
-          </p>
+          <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-100 dark:border-dark-200">
+            <div
+              ref={topScrollbarRef}
+              className="relative min-w-0 flex-1 h-2 bg-gray-200 dark:bg-dark-200 cursor-pointer"
+              onMouseDown={handleCustomScrollbarMouseDown}
+              aria-label="Horizontal table scrollbar"
+            >
+              <div
+                className={`absolute top-0 h-2 bg-[#f26722] ${isScrollbarDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                style={{ width: `${thumbWidthPct}%`, left: `${thumbLeftPct}%` }}
+                onMouseDown={handleCustomThumbMouseDown}
+                aria-hidden
+              />
+            </div>
+          </div>
           <div
             ref={scrollContainerRef}
             className="overflow-x-auto"
-            onMouseMove={handleHeaderMouseMove}
-            onMouseUp={handleHeaderMouseUp}
-            onMouseLeave={handleHeaderMouseUp}
+            onScroll={(e) => setTableScrollLeft(e.currentTarget.scrollLeft)}
           >
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-200">
+            <table ref={tableRef} className="min-w-full divide-y divide-gray-200 dark:divide-dark-200">
               <thead
-                className={`bg-gray-50 dark:bg-dark-150 select-none ${isHeaderGrabbing ? 'cursor-grabbing' : 'cursor-grab'}`}
-                onMouseDown={handleHeaderMouseDown}
+                className="bg-gray-50 dark:bg-dark-150"
               >
                 <tr>
-                  {mergeMode && (
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">Select</th>
-                  )}
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
-                    Quote #
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
+                    
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
-                    Proposal Due
+                    Quote
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
-                    Created Date
+                    Due
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
+                    Created
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
                     Customer
@@ -1721,10 +1834,10 @@ export default function OpportunityList() {
                     Division
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
-                    Opportunity Type
+                    Type
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
-                    Quoted Amount
+                    Amount
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-400 uppercase tracking-wider">
                     Probability
@@ -1737,7 +1850,7 @@ export default function OpportunityList() {
               <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-dark-200">
                 {opportunities.length === 0 ? (
                   <tr>
-                    <td colSpan={mergeMode ? 14 : 13} className="px-6 py-4 text-center text-gray-500 dark:text-dark-400">
+                    <td colSpan={14} className="px-6 py-4 text-center text-gray-500 dark:text-dark-400">
                       No opportunities found. Click "Add Opportunity" to create one.
                     </td>
                   </tr>
@@ -1746,26 +1859,24 @@ export default function OpportunityList() {
                     <tr
                       key={opportunity.id}
                       onClick={() => {
-                        if (mergeMode) return;
                         openOpportunity(opportunity.id);
                       }}
                       className="cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 transition-colors"
                     >
-                      {mergeMode && (
-                        <td className="px-3 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={selectedForMerge.has(opportunity.id)}
-                            onChange={(e) => {
-                              setSelectedForMerge((prev) => {
-                                const copy = new Set(prev);
-                                if (e.target.checked) copy.add(opportunity.id); else copy.delete(opportunity.id);
-                                return copy;
-                              });
-                            }}
-                          />
-                        </td>
-                      )}
+                      <td className="px-3 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedForMerge.has(opportunity.id)}
+                          onChange={(e) => {
+                            setSelectedForMerge((prev) => {
+                              const copy = new Set(prev);
+                              if (e.target.checked) copy.add(opportunity.id); else copy.delete(opportunity.id);
+                              return copy;
+                            });
+                          }}
+                          aria-label={`Select quote ${opportunity.quote_number ?? ''} for merge`}
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900 dark:text-dark-900">
                           {opportunity.quote_number}

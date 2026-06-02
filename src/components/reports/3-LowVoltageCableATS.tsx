@@ -337,8 +337,6 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
       }
       
       html {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
         height: 100%;
       }
       

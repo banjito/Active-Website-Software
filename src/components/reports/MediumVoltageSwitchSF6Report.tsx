@@ -186,8 +186,6 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
       /* Hide navigation bar and scrollbar */
       @media print {
         nav, header, .navigation, [class*="nav"], [class*="header"] { display: none !important; }
-        ::-webkit-scrollbar { display: none; }
-        html { -ms-overflow-style: none; scrollbar-width: none; }
         body { overflow-x: hidden; }
 
         /* Remove card and section chrome; show clean tables only */

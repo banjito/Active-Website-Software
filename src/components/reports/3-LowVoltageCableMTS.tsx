@@ -427,8 +427,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
       nav, header, .navigation, [class*="nav"], [class*="header"] {
         display: none !important;
       }
-      ::-webkit-scrollbar { display: none; }
-      html { -ms-overflow-style: none; scrollbar-width: none; height: 100%; }
+      html { height: 100%; }
       body { overflow-x: hidden; min-height: 100vh; padding-bottom: 100px; }
       textarea { min-height: 200px !important; }
 

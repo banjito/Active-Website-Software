@@ -10,9 +10,9 @@ import {
   MapPin,
   Phone,
   Loader2,
-  Eye,
-  EyeOff,
-  ChevronRight
+  ChevronRight,
+  UserCheck,
+  UserX
 } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
 import { isSuperUser } from '@/lib/roles';
@@ -37,10 +37,13 @@ interface EmployeeProfile {
   job_title?: string;
   department?: string;
   hire_date?: string;
+  employment_status?: string;
   profile_set_up?: boolean; // Flag to indicate if profile is set up
   hidden?: boolean; // Flag to indicate if profile is hidden
   [key: string]: any;
 }
+
+type StatusFilter = 'all' | 'active' | 'inactive';
 
 export const EmployeeProfiles: React.FC = () => {
   const { user } = useAuth();
@@ -50,6 +53,7 @@ export const EmployeeProfiles: React.FC = () => {
   const [profiles, setProfiles] = useState<EmployeeProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [selectedProfile, setSelectedProfile] = useState<EmployeeProfile | null>(null);
   const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
   
@@ -73,7 +77,7 @@ export const EmployeeProfiles: React.FC = () => {
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  }, [searchQuery, statusFilter]);
 
   const fetchProfiles = async () => {
     try {
@@ -156,12 +160,13 @@ export const EmployeeProfiles: React.FC = () => {
             birthday: profile?.birthday || u.raw_user_meta_data?.birthday || u.user_metadata?.birthday || '',
             avatar_url: profile?.avatar_url || profile?.profile_image || u.raw_user_meta_data?.profileImage || u.user_metadata?.profileImage || u.raw_user_meta_data?.avatar_url || u.user_metadata?.avatar_url || '',
             cover_image: profile?.cover_image || u.raw_user_meta_data?.coverImage || u.user_metadata?.coverImage || '',
-          department: profile?.department || '',
-          job_title: profile?.job_title || '',
-          phone: profile?.phone || u.raw_user_meta_data?.phone || u.user_metadata?.phone || '',
-          profile_set_up: !!(profile && (profile.bio || profile.division || profile.role || profile.avatar_url || profile.cover_image || profile.birthday)),
-          hidden: profile?.hidden || u.raw_user_meta_data?.profileHidden || u.user_metadata?.profileHidden || false,
-        };
+            department: profile?.department || '',
+            job_title: profile?.job_title || '',
+            phone: profile?.phone || u.raw_user_meta_data?.phone || u.user_metadata?.phone || '',
+            employment_status: profile?.employment_status || 'active',
+            profile_set_up: !!(profile && (profile.bio || profile.division || profile.role || profile.avatar_url || profile.cover_image || profile.birthday)),
+            hidden: profile?.hidden || u.raw_user_meta_data?.profileHidden || u.user_metadata?.profileHidden || false,
+          };
       });
 
       // For users missing avatar, fetch from get_user_metadata (where Edit Profile saves profileImage)
@@ -191,6 +196,14 @@ export const EmployeeProfiles: React.FC = () => {
       // Filter out hidden profiles unless superuser (see SUPERUSER_EMAILS in roles.ts)
       if (!isSuperUser(user?.email)) {
         combinedProfiles = combinedProfiles.filter(profile => !profile.hidden);
+      }
+
+      if (statusFilter !== 'all') {
+        combinedProfiles = combinedProfiles.filter(profile => {
+          const status = (profile.employment_status || 'active').toLowerCase();
+          const isActive = status === 'active';
+          return statusFilter === 'active' ? isActive : !isActive;
+        });
       }
 
       // Apply search filter if needed
@@ -245,32 +258,30 @@ export const EmployeeProfiles: React.FC = () => {
     setIsProfileViewOpen(true);
   };
 
-  const canManageHiddenProfiles = isSuperUser(user?.email);
+  const handleToggleEmploymentStatus = async (profile: EmployeeProfile, e: React.MouseEvent) => {
+    e.stopPropagation();
 
-  const handleToggleHideProfile = async (profile: EmployeeProfile, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent opening profile view
-    
-    if (!canManageHiddenProfiles) {
+    if (!isHrFullAccess) {
       toast({
         title: 'Access Denied',
-        description: 'Only authorized users can hide profiles.',
+        description: 'Only HR admins can change employee status.',
         variant: 'destructive',
       });
       return;
     }
 
+    const currentStatus = (profile.employment_status || 'active').toLowerCase();
+    const nextStatus = currentStatus === 'active' ? 'inactive' : 'active';
+
     try {
-      const newHiddenStatus = !profile.hidden;
-      
-      // Use upsert to create or update the profile entry with hidden status
-      const { error: profileError } = await supabase
+      const { error } = await supabase
         .schema('common')
         .from('profiles')
         .upsert(
           {
             id: profile.id,
-            hidden: newHiddenStatus,
-            // Preserve existing fields if profile exists, or set defaults
+            employment_status: nextStatus,
+            hidden: false,
             full_name: profile.full_name || profile.email?.split('@')[0] || '',
             email: profile.email || '',
           },
@@ -279,28 +290,22 @@ export const EmployeeProfiles: React.FC = () => {
             ignoreDuplicates: false,
           }
         );
-      
-      if (profileError) {
-        console.error('Error updating profile hidden status:', profileError);
-        toast({
-          title: 'Error',
-          description: `Failed to ${newHiddenStatus ? 'hide' : 'unhide'} profile: ${profileError.message}`,
-          variant: 'destructive',
-        });
-      } else {
-        // Refresh the profile list to get updated data
-        await fetchProfiles();
-        
-        toast({
-          title: 'Success',
-          description: `Profile ${newHiddenStatus ? 'hidden' : 'unhidden'} successfully.`,
-        });
+
+      if (error) {
+        throw error;
       }
+
+      await fetchProfiles();
+
+      toast({
+        title: 'Success',
+        description: `${profile.full_name || profile.email} marked ${nextStatus}.`,
+      });
     } catch (error: any) {
-      console.error('Error toggling profile visibility:', error);
+      console.error('Error updating employee status:', error);
       toast({
         title: 'Error',
-        description: `Failed to ${profile.hidden ? 'unhide' : 'hide'} profile: ${error.message}`,
+        description: `Failed to update employee status: ${error.message}`,
         variant: 'destructive',
       });
     }
@@ -329,22 +334,39 @@ export const EmployeeProfiles: React.FC = () => {
       {/* Search */}
       <Card>
         <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, email, role, or department..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                // Trigger fetch when search changes (useEffect will handle it)
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  fetchProfiles();
-                }
-              }}
-              className="pl-9"
-            />
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, role, or department..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  // Trigger fetch when search changes (useEffect will handle it)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    fetchProfiles();
+                  }
+                }}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(['all', 'active', 'inactive'] as StatusFilter[]).map((filter) => (
+                <Button
+                  key={filter}
+                  variant={statusFilter === filter ? 'primary' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    setStatusFilter(filter);
+                    setCurrentPage(1);
+                  }}
+                >
+                  {filter === 'all' ? 'All' : filter === 'active' ? 'Active' : 'Inactive'}
+                </Button>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -405,6 +427,11 @@ export const EmployeeProfiles: React.FC = () => {
                             Profile not set up
                           </span>
                         )}
+                        {(profile.employment_status || 'active').toLowerCase() !== 'active' && (
+                          <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-700 dark:text-slate-200 shrink-0">
+                            Inactive
+                          </span>
+                        )}
                       </div>
                       {(profile.job_title || profile.role) && (
                         <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
@@ -436,18 +463,18 @@ export const EmployeeProfiles: React.FC = () => {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end sm:justify-start">
-                      {canManageHiddenProfiles && (
+                      {isHrFullAccess && (
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(e) => handleToggleHideProfile(profile, e)}
-                          title={profile.hidden ? 'Unhide profile' : 'Hide profile'}
+                          onClick={(e) => handleToggleEmploymentStatus(profile, e)}
+                          title={(profile.employment_status || 'active').toLowerCase() === 'active' ? 'Mark inactive' : 'Mark active'}
                         >
-                          {profile.hidden ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          {(profile.employment_status || 'active').toLowerCase() === 'active' ? (
+                            <UserX className="h-4 w-4" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <UserCheck className="h-4 w-4" />
                           )}
                         </Button>
                       )}

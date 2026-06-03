@@ -1737,7 +1737,12 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           <div className="report-section-content space-y-3">
             {/* Setup: Tap, Nameplate V., Calc. Ratio — separate from test results */}
             <div className="overflow-x-auto">
-              <table className="w-full max-w-md border-collapse turns-ratio-setup-table" style={{ tableLayout: 'fixed' }}>
+              <table className="w-full border-collapse turns-ratio-setup-table" style={{ tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '33.3333%' }} />
+                  <col style={{ width: '33.3333%' }} />
+                  <col style={{ width: '33.3333%' }} />
+                </colgroup>
                 <thead>
                   <tr>
                     <th className="px-2 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600">Tap</th>
@@ -2472,8 +2477,11 @@ if (typeof document !== 'undefined') {
         transform: none !important;
         font-size: 7px !important;
       }
-      table.turns-ratio-setup-table {
-        max-width: 420px !important;
+      table.turns-ratio-setup-table th,
+      table.turns-ratio-setup-table td {
+        width: 33.3333% !important;
+        min-width: 33.3333% !important;
+        max-width: 33.3333% !important;
       }
       .two-small-xfmr-mts-print-root table.turns-ratio-setup-table,
       .two-small-xfmr-mts-print-root table.turns-ratio-results-table {
@@ -2723,6 +2731,12 @@ if (typeof document !== 'undefined') {
       border-collapse: collapse !important;
       transform: none !important;
       font-size: 9px !important;
+    }
+    .force-print table.turns-ratio-setup-table th,
+    .force-print table.turns-ratio-setup-table td {
+      width: 33.3333% !important;
+      min-width: 33.3333% !important;
+      max-width: 33.3333% !important;
     }
     .force-print table.turns-ratio-setup-table input,
     .force-print table.turns-ratio-setup-table select,

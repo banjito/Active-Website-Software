@@ -857,6 +857,100 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
         max-width: 0 !important;
         overflow: hidden !important;
       }
+    }
+
+    /* Mirror print rules for the live PDF preview iframe. */
+    .force-print body { margin:0; padding:10px; font-family: Arial, Helvetica, sans-serif !important; }
+    .force-print,
+    .force-print body { font-size:9px !important; color:black !important; background:white !important; }
+    .force-print .print\\:hidden { display:none !important; }
+    .force-print .print\\:block { display:block !important; }
+    .force-print .print\\:flex { display:flex !important; }
+    .force-print table { border-collapse:collapse !important; width:100% !important; font-size:8px !important; }
+    .force-print thead { display:table-header-group !important; }
+    .force-print table,
+    .force-print th,
+    .force-print td,
+    .force-print thead,
+    .force-print tbody,
+    .force-print tr { border:1px solid black !important; }
+    .force-print th,
+    .force-print td { padding:2px 3px !important; text-align:center !important; }
+    .force-print th { background:#f0f0f0 !important; font-weight:bold !important; }
+    .force-print input,
+    .force-print select,
+    .force-print textarea {
+      background:transparent !important;
+      border:none !important;
+      color:black !important;
+      -webkit-appearance:none !important;
+      appearance:none !important;
+    }
+    .force-print select { background-image:none !important; }
+    .force-print input[type="number"]::-webkit-outer-spin-button,
+    .force-print input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none !important; margin:0 !important; }
+    .force-print input[type="number"] { -moz-appearance:textfield !important; }
+    .force-print button:not(.print-visible) { display:none !important; }
+    .force-print .overflow-x-auto { overflow: visible !important; }
+    .force-print .nameplate-onscreen { display: none !important; }
+    .force-print .test-eqpt-onscreen { display: none !important; }
+    .force-print .hidden.print\\:block { display: block !important; }
+    .force-print section { page-break-inside: auto !important; break-inside: auto !important; }
+    .force-print section > h2 {
+      border-bottom: 1px solid black !important;
+      padding-bottom: 2px !important;
+      margin-bottom: 6px !important;
+      font-weight: bold !important;
+    }
+    .force-print .print-divider {
+      background: transparent !important;
+      height: 0 !important;
+      border-top: 2px solid black !important;
+      margin: 0 0 8px 0 !important;
+    }
+    .force-print .shadow,
+    .force-print .shadow-md,
+    .force-print .shadow-lg { box-shadow: none !important; }
+    .force-print table.turns-ratio-table th {
+      white-space: normal !important;
+      word-break: break-word !important;
+      line-height: 1.1 !important;
+      font-size: 9px !important;
+      padding: 2px !important;
+      text-align: center !important;
+    }
+    .force-print table.turns-ratio-table input,
+    .force-print table.turns-ratio-table select {
+      font-size: 9px !important;
+      padding: 1px 2px !important;
+      width: 88% !important;
+      margin: 0 auto !important;
+      text-align: center !important;
+    }
+    .force-print table.turns-ratio-table td { padding: 2px !important; }
+    .force-print table.visual-mechanical-table { table-layout: fixed !important; width: 100% !important; }
+    .force-print table.visual-mechanical-table th,
+    .force-print table.visual-mechanical-table td { font-size: 8px !important; padding: 2px 3px !important; }
+    .force-print table.visual-mechanical-table colgroup col:nth-child(1) { width: 6% !important; }
+    .force-print table.visual-mechanical-table colgroup col:nth-child(2) { width: 70% !important; }
+    .force-print table.visual-mechanical-table colgroup col:nth-child(3) { width: 24% !important; }
+    .force-print .pass-fail-status-box {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .force-print table.comments-print-table {
+      table-layout: fixed !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    .force-print table.comments-print-table td {
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      word-wrap: break-word !important;
+      text-align: left !important;
+      max-width: 0 !important;
+      overflow: hidden !important;
     }`;
     document.head.appendChild(style);
     return () => { try { document.head.removeChild(style); } catch { /* ignore */ } };

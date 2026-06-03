@@ -41,6 +41,7 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
     options: [
       { label: 'Dashboard', path: '/sales-dashboard' },
       { label: 'Opportunities', path: '/sales-dashboard/opportunities' },
+      { label: 'Proposal Due Calendar', path: '/sales-dashboard/opportunities/calendar' },
       { label: 'Customers', path: '/sales-dashboard/customers' },
       { label: 'Contacts', path: '/sales-dashboard/contacts' },
       { label: 'Goals', path: '/sales/goals' },
@@ -169,5 +170,4 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
     ],
   })),
 ];
-
 

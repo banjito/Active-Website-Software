@@ -244,39 +244,26 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-[#ECE7DB] flex">
-      {/* Left Side - Branding Section (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-black items-center justify-center relative overflow-hidden">
-        <div className="relative z-10 flex flex-col justify-center items-center p-12 text-center">
-          {/* Wordmark */}
-          <img
-            src="/ampOS_full_logo.svg"
-            alt="ampOS"
-            className="h-[6rem] w-auto brightness-0 invert"
-          />
-        </div>
+    <div className="min-h-screen bg-white text-black flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
+      {/* Logo - stacked on top */}
+      <div className="flex justify-center mb-10">
+        <img
+          src="/ampOS_full_logo.svg"
+          alt="ampOS"
+          className="h-[5rem] w-auto"
+        />
       </div>
 
-      {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-black">
-        {/* Mobile Wordmark (Visible only on mobile) */}
-        <div className="lg:hidden flex justify-center mb-8">
-          <h1 className="text-5xl tracking-tight" style={{ letterSpacing: '-0.02em' }}>ampOS</h1>
-        </div>
-
+      {/* Login Form */}
+      <div className="w-full flex flex-col justify-center">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">
-              {isSignUpMode ? 'Join Our Team' : 'Welcome Back'}
+            <h2 className="text-3xl font-bold text-black mb-2">
+              {isSignUpMode ? 'Make your account' : 'Welcome back'}
             </h2>
-            <p className="text-gray-300">
-              {isSignUpMode 
-                ? 'Create your account to get started with ampOS.'
-                : 'Sign in to access your dashboard.'}
-            </p>
           </div>
 
-          <Card className="border border-[#2A2A2A] shadow-sm">
+          <Card className="bg-[#f26722] border border-gray-800 shadow-sm">
             <CardContent className="p-12">
               <form className="space-y-8" onSubmit={isSignUpMode ? handleSignUp : handleSubmit}>
                 <div className="space-y-6 pt-4">
@@ -291,7 +278,7 @@ export default function Login() {
                     onChange={(e) => setEmail(e.target.value)}
                     leftIcon={<Mail className="h-5 w-5 text-gray-400" />}
                     placeholder="you@ampqes.com"
-                    className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 focus:border-white focus:ring-white h-12"
+                    className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-gray-200"
                   />
 
                   <Input
@@ -306,7 +293,7 @@ export default function Login() {
                     leftIcon={<Lock className="h-5 w-5 text-gray-400" />}
                     minLength={6}
                     hint={isSignUpMode ? "Password must be at least 6 characters" : undefined}
-                    className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 focus:border-white focus:ring-white h-12"
+                    className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-gray-200"
                   />
                 </div>
 
@@ -339,12 +326,12 @@ export default function Login() {
                       />
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="primary"
                         onClick={handleResendVerification}
                         disabled={resendLoading}
                         isLoading={resendLoading}
                         leftIcon={<RefreshCw className="h-4 w-4" />}
-                        className="bg-orange-600 hover:bg-orange-700 text-white border-transparent h-10 px-4"
+                        className="text-white h-10 px-4"
                       >
                         Resend
                       </Button>
@@ -355,33 +342,22 @@ export default function Login() {
                   </div>
                 )}
 
-                <div className="pt-6">
+                <div>
                   <Button
                     type="submit"
-                    variant="outline"
+                    variant="primary"
                     size="lg"
                     fullWidth
                     isLoading={loading}
                     leftIcon={isSignUpMode ? <UserPlus className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
-                    className="bg-gray-800 hover:bg-gray-900 text-white border-transparent h-12 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="h-12 font-medium hover:bg-[#f26722]/75"
                   >
-                    {isSignUpMode ? 'Create Account' : 'Sign In'}
+                    {isSignUpMode ? 'Create account' : 'Sign in'}
                   </Button>
                 </div>
               </form>
 
-              <div className="mt-10">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[#2A2A2A]"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-gray-600 text-gray-300 font-medium">
-                      {isSignUpMode ? 'Already have an account?' : 'New to ampOS?'}
-                    </span>
-                  </div>
-                </div>
-                
+              <div>
                 <Button
                   type="button"
                   variant="outline"
@@ -393,7 +369,7 @@ export default function Login() {
                   }}
                   disabled={loading}
                   leftIcon={isSignUpMode ? <LogIn className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
-                  className="mt-6 bg-gray-600 hover:bg-gray-700 text-white border-transparent h-12 font-medium"
+                  className="mt-6 h-12 font-medium bg-transparent border-none hover:bg-gray-800/10"
                 >
                   {isSignUpMode ? 'Sign in instead' : 'Create account'}
                 </Button>

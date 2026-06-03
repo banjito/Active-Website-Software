@@ -2,6 +2,9 @@
 -- Run once in Supabase SQL Editor.
 
 ALTER TABLE common.profiles
+  ADD COLUMN IF NOT EXISTS employment_status TEXT DEFAULT 'active';
+
+ALTER TABLE common.profiles
   DROP CONSTRAINT IF EXISTS profiles_employment_status_check;
 
 ALTER TABLE common.profiles

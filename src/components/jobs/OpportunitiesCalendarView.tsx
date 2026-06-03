@@ -7,8 +7,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { supabase } from '@/lib/supabase';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const DUE_SOON_DAYS = 3;
-
 interface OpportunityCalendarItem {
   id: string;
   title: string | null;
@@ -31,26 +29,15 @@ function parseDate(d: string | null): Date | null {
   return isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function startOfDay(d: Date): Date {
-  const out = new Date(d);
-  out.setHours(0, 0, 0, 0);
-  return out;
-}
-
-// Softer, modern palette. Only gray when explicitly "No Quote"; unset/null = in progress.
+// Calendar colors show estimate stage, not due-date urgency.
 function getEventColor(opportunity: OpportunityCalendarItem): string {
-  const status = opportunity.estimate_approval_status;
+  const status = (opportunity.estimate_approval_status || '').toLowerCase();
   const dueDate = parseDate(opportunity.proposal_due_date);
   if (!dueDate) return 'var(--cal-gray)';
 
   if (status === 'no_quote' || status === 'no quote') return 'var(--cal-gray)';
   if (status === 'sent') return 'var(--cal-sent)';
-
-  const today = startOfDay(new Date());
-  const due = startOfDay(dueDate);
-  if (due < today) return 'var(--cal-late)';
-  const daysUntil = Math.ceil((due.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
-  if (daysUntil <= DUE_SOON_DAYS) return 'var(--cal-due-soon)';
+  if (!status) return 'var(--cal-not-started)';
   return 'var(--cal-in-progress)';
 }
 
@@ -175,15 +162,13 @@ export function OpportunitiesCalendarView() {
     <div className="opportunities-calendar space-y-5">
       <style>{`
         .opportunities-calendar {
-          --cal-late: #dc2626;
-          --cal-due-soon: #d97706;
+          --cal-not-started: #d97706;
           --cal-sent: #059669;
           --cal-in-progress: #2563eb;
           --cal-gray: #64748b;
         }
         .dark .opportunities-calendar {
-          --cal-late: #ef4444;
-          --cal-due-soon: #f59e0b;
+          --cal-not-started: #f59e0b;
           --cal-sent: #10b981;
           --cal-in-progress: #3b82f6;
           --cal-gray: #94a3b8;
@@ -275,16 +260,13 @@ export function OpportunitiesCalendarView() {
         </div>
         <div className="flex items-center gap-3 flex-wrap text-xs text-gray-500 dark:text-dark-400">
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-late)]" aria-hidden /> Late
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-due-soon)]" aria-hidden /> Due soon
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-sent)]" aria-hidden /> Sent
+            <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-not-started)]" aria-hidden /> Not started
           </span>
           <span className="inline-flex items-center gap-1.5" title="Working on the estimate">
             <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-in-progress)]" aria-hidden /> In progress
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-sent)]" aria-hidden /> Sent
           </span>
           <span className="inline-flex items-center gap-1.5" title="Not submitting a quote for this opportunity">
             <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-gray)]" aria-hidden /> No Quote

@@ -1099,7 +1099,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                       }`}
                     >
                       <Settings
-                      leftIcon={<ChevronLeft className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />}
                       className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
                       Settings
                     </button>

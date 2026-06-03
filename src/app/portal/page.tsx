@@ -4,7 +4,7 @@ import Card from "../../components/ui/Card"
 import { CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs"
 import { Badge } from "../../components/ui"
-import { ChevronRight, Building, MapPin, CircleUserRound, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Loader2, BookOpen, MoreVertical, Check, AlertCircle, Image as ImageIcon, Download, Plane, Globe, BriefcaseBusiness, Omega  } from "lucide-react"
+import { ChevronRight, Building, MapPin, CircleUserRound, LogOut, FileText, Eye, Shield, ChevronDown, ChevronUp, Calendar, Edit3, X as XIcon, HelpCircle, EyeOff, Megaphone, Pin, Briefcase, Loader2, BookOpen, Check, AlertCircle, Image as ImageIcon, Download, Plane, Globe, BriefcaseBusiness, Omega  } from "lucide-react"
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react"
 import { useAuth } from "../../lib/AuthContext"
 import { useDivision } from '../../App'
@@ -17,7 +17,6 @@ import { IssueShortcuts } from '@/components/shortcuts/IssueShortcuts'
 import { ApprovedShortcuts } from '@/components/shortcuts/ApprovedShortcuts'
 import { supabase } from "@/lib/supabase"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/DropdownMenu"
 import { onboardingService } from "@/services/hr/onboardingService"
 import { toast } from "@/components/ui/toast"
 import { HeaderBar } from '@/components/ui/HeaderBar'
@@ -1063,34 +1062,32 @@ export default function PortalLanding() {
                       )}
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            type="button"
-                            className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
-                            aria-label="Announcement options"
-                          >
-                            <MoreVertical className="h-5 w-5" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="min-w-[180px]">
-                          <DropdownMenuItem
-                            disabled={!canDismiss || dismissingAnnouncementId === a.id}
-                            onClick={() => dismissAnnouncement(a.id)}
-                            className={!canDismiss ? 'opacity-60' : ''}
-                          >
-                            {dismissingAnnouncementId === a.id ? (
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            ) : (
-                              <EyeOff className="h-4 w-4 mr-2" />
-                            )}
-                            {!canDismiss
-                              ? (requiresSignature ? 'Sign announcement to dismiss' : 'Open announcement first to dismiss')
-                              : (dismissingAnnouncementId === a.id ? 'Dismissing…' : 'Dismiss from home')}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <ChevronRight className={`h-5 w-5 text-gray-400 mt-1 transition-transform ${expandedAnnouncementId === a.id ? 'rotate-90' : ''}`} />
+                      <button
+                        type="button"
+                        disabled={!canDismiss || dismissingAnnouncementId === a.id}
+                        onClick={() => dismissAnnouncement(a.id)}
+                        className={`p-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                          canDismiss
+                            ? 'text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-950/30'
+                            : 'opacity-40 cursor-not-allowed text-gray-500 dark:text-gray-400'
+                        }`}
+                        title={
+                          !canDismiss
+                            ? (requiresSignature ? 'Acknowledge document first' : 'Open announcement first')
+                            : (dismissingAnnouncementId === a.id ? 'Dismissing…' : 'Dismiss from home')
+                        }
+                        aria-label={
+                          !canDismiss
+                            ? (requiresSignature ? 'Acknowledge document first' : 'Open announcement first')
+                            : 'Dismiss from home'
+                        }
+                      >
+                        {dismissingAnnouncementId === a.id ? (
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                          <EyeOff className="h-5 w-5" />
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>

@@ -23,7 +23,7 @@ import { AboutPopup } from '@/components/ui/AboutPopup';
 import { ShortcutService, Shortcut } from '@/services/ShortcutService';
 import { ShortcutsDropdown } from '@/components/shortcuts/ShortcutsDropdown';
 import { ReviewShortcutsDropdown } from '@/components/shortcuts/ReviewShortcutsDropdown';
-import { fetchJobsWithReportsForReview } from '@/lib/reviewShortcuts';
+import { canAccessReportApprovals, fetchJobsWithReportsForReview } from '@/lib/reviewShortcuts';
 import { supabase } from '@/lib/supabase';
 import { fetchAmpContacts } from '@/services/ampContactsService';
 import type { AmpContact } from '@/services/ampContactsService';
@@ -124,6 +124,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
   });
   const rtDebounceRef = useRef<number | null>(null);
 
+  const canApproveReports = canAccessReportApprovals(user);
+  const calibrationNotificationCount = calibrationNeedsList.length + calibrationOutList.length;
+  const reportUnseenCount = Object.values(unseenCounts).reduce((a, b) => a + b, 0);
+  const showNotificationBell =
+    canApproveReports || calibrationNotificationCount > 0 || reportUnseenCount > 0;
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
@@ -195,7 +201,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
   }, [user]);
 
   const loadReviewJobCount = async () => {
-    if (!user) return;
+    if (!user || !canAccessReportApprovals(user)) {
+      setReviewJobCount(0);
+      return;
+    }
     try {
       const jobs = await fetchJobsWithReportsForReview();
       setReviewJobCount(jobs.length);
@@ -206,6 +215,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
 
   useEffect(() => {
     void loadReviewJobCount();
+    if (!canAccessReportApprovals(user)) return;
     const handleAssetStatusChange = (event: CustomEvent) => {
       const { newStatus } = event.detail;
       if (newStatus === 'ready_for_review' || newStatus === 'in_progress') {
@@ -379,18 +389,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
 
   const loadNotificationSummary = async () => {
     if (!user) return;
+    const canApprove = canAccessReportApprovals(user);
     try {
       setNotifLoading(true);
-      const statuses: StatusKey[] = ['ready_for_review', 'issue', 'approved'];
       const summary: NotificationSummary[] = [];
       const unseen: Record<StatusKey, number> = { ready_for_review: 0, issue: 0, approved: 0 };
 
-      for (const s of statuses) {
-        const { assets, groups } = await fetchAssetsByStatus(s);
-        summary.push({ status: s, jobCount: groups.length, reportCount: assets.length });
-        const ls = lastSeen[s] ? new Date(lastSeen[s]).getTime() : 0;
-        const countNew = assets.filter((a) => new Date(a.createdAt).getTime() > ls).length;
-        unseen[s] = countNew;
+      if (canApprove) {
+        const statuses: StatusKey[] = ['ready_for_review', 'issue', 'approved'];
+        for (const s of statuses) {
+          const { assets, groups } = await fetchAssetsByStatus(s);
+          summary.push({ status: s, jobCount: groups.length, reportCount: assets.length });
+          const ls = lastSeen[s] ? new Date(lastSeen[s]).getTime() : 0;
+          const countNew = assets.filter((a) => new Date(a.createdAt).getTime() > ls).length;
+          unseen[s] = countNew;
+        }
       }
       setNotificationSummary(summary);
 
@@ -446,11 +459,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
       setNotifications([]);
     } catch (err) {
       console.error('Failed to load notification summary:', err);
-      setNotificationSummary([
-        { status: 'ready_for_review', jobCount: 0, reportCount: 0 },
-        { status: 'issue', jobCount: 0, reportCount: 0 },
-        { status: 'approved', jobCount: 0, reportCount: 0 },
-      ]);
+      setNotificationSummary(
+        canApprove
+          ? [
+              { status: 'ready_for_review', jobCount: 0, reportCount: 0 },
+              { status: 'issue', jobCount: 0, reportCount: 0 },
+              { status: 'approved', jobCount: 0, reportCount: 0 },
+            ]
+          : []
+      );
       setCalibrationNeedsList([]);
       setCalibrationOutList([]);
     } finally {
@@ -468,6 +485,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
   }, [user, hiddenJobIds]);
 
   useEffect(() => {
+    if (!user || !canAccessReportApprovals(user)) return;
     const handleAssetStatusChange = (event: CustomEvent) => {
       const { newStatus } = event.detail;
       if (newStatus === 'ready_for_review' || newStatus === 'in_progress') {
@@ -495,7 +513,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
   };
 
   const loadDetailForStatus = async (status: NotificationSummary['status']) => {
-    if (!user) return;
+    if (!user || !canAccessReportApprovals(user)) return;
     try {
       setNotifLoading(true);
       const { assets, groups } = await fetchAssetsByStatus(status);
@@ -529,7 +547,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !canAccessReportApprovals(user)) return;
     const channel = supabase
       .channel('notif-assets-realtime')
       .on('postgres_changes', { event: '*', schema: 'neta_ops', table: 'assets' }, (payload) => {
@@ -641,6 +659,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                 </div>
               )}
             </div>
+            {canApproveReports && (
             <div className="relative flex h-10 w-10 items-center justify-center" ref={reviewMenuRef}>
               <button
                 type="button"
@@ -679,6 +698,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                 </div>
               )}
             </div>
+            )}
             <div className="relative flex h-10 w-10 items-center justify-center">
               <CommunityBoardPopover />
             </div>
@@ -764,6 +784,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                 </div>
               )}
             </div>
+            {showNotificationBell && (
             <div className="relative flex h-10 w-10 items-center justify-center" ref={notificationsRef}>
               <button
                 aria-label="Notifications"
@@ -781,15 +802,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                 }}
               >
                 <Bell className="h-5 w-5 text-gray-600 dark:text-white" />
-                {(Object.values(unseenCounts).some((c) => c > 0) ||
-                  calibrationNeedsList.length > 0 ||
-                  calibrationOutList.length > 0) && (
+                {(canApproveReports ? reportUnseenCount : 0) + calibrationNotificationCount > 0 && (
                   <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#f26722] text-white text-[10px] leading-[18px] text-center">
                     {Math.min(
                       99,
-                      Object.values(unseenCounts).reduce((a, b) => a + b, 0) +
-                        calibrationNeedsList.length +
-                        calibrationOutList.length
+                      (canApproveReports ? reportUnseenCount : 0) + calibrationNotificationCount
                     )}
                   </span>
                 )}
@@ -799,14 +816,17 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                 <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                   <div className="p-3 border-b border-gray-200 dark:border-dark-200 flex items-center justify-between">
                     <div className="font-medium text-gray-900 dark:text-white">Notifications</div>
-                    <div className="text-xs text-gray-500 dark:text-white">Reports</div>
+                    {canApproveReports && (
+                      <div className="text-xs text-gray-500 dark:text-white">Reports</div>
+                    )}
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {notifLoading ? (
                       <div className="p-4 text-sm text-gray-500 dark:text-white">Loading…</div>
                     ) : detailStatus === null ? (
                       <div className="divide-y divide-gray-200 dark:divide-dark-200">
-                        {notificationSummary.map((row) => (
+                        {canApproveReports &&
+                          notificationSummary.map((row) => (
                           <button
                             key={row.status}
                             onClick={() => loadDetailForStatus(row.status)}
@@ -993,12 +1013,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                   </div>
                   <div className="p-2 border-t border-gray-200 dark:border-dark-200 text-right flex items-center justify-end gap-3">
                     {detailStatus === null ? (
-                      <button
-                        onClick={() => navigate('/neta/reports')}
-                        className="text-xs text-[#f26722] hover:underline"
-                      >
-                        View all
-                      </button>
+                      canApproveReports ? (
+                        <button
+                          onClick={() => navigate('/neta/reports')}
+                          className="text-xs text-[#f26722] hover:underline"
+                        >
+                          View all
+                        </button>
+                      ) : null
                     ) : detailStatus === 'needs_calibration' ||
                       detailStatus === 'equipment_out_of_cal' ? (
                       <>
@@ -1035,6 +1057,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                 </div>
               )}
             </div>
+            )}
             <div className="relative flex h-10 w-10 items-center justify-center" ref={profileMenuRef}>
               <button
                 className="rounded-full w-10 h-10 bg-gray-100 dark:bg-dark-150 hover:bg-gray-200 dark:hover:bg-gray-600 p-0 overflow-hidden flex items-center justify-center border border-gray-300 dark:border-gray-600"

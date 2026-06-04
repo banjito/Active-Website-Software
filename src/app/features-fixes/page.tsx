@@ -139,6 +139,9 @@ const FeaturesFixesPage: React.FC = () => {
   >([]);
   const [ipSearch, setIpSearch] = useState("");
   const [showIpDropdown, setShowIpDropdown] = useState(false);
+  const [resolveIssue, setResolveIssue] = useState<Issue | null>(null);
+  const [resolveComment, setResolveComment] = useState("");
+  const [isResolving, setIsResolving] = useState(false);
 
   const loadData = async (showLoadingIndicator: boolean = true) => {
     if (showLoadingIndicator) {
@@ -448,12 +451,39 @@ const FeaturesFixesPage: React.FC = () => {
     }
   };
 
-  const handleMarkResolved = async (issue: Issue) => {
+  const handleMarkResolved = async (issue: Issue, comment = "") => {
     try {
       await updateIssue(issue.id, {
         status: "resolved",
         resolved_at: new Date().toISOString(),
       });
+      const resolutionComment = comment.trim();
+      if (resolutionComment && user?.id) {
+        supabase
+          .schema("common")
+          .from("issue_notes")
+          .insert({
+            issue_id: issue.id,
+            user_id: user.id,
+            content: resolutionComment,
+          })
+          .then(({ error }) => {
+            if (error) console.error("Failed to save resolution comment", error);
+          });
+
+        supabase
+          .schema("common")
+          .from("issue_updates")
+          .insert({
+            issue_id: issue.id,
+            updater_id: user.id,
+            new_status: "resolved",
+            note: resolutionComment,
+          })
+          .then(({ error }) => {
+            if (error) console.error("Failed to save resolution timeline note", error);
+          });
+      }
       // Notify reporter by email (fire-and-forget) — call function URL directly to avoid client invoke path that can trigger runMicrotasks error
       const fnUrl = (import.meta as any).env?.VITE_SUPABASE_URL;
       const anonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
@@ -466,13 +496,41 @@ const FeaturesFixesPage: React.FC = () => {
               "Content-Type": "application/json",
               Authorization: `Bearer ${anonKey}`,
             },
-            body: JSON.stringify({ issueId: issue.id }),
+            body: JSON.stringify({
+              issueId: issue.id,
+              resolutionComment: resolutionComment || undefined,
+            }),
           },
         ).catch(() => {});
       }
     } catch (e: any) {
       console.error("Failed to mark resolved", e);
       alert(e?.message || "Failed to mark resolved");
+      throw e;
+    }
+  };
+
+  const openResolveModal = (issue: Issue) => {
+    setResolveIssue(issue);
+    setResolveComment("");
+  };
+
+  const closeResolveModal = () => {
+    if (isResolving) return;
+    setResolveIssue(null);
+    setResolveComment("");
+  };
+
+  const handleConfirmResolve = async () => {
+    if (!resolveIssue) return;
+    setIsResolving(true);
+    try {
+      await handleMarkResolved(resolveIssue, resolveComment);
+      setResolveIssue(null);
+      setResolveComment("");
+      closeModal();
+    } finally {
+      setIsResolving(false);
     }
   };
 
@@ -700,6 +758,8 @@ const FeaturesFixesPage: React.FC = () => {
     setShowModal(false);
     setSelectedIssue(null);
     setIsEditMode(false);
+    setResolveIssue(null);
+    setResolveComment("");
   };
 
   const handleStartEdit = () => {
@@ -1716,7 +1776,7 @@ const FeaturesFixesPage: React.FC = () => {
                       issueId={selectedIssue.id}
                       canComment={
                         !!user?.id &&
-                        (hasIssueOpsAccess ||
+                        (isAdmin ||
                           selectedIssue.reporter_id === user.id ||
                           (
                             interestedPartiesByIssue[selectedIssue.id] || []
@@ -1915,8 +1975,7 @@ const FeaturesFixesPage: React.FC = () => {
                       selectedIssue.status !== "closed" && (
                         <button
                           onClick={() => {
-                            handleMarkResolved(selectedIssue);
-                            closeModal();
+                            openResolveModal(selectedIssue);
                           }}
                           className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium"
                         >
@@ -1942,6 +2001,72 @@ const FeaturesFixesPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {resolveIssue && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center">
+              <div
+                className="fixed inset-0 bg-black opacity-50"
+                onClick={closeResolveModal}
+              ></div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleConfirmResolve();
+                }}
+                className="relative z-[61] w-full max-w-lg mx-4 bg-white dark:bg-dark-150 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
+              >
+                <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Mark Resolved
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      {resolveIssue.title}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeResolveModal}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl font-bold leading-none"
+                    disabled={isResolving}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="px-5 py-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Resolution email note
+                  </label>
+                  <textarea
+                    value={resolveComment}
+                    onChange={(e) => setResolveComment(e.target.value)}
+                    rows={5}
+                    className="form-textarea w-full text-gray-900 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded px-3 py-2"
+                    placeholder="Optional note for the reporter..."
+                    disabled={isResolving}
+                    autoFocus
+                  />
+                </div>
+                <div className="px-5 py-4 bg-gray-50 dark:bg-dark-100 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={closeResolveModal}
+                    disabled={isResolving}
+                    className="px-4 py-2 bg-gray-200 dark:bg-dark-200 text-gray-900 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-dark-100 disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isResolving}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium disabled:opacity-60"
+                  >
+                    {isResolving ? "Resolving..." : "Resolve"}
+                  </button>
+                </div>
+              </form>
             </div>
           )}
         </div>

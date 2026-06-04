@@ -5912,7 +5912,7 @@ ${newBodyHtml}
       setEditingName('');
     };
 
-    if (loadingList) return <div className="p-4 text-gray-600 dark:text-white"><LoadingSpinner size="md" /></div>;
+    if (loadingList) return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
     if (err) return <div className="p-4 text-red-600">{err}</div>;
     if (!items.length) return <div className="p-4 text-gray-600 dark:text-white">No saved documents yet.</div>;
 
@@ -5995,7 +5995,7 @@ ${newBodyHtml}
     return (
       <div className="p-8">
         <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500 dark:text-white"><LoadingSpinner size="md" /></p>
+          <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
         </div>
       </div>
     );

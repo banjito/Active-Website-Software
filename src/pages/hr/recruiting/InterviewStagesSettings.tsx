@@ -251,7 +251,7 @@ export const InterviewStagesSettings: React.FC = () => {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-gray-500"><LoadingSpinner size="md" /></p>
+            <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
           ) : stages.length === 0 ? (
             <p className="text-gray-500">No stages yet. Add one to get started.</p>
           ) : (

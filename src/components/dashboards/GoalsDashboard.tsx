@@ -35,6 +35,7 @@ import { fetchGoals } from '../../services/goalService';
 import { SalesGoal } from '../../types/sales';
 import { formatDate, getDaysRemaining, getTimeElapsedPercentage } from '../../utils/dateUtils';
 import { calculateProgress } from '../../utils/salesUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export function GoalsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -223,7 +224,7 @@ export function GoalsDashboard() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

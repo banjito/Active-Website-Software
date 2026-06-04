@@ -1326,7 +1326,7 @@ export const CustomFormFiller: React.FC = () => {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <div className="spinner mb-4" />
-          <p><LoadingSpinner size="md" /></p>
+          <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
         </div>
       </div>
     );

@@ -537,7 +537,7 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
 
               <div className="space-y-4">
                 {isLoading ? (
-                  <p><LoadingSpinner size="md" /></p>
+                  <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
                 ) : availabilities.length === 0 ? (
                   <p>No regular availability set for this technician. Add their working hours to enable scheduling.</p>
                 ) : (
@@ -696,7 +696,7 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
 
               <div className="space-y-4">
                 {isLoading ? (
-                  <p><LoadingSpinner size="md" /></p>
+                  <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
                 ) : exceptions.length === 0 ? (
                   <p>No time off or special availability records found.</p>
                 ) : (

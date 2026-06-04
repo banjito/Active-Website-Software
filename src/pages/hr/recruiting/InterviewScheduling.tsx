@@ -1309,7 +1309,7 @@ ${interviewFormData.overallFeedback || 'N/A'}
               </label>
               <div className="border border-gray-300 dark:border-gray-600 rounded-md p-3 max-h-40 overflow-y-auto">
                 {users.length === 0 ? (
-                  <p className="text-sm text-gray-500"><LoadingSpinner size="md" /></p>
+                  <div className="flex justify-center py-4"><LoadingSpinner size="md" /></div>
                 ) : (
                   <div className="space-y-2">
                     {users.map((user) => (

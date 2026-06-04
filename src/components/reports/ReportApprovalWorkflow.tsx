@@ -1705,7 +1705,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
         <TabsContent value={activeTab} className="mt-4">
           {isLoading ? (
             <div className="text-center py-10">
-              <p><LoadingSpinner size="md" /></p>
+              <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
             </div>
           ) : error ? (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">

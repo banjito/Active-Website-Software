@@ -64,7 +64,7 @@ export default function SchedulingPage() {
   // All authenticated users may access scheduler; no additional role redirect
 
   if (!division || !user || !canAccessScheduler) {
-    return <div><LoadingSpinner size="md" /></div>;
+    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
   }
 
   const formattedDivision = division

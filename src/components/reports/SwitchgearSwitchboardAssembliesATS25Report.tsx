@@ -849,7 +849,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
     return () => { try { document.head.removeChild(style); } catch { /* ignore */ } };
   }, []);
 
-  if (loading && currentReportId) return <div className="p-4"><LoadingSpinner size="md" /></div>;
+  if (loading && currentReportId) return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>

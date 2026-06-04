@@ -581,7 +581,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="p-4 dark:text-white"><LoadingSpinner size="md" /></div>;
+  if (loading) return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
 
 
 

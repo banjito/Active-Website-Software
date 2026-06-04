@@ -655,7 +655,7 @@ export function VehicleTracking({ division, initialFormOpen = false, onClose, hi
           
           <div className="space-y-4">
             {isLoading ? (
-              <p><LoadingSpinner size="md" /></p>
+              <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
             ) : vehicles.length === 0 ? (
               <div className="text-center p-8 bg-gray-50 rounded-md">
                 <Truck className="h-12 w-12 mx-auto text-gray-400 mb-2" />

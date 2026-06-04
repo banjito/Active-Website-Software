@@ -62,7 +62,7 @@ export default function SchedulingPage() {
   }, [user, navigate]);
 
   if (!division || !user || !canAccessScheduler) {
-    return <div><LoadingSpinner size="md" /></div>;
+    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
   }
 
   const formattedDivision = division

@@ -319,7 +319,7 @@ export function JobNotifications({ jobId, buttonClassName, showTray = true }: Jo
         
         <div className="space-y-4 py-4">
           {!preferences ? (
-            <p className="text-center text-gray-500"><LoadingSpinner size="md" /></p>
+            <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
           ) : (
             <>
               <div className="flex items-center justify-between">

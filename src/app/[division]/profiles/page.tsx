@@ -45,7 +45,7 @@ export default function TechnicianProfilesPage() {
   }, [user, canAccessProfiles, navigate]);
 
   if (!division || !user || !canAccessProfiles) {
-    return <div><LoadingSpinner size="md" /></div>;
+    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
   }
 
   const formattedDivision = division

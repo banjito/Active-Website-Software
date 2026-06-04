@@ -10,7 +10,6 @@ import {
   Edit, 
   Trash, 
   ExternalLink, 
-  Loader,
   Filter
 } from 'lucide-react';
 import Container from 'react-bootstrap/Container';
@@ -146,8 +145,7 @@ const TerritoryManagement: React.FC = () => {
   if (loading && territories.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader className="animate-spin h-8 w-8 text-primary" />
-        <span className="ml-2"><LoadingSpinner size="md" /></span>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

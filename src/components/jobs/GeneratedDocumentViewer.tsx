@@ -130,7 +130,7 @@ export default function GeneratedDocumentViewer() {
   }, [searchParams, html, isLoading]);
 
   if (isLoading) {
-    return <div className="p-6 text-gray-700 dark:text-white"><LoadingSpinner size="md" /></div>;
+    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
   }
   if (error) {
     return <div className="p-6 text-red-600">{error}</div>;

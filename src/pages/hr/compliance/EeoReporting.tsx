@@ -119,7 +119,7 @@ export const EeoReporting: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#f26722]" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400"><LoadingSpinner size="md" /></p>
+          <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
         </div>
       </div>
     );

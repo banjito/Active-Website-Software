@@ -595,7 +595,7 @@ export function TechnicianProfileManagement({ portalType, division }: Technician
 
                   <div className="space-y-4">
                     {isLoading ? (
-                      <p><LoadingSpinner size="md" /></p>
+                      <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
                     ) : skills.length === 0 ? (
                       <p>No skills or certifications recorded for this technician.</p>
                     ) : (

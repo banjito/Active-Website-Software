@@ -333,7 +333,7 @@ export function DesignApprovalWorkflow({ refreshTrigger = 0 }: DesignApprovalWor
         <Card className="p-8">
           <div className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-            <p className="text-muted-foreground"><LoadingSpinner size="md" /></p>
+            <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
           </div>
         </Card>
       ) : filteredDesigns.length === 0 ? (

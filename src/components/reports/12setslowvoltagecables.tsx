@@ -2563,7 +2563,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="p-4"><LoadingSpinner size="md" /></div>;
+  if (loading) return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
   if (error) return <div className="p-6 text-red-600 dark:text-red-400">Error: {error}</div>;
 
   return (

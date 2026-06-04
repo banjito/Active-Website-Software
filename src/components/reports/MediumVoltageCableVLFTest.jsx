@@ -1734,7 +1734,7 @@ const MediumVoltageCableVLFTest = () => {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <div className="spinner mb-4"></div>
-          <p><LoadingSpinner size="md" /></p>
+          <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
         </div>
       </div>
     );

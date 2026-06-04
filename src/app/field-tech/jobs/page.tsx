@@ -491,7 +491,7 @@ export default function FieldTechJobsPage() {
       </div>
 
       {loading ? (
-        <div className="text-gray-500"><LoadingSpinner size="md" /></div>
+        <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>
       ) : jobs.length === 0 ? (
         <div className="text-gray-500">No jobs found.</div>
       ) : (

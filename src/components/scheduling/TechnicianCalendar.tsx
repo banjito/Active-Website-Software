@@ -987,7 +987,7 @@ export function TechnicianCalendar({
             <div style={{ height: '600px' }}>
             {loading ? (
               <div className="flex justify-center items-center h-full">
-                <p><LoadingSpinner size="md" /></p>
+                <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
               </div>
             ) : (
               <FullCalendar

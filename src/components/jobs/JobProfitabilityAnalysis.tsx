@@ -370,11 +370,8 @@ export default function JobProfitabilityAnalysis({ jobId, budget }: JobProfitabi
 
   if (loading) {
     return (
-      <Box sx={{ width: '100%', p: 2 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          <LoadingSpinner size="md" />
-        </Typography>
+      <Box sx={{ width: '100%', minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <LoadingSpinner size="md" />
       </Box>
     );
   }

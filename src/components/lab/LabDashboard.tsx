@@ -219,7 +219,7 @@ export function LabDashboard({ division }: LabDashboardProps) {
       
       {isLoading ? (
         <div className="text-center py-10">
-          <p><LoadingSpinner size="md" /></p>
+          <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
         </div>
       ) : (
         <>

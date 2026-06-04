@@ -819,7 +819,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
     </div>
   );
 
-  if (loading) return <div className="p-4"><LoadingSpinner size="md" /></div>;
+  if (loading) return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
 
   return (
     <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>

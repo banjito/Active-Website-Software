@@ -1343,7 +1343,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 {!limitedView && canViewSensitiveSection && profileIdToFetch ? (
                   <div className="mt-6 pt-4 border-t border-gray-200 dark:border-dark-200 space-y-5">
                     {loadingMyData ? (
-                      <p className="text-sm text-muted-foreground"><LoadingSpinner size="md" /></p>
+                      <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
                     ) : (
                       <>
                         <div>

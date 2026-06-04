@@ -308,11 +308,8 @@ export default function ResourceManagement() {
         </Box>
         
         {loading ? (
-          <Box sx={{ p: 3 }}>
-            <LinearProgress />
-            <Typography variant="body1" sx={{ mt: 2, textAlign: 'center' }}>
-              <LoadingSpinner size="md" />
-            </Typography>
+          <Box sx={{ p: 3, minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <LoadingSpinner size="md" />
           </Box>
         ) : (
           <ResourceList 

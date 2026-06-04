@@ -148,7 +148,7 @@ export default function AmpContactsManager() {
           </div>
         )}
         {loading ? (
-          <p className="text-sm text-muted-foreground"><LoadingSpinner size="md" /></p>
+          <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
         ) : (
           <div className="rounded-md border overflow-x-auto">
             <Table>

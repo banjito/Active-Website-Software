@@ -443,7 +443,7 @@ export function JobAssignmentManagement({ portalType, division }: JobAssignmentM
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-2 text-gray-600"><LoadingSpinner size="md" /></p>
+              <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
             </div>
           ) : error ? (
             <div className="text-center py-8 text-red-500">

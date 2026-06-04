@@ -1792,7 +1792,7 @@ const OilInspectionReport: React.FC = () => {
 
   // Loading indicator
   if (loading) {
-    return <div className="p-4"><LoadingSpinner size="md" /></div>;
+    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
   }
 
   // Render the form JSX

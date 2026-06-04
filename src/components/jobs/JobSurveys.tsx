@@ -205,7 +205,7 @@ export default function JobSurveys({ jobId, customerId, contacts }: JobSurveysPr
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
-        <p className="text-gray-500"><LoadingSpinner size="md" /></p>
+        <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
       </div>
     );
   }

@@ -49,7 +49,7 @@ export const AdminDashboard: React.FC = () => {
   }, [user, hasAdminAccess, navigate]);
 
   if (!user || !hasAdminAccess) {
-    return <div className="p-10"><LoadingSpinner size="md" /></div>;
+    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
   }
 
   const handleBackClick = () => {

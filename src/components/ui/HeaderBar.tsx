@@ -737,7 +737,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                   </div>
                   <div className="overflow-y-auto flex-1 min-h-0">
                     {contactsLoading ? (
-                      <div className="p-4 text-sm text-gray-500 dark:text-white"><LoadingSpinner size="md" /></div>
+                      <div className="flex justify-center p-4"><LoadingSpinner size="md" /></div>
                     ) : ampContacts.length === 0 ? (
                       <div className="p-4 text-sm text-gray-500 dark:text-white">
                         No contacts. Add them in HR portal → HR Data → Call list.
@@ -823,7 +823,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {notifLoading ? (
-                      <div className="p-4 text-sm text-gray-500 dark:text-white"><LoadingSpinner size="md" /></div>
+                      <div className="flex justify-center p-4"><LoadingSpinner size="md" /></div>
                     ) : detailStatus === null ? (
                       <div className="divide-y divide-gray-200 dark:divide-dark-200">
                         {canApproveReports &&

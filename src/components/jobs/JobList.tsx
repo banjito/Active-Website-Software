@@ -1017,7 +1017,7 @@ export default function JobList() {
   }
 
   if (loading) {
-    return <div className="text-gray-900 dark:text-gray-100"><LoadingSpinner size="md" /></div>;
+    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
   }
 
   return (

@@ -45,7 +45,7 @@ export default function MaintenancePage() {
   }, [user, canAccessEquipment, navigate]);
 
   if (!division || !user || !canAccessEquipment) {
-    return <div><LoadingSpinner size="md" /></div>;
+    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
   }
 
   const formattedDivision = division

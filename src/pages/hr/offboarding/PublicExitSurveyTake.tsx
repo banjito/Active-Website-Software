@@ -104,7 +104,7 @@ export const PublicExitSurveyTake: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-10 w-10 animate-spin text-[#f26722]" />
-          <p className="text-sm text-gray-500"><LoadingSpinner size="md" /></p>
+          <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
         </div>
       </div>
     );

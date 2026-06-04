@@ -131,7 +131,7 @@ export const SignatureProfileSelector: React.FC<SignatureProfileSelectorProps> =
             {/* Profile checkboxes grouped by section */}
             <div className="max-h-[50vh] overflow-auto space-y-4 px-4 pb-4">
               {loading ? (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-4"><LoadingSpinner size="md" /></p>
+                <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
               ) : profiles.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <p>No signature profiles yet.</p>

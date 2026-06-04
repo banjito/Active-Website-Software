@@ -663,7 +663,7 @@ export const EquipmentTracking = forwardRef<EquipmentTrackingRefHandle, Equipmen
           
           <div className="space-y-4">
             {isLoading ? (
-              <p><LoadingSpinner size="md" /></p>
+              <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
             ) : equipment.length === 0 ? (
               <div className="text-center p-8 bg-gray-50 rounded-md">
                 <p className="text-gray-600">No equipment found. Use the "Add Equipment" button above to add items.</p>

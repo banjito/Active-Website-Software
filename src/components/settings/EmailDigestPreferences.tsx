@@ -141,7 +141,7 @@ export function EmailDigestPreferences({
       </p>
 
       {loading ? (
-        <p className={`text-sm text-gray-500 dark:text-gray-400 ${descPad}`}><LoadingSpinner size="md" /></p>
+        <div className={`flex justify-center py-6 ${descPad}`}><LoadingSpinner size="md" /></div>
       ) : (
         <div className={`space-y-2.5 ${descPad}`}>
           {DIGEST_OPTIONS.map(({ key, label, description }) => (

@@ -946,7 +946,7 @@ const DryTypeTransformerReport: React.FC = () => {
   // ... rest of your component logic
 
   if (loading) {
-    return <div><LoadingSpinner size="md" /></div>;
+    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
   }
 
   // Header render function

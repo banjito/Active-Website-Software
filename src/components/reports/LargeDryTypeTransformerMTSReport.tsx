@@ -552,7 +552,7 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
 
   useEffect(() => { const fetchData = async () => { const siteAddress = await loadJobInfo(); await loadReport(); if (siteAddress) { setFormData(prev => ({ ...prev, address: maskCustomerAddress(siteAddress) })); } }; fetchData(); }, [jobId, reportId]);
 
-  if (loading) return <div className="p-4"><LoadingSpinner size="md" /></div>;
+  if (loading) return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
 
   // Header render function
   const renderHeader = () => (

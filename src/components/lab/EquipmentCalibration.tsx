@@ -152,7 +152,7 @@ export function EquipmentCalibration({ division }: EquipmentCalibrationProps) {
       
       {isLoading ? (
         <div className="text-center py-10">
-          <p><LoadingSpinner size="md" /></p>
+          <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

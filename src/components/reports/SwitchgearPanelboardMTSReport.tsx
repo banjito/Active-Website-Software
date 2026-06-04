@@ -841,7 +841,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
     }));
   };
 
-  if (loading && currentReportId) return <div className="p-4"><LoadingSpinner size="md" /></div>;
+  if (loading && currentReportId) return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>

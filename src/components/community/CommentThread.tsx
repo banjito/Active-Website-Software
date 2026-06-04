@@ -123,7 +123,7 @@ export const CommentThread: React.FC<Props> = ({ postId, currentUserId, commentC
       {open && (
         <div className="mt-3 space-y-3">
           {loading ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400"><LoadingSpinner size="md" /></p>
+            <div className="flex justify-center py-4"><LoadingSpinner size="md" /></div>
           ) : comments.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400">No comments yet.</p>
           ) : (

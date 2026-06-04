@@ -54,7 +54,7 @@ export default function ProfileSetup() {
         />
       ) : (
         // Only show redirecting message if popup isn't open and auth isn't loading
-        !authLoading && <p className="text-center pt-10"><LoadingSpinner size="md" /></p>
+        !authLoading && <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
       )}
     </div>
   );

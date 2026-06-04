@@ -1116,7 +1116,9 @@ const FeaturesFixesPage: React.FC = () => {
 
           <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-4">
             {loading ? (
-              <div className="text-gray-500 dark:text-gray-400"><LoadingSpinner size="md" /></div>
+              <div className="flex min-h-[240px] items-center justify-center">
+                <LoadingSpinner size="md" />
+              </div>
             ) : filtered.length === 0 ? (
               <div className="text-gray-500 dark:text-gray-400">
                 No issues found.

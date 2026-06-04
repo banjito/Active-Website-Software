@@ -432,7 +432,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
         <TabsContent value={activeTab} className="mt-4">
           {isLoading ? (
             <div className="text-center py-10">
-              <p><LoadingSpinner size="md" /></p>
+              <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
             </div>
           ) : (
             <>

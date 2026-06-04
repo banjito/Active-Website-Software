@@ -13,6 +13,7 @@ import { Button } from '../ui/Button';
 import Card, { CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Input } from '../ui/Input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/Dialog";
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { toast } from '@/components/ui/toast';
 
 interface OneLineDrawingsProps {
@@ -200,7 +201,7 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            Loading drawings...
+            <LoadingSpinner size="md" />
           </div>
         </CardContent>
       </Card>

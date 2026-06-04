@@ -359,7 +359,6 @@ export const PublicCareerPage: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12">
             <div className="text-center">
               <LoadingSpinner size="md" />
-              <p className="mt-4 text-gray-600 dark:text-gray-400">Loading job openings...</p>
             </div>
           </div>
         ) : filteredRequisitions.length === 0 ? (

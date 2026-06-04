@@ -21,6 +21,7 @@ import {
   Plus
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/Chart';
 
 interface Job {
@@ -577,7 +578,7 @@ const InProgressDashboard: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600 dark:text-gray-400">Loading project data...</span>
+        <span className="ml-2 text-gray-600 dark:text-gray-400"><LoadingSpinner size="md" /></span>
       </div>
     );
   }

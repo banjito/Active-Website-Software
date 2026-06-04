@@ -31,6 +31,7 @@ import { compareLinkedAssetFolderLabels } from '@/utils/sortUtils';
 import { Routes, Route } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { supabase } from '@/lib/supabase';
 
 interface ReportApprovalWorkflowProps {
@@ -1704,7 +1705,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
         <TabsContent value={activeTab} className="mt-4">
           {isLoading ? (
             <div className="text-center py-10">
-              <p>Loading reports...</p>
+              <p><LoadingSpinner size="md" /></p>
             </div>
           ) : error ? (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -1817,7 +1818,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
                             {loadingMore ? (
                               <>
                                 <RotateCw className="h-4 w-4 mr-2 animate-spin inline-block" />
-                                Loading…
+                                <LoadingSpinner size="md" />
                               </>
                             ) : (
                               <>Load next 500 reports</>
@@ -1937,7 +1938,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
                             {loadingMore ? (
                               <>
                                 <RotateCw className="h-4 w-4 mr-2 animate-spin inline-block" />
-                                Loading…
+                                <LoadingSpinner size="md" />
                               </>
                             ) : (
                               <>Load next 500 reports</>
@@ -1963,7 +1964,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
                           {loadingMore ? (
                             <>
                               <RotateCw className="h-4 w-4 mr-2 animate-spin inline-block" />
-                              Loading…
+                              <LoadingSpinner size="md" />
                             </>
                           ) : (
                             <>Load next 500 reports</>
@@ -2056,7 +2057,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
                           {loadingMore ? (
                             <>
                               <RotateCw className="h-4 w-4 mr-2 animate-spin inline-block" />
-                              Loading…
+                              <LoadingSpinner size="md" />
                             </>
                           ) : (
                             <>Load next 500 reports</>

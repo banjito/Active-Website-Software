@@ -11,6 +11,7 @@ import { equipmentService } from '@/lib/services/equipmentService';
 import { equipmentMaintenanceService } from '@/lib/services/equipmentMaintenanceService';
 import { Equipment, MaintenanceRecord } from '@/lib/interfaces/equipment';
 import MaintenanceForm from './MaintenanceForm';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { FaTools, FaClock, FaCalendarCheck, FaExclamationTriangle } from 'react-icons/fa';
 
 interface MaintenanceScheduleProps {
@@ -144,7 +145,7 @@ export default function MaintenanceSchedule({ division, portal }: MaintenanceSch
               <TabsContent value="upcoming" className="space-y-4">
                 {isLoading ? (
                   <div className="py-8 text-center">
-                    <p className="text-gray-500">Loading maintenance schedule...</p>
+                    <p className="text-gray-500"><LoadingSpinner size="md" /></p>
                   </div>
                 ) : upcomingMaintenance.length === 0 ? (
                   <div className="py-8 text-center">
@@ -231,7 +232,7 @@ export default function MaintenanceSchedule({ division, portal }: MaintenanceSch
               <TabsContent value="overdue" className="space-y-4">
                 {isLoading ? (
                   <div className="py-8 text-center">
-                    <p className="text-gray-500">Loading overdue maintenance...</p>
+                    <p className="text-gray-500"><LoadingSpinner size="md" /></p>
                   </div>
                 ) : overdueMaintenance.length === 0 ? (
                   <div className="py-8 text-center">

@@ -14,6 +14,7 @@ import {
   Clock,
   AlertTriangle
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { labService, LabEquipment, Certificate, QualityMetric } from '@/lib/services/labService';
 
 interface LabDashboardProps {
@@ -218,7 +219,7 @@ export function LabDashboard({ division }: LabDashboardProps) {
       
       {isLoading ? (
         <div className="text-center py-10">
-          <p>Loading dashboard data...</p>
+          <p><LoadingSpinner size="md" /></p>
         </div>
       ) : (
         <>

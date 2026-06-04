@@ -9,6 +9,7 @@ import { Mail, Plus, Edit, Trash2, Eye, Send, X } from 'lucide-react';
 import { onboardingService, WelcomeEmail } from '../../../services/hr/onboardingService';
 import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const WelcomeEmails: React.FC = () => {
   const { user } = useAuth();
@@ -323,7 +324,7 @@ export const WelcomeEmails: React.FC = () => {
 
       {/* Emails List */}
       {loading ? (
-        <div className="text-center py-12">Loading...</div>
+        <div className="text-center py-12"><LoadingSpinner size="md" /></div>
       ) : filteredEmails.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">

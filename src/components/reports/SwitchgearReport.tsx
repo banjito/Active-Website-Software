@@ -11,6 +11,7 @@ import NameplatePrintTable from './common/NameplatePrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Add these constants at the top of the file, after the imports
 const visualInspectionOptions = [
@@ -809,7 +810,7 @@ const SwitchgearReport: React.FC = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   return (

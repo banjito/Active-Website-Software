@@ -17,6 +17,7 @@ import NotificationDevControls from '@/components/admin/NotificationDevControls'
 import InProgressDashboard from '@/components/admin/InProgressDashboard';
 import IntegrationsSettings from '@/components/admin/IntegrationsSettings';
 import QuickBooksDashboard from '@/components/admin/QuickBooksDashboard';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { HeaderBar } from '@/components/ui/HeaderBar';
 
 export const AdminDashboard: React.FC = () => {
@@ -48,7 +49,7 @@ export const AdminDashboard: React.FC = () => {
   }, [user, hasAdminAccess, navigate]);
 
   if (!user || !hasAdminAccess) {
-    return <div className="p-10">Loading or unauthorized access...</div>;
+    return <div className="p-10"><LoadingSpinner size="md" /></div>;
   }
 
   const handleBackClick = () => {

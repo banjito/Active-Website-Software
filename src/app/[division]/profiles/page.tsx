@@ -5,6 +5,7 @@ import { useDivision } from '@/App';
 import { PageLayout } from '@/components/ui/PageLayout';
 import { TechnicianProfileManagement } from '@/components/profile/TechnicianProfileManagement';
 import { PortalType } from '@/lib/types/scheduling';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function TechnicianProfilesPage() {
   const params = useParams();
@@ -44,7 +45,7 @@ export default function TechnicianProfilesPage() {
   }, [user, canAccessProfiles, navigate]);
 
   if (!division || !user || !canAccessProfiles) {
-    return <div>Loading or checking access...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   const formattedDivision = division

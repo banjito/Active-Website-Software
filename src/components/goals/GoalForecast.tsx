@@ -25,6 +25,7 @@ import {
   formatCurrency 
 } from '../../utils/salesUtils';
 import { addDays, addMonths, format, parseISO, startOfMonth } from 'date-fns';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ForecastPoint {
   date: string;
@@ -259,7 +260,7 @@ export const GoalForecast: React.FC<GoalForecastProps> = ({ goalId }) => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

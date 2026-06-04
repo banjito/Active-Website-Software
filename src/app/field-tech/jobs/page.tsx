@@ -7,6 +7,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BriefcaseIcon, Plus, X } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { addDefaultFilesToJob } from '@/lib/services/defaultJobFiles';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { withPgTimeoutRetry } from '@/lib/retryPgTimeout';
 
 interface Customer {
@@ -490,7 +491,7 @@ export default function FieldTechJobsPage() {
       </div>
 
       {loading ? (
-        <div className="text-gray-500">Loading jobs...</div>
+        <div className="text-gray-500"><LoadingSpinner size="md" /></div>
       ) : jobs.length === 0 ? (
         <div className="text-gray-500">No jobs found.</div>
       ) : (

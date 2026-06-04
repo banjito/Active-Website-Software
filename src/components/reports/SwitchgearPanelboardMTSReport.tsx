@@ -11,6 +11,7 @@ import NameplatePrintTable from './common/NameplatePrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Temperature conversion and correction factor lookup tables
 const TCF_TABLE: { [key: string]: number } = {
@@ -840,7 +841,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
     }));
   };
 
-  if (loading && currentReportId) return <div className="p-4">Loading report data...</div>;
+  if (loading && currentReportId) return <div className="p-4"><LoadingSpinner size="md" /></div>;
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>

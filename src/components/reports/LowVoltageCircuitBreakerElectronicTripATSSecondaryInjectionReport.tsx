@@ -11,6 +11,7 @@ import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import NameplatePrintTable from './common/NameplatePrintTable';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -756,7 +757,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   // --- Render Component ---

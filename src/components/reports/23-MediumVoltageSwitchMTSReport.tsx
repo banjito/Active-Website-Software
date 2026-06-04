@@ -9,6 +9,7 @@ import { getAssetName, getReportName } from './reportMappings';
 import { navigateAfterSave } from './ReportUtils';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 type PassFail = 'PASS' | 'FAIL';
 
@@ -1240,7 +1241,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]"><span>Loading...</span></div>
+      <div className="flex justify-center items-center min-h-[60vh]"><span><LoadingSpinner size="md" /></span></div>
     );
   }
 

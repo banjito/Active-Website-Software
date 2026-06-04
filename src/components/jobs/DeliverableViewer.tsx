@@ -781,14 +781,14 @@ export default function DeliverableViewer() {
         return tempDiv.innerHTML;
       };
       
-      setGenProgress('Loading cover letter...');
+      setGenProgress('');
       const coverLetterRendered = await loadDocumentHTML(coverLetterFullHtml, 'Cover Letter');
       // Apply inline styles for print
       coverLetterRendered.html = inlineStylesForPrint(coverLetterRendered.html);
       
       let execSummaryRendered = { html: '', styles: '' };
       if (execSummaryFullHtml) {
-        setGenProgress('Loading executive summary...');
+        setGenProgress('');
         execSummaryRendered = await loadDocumentHTML(execSummaryFullHtml, 'Executive Summary');
         execSummaryRendered.html = inlineStylesForPrint(execSummaryRendered.html);
       }
@@ -1350,7 +1350,6 @@ export default function DeliverableViewer() {
       <div className="flex items-center justify-center min-h-screen bg-white dark:bg-dark-200">
         <div className="text-center">
           <LoadingSpinner size="lg" className="mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-white">Loading deliverable...</p>
         </div>
       </div>
     );

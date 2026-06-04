@@ -31,6 +31,7 @@ import { formatDivisionDisplay } from '../../lib/utils/divisionDisplay';
 import { compareAlphanumericLabels, compareLinkedAssetFolderLabels } from '../../utils/sortUtils';
 import { SignatureProfileSelector } from './SignatureProfileSelector';
 import { getQuickBooksStatus, searchQuickBooksProjects, getQuickBooksHoursByProject } from '../../services/quickbooksService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { loadAuthorsForUserIds } from '@/lib/communityProfiles';
 // TrackingSection is defined locally below
 
@@ -5911,7 +5912,7 @@ ${newBodyHtml}
       setEditingName('');
     };
 
-    if (loadingList) return <div className="p-4 text-gray-600 dark:text-white">Loading…</div>;
+    if (loadingList) return <div className="p-4 text-gray-600 dark:text-white"><LoadingSpinner size="md" /></div>;
     if (err) return <div className="p-4 text-red-600">{err}</div>;
     if (!items.length) return <div className="p-4 text-gray-600 dark:text-white">No saved documents yet.</div>;
 
@@ -5994,7 +5995,7 @@ ${newBodyHtml}
     return (
       <div className="p-8">
         <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500 dark:text-white">Loading job details...</p>
+          <p className="text-gray-500 dark:text-white"><LoadingSpinner size="md" /></p>
         </div>
       </div>
     );

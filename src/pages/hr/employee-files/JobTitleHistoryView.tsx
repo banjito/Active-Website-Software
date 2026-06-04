@@ -7,6 +7,7 @@ import { History, Loader2, Save } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const HR_ADMIN_ROLES = ['Admin', 'Super Admin', 'HR', 'HR Rep'];
 
@@ -126,7 +127,7 @@ export const JobTitleHistoryView: React.FC<JobTitleHistoryViewProps> = ({ profil
     return (
       <div className="flex items-center gap-2 text-muted-foreground py-8">
         <Loader2 className="h-5 w-5 animate-spin" />
-        Loading job history…
+        <LoadingSpinner size="md" />
       </div>
     );
   }

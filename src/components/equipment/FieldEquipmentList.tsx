@@ -9,6 +9,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { PageLayout } from '../ui/PageLayout';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/Tabs';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Switch } from '../ui/Switch';
 
 interface SubComponent {
@@ -1562,7 +1563,7 @@ export default function FieldEquipmentList() {
         {/* Equipment Table */}
         {loading ? (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            Loading equipment...
+            <LoadingSpinner size="md" />
           </div>
         ) : (
           <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-dark-200 overflow-hidden">

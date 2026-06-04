@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui';
 import { Calendar, Send, Clock, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useDemoMode } from '../../lib/DemoModeContext';
 
 interface DailyItem {
@@ -148,7 +149,7 @@ const DailyReport: React.FC = () => {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">Loading…</div>
+            <div className="py-6 text-center text-sm text-gray-500 dark:text-gray-400"><LoadingSpinner size="md" /></div>
           ) : error ? (
             <div className="py-6 text-center text-sm text-red-600 dark:text-red-400">{error}</div>
           ) : items.length === 0 ? (

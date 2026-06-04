@@ -256,7 +256,7 @@ export default function CustomerList() {
     // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       console.error("CustomerList: fetchData timed out after 30 seconds");
-      setLoadError("Loading is taking longer than expected. Please try again.");
+      setLoadError("This is taking longer than expected. Please try again.");
       setLoading(false);
       setSearchLoading(false);
     }, 30000);
@@ -544,7 +544,11 @@ export default function CustomerList() {
   }
 
   if (loading) {
-    return <div className="text-gray-900 dark:text-gray-100">Loading...</div>;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <LoadingSpinner size="md" />
+      </div>
+    );
   }
 
   const statusOptions = [
@@ -1285,7 +1289,7 @@ export default function CustomerList() {
               <div className="flex items-center justify-center py-8">
                 <LoadingSpinner size="sm" />
                 <span className="ml-2 text-sm text-gray-500 dark:text-gray-300">
-                  Loading contacts...
+                  <LoadingSpinner size="md" />
                 </span>
               </div>
             ) : contactsPopupData.length === 0 ? (

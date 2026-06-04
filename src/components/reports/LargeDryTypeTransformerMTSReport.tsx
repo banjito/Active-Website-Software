@@ -11,6 +11,7 @@ import _ from 'lodash';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -551,7 +552,7 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
 
   useEffect(() => { const fetchData = async () => { const siteAddress = await loadJobInfo(); await loadReport(); if (siteAddress) { setFormData(prev => ({ ...prev, address: maskCustomerAddress(siteAddress) })); } }; fetchData(); }, [jobId, reportId]);
 
-  if (loading) return <div className="p-4">Loading Report Data...</div>;
+  if (loading) return <div className="p-4"><LoadingSpinner size="md" /></div>;
 
   // Header render function
   const renderHeader = () => (

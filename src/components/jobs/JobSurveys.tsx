@@ -43,6 +43,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import SendIcon from '@mui/icons-material/Send';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Extended interface to include job_id
 interface ExtendedCustomerSurvey extends ServiceCustomerSurvey {
@@ -204,7 +205,7 @@ export default function JobSurveys({ jobId, customerId, contacts }: JobSurveysPr
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
-        <p className="text-gray-500">Loading surveys...</p>
+        <p className="text-gray-500"><LoadingSpinner size="md" /></p>
       </div>
     );
   }

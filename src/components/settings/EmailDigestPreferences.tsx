@@ -3,6 +3,7 @@ import { Mail } from 'lucide-react';
 import { Switch } from '@/components/ui/Switch';
 import { toast } from '@/components/ui/toast';
 import { supabase } from '@/lib/supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import {
   DEFAULT_AUTOMATED_EMAILS,
   getUserNotificationPreferences,
@@ -140,7 +141,7 @@ export function EmailDigestPreferences({
       </p>
 
       {loading ? (
-        <p className={`text-sm text-gray-500 dark:text-gray-400 ${descPad}`}>Loading…</p>
+        <p className={`text-sm text-gray-500 dark:text-gray-400 ${descPad}`}><LoadingSpinner size="md" /></p>
       ) : (
         <div className={`space-y-2.5 ${descPad}`}>
           {DIGEST_OPTIONS.map(({ key, label, description }) => (

@@ -15,6 +15,7 @@ import {
   Search,
   Filter
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { labService, Procedure } from '@/lib/services/labService';
 
 interface TestingProceduresProps {
@@ -303,7 +304,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
       
       {isLoading ? (
         <div className="text-center py-10">
-          <p>Loading procedures...</p>
+          <p><LoadingSpinner size="md" /></p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

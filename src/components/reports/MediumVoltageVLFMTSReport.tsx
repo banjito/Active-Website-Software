@@ -20,6 +20,7 @@ import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/Select';
 import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/Card';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getReportName, getAssetName } from './reportMappings';
 
 // Types
@@ -743,7 +744,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen"><div className="spinner mb-4"></div><p>Loading report...</p></div>;
+  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingSpinner size="md" /></div>;
 if (error) return <div className="flex justify-center items-center h-screen"><div className="text-center max-w-md p-6"><div className="text-red-500 text-xl mb-4">Error</div><p className="mb-6">{error}</p><button onClick={() => navigate(`/jobs/${jobId || ''}?tab=assets`)} className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md">Return to Job</button></div></div>;
 
   const renderHeader = () => (

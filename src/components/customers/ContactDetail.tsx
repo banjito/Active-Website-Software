@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import { format } from 'date-fns';
 import { toast } from '../ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { DIVISION_OPTIONS } from '../../services/customerService';
 
 interface ContactNote {
@@ -312,7 +313,7 @@ export default function ContactDetail() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-gray-600">Loading...</div>
+        <div className="text-lg text-gray-600"><LoadingSpinner size="md" /></div>
       </div>
     );
   }
@@ -779,7 +780,7 @@ export default function ContactDetail() {
 
             {/* Timeline */}
             {notesLoading ? (
-              <div className="py-12 text-center text-gray-500">Loading interactions...</div>
+              <div className="py-12 text-center text-gray-500"><LoadingSpinner size="md" /></div>
             ) : filteredNotes.length === 0 ? (
               <div className="py-12 text-center text-gray-500">
                 <p className="text-sm">No interactions logged yet.</p>

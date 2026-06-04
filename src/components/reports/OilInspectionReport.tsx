@@ -11,6 +11,7 @@ import { ReportWrapper } from './ReportWrapper';
 import { useReportLocked } from './useReportLocked';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Add type definitions for error handling
@@ -1791,7 +1792,7 @@ const OilInspectionReport: React.FC = () => {
 
   // Loading indicator
   if (loading) {
-    return <div className="p-4">Loading Report Data...</div>;
+    return <div className="p-4"><LoadingSpinner size="md" /></div>;
   }
 
   // Render the form JSX

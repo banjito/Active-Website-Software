@@ -20,6 +20,7 @@ import { DocumentStorage } from './DocumentStorage';
 import { VersionTracking } from './VersionTracking';
 import { CompensationView } from './CompensationView';
 import { JobTitleHistoryView } from './JobTitleHistoryView';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface User {
   id: string;
@@ -193,9 +194,7 @@ export const EmployeeFiles: React.FC = () => {
           <div className="flex-1 overflow-y-auto space-y-1">
             {loading || reportIdsLoading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="text-sm text-muted-foreground">
-                  {reportIdsLoading ? 'Loading access…' : 'Loading employees…'}
-                </div>
+                <LoadingSpinner size="md" />
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-sm">

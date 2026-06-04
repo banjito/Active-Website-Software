@@ -1,4 +1,5 @@
 import React from 'react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useJobDetails } from '../hooks';
 
 interface JobInfoHeaderProps {
@@ -49,7 +50,7 @@ export function JobInfoHeader({ jobId, onJobDetailsLoaded }: JobInfoHeaderProps)
   
   if (loading) {
     console.log("JobInfoHeader: Showing loading state");
-    return <div className="text-sm text-gray-500 dark:text-dark-400">Loading job information...</div>;
+    return <div className="text-sm text-gray-500 dark:text-dark-400"><LoadingSpinner size="md" /></div>;
   }
   
   if (error || !jobDetails) {

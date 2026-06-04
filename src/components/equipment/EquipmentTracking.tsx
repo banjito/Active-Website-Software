@@ -23,6 +23,7 @@ import { SCHEMAS } from '@/lib/schema';
 import equipmentService from '@/lib/services/equipmentService';
 import { useDivision } from '@/lib/DivisionContext';
 import { Modal } from '@/components/ui/Modal';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Define a local interface that extends the Equipment fields we need plus our UI-specific fields
 interface EquipmentData {
@@ -662,7 +663,7 @@ export const EquipmentTracking = forwardRef<EquipmentTrackingRefHandle, Equipmen
           
           <div className="space-y-4">
             {isLoading ? (
-              <p>Loading equipment...</p>
+              <p><LoadingSpinner size="md" /></p>
             ) : equipment.length === 0 ? (
               <div className="text-center p-8 bg-gray-50 rounded-md">
                 <p className="text-gray-600">No equipment found. Use the "Add Equipment" button above to add items.</p>

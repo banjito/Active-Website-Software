@@ -15,6 +15,7 @@ import {
   fetchSalesRepsByTerritory
 } from '@/services/territoryService';
 import { formatCurrency } from '@/utils/formatters';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface TerritoryListProps {
   onEdit: (territory: Territory) => void;
@@ -86,9 +87,7 @@ const TerritoryList: React.FC<TerritoryListProps> = ({ onEdit, onCreateNew }) =>
   if (loading) {
     return (
       <div className="text-center my-5">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

@@ -958,7 +958,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div className="bg-white dark:bg-dark-150 rounded-xl p-8 flex items-center gap-3">
           <LoadingSpinner size="sm" />
-          <p className="text-gray-600 dark:text-white">Loading profile...</p>
         </div>
       </div>
     );
@@ -1344,7 +1343,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 {!limitedView && canViewSensitiveSection && profileIdToFetch ? (
                   <div className="mt-6 pt-4 border-t border-gray-200 dark:border-dark-200 space-y-5">
                     {loadingMyData ? (
-                      <p className="text-sm text-muted-foreground">Loading documents and history…</p>
+                      <p className="text-sm text-muted-foreground"><LoadingSpinner size="md" /></p>
                     ) : (
                       <>
                         <div>

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Plus, Truck, Wrench } from 'lucide-react';
 import { PageLayout } from '@/components/ui/PageLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function EquipmentPage() {
   const params = useParams();
@@ -85,7 +86,7 @@ export default function EquipmentPage() {
   };
 
   if (!division || !user || !canAccessEquipment) {
-    return <div>Loading or checking access...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   const formattedDivision = division

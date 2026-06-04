@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Search, EyeOff, Eye, XCircle } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const HIDDEN_NOTIF_JOB_IDS_KEY = 'hiddenNotificationJobIds';
 
@@ -103,7 +104,7 @@ export const NotificationDevControls: React.FC = () => {
             />
           </div>
           <Button variant="secondary" onClick={() => void loadJobs()} disabled={loading}>
-            {loading ? 'Loading…' : 'Refresh'}
+            {loading ? <LoadingSpinner size="xs" /> : 'Refresh'}
           </Button>
           <Button variant="outline" onClick={clearAllHidden}>
             <XCircle className="h-4 w-4 mr-2" /> Clear Hidden

@@ -11,6 +11,7 @@ import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -698,7 +699,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
     return getTCF(celsius);
   };
 
-  if (loading) return <div className="p-6 text-center text-gray-500 dark:text-white">Loading report data...</div>;
+  if (loading) return <div className="p-6 text-center text-gray-500 dark:text-white"><LoadingSpinner size="md" /></div>;
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>

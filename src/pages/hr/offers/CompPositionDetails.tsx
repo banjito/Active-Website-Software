@@ -187,7 +187,6 @@ export const CompPositionDetails: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <LoadingSpinner size="md" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );

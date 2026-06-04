@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Navigate, useLocation } from 'react-router-dom';
 
 interface AuthContextType {
@@ -483,7 +484,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">
-      <div className="text-lg text-gray-600">Loading...</div>
+      <div className="text-lg text-gray-600"><LoadingSpinner size="md" /></div>
     </div>;
   }
 
@@ -509,7 +510,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-gray-600">Loading...</div>
+        <div className="text-lg text-gray-600"><LoadingSpinner size="md" /></div>
       </div>
     );
   }

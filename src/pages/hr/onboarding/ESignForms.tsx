@@ -13,6 +13,7 @@ import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import type { SignatureFieldPosition } from '../../../components/pdf/PDFSignatureFieldPlacer';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const ESignForms: React.FC = () => {
   const { user } = useAuth();
@@ -540,7 +541,7 @@ export const ESignForms: React.FC = () => {
 
       {/* Forms List */}
       {loading ? (
-        <div className="text-center py-12">Loading...</div>
+        <div className="text-center py-12"><LoadingSpinner size="md" /></div>
       ) : filteredForms.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -1395,7 +1396,7 @@ export const ESignForms: React.FC = () => {
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 z-10">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="w-8 h-8 text-[#f26722] animate-spin" />
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Loading document...</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400"><LoadingSpinner size="md" /></p>
                     </div>
                   </div>
                 )}

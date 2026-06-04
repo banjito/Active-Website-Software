@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
-import Spinner from 'react-bootstrap/Spinner';
 import Card from 'react-bootstrap/Card';
 import { AccountOwnership, Territory } from '../../types/sales';
 import { fetchAccountOwnershipsByTerritory } from '../../services/territoryService';
 import { formatDate } from '../../utils/formatters';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface AccountOwnershipTableProps {
   territory: Territory;
@@ -42,9 +42,7 @@ const AccountOwnershipTable: React.FC<AccountOwnershipTableProps> = ({ territory
   if (loading) {
     return (
       <div className="text-center my-5">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

@@ -17,6 +17,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { labService, LabEquipment, Calibration } from '@/lib/services/labService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface EquipmentCalibrationProps {
   division?: string;
@@ -151,7 +152,7 @@ export function EquipmentCalibration({ division }: EquipmentCalibrationProps) {
       
       {isLoading ? (
         <div className="text-center py-10">
-          <p>Loading equipment data...</p>
+          <p><LoadingSpinner size="md" /></p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

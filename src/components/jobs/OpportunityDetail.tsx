@@ -32,6 +32,7 @@ import {
   isCookieAuthError,
   isAuthError,
 } from "../../lib/supabase";
+import { withPgTimeoutRetry } from "@/lib/retryPgTimeout";
 import { useAuth } from "../../lib/AuthContext";
 import {
   Opportunity,
@@ -46,6 +47,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { PDFEditor } from "../pdf/PDFEditor";
 import OpportunityNotes from "./OpportunityNotes";
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface Customer {
   id: string;
@@ -388,7 +390,11 @@ async function createJobManually(
   let nextJobNumberNumeric = 26001; // default if both paths fail
   let gotFromRpc = false;
   try {
-    const { data: fnResult } = await supabase.rpc("get_max_job_number");
+    const { data: fnResult, error: fnError } = await withPgTimeoutRetry<any>(
+      () => supabase.rpc("get_max_job_number"),
+      { maxAttempts: 2 },
+    );
+    if (fnError) throw fnError;
     const raw = Array.isArray(fnResult) ? (fnResult[0] as any) : fnResult;
     const value =
       typeof raw === "number" && Number.isFinite(raw)
@@ -487,38 +493,48 @@ async function createJobManually(
   }
 
   // Create the job in neta_ops schema, using quoted_amount from opportunity as budget
-  const { data: newJob, error: jobError } = await supabase
-    .schema("neta_ops")
-    .from("jobs")
-    .insert({
-      user_id: userId,
-      customer_id: opportunity.customer_id,
-      title: opportunity.title,
-      description: opportunity.description,
-      status: "pending",
-      start_date:
-        (opportunity as any).estimated_start_date ||
-        new Date().toISOString().substring(0, 10),
-      site_address: (opportunity as any).jobsite_location || "",
-      budget: quotedAmount,
-      notes:
-        (opportunity.notes || "") +
-        "\n\nConverted from opportunity: " +
-        opportunity.quote_number,
-      priority: "medium",
-      division:
-        opportunity.amp_division === "Decatur"
-          ? "north_alabama"
-          : opportunity.amp_division,
-      job_number: nextJobNumberString,
-      opportunity_id: opportunity.id, // Add the opportunity link
-    })
-    .select()
-    .single();
+  const jobPayload = {
+    user_id: userId,
+    customer_id: opportunity.customer_id,
+    title: opportunity.title,
+    description: opportunity.description,
+    status: "pending",
+    start_date:
+      (opportunity as any).estimated_start_date ||
+      new Date().toISOString().substring(0, 10),
+    site_address: (opportunity as any).jobsite_location || "",
+    budget: quotedAmount,
+    notes:
+      (opportunity.notes || "") +
+      "\n\nConverted from opportunity: " +
+      opportunity.quote_number,
+    priority: "medium",
+    division:
+      opportunity.amp_division === "Decatur"
+        ? "north_alabama"
+        : opportunity.amp_division,
+    job_number: nextJobNumberString,
+    opportunity_id: opportunity.id, // Add the opportunity link
+  };
 
-  if (jobError) {
+  const { data: newJob, error: jobError } = await withPgTimeoutRetry<{
+    id: string;
+  }>(() =>
+    supabase
+      .schema("neta_ops")
+      .from("jobs")
+      .insert(jobPayload)
+      .select("id")
+      .single(),
+  );
+
+  if (jobError || !newJob) {
     console.error("Manual job creation error:", jobError);
-    throw new Error(`Manual job creation failed: ${jobError.message}`);
+    throw new Error(
+      `Manual job creation failed: ${
+        jobError?.message || "Job insert returned no row"
+      }`,
+    );
   }
 
   try {
@@ -2997,7 +3013,7 @@ export default function OpportunityDetail() {
   }
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   if (!opportunity) {
@@ -5183,7 +5199,7 @@ export default function OpportunityDetail() {
                 ) : (
                   <div className="text-center py-4">
                     <p className="text-gray-500 dark:text-white">
-                      Loading job details...
+                      <LoadingSpinner size="md" />
                     </p>
                   </div>
                 )}

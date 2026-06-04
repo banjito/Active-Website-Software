@@ -5,6 +5,7 @@ import { useDivision } from '@/App';
 import { PageLayout } from '@/components/ui/PageLayout';
 import MaintenanceSchedule from '@/components/equipment/MaintenanceSchedule';
 import { PortalType } from '@/lib/types/scheduling';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function MaintenancePage() {
   const params = useParams();
@@ -44,7 +45,7 @@ export default function MaintenancePage() {
   }, [user, canAccessEquipment, navigate]);
 
   if (!division || !user || !canAccessEquipment) {
-    return <div>Loading or checking access...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   const formattedDivision = division

@@ -9,6 +9,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables
@@ -917,7 +918,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="text-xl font-semibold dark:text-white">Loading Report...</div>
+        <div className="text-xl font-semibold dark:text-white"><LoadingSpinner size="md" /></div>
       </div>
     );
   }

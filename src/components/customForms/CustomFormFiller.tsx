@@ -26,6 +26,7 @@ import {
 } from '@/lib/utils/temperatureCorrection';
 import { getCellValue } from '@/lib/customForms/formCellResolution';
 import { EquipmentAutocomplete } from '@/components/equipment/EquipmentAutocomplete';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 /** Visible when every setting in visibleWhen matches current settings (used for rows and columns) */
 function isVisibleWhen(
@@ -1325,7 +1326,7 @@ export const CustomFormFiller: React.FC = () => {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <div className="spinner mb-4" />
-          <p>Loading form...</p>
+          <p><LoadingSpinner size="md" /></p>
         </div>
       </div>
     );

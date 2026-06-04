@@ -11,6 +11,7 @@ import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -1009,7 +1010,7 @@ const LiquidFilledTransformerReport: React.FC = () => {
 
   // Loading indicator
   if (loading) {
-    return <div className="p-4">Loading Report Data...</div>;
+    return <div className="p-4"><LoadingSpinner size="md" /></div>;
   }
 
   // Render the form JSX

@@ -13,6 +13,7 @@ import NameplatePrintTable from './common/NameplatePrintTable';
 import { ArrowLeft } from 'lucide-react';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables
@@ -1452,7 +1453,7 @@ const PanelboardReport: React.FC = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   return (

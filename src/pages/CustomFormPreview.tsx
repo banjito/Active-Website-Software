@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { ReportWrapper } from '@/components/reports/ReportWrapper';
 import { CustomFormTemplate, SectionConfig, TablePrintLayout, type ConditionalRowConfig, type ColumnConfig } from '@/lib/types/customForms';
 import { fahrenheitToCelsius, getTCF } from '@/lib/utils/temperatureCorrection';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getCellValue } from '@/lib/customForms/formCellResolution';
 
 function isVisibleWhen(
@@ -718,7 +719,7 @@ export const CustomFormPreview: React.FC = () => {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <div className="spinner mb-4"></div>
-          <p>Loading form...</p>
+          <p><LoadingSpinner size="md" /></p>
         </div>
       </div>
     );

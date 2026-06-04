@@ -64,7 +64,6 @@ export const ReviewShortcuts: React.FC = () => {
     return (
       <div className="flex items-center justify-center py-8">
         <LoadingSpinner size="sm" />
-        <span className="ml-2 text-gray-600 dark:text-white">Loading jobs with reports...</span>
       </div>
     );
   }

@@ -31,6 +31,7 @@ import { toast } from '@/components/ui/toast';
 
 // Import required modules for PDF generation
 import { jsPDF } from 'jspdf';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import 'jspdf-autotable';
 
 interface QualityMetricsProps {
@@ -521,7 +522,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
         <TabsContent value={activeTab} className="mt-4">
           {isLoading ? (
             <div className="text-center py-10">
-              <p>Loading quality metrics...</p>
+              <p><LoadingSpinner size="md" /></p>
             </div>
           ) : (
             <>

@@ -9,6 +9,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Types for form data and measurements
@@ -1071,7 +1072,7 @@ export default function MediumVoltageSwitchOilReport() {
     </div>
   );
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div><LoadingSpinner size="md" /></div>;
   if (error) return <div>Error: {error}</div>;
 
   return (

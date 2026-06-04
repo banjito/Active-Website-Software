@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Calendar, Filter, Loader2 } from 'lucide-react';
 import engineeringService from '@/lib/services/engineeringService';
 import type { DesignMetrics } from '@/lib/services/engineeringService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export type DesignStatus = 'draft' | 'submitted' | 'in-review' | 'approved' | 'rejected' | 'archived';
 
@@ -332,7 +333,7 @@ export function DesignApprovalWorkflow({ refreshTrigger = 0 }: DesignApprovalWor
         <Card className="p-8">
           <div className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-            <p className="text-muted-foreground">Loading designs...</p>
+            <p className="text-muted-foreground"><LoadingSpinner size="md" /></p>
           </div>
         </Card>
       ) : filteredDesigns.length === 0 ? (

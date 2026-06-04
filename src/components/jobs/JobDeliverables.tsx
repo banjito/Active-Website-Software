@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface Deliverable {
   id: string;
@@ -306,7 +307,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
   };
 
   if (loading) {
-    return <div className="p-6 text-gray-600 dark:text-white">Loading deliverables...</div>;
+    return <div className="p-6 text-gray-600 dark:text-white"><LoadingSpinner size="md" /></div>;
   }
 
   return (

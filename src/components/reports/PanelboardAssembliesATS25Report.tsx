@@ -11,6 +11,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const VISUAL_INSPECTION_OPTIONS = [
   'Select One',
@@ -711,7 +712,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     return () => { try { document.head.removeChild(style); } catch { /* ignore */ } };
   }, []);
 
-  if (loading && currentReportId) return <div className="p-4">Loading report...</div>;
+  if (loading && currentReportId) return <div className="p-4"><LoadingSpinner size="md" /></div>;
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>

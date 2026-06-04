@@ -9,6 +9,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Types
@@ -2562,7 +2563,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) return <div className="p-4"><LoadingSpinner size="md" /></div>;
   if (error) return <div className="p-6 text-red-600 dark:text-red-400">Error: {error}</div>;
 
   return (

@@ -1849,10 +1849,7 @@ export default function OpportunityList() {
   if (loading) {
     return (
       <div className="p-6 flex flex-col items-center justify-center">
-        <LoadingSpinner size="md" className="mb-4" />
-        <div className="text-gray-900 dark:text-gray-100">
-          Loading opportunities...
-        </div>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

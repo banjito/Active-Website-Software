@@ -41,6 +41,7 @@ import {
   VendorPOItem,
   VendorPOFormData
 } from '@/services/vendorPOService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { fetchVendors, Vendor } from '@/services/vendorService';
 
 const emptyPOForm: VendorPOFormData = {
@@ -333,7 +334,7 @@ const VendorPOs: React.FC = () => {
       >
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-          <span className="ml-2 text-gray-500">Loading purchase orders...</span>
+          <span className="ml-2 text-gray-500"><LoadingSpinner size="md" /></span>
         </div>
       </PageLayout>
     );

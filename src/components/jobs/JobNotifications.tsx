@@ -18,6 +18,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
 import { Switch } from '@/components/ui/Switch';
 import { Label } from '@/components/ui/Label';
 import { useAuth } from '@/lib/AuthContext';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { 
   getUserNotifications, 
   markNotificationAsRead, 
@@ -248,7 +249,7 @@ export function JobNotifications({ jobId, buttonClassName, showTray = true }: Jo
         {loading ? (
           <div className="p-4 text-center text-gray-500">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto mb-2"></div>
-            Loading notifications...
+            <LoadingSpinner size="md" />
           </div>
         ) : error ? (
           <div className="p-4 text-center text-red-500">
@@ -318,7 +319,7 @@ export function JobNotifications({ jobId, buttonClassName, showTray = true }: Jo
         
         <div className="space-y-4 py-4">
           {!preferences ? (
-            <p className="text-center text-gray-500">Loading preferences...</p>
+            <p className="text-center text-gray-500"><LoadingSpinner size="md" /></p>
           ) : (
             <>
               <div className="flex items-center justify-between">

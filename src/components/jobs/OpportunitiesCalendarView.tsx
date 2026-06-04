@@ -5,6 +5,7 @@ import { EventClickArg, DatesSetArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { supabase } from "@/lib/supabase";
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface OpportunityCalendarItem {
@@ -379,7 +380,7 @@ export function OpportunitiesCalendarView() {
       <div className="bg-white dark:bg-dark-100 rounded-xl border border-gray-200/80 dark:border-dark-300 shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center py-24 text-gray-500 dark:text-dark-400 text-sm">
-            Loading calendar…
+            <LoadingSpinner size="md" />
           </div>
         ) : (
           <>

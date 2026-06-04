@@ -9,6 +9,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface FormData {
   // Job Information
@@ -806,7 +807,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-lg">Loading...</div>
+        <div className="text-lg"><LoadingSpinner size="md" /></div>
       </div>
     );
   }

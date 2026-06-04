@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/Alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectRoot } from '../ui/Select';
 import { AlertCircle, ShieldCheck, RefreshCw, LockKeyhole } from 'lucide-react';
 import { getEncryptionSettings, rotateEncryptionKey, isEncryptionInitialized } from '../../services/encryptionService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
 
 interface EncryptionStatus {
@@ -124,7 +125,7 @@ export const EncryptionSettings: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="flex justify-center my-8">
-            <div className="text-gray-500">Loading encryption settings...</div>
+            <div className="text-gray-500"><LoadingSpinner size="md" /></div>
           </div>
         </CardContent>
       </Card>

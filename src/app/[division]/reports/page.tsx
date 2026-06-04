@@ -7,6 +7,7 @@ import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { QualityMetrics } from '@/components/lab/QualityMetrics';
 import { PortalType } from '@/lib/types/scheduling';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ReportApprovalWorkflow } from '@/components/reports/ReportApprovalWorkflow';
 
 export default function ReportsPage() {
@@ -56,7 +57,7 @@ export default function ReportsPage() {
   }, [user, canAccessReports, navigate]);
 
   if (!division || !user || !canAccessReports) {
-    return <div>Loading or checking access...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   const formattedDivision = division

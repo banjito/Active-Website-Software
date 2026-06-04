@@ -11,6 +11,7 @@ import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -693,8 +694,8 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
     </div>
   );
 
-  if (loading && !reportId) return <div className="p-6 text-center">Loading job information...</div>;
-  if (loading && reportId) return <div className="p-6 text-center">Loading report data...</div>;
+  if (loading && !reportId) return <div className="p-6 text-center"><LoadingSpinner size="md" /></div>;
+  if (loading && reportId) return <div className="p-6 text-center"><LoadingSpinner size="md" /></div>;
   if (error) return <div className="p-6 text-center text-red-500">Error: {error}</div>;
 
 

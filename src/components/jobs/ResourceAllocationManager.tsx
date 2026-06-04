@@ -57,6 +57,7 @@ import WarningIcon from '@mui/icons-material/Warning';
 import CheckIcon from '@mui/icons-material/Check';
 import ErrorIcon from '@mui/icons-material/ErrorOutline';
 import TimeIcon from '@mui/icons-material/AccessTime';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Specialized status chips for different allocation statuses
 const AllocationStatusChip = ({ status }: { status: string }) => {
@@ -642,7 +643,7 @@ export default function ResourceAllocationManager({
                 disabled={!!editingAllocation || loadingResources}
               >
                 {loadingResources ? (
-                  <MenuItem value="">Loading resources...</MenuItem>
+                  <MenuItem value=""><LoadingSpinner size="md" /></MenuItem>
                 ) : availableResources.length === 0 ? (
                   <MenuItem value="">No available resources</MenuItem>
                 ) : (

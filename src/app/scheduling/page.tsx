@@ -14,6 +14,7 @@ import { PortalType, TechnicianAssignment } from '@/lib/types/scheduling';
 import { TechnicianCalendar } from '@/components/scheduling/TechnicianCalendar';
 import { TechnicianListedView } from '@/components/scheduling/TechnicianListedView';
 import dayjs from 'dayjs';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface TechCalendarProps {
   portalType: PortalType;
@@ -61,7 +62,7 @@ export default function SchedulingPage() {
   }, [user, navigate]);
 
   if (!division || !user || !canAccessScheduler) {
-    return <div>Loading or checking access...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   const formattedDivision = division

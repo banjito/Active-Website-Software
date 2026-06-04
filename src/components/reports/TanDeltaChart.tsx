@@ -7,6 +7,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
 import { useReportLocked } from './useReportLocked';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import {
   LineChart,
   Line,
@@ -342,7 +343,7 @@ const TanDeltaChart: React.FC = () => {
   );
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   return (

@@ -24,6 +24,7 @@ import { labService, Certificate, LabEquipment, Calibration } from '@/lib/servic
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { toast } from '@/components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Define the certificate types and status options with proper types
 const certificateTypes: SelectOption[] = [
@@ -431,7 +432,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
         <TabsContent value={activeTab} className="mt-4">
           {isLoading ? (
             <div className="text-center py-10">
-              <p>Loading certificates...</p>
+              <p><LoadingSpinner size="md" /></p>
             </div>
           ) : (
             <>

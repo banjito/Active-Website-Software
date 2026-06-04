@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const DebugTableCheck: React.FC = () => {
   const { user } = useAuth();
@@ -388,7 +389,7 @@ Try logging out and back in, or ask an admin to update your permissions.`);
         </div>
         
         <div className="p-4 bg-gray-100 rounded min-h-[100px] whitespace-pre-wrap">
-          {loading ? 'Loading...' : message || 'No data yet. Click one of the buttons above.'}
+          {loading ? <LoadingSpinner size="md" /> : message || 'No data yet. Click one of the buttons above.'}
         </div>
       </div>
     </div>

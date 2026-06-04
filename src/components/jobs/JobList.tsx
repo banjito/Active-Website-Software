@@ -10,6 +10,7 @@ import { useDivision } from '../../App';
 import { JobNotifications } from './JobNotifications';
 import { Database } from '@/types/supabase'; // Assuming this is the correct path to your generated types
 import { addDefaultFilesToJob } from '../../lib/services/defaultJobFiles';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { withPgTimeoutRetry } from '../../lib/retryPgTimeout';
 
 interface Contact {
@@ -353,7 +354,7 @@ export default function JobList() {
     // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       console.error('JobList: fetchJobs timed out after 30 seconds');
-      setLoadError('Loading is taking longer than expected. Please try again.');
+      setLoadError('This is taking longer than expected. Please try again.');
       setLoading(false);
     }, 30000);
 
@@ -1016,7 +1017,7 @@ export default function JobList() {
   }
 
   if (loading) {
-    return <div className="text-gray-900 dark:text-gray-100">Loading...</div>;
+    return <div className="text-gray-900 dark:text-gray-100"><LoadingSpinner size="md" /></div>;
   }
 
   return (

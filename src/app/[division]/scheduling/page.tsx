@@ -13,6 +13,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { PortalType, TechnicianAssignment } from '@/lib/types/scheduling';
 import { TechnicianCalendar } from '@/components/scheduling/TechnicianCalendar';
 import { TechnicianListedView } from '@/components/scheduling/TechnicianListedView';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import dayjs from 'dayjs';
 
 interface TechCalendarProps {
@@ -63,7 +64,7 @@ export default function SchedulingPage() {
   // All authenticated users may access scheduler; no additional role redirect
 
   if (!division || !user || !canAccessScheduler) {
-    return <div>Loading or checking access...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   const formattedDivision = division

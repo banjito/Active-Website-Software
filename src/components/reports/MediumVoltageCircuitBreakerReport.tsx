@@ -9,6 +9,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables (copied from PanelboardReport)
@@ -548,7 +549,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
     }
   };
   
-  if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingSpinner size="md" /></div>;
 
   const renderHeader = () => (
     <div className="flex justify-between items-center mb-6">

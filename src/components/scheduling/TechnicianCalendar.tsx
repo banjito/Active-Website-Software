@@ -26,6 +26,7 @@ import { supabase } from '@/lib/supabase';
 import { AlertCircle, Calendar, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import dayjs from 'dayjs';
 
 interface TechnicianCalendarProps {
@@ -986,7 +987,7 @@ export function TechnicianCalendar({
             <div style={{ height: '600px' }}>
             {loading ? (
               <div className="flex justify-center items-center h-full">
-                <p>Loading calendar data...</p>
+                <p><LoadingSpinner size="md" /></p>
               </div>
             ) : (
               <FullCalendar

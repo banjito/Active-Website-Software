@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui';
 import { DollarSign, Calendar } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface WeeklyBidItem {
   id: string;
@@ -639,7 +640,7 @@ const BidsOverview: React.FC = () => {
           }}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-gray-100 dark:bg-dark-150 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-200"
         >
-          {showAllWeeks ? 'Hide History' : historyLoading ? 'Loading…' : 'Show All Bids History'}
+          {showAllWeeks ? 'Hide History' : historyLoading ? <LoadingSpinner size="xs" /> : 'Show All Bids History'}
         </button>
       </div>
 

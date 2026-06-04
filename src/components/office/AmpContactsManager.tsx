@@ -23,6 +23,7 @@ import {
 import { fetchAmpContacts, upsertAmpContact, deleteAmpContact } from '@/services/ampContactsService';
 import type { AmpContact } from '@/services/ampContactsService';
 import { usePermissions } from '@/hooks/usePermissions';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { toast } from 'react-hot-toast';
 
 export default function AmpContactsManager() {
@@ -147,7 +148,7 @@ export default function AmpContactsManager() {
           </div>
         )}
         {loading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <p className="text-sm text-muted-foreground"><LoadingSpinner size="md" /></p>
         ) : (
           <div className="rounded-md border overflow-x-auto">
             <Table>

@@ -11,6 +11,7 @@ const PAGE_SIZE = 15;
 import { onboardingService, Checklist } from '../../../services/hr/onboardingService';
 import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const Checklists: React.FC = () => {
   const { user } = useAuth();
@@ -313,7 +314,7 @@ export const Checklists: React.FC = () => {
 
       {/* Checklists List */}
       {loading ? (
-        <div className="text-center py-12">Loading...</div>
+        <div className="text-center py-12"><LoadingSpinner size="md" /></div>
       ) : filteredChecklists.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">

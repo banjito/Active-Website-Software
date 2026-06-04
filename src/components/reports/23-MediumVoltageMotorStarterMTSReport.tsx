@@ -9,6 +9,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import { ReportWrapper } from './ReportWrapper';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables (reuse from other reports)
@@ -643,7 +644,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
 
 
-  if (loading) return <div className="p-4 text-center text-gray-700 dark:text-white">Loading report data...</div>;
+  if (loading) return <div className="p-4 text-center text-gray-700 dark:text-white"><LoadingSpinner size="md" /></div>;
 
   // Render method (JSX to be added in subsequent steps)
   return (

@@ -35,6 +35,7 @@ import {
   FileText,
   Wrench
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import dayjs from 'dayjs';
 
 // Extended Equipment interface to include missing properties
@@ -322,7 +323,7 @@ export function EquipmentTracking({ portalType, division }: EquipmentTrackingPro
       return (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading equipment...</p>
+          <p className="mt-2 text-gray-600"><LoadingSpinner size="md" /></p>
         </div>
       );
     }

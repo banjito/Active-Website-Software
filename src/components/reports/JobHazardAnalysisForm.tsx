@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { ReportWrapper } from './ReportWrapper';
 import { navigateAfterSave } from './ReportUtils';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Slug used for routing AND for asset.file_url. Detected by JobDetail to
 // classify this asset as an "Internal Form".
@@ -489,7 +490,7 @@ const JobHazardAnalysisForm: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-gray-600 dark:text-gray-300">Loading Job Hazard Analysis form…</div>
+      <div className="p-8 text-center text-gray-600 dark:text-gray-300"><LoadingSpinner size="md" /></div>
     );
   }
 

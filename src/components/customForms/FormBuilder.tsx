@@ -66,6 +66,7 @@ import {
 } from '@/lib/customForms/componentDefaultOverrides';
 import { fetchSavedComponents, saveSavedComponent, updateSavedComponent, deleteSavedComponent, type SavedComponent } from '@/lib/customForms/savedComponents';
 import { SavedComponentsDialog } from './SavedComponentsDialog';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const FormBuilder: React.FC = () => {
   const { templateId } = useParams<{ templateId?: string }>();
@@ -687,7 +688,7 @@ export const FormBuilder: React.FC = () => {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <div className="spinner mb-4"></div>
-          <p>Loading template...</p>
+          <p><LoadingSpinner size="md" /></p>
         </div>
       </div>
     );

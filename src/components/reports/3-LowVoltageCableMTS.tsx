@@ -9,6 +9,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Types
 interface CableTestData {
@@ -1850,7 +1851,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
 
   // Loading and Error States
   if (loading) {
-    return <div className="p-6 text-center text-gray-500 dark:text-white">Loading report data...</div>;
+    return <div className="p-6 text-center text-gray-500 dark:text-white"><LoadingSpinner size="md" /></div>;
   }
   if (error) {
     return <div className="p-6 text-red-600 dark:text-red-400">Error: {error}</div>;

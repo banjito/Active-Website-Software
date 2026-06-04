@@ -80,7 +80,6 @@ export const ReviewShortcutsDropdown: React.FC<ReviewShortcutsDropdownProps> = (
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <LoadingSpinner size="xs" />
-            <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">Loading…</span>
           </div>
         ) : error ? (
           <div className="flex items-center gap-2 px-4 py-6 text-sm text-red-600 dark:text-red-400">

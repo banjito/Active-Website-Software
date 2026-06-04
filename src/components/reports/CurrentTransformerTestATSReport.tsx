@@ -9,6 +9,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables
@@ -469,7 +470,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     });
   };
 
-  if (loading) return <div className="p-6 text-center">Loading report data...</div>;
+  if (loading) return <div className="p-6 text-center"><LoadingSpinner size="md" /></div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">

@@ -909,7 +909,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-red-600 text-center">
-          <p className="text-xl font-semibold mb-2">Error Loading Report</p>
+          <p className="text-xl font-semibold mb-2">Report Error</p>
           <p>{error}</p>
         </div>
       </div>

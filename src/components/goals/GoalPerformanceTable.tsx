@@ -31,6 +31,7 @@ import {
   determineGoalStatus, 
   formatCurrency 
 } from '../../utils/salesUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface TeamMember {
   id: string;
@@ -216,7 +217,7 @@ export const GoalPerformanceTable: React.FC<GoalPerformanceTableProps> = ({
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

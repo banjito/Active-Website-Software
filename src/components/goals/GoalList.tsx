@@ -17,6 +17,7 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Edit, Trash2, Calendar, AlertTriangle, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export function GoalList() {
   const [goals, setGoals] = useState<SalesGoal[]>([]);
@@ -56,7 +57,7 @@ export function GoalList() {
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-64">
-      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      <LoadingSpinner size="md" />
     </div>;
   }
 

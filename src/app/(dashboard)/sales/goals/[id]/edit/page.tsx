@@ -5,6 +5,7 @@ import { fetchGoalById } from '../../../../../../services/goalService';
 import { SalesGoal } from '../../../../../../types/sales';
 import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function EditGoalPage() {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ export default function EditGoalPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          <LoadingSpinner size="md" />
         </div>
       </div>
     );

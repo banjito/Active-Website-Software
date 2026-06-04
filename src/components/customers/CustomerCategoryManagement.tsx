@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, X, Check, Filter, Settings } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { 
   CustomerCategory, 
   getCategories, 
@@ -182,7 +183,7 @@ export default function CustomerCategoryManagement() {
   }
 
   if (loading) {
-    return <div className="text-gray-900 dark:text-gray-100">Loading categories...</div>;
+    return <div className="text-gray-900 dark:text-gray-100"><LoadingSpinner size="md" /></div>;
   }
 
   return (

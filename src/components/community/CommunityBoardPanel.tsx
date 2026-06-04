@@ -6,6 +6,7 @@ import type { CommunityPostRow, FeedPost, ReactionType } from '@/lib/communityTy
 import { ALL_REACTION_TYPES } from '@/lib/communityTypes';
 import { PostComposer } from '@/components/community/PostComposer';
 import { PostCard } from '@/components/community/PostCard';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const PAGE = 15;
 
@@ -276,7 +277,7 @@ export function CommunityBoardPanel() {
               disabled={loadingMore}
               className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-200 disabled:opacity-50"
             >
-              {loadingMore ? 'Loading…' : 'Load more'}
+              {loadingMore ? <LoadingSpinner size="xs" /> : 'Load more'}
             </button>
           </div>
         )}

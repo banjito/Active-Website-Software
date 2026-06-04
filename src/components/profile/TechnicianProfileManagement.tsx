@@ -27,6 +27,7 @@ import {
 import dayjs from 'dayjs';
 import { supabase } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface TechnicianProfileManagementProps {
   portalType: PortalType;
@@ -594,7 +595,7 @@ export function TechnicianProfileManagement({ portalType, division }: Technician
 
                   <div className="space-y-4">
                     {isLoading ? (
-                      <p>Loading skills...</p>
+                      <p><LoadingSpinner size="md" /></p>
                     ) : skills.length === 0 ? (
                       <p>No skills or certifications recorded for this technician.</p>
                     ) : (

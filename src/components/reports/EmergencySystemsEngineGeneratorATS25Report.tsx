@@ -9,6 +9,7 @@ import { ReportWrapper } from './ReportWrapper';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature correction factor lookup (same as other reports e.g. LV Circuit Breaker ATS 25)
@@ -704,7 +705,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
+        <div className="text-lg"><LoadingSpinner size="md" /></div>
       </div>
     );
   }

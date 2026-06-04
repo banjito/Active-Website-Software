@@ -11,6 +11,7 @@ import {
   deleteCheckin,
   signCheckinAsEmployee,
 } from '@/services/hr/oneOnOneService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { OneOnOneForm } from './OneOnOneForm';
 
 interface OneOnOneListProps {
@@ -115,7 +116,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
 
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading check-ins...
+            <LoadingSpinner size="sm" />
           </div>
         ) : checkins.length === 0 ? (
           <p className="text-sm text-muted-foreground">

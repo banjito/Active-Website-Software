@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { toast } from '@/components/ui/toast';
 import { Textarea } from '@/components/ui/Textarea';
 import { useAuth } from '@/lib/AuthContext';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import {
   fetchVendors,
   createVendor,
@@ -552,7 +553,7 @@ const VendorManagement: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        <span className="ml-2 text-gray-500">Loading vendors...</span>
+        <span className="ml-2 text-gray-500"><LoadingSpinner size="md" /></span>
       </div>
     );
   }
@@ -651,7 +652,7 @@ const VendorManagement: React.FC = () => {
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-              <span className="ml-2 text-gray-500">Loading vendors...</span>
+              <span className="ml-2 text-gray-500"><LoadingSpinner size="md" /></span>
             </div>
           ) : paginatedVendors.length === 0 ? (
             <div className="text-center py-12 text-gray-500">

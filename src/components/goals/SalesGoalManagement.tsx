@@ -9,6 +9,7 @@ import { GoalForm } from './GoalForm';
 import { GoalProgress } from './GoalProgress';
 
 import { Button } from '../ui/Button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import Card from '../ui/Card';
 
 const SalesGoalManagement: React.FC = () => {
@@ -112,8 +113,7 @@ const SalesGoalManagement: React.FC = () => {
     return (
       <div className="container py-4">
         <div className="flex justify-center items-center" style={{ height: '300px' }}>
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-          <span className="ml-2">Loading sales goals...</span>
+          <LoadingSpinner size="md" />
         </div>
       </div>
     );

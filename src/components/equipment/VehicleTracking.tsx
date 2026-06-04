@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Equipment, EquipmentFilter, Vehicle, VehicleWithDetails } from '@/lib/interfaces/equipment';
 import equipmentService from '@/lib/services/equipmentService';
 import { toast } from 'react-hot-toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export interface VehicleTrackingProps {
   division: string;
@@ -654,7 +655,7 @@ export function VehicleTracking({ division, initialFormOpen = false, onClose, hi
           
           <div className="space-y-4">
             {isLoading ? (
-              <p>Loading vehicles...</p>
+              <p><LoadingSpinner size="md" /></p>
             ) : vehicles.length === 0 ? (
               <div className="text-center p-8 bg-gray-50 rounded-md">
                 <Truck className="h-12 w-12 mx-auto text-gray-400 mb-2" />

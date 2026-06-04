@@ -5,6 +5,7 @@ import { Select } from '../../../components/ui/Select';
 import { FileBarChart, Download, Loader2, Users, PieChart, Shield, BarChart3, ArrowRight, UserCheck, UserX } from 'lucide-react';
 import { eeoComplianceService, EeoAggregation, EeoPipelineSummary } from '../../../services/hr/eeoComplianceService';
 import { toast } from '../../../components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const EeoReporting: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -118,7 +119,7 @@ export const EeoReporting: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#f26722]" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading EEO compliance data...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400"><LoadingSpinner size="md" /></p>
         </div>
       </div>
     );

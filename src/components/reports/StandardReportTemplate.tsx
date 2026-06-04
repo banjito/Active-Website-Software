@@ -22,6 +22,7 @@ import {
   createStandardMetadata,
   validateReportStructure
 } from '../../types/standardReportStructure';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Equipment-specific interfaces extend the standard structure
 interface EquipmentSpecificData {
@@ -339,7 +340,7 @@ const StandardReportTemplate: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg">Loading report...</div>
+        <div className="text-lg"><LoadingSpinner size="md" /></div>
       </div>
     );
   }

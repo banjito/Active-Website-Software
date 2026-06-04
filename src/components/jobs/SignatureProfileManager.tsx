@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/lib/AuthContext';
 
 interface SignatureProfile {
@@ -180,7 +181,7 @@ export const SignatureProfileManager: React.FC<SignatureProfileManagerProps> = (
         
         <div className="flex-1 overflow-y-auto pr-2 space-y-4">
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Loading...</div>
+            <div className="text-center py-8 text-gray-500"><LoadingSpinner size="md" /></div>
           ) : profiles.length === 0 && !isAdding ? (
             <div className="text-center py-8 text-gray-500">
               <p>No signature profiles yet.</p>

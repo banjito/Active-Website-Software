@@ -757,7 +757,6 @@ export const CandidateTracking: React.FC = () => {
           <CardContent className="pt-6">
             <div className="text-center py-12">
               <LoadingSpinner size="md" />
-              <p className="mt-4 text-gray-600 dark:text-gray-400">Loading candidates...</p>
             </div>
           </CardContent>
         </Card>
@@ -1552,7 +1551,6 @@ export const CandidateTracking: React.FC = () => {
                     {loadingInterviews ? (
                       <div className="text-center py-8">
                         <LoadingSpinner size="sm" />
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading interviews...</p>
                       </div>
                     ) : candidateInterviews.length === 0 ? (
                       <div className="text-center py-8">

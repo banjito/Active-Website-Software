@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import dayjs from 'dayjs';
 import { createJobNotification } from '@/services/notificationService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Props interface
 interface JobAssignmentManagementProps {
@@ -442,7 +443,7 @@ export function JobAssignmentManagement({ portalType, division }: JobAssignmentM
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Loading assignments...</p>
+              <p className="mt-2 text-gray-600"><LoadingSpinner size="md" /></p>
             </div>
           ) : error ? (
             <div className="text-center py-8 text-red-500">

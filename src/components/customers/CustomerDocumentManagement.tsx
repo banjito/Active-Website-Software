@@ -11,7 +11,6 @@ import Tab from 'react-bootstrap/Tab';
 import Modal from 'react-bootstrap/Modal';
 import Alert from 'react-bootstrap/Alert';
 import Badge from 'react-bootstrap/Badge';
-import Spinner from 'react-bootstrap/Spinner';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -59,6 +58,7 @@ import {
   getGoogleDriveDocuments,
   syncGoogleDriveDocuments,
 } from '../../services/customerService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { format } from 'date-fns';
 
 // File type to icon mapping
@@ -480,11 +480,9 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
   // UI rendering functions
   const renderFileList = () => {
     if (isLoading && documents.length === 0) {
-  return (
+      return (
         <div className="d-flex justify-content-center my-5">
-          <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </Spinner>
+          <LoadingSpinner size="md" />
         </div>
       );
     }

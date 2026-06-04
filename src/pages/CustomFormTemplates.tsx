@@ -28,6 +28,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface Template {
   id: string;
@@ -161,7 +162,7 @@ export const CustomFormTemplates: React.FC = () => {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <div className="spinner mb-4"></div>
-          <p>Loading templates...</p>
+          <p><LoadingSpinner size="md" /></p>
         </div>
       </div>
     );

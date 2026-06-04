@@ -21,6 +21,7 @@ import {
   ProposalScopeNote,
   ProposalScopeNoteInput,
 } from '../../services/proposalScopeNotesService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ProposalScopeNotesModalProps {
   isOpen: boolean;
@@ -264,7 +265,7 @@ export const ProposalScopeNotesModal: React.FC<ProposalScopeNotesModalProps> = (
             {/* Notes List */}
             <div className="flex-1 overflow-auto p-4">
               {loading ? (
-                <div className="text-center text-gray-500 py-8">Loading scope notes...</div>
+                <div className="text-center text-gray-500 py-8"><LoadingSpinner size="md" /></div>
               ) : filteredNotes.length === 0 ? (
                 <div className="text-center text-gray-500 py-8">
                   {notes.length === 0

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function GeneratedDocumentViewer() {
   const { id, docId } = useParams<{ id: string; docId: string }>();
@@ -129,7 +130,7 @@ export default function GeneratedDocumentViewer() {
   }, [searchParams, html, isLoading]);
 
   if (isLoading) {
-    return <div className="p-6 text-gray-700 dark:text-white">Loading document…</div>;
+    return <div className="p-6 text-gray-700 dark:text-white"><LoadingSpinner size="md" /></div>;
   }
   if (error) {
     return <div className="p-6 text-red-600">{error}</div>;

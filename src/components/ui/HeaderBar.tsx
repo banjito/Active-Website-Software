@@ -28,6 +28,7 @@ import { supabase } from '@/lib/supabase';
 import { fetchAmpContacts } from '@/services/ampContactsService';
 import type { AmpContact } from '@/services/ampContactsService';
 import { CommunityBoardPopover } from '@/components/community/CommunityBoardPopover';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { navigateFromShortcut } from '@/lib/shortcutNavigation';
 
 type ReviewNotification = {
@@ -736,7 +737,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                   </div>
                   <div className="overflow-y-auto flex-1 min-h-0">
                     {contactsLoading ? (
-                      <div className="p-4 text-sm text-gray-500 dark:text-white">Loading…</div>
+                      <div className="p-4 text-sm text-gray-500 dark:text-white"><LoadingSpinner size="md" /></div>
                     ) : ampContacts.length === 0 ? (
                       <div className="p-4 text-sm text-gray-500 dark:text-white">
                         No contacts. Add them in HR portal → HR Data → Call list.
@@ -822,7 +823,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {notifLoading ? (
-                      <div className="p-4 text-sm text-gray-500 dark:text-white">Loading…</div>
+                      <div className="p-4 text-sm text-gray-500 dark:text-white"><LoadingSpinner size="md" /></div>
                     ) : detailStatus === null ? (
                       <div className="divide-y divide-gray-200 dark:divide-dark-200">
                         {canApproveReports &&
@@ -1104,7 +1105,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
                         {user?.user_metadata?.role || 'No role assigned'}
                       </p>
                       <p className="text-xs text-gray-400 dark:text-dark-500 truncate mt-1">
-                        {user?.email || 'Loading...'}
+                        {user?.email || <LoadingSpinner size="xs" />}
                       </p>
                     </div>
                     <button

@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 type ResultOption = 'Select One' | 'Satisfactory' | 'Unsatisfactory' | 'Cleaned' | 'See Comments' | 'Not Applicable';
@@ -1476,7 +1477,7 @@ const PotentialTransformerATSReport: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
+        <div className="text-lg"><LoadingSpinner size="md" /></div>
       </div>
     );
   }

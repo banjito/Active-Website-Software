@@ -9,6 +9,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Temperature conversion and correction factor lookup tables
@@ -1041,7 +1042,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
     </div>
   );
 
-  if (loading) return <div className="p-4 text-center text-lg text-gray-700 dark:text-white">Loading report data...</div>;
+  if (loading) return <div className="p-4 text-center text-lg text-gray-700 dark:text-white"><LoadingSpinner size="md" /></div>;
 
   const renderInsulationRow = (stateKey: keyof FormData['insulationResistance'], title: string, hasNeutral: boolean = false) => {
     const rowData = formData.insulationResistance[stateKey] || { ...initialInsulationRow } as any;

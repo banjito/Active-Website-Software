@@ -14,6 +14,7 @@ import Select, { SelectOption } from '@/components/ui/Select';
 import { TechnicianCalendar } from './TechnicianCalendar';
 import { Clock, Save, Plus, XCircle, Calendar } from 'lucide-react';
 import dayjs from 'dayjs';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Interfaces
 interface ScheduleManagementProps {
@@ -536,7 +537,7 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
 
               <div className="space-y-4">
                 {isLoading ? (
-                  <p>Loading availabilities...</p>
+                  <p><LoadingSpinner size="md" /></p>
                 ) : availabilities.length === 0 ? (
                   <p>No regular availability set for this technician. Add their working hours to enable scheduling.</p>
                 ) : (
@@ -695,7 +696,7 @@ export function ScheduleManagement({ portalType, division }: ScheduleManagementP
 
               <div className="space-y-4">
                 {isLoading ? (
-                  <p>Loading exceptions...</p>
+                  <p><LoadingSpinner size="md" /></p>
                 ) : exceptions.length === 0 ? (
                   <p>No time off or special availability records found.</p>
                 ) : (

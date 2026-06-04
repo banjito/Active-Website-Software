@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getQuickBooksStatus, disconnectQuickBooks, getQuickBooksOAuthUrl } from '../../services/quickbooksService';
 
 interface QuickBooksIntegrationProps {
@@ -72,7 +73,7 @@ export default function QuickBooksIntegration({ onConnect, onDisconnect }: Quick
     return (
       <div className="flex items-center justify-center p-4">
         <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
-        <span className="ml-2 text-gray-600">Loading...</span>
+        <span className="ml-2 text-gray-600"><LoadingSpinner size="md" /></span>
       </div>
     );
   }

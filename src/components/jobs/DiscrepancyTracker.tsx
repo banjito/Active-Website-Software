@@ -367,7 +367,6 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
     return (
       <div className="flex items-center justify-center py-12">
         <LoadingSpinner size="md" />
-        <span className="ml-3 text-gray-500 dark:text-gray-400">Loading report evaluations...</span>
       </div>
     );
   }

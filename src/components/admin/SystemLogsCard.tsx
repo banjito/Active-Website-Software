@@ -5,6 +5,7 @@ import Card, { CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Skeleton } from '../ui/Skeleton';
 import { formatDistanceToNow } from 'date-fns';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface AdminNotification {
   id: string;
@@ -68,8 +69,14 @@ export const SystemLogsCard: React.FC = () => {
           Recent Activity
         </CardTitle>
         <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Loading...' : 'Refresh'}
+          {loading ? (
+            <LoadingSpinner size="xs" />
+          ) : (
+            <>
+              <RefreshCw className="h-4 w-4 mr-1" />
+              Refresh
+            </>
+          )}
         </Button>
       </CardHeader>
       <CardContent>

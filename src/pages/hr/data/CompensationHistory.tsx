@@ -7,6 +7,7 @@ import { DollarSign, User, Loader2, Save } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface EmployeeOption {
   id: string;
@@ -233,7 +234,7 @@ export const CompensationHistory: React.FC = () => {
           {loadingEmployees ? (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Loading employees…
+              <LoadingSpinner size="md" />
             </div>
           ) : (
             <div className="space-y-2">
@@ -329,7 +330,7 @@ export const CompensationHistory: React.FC = () => {
             {loadingHistory ? (
               <div className="flex items-center gap-2 text-muted-foreground py-4">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading history…
+                <LoadingSpinner size="md" />
               </div>
             ) : history.length === 0 ? (
               <p className="text-muted-foreground py-4">

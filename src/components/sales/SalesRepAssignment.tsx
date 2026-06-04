@@ -3,10 +3,10 @@ import Table from 'react-bootstrap/Table';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
-import Spinner from 'react-bootstrap/Spinner';
 import Card from 'react-bootstrap/Card';
 import { TerritorySalesRep, Territory } from '../../types/sales';
 import { fetchSalesRepsByTerritory, assignSalesRepToTerritory, removeSalesRepFromTerritory } from '../../services/territoryService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface SalesRepAssignmentProps {
   territory: Territory;
@@ -89,9 +89,7 @@ const SalesRepAssignment: React.FC<SalesRepAssignmentProps> = ({ territory, onUp
   if (loading) {
     return (
       <div className="text-center my-5">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

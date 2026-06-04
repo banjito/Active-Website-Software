@@ -28,6 +28,7 @@ import {
   fillTemplate,
   getPlaceholderList,
 } from '../../../services/hr/candidateCommunicationService';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { toast } from '../../../components/ui/toast';
 
 export const CandidateCommunication: React.FC = () => {
@@ -198,7 +199,7 @@ Your Team`,
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-gray-500">Loading...</p>
+              <p className="text-gray-500"><LoadingSpinner size="md" /></p>
             ) : templates.length === 0 ? (
               <p className="text-gray-500">No templates yet. Create one to get started.</p>
             ) : (

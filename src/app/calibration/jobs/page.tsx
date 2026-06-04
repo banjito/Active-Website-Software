@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/Separator';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { JobCreationForm } from '@/components/jobs/JobCreationForm';
 
 interface Customer {
@@ -237,7 +238,7 @@ export default function CalibrationJobsPage() {
         </div>
         
         {loading ? (
-          <div className="p-4 text-center">Loading jobs...</div>
+          <div className="p-4 text-center"><LoadingSpinner size="md" /></div>
         ) : jobs.length === 0 ? (
           <div className="p-8 text-center">
             <div className="mb-4 text-gray-500 dark:text-white">

@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Badge } from "../ui/Badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs";
 import Select from '../ui/Select';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 type GoalStatus = 'completed' | 'on-track' | 'at-risk' | 'behind';
 
@@ -122,7 +123,7 @@ const GoalDashboard: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="p-4">Loading dashboard data...</div>;
+  if (loading) return <div className="p-4"><LoadingSpinner size="md" /></div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (

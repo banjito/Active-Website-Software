@@ -3,6 +3,7 @@ import { MessageCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { formatRelativeSafe } from '@/lib/formatRelativeSafe';
 import type { CommentWithAuthor, CommunityCommentRow } from '@/lib/communityTypes';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { loadAuthorsForUserIds } from '@/lib/communityProfiles';
 
 const PREVIEW = 3;
@@ -122,7 +123,7 @@ export const CommentThread: React.FC<Props> = ({ postId, currentUserId, commentC
       {open && (
         <div className="mt-3 space-y-3">
           {loading ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400">Loading comments…</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400"><LoadingSpinner size="md" /></p>
           ) : comments.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400">No comments yet.</p>
           ) : (

@@ -263,6 +263,7 @@ import GFITripTestReport from './components/reports/GFITripTestReport';
 
 // Import Keyboard Navigation Test component
 import { KeyboardNavigationTest } from './components/test/KeyboardNavigationTest';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { BackToJobButtonTest } from './components/test/BackToJobButtonTest';
 
 // --- Define Division Context --- Start
@@ -386,7 +387,7 @@ const DatabaseDebug: React.FC = () => {
       <h1 className="text-xl font-bold mb-4">Database Schema Debug</h1>
       
       {loading ? (
-        <p>Loading database information...</p>
+        <p><LoadingSpinner size="md" /></p>
       ) : error ? (
         <div className="p-4 bg-red-100 text-red-700 rounded">
           <h2 className="font-semibold">Error:</h2>
@@ -723,11 +724,11 @@ function App() {
                   <Route path="/jobs/:id/low-voltage-panelboard-small-breaker-report/:reportId?" element={<RequireAuth><Layout><LowVoltagePanelboardSmallBreakerTestATSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-circuit-breaker-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageCircuitBreakerReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><CurrentTransformerTestATSReport /></Layout></RequireAuth>} />
-                  <Route path="/jobs/:id/12-current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><New12CurrentTransformerTestATSReport /></Suspense></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/12-current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div><LoadingSpinner size="md" /></div>}><New12CurrentTransformerTestATSReport /></Suspense></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/oil-analysis-report/:reportId?" element={<RequireAuth><Layout><OilAnalysisReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/cable-hipot-test-report/:reportId?" element={<RequireAuth><Layout><CableHiPotReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><CurrentTransformerTestATSReport /></Layout></RequireAuth>} />
-                  <Route path="/jobs/:id/12-current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><New12CurrentTransformerTestATSReport /></Suspense></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/12-current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div><LoadingSpinner size="md" /></div>}><New12CurrentTransformerTestATSReport /></Suspense></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/relay-test-report/:reportId?" element={<RequireAuth><Layout><RelayTestReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/automatic-transfer-switch-ats-report/:reportId?" element={<RequireAuth><Layout><AutomaticTransferSwitchATSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/switchgear-switchboard-assemblies-ats25/:reportId?" element={<RequireAuth><Layout><SwitchgearSwitchboardAssembliesATS25Report /></Layout></RequireAuth>} />
@@ -750,13 +751,13 @@ function App() {
                   <Route path="/jobs/:id/job-hazard-analysis-form/:reportId?" element={<RequireAuth><Layout><JobHazardAnalysisForm /></Layout></RequireAuth>} />
 
                   {/* Added route for LiquidXfmrVisualMTSReport */}
-                  <Route path="/jobs/:id/liquid-xfmr-visual-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><LiquidXfmrVisualMTSReport /></Suspense></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/liquid-xfmr-visual-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div><LoadingSpinner size="md" /></div>}><LiquidXfmrVisualMTSReport /></Suspense></Layout></RequireAuth>} />
 
                   {/* Added route for Two Small Dry Type Transformer ATS Report */}
-                  <Route path="/jobs/:id/two-small-dry-typer-xfmr-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><TwoSmallDryTyperXfmrATSReport /></Suspense></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/two-small-dry-typer-xfmr-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div><LoadingSpinner size="md" /></div>}><TwoSmallDryTyperXfmrATSReport /></Suspense></Layout></RequireAuth>} />
 
                   {/* Added route for Two Small Dry Type Transformer MTS Report */}
-                  <Route path="/jobs/:id/two-small-dry-typer-xfmr-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><TwoSmallDryTyperXfmrMTSReport /></Suspense></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/two-small-dry-typer-xfmr-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div><LoadingSpinner size="md" /></div>}><TwoSmallDryTyperXfmrMTSReport /></Suspense></Layout></RequireAuth>} />
 
                   {/* Added route for the new Tan Delta Test MTS Form */}
                   <Route path="/jobs/:id/electrical-tan-delta-test-mts-form/:reportId?" element={<RequireAuth><Layout><TanDeltaTestMTSForm /></Layout></RequireAuth>} />
@@ -766,7 +767,7 @@ function App() {
                   <Route path="/jobs/:id/medium-voltage-circuit-breaker-mts-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageCircuitBreakerMTSReport /></Layout></RequireAuth>} />
                   
                   {/* Added route for 12-Current Transformer Test MTS Report */}
-                  <Route path="/jobs/:id/12-current-transformer-test-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><New12CurrentTransformerTestMTSReport /></Suspense></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/12-current-transformer-test-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div><LoadingSpinner size="md" /></div>}><New12CurrentTransformerTestMTSReport /></Suspense></Layout></RequireAuth>} />
 
                   {/* Added route for 13-Voltage Potential Transformer Test MTS Report */}
                   <Route path="/jobs/:id/13-voltage-potential-transformer-test-mts-report/:reportId?" element={<RequireAuth><Layout><VoltagePotentialTransformerTestMTSReport /></Layout></RequireAuth>} />

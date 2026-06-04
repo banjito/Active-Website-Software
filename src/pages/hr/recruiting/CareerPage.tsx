@@ -133,7 +133,6 @@ export const CareerPage: React.FC = () => {
           <CardContent className="pt-6">
             <div className="text-center py-12">
               <LoadingSpinner size="md" />
-              <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
             </div>
           </CardContent>
         </Card>

@@ -233,7 +233,6 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <LoadingSpinner size="sm" />
-              <span className="ml-2 text-gray-600 dark:text-white">Loading comments...</span>
             </div>
           ) : error ? (
             <div className="flex items-center justify-center py-8">

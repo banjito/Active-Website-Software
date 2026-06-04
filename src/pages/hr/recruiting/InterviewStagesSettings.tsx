@@ -13,6 +13,7 @@ import {
   CreateQuestionInput,
 } from '../../../services/hr/interviewStagesService';
 import { toast } from '../../../components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const slugFromName = (name: string) =>
   name
@@ -250,7 +251,7 @@ export const InterviewStagesSettings: React.FC = () => {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-gray-500">Loading...</p>
+            <p className="text-gray-500"><LoadingSpinner size="md" /></p>
           ) : stages.length === 0 ? (
             <p className="text-gray-500">No stages yet. Add one to get started.</p>
           ) : (

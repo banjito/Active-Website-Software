@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { Role, ROLES } from '@/lib/roles';
 import { Button } from '../ui/Button';
 import { Users, UserPlus, Shield, Edit, Trash2, CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface UserData {
   id: string;
@@ -223,7 +224,7 @@ export default function AdminUserManagement() {
 
         {loading ? (
           <div className="bg-white dark:bg-dark-150 p-6 text-center text-gray-500 dark:text-white">
-            Loading users...
+            <LoadingSpinner size="md" />
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="bg-white dark:bg-dark-150 p-6 text-center text-gray-500 dark:text-white">

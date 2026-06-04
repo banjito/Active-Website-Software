@@ -23,6 +23,7 @@ import { AboutPopup } from './AboutPopup';
 import { useMobileDetection } from '../../hooks/useMobileDetection';
 import { CommunityBoardPopover } from '@/components/community/CommunityBoardPopover';
 import { HeaderBar } from './HeaderBar';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -704,7 +705,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                             {user?.user_metadata?.role || 'No role assigned'}
                           </p>
                           <p className="text-xs text-gray-400 dark:text-dark-500 truncate mt-1">
-                            {user?.email || 'Loading...'}
+                            {user?.email || <LoadingSpinner size="xs" />}
                           </p>
                         </div>
                         <button

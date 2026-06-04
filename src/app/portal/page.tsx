@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { onboardingService } from "@/services/hr/onboardingService"
 import { toast } from "@/components/ui/toast"
 import { HeaderBar } from '@/components/ui/HeaderBar'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
 export default function PortalLanding() {
   const navigate = useNavigate();
@@ -1136,7 +1137,7 @@ export default function PortalLanding() {
             {ackResolvingForm && (
               <div className="flex items-center gap-2 text-muted-foreground py-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading acknowledgment form…
+                <LoadingSpinner size="md" />
               </div>
             )}
             {!ackResolvingForm && !ackFormId && ackModalDocUrl && (

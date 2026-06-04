@@ -18,6 +18,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface TanDeltaDataPoint {
   voltageLabel: string;
@@ -360,7 +361,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
   );
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   return (

@@ -161,6 +161,19 @@ interface OpportunityData {
   };
 }
 
+type EstimateLineItemRowType = 'item' | 'section' | 'blank';
+
+interface EstimateLineItem {
+  rowType?: EstimateLineItemRowType;
+  item: string;
+  quantity: number | string;
+  materialPrice: number | string;
+  expensePrice: number | string;
+  laborMen: number | string;
+  laborHours: number | string;
+  notes: string;
+}
+
 interface EstimateData {
   // Optional custom title shown in tabs and selectors; falls back to Quote <number>
   title?: string;
@@ -174,26 +187,10 @@ interface EstimateData {
   notes: string;
   
   // SOV items (the main items)
-  sovItems: {
-    item: string;
-    quantity: number;
-    materialPrice: number;
-    expensePrice: number;
-    laborMen: number;
-    laborHours: number;
-    notes: string;
-  }[];
+  sovItems: EstimateLineItem[];
   
   // Non-SOV items (reports, shipping, etc.)
-  nonSovItems: {
-    item: string;
-    quantity: number;
-    materialPrice: number;
-    expensePrice: number;
-    laborMen: number;
-    laborHours: number;
-    notes: string;
-  }[];
+  nonSovItems: EstimateLineItem[];
   
   calculatedValues: {
     subtotalMaterial: number;
@@ -256,7 +253,8 @@ interface EstimateData {
 }
 
 const DEFAULT_LINE_COUNT = 5;
-const EMPTY_LINE_ITEM = {
+const EMPTY_LINE_ITEM: EstimateLineItem = {
+  rowType: 'item',
   item: '',
   quantity: 0,
   materialPrice: 0,
@@ -266,54 +264,94 @@ const EMPTY_LINE_ITEM = {
   notes: ''
 };
 
+const createEmptyLineItem = (): EstimateLineItem => ({ ...EMPTY_LINE_ITEM });
+
+const createSectionLineItem = (): EstimateLineItem => ({
+  ...EMPTY_LINE_ITEM,
+  rowType: 'section',
+  item: 'New Section'
+});
+
+const createBlankLineItem = (): EstimateLineItem => ({
+  ...EMPTY_LINE_ITEM,
+  rowType: 'blank'
+});
+
+const createLineItemForRowType = (rowType: EstimateLineItemRowType = 'item'): EstimateLineItem => {
+  if (rowType === 'section') return createSectionLineItem();
+  if (rowType === 'blank') return createBlankLineItem();
+  return createEmptyLineItem();
+};
+
+const createDefaultLineItems = (): EstimateLineItem[] =>
+  Array(DEFAULT_LINE_COUNT).fill(null).map(() => createEmptyLineItem());
+
+const isEstimateSectionRow = (item: any) => item?.rowType === 'section';
+const isEstimateBlankRow = (item: any) => item?.rowType === 'blank';
+const isStructuralLineItem = (item: any) => isEstimateSectionRow(item) || isEstimateBlankRow(item);
+
+const normalizeEstimateLineItem = (item: any): EstimateLineItem => {
+  const rowType: EstimateLineItemRowType =
+    item?.rowType === 'section' || item?.rowType === 'blank' ? item.rowType : 'item';
+
+  return {
+    ...EMPTY_LINE_ITEM,
+    ...(item || {}),
+    rowType
+  };
+};
+
+const normalizeEstimateLineItems = (items: any, fallback: EstimateLineItem[]): EstimateLineItem[] => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return fallback.map(item => normalizeEstimateLineItem(item));
+  }
+
+  return items.map(normalizeEstimateLineItem);
+};
+
+const shouldShowSovItemInProposal = (item: any): boolean => {
+  if (isEstimateBlankRow(item)) return true;
+  const name = (item?.item ?? '').toString().trim();
+  if (isEstimateSectionRow(item)) return name.length > 0;
+
+  const hasQty = Number(item?.quantity) > 0;
+  const hasAnyCost = [item?.materialPrice, item?.expensePrice, item?.laborMen, item?.laborHours]
+    .some((value: any) => Number(value) > 0);
+
+  return name.length > 0 || hasQty || hasAnyCost;
+};
+
 // Default Non-SOV items
-const DEFAULT_NON_SOV_ITEMS = [
+const DEFAULT_NON_SOV_ITEMS: EstimateLineItem[] = [
   {
+    ...EMPTY_LINE_ITEM,
     item: 'Reports',
-    quantity: 1,
-    materialPrice: 0,
-    expensePrice: 0,
-    laborMen: 0,
-    laborHours: 0,
-    notes: ''
+    quantity: 1
   },
   {
+    ...EMPTY_LINE_ITEM,
     item: 'Project Management',
-    quantity: 1,
-    materialPrice: 0,
-    expensePrice: 0,
-    laborMen: 0,
-    laborHours: 0,
-    notes: ''
+    quantity: 1
   },
   {
+    ...EMPTY_LINE_ITEM,
     item: 'Shipping/ Postage',
-    quantity: 1,
-    materialPrice: 0,
-    expensePrice: 0,
-    laborMen: 0,
-    laborHours: 0,
-    notes: ''
+    quantity: 1
   },
   {
+    ...EMPTY_LINE_ITEM,
     item: 'Equipment Rental',
-    quantity: 1,
-    materialPrice: 0,
-    expensePrice: 0,
-    laborMen: 0,
-    laborHours: 0,
-    notes: ''
+    quantity: 1
   },
   {
+    ...EMPTY_LINE_ITEM,
     item: 'Equipment Purchase',
-    quantity: 1,
-    materialPrice: 0,
-    expensePrice: 0,
-    laborMen: 0,
-    laborHours: 0,
-    notes: ''
+    quantity: 1
   }
 ];
+
+const createDefaultNonSovItems = (): EstimateLineItem[] =>
+  DEFAULT_NON_SOV_ITEMS.map(item => normalizeEstimateLineItem(item));
 
 const EMPTY_TRAVEL_ITEM = {
   trips: 1,
@@ -550,8 +588,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       estimatedStartDate: '',
       poNumber: '',
       notes: '',
-      sovItems: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({ ...EMPTY_LINE_ITEM })),
-      nonSovItems: [...DEFAULT_NON_SOV_ITEMS],
+      sovItems: createDefaultLineItems(),
+      nonSovItems: createDefaultNonSovItems(),
       calculatedValues: {
         subtotalMaterial: 0,
         subtotalExpense: 0,
@@ -862,9 +900,16 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       if (savedDraft && typeof savedDraft === 'object') {
         // Extract payment term factors if they exist
         const { paymentTermFactors: savedFactors, mobilizationFactors: savedMobilization, ...restData } = savedDraft;
+        const restoredData: any = { ...restData };
+        if (Array.isArray(restoredData.sovItems)) {
+          restoredData.sovItems = normalizeEstimateLineItems(restoredData.sovItems, createDefaultLineItems());
+        }
+        if (Array.isArray(restoredData.nonSovItems)) {
+          restoredData.nonSovItems = normalizeEstimateLineItems(restoredData.nonSovItems, createDefaultNonSovItems());
+        }
         
         // Restore data
-        setData((prev) => ({ ...prev, ...restData }));
+        setData((prev) => ({ ...prev, ...restoredData }));
         
         // Restore payment term factors if they exist
         if (savedFactors && typeof savedFactors === 'object') {
@@ -1117,7 +1162,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     let sovLaborHours = 0;
     if (data.sovItems) {
       sovLaborHours = data.sovItems.reduce((total: number, item: any) => {
-        return total + (calculateLaborUnit(item.laborMen, item.laborHours) * item.quantity);
+        if (isStructuralLineItem(item)) return total;
+        return total + (calculateLaborUnit(item.laborMen, item.laborHours) * parseNum(item.quantity));
       }, 0);
     }
     
@@ -1125,7 +1171,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     let nonSovLaborHours = 0;
     if (data.nonSovItems) {
       nonSovLaborHours = data.nonSovItems.reduce((total: number, item: any) => {
-        return total + (calculateLaborUnit(item.laborMen, item.laborHours) * item.quantity);
+        if (isStructuralLineItem(item)) return total;
+        return total + (calculateLaborUnit(item.laborMen, item.laborHours) * parseNum(item.quantity));
       }, 0);
     }
     
@@ -1216,8 +1263,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         estimatedStartDate: parsedData.estimatedStartDate || '',
         poNumber: parsedData.poNumber || '',
         notes: parsedData.notes || '',
-        sovItems: (parsedData.sovItems && parsedData.sovItems.length > 0) ? parsedData.sovItems : Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({...EMPTY_LINE_ITEM})),
-        nonSovItems: (parsedData.nonSovItems && parsedData.nonSovItems.length > 0) ? parsedData.nonSovItems : [...DEFAULT_NON_SOV_ITEMS],
+        sovItems: normalizeEstimateLineItems(parsedData.sovItems, createDefaultLineItems()),
+        nonSovItems: normalizeEstimateLineItems(parsedData.nonSovItems, createDefaultNonSovItems()),
         calculatedValues: {
           ...defaultCalculatedValues,
           ...(parsedData.calculatedValues || {})
@@ -1379,8 +1426,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         estimatedStartDate: '',
         poNumber: '',
         notes: '',
-        sovItems: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({...EMPTY_LINE_ITEM})),
-        nonSovItems: [...DEFAULT_NON_SOV_ITEMS],
+        sovItems: createDefaultLineItems(),
+        nonSovItems: createDefaultNonSovItems(),
         calculatedValues: {
           subtotalMaterial: 0,
           subtotalExpense: 0,
@@ -1791,8 +1838,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       estimatedStartDate: '',
       poNumber: '',
       notes: '',
-      sovItems: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({...EMPTY_LINE_ITEM})),
-      nonSovItems: [...DEFAULT_NON_SOV_ITEMS],
+      sovItems: createDefaultLineItems(),
+      nonSovItems: createDefaultNonSovItems(),
       calculatedValues: {
         subtotalMaterial: 0,
         subtotalExpense: 0,
@@ -2373,6 +2420,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     let sovLaborHours = 0;
     
     data.sovItems.forEach(item => {
+      if (isStructuralLineItem(item)) return;
+
       const materialExtension = calculateMaterialExtension(item.quantity, item.materialPrice);
       const expenseExtension = calculateExpenseExtension(item.quantity, item.expensePrice);
       const laborItemTotal = calculateLaborTotal(item.quantity, item.laborMen, item.laborHours);
@@ -2380,7 +2429,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       sovMaterialTotal += materialExtension;
       sovExpenseTotal += expenseExtension;
       sovLaborTotal += laborItemTotal;
-      sovLaborHours += calculateLaborUnit(item.laborMen, item.laborHours) * item.quantity;
+      sovLaborHours += calculateLaborUnit(item.laborMen, item.laborHours) * toNum(item.quantity);
     });
 
     // Non-SOV totals
@@ -2390,6 +2439,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     let nonSovLaborHours = 0;
     
     data.nonSovItems.forEach(item => {
+      if (isStructuralLineItem(item)) return;
+
       const materialExtension = calculateMaterialExtension(item.quantity, item.materialPrice);
       const expenseExtension = calculateExpenseExtension(item.quantity, item.expensePrice);
       const laborItemTotal = calculateLaborTotal(item.quantity, item.laborMen, item.laborHours);
@@ -2397,7 +2448,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       nonSovMaterialTotal += materialExtension;
       nonSovExpenseTotal += expenseExtension;
       nonSovLaborTotal += laborItemTotal;
-      nonSovLaborHours += calculateLaborUnit(item.laborMen, item.laborHours) * item.quantity;
+      nonSovLaborHours += calculateLaborUnit(item.laborMen, item.laborHours) * toNum(item.quantity);
     });
     
     // Update calculated values
@@ -2574,12 +2625,14 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     });
   }, [data.hoursSummary.daysOnsite, linkLocalTravelToDays, linkOutOfTownTravelToDays, showTravel]);
 
-  const handleAddLine = (section: 'sov' | 'nonSov') => {
+  const handleAddLine = (section: 'sov' | 'nonSov', rowType: EstimateLineItemRowType = 'item') => {
     const itemsKey = section === 'sov' ? 'sovItems' : 'nonSovItems';
+    const nextItem = section === 'sov' ? createLineItemForRowType(rowType) : createEmptyLineItem();
     setData(prev => ({
       ...prev,
-      [itemsKey]: [...prev[itemsKey], {...EMPTY_LINE_ITEM}]
+      [itemsKey]: [...prev[itemsKey], nextItem]
     }));
+    setIsDirty(true);
   };
 
   const handleClearRow = (section: 'sov' | 'nonSov', index: number) => {
@@ -3259,10 +3312,13 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     const quantityCellStyle = `${cellStyle}text-align:center;`;
     const headerStyle = `${cellStyle}position:relative;background:#f9fafb;font-weight:bold;`;
     const quantityHeaderStyle = `${headerStyle}text-align:center;`;
+    const sectionCellStyle = `${cellStyle}background:#f9fafb;font-weight:bold;text-align:center;`;
+    const blankCellStyle = 'border-left:1px solid #ccc;border-right:1px solid #ccc;padding:10px 0;height:18px;';
     const resizeHandle = '<span class="amp-col-resize print-hidden" contenteditable="false" style="position:absolute;right:-5px;top:0;width:10px;height:100%;cursor:col-resize;z-index:2;border-right:2px solid rgba(242,103,34,0.35);"></span>';
     const rows = sovItems && sovItems.length > 0
       ? sovItems
       : [{ item: '24-hour Power Study', quantity: 1, notes: '' }];
+    const columnCount = includeNotes ? 3 : 2;
     const colgroup = includeNotes
       ? '<colgroup><col style="width:55%;" /><col style="width:15%;" /><col style="width:30%;" /></colgroup>'
       : '<colgroup><col style="width:75%;" /><col style="width:25%;" /></colgroup>';
@@ -3270,7 +3326,15 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       ? `<tr><th style="${headerStyle}">Item${resizeHandle}</th><th style="${quantityHeaderStyle}">Quantity${resizeHandle}</th><th style="${headerStyle}">Notes</th></tr>`
       : `<tr><th style="${headerStyle}">Item${resizeHandle}</th><th style="${quantityHeaderStyle}">Quantity</th></tr>`;
     const bodyRows = rows.map((item: any) => {
+      if (isEstimateBlankRow(item)) {
+        return `<tr class="amp-sov-blank-row"><td colspan="${columnCount}" style="${blankCellStyle}">&nbsp;</td></tr>`;
+      }
+
       const name = escapeLetterHtml(item?.item || '');
+      if (isEstimateSectionRow(item)) {
+        return `<tr class="amp-sov-section-row"><td colspan="${columnCount}" style="${sectionCellStyle}">${name}</td></tr>`;
+      }
+
       const qty = escapeLetterHtml(item?.quantity ?? item?.qty ?? 1);
       const notesCell = includeNotes
         ? `<td style="${cellStyle}">${escapeLetterHtml(item?.notes || '')}</td>`
@@ -3767,13 +3831,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     let sovItems: any[] = [];
     if (Array.isArray(parsedData.sovItems) && parsedData.sovItems.length > 0) {
       // Filter out placeholder/empty rows so only real items appear in the letter
-      sovItems = parsedData.sovItems.filter((it: any) => {
-        const name = (it?.item ?? '').toString().trim();
-        const hasQty = Number(it?.quantity) > 0;
-        const hasAnyCost = [it?.materialPrice, it?.expensePrice, it?.laborMen, it?.laborHours]
-          .some((v: any) => Number(v) > 0);
-        return name.length > 0 || hasQty || hasAnyCost;
-      });
+      sovItems = parsedData.sovItems.filter(shouldShowSovItemInProposal);
     }
     // --- Build the material + expense base (shared across all day-type scenarios) ---
     function getMaterialExpenseBaseParsed(parsed: any) {
@@ -4047,13 +4105,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       
       let sovItems: any[] = [];
       if (Array.isArray(parsedData.sovItems) && parsedData.sovItems.length > 0) {
-        sovItems = parsedData.sovItems.filter((it: any) => {
-          const name = (it?.item ?? '').toString().trim();
-          const hasQty = Number(it?.quantity) > 0;
-          const hasAnyCost = [it?.materialPrice, it?.expensePrice, it?.laborMen, it?.laborHours]
-            .some((v: any) => Number(v) > 0);
-          return name.length > 0 || hasQty || hasAnyCost;
-        });
+        sovItems = parsedData.sovItems.filter(shouldShowSovItemInProposal);
       }
 
       // Per-scope rates from saved quote data; use live form state only for the estimate tab currently open
@@ -4622,8 +4674,8 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         estimatedStartDate: '',
         poNumber: '',
         notes: '',
-        sovItems: Array(DEFAULT_LINE_COUNT).fill(null).map(() => ({...EMPTY_LINE_ITEM})),
-        nonSovItems: [...DEFAULT_NON_SOV_ITEMS],
+        sovItems: createDefaultLineItems(),
+        nonSovItems: createDefaultNonSovItems(),
         calculatedValues: {
           subtotalMaterial: 0,
           subtotalExpense: 0,
@@ -4649,7 +4701,10 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           totalHours: 0,
           straightTimeHours: 0,
           overtimeHours: 0,
-          doubleTimeHours: 0
+          doubleTimeHours: 0,
+          travelStraightTimeHours: 0,
+          travelOvertimeHours: 0,
+          travelDoubleTimeHours: 0
         }
       });
     } else if (mode === 'view') {
@@ -5377,6 +5432,105 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                       </thead>
                       <tbody>
                         {data.sovItems.map((item, index) => {
+                          const isSectionRow = isEstimateSectionRow(item);
+                          const isBlankRow = isEstimateBlankRow(item);
+                          if (isSectionRow || isBlankRow) {
+                            const structuralBg = isSectionRow ? 'var(--header-bg)' : 'var(--cell-bg)';
+                            return (
+                              <tr
+                                key={index}
+                                onDragOver={(e) => handleDragOver(e, index)}
+                                onDragLeave={handleDragLeave}
+                                onDrop={(e) => handleDrop(e, index, 'sov')}
+                                style={{
+                                  backgroundColor: dragOverIndex === index && draggedItemType === 'sov' ? '#f3f4f6' : 'transparent',
+                                  borderTop: dragOverIndex === index && draggedItemType === 'sov' ? '2px solid #f26722' : 'none'
+                                }}
+                              >
+                                <td
+                                  colSpan={12}
+                                  style={{
+                                    ...styles.tableCell,
+                                    backgroundColor: structuralBg,
+                                    padding: isBlankRow ? '10px 5px' : '6px 5px',
+                                    borderTop: isSectionRow ? '2px solid var(--border-color)' : '1px solid var(--border-color)',
+                                    borderBottom: isSectionRow ? '2px solid var(--border-color)' : '1px solid var(--border-color)'
+                                  }}
+                                >
+                                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: isBlankRow ? '22px' : '28px' }}>
+                                    {!isViewMode && (
+                                      <div
+                                        draggable={true}
+                                        onDragStart={(e) => handleDragStart(e, index, 'sov')}
+                                        onDragEnd={handleDragEnd}
+                                        style={{
+                                          position: 'absolute',
+                                          left: 8,
+                                          cursor: 'grab',
+                                          color: '#6b7280',
+                                          fontSize: '14px',
+                                          userSelect: 'none',
+                                          padding: '2px'
+                                        }}
+                                        title="Drag to reorder"
+                                      >
+                                        ⋮⋮
+                                      </div>
+                                    )}
+                                    {isSectionRow ? (
+                                      <input
+                                        type="text"
+                                        style={{
+                                          ...styles.tableInput,
+                                          width: 'min(520px, 80%)',
+                                          border: 'none',
+                                          backgroundColor: 'transparent',
+                                          fontWeight: 'bold',
+                                          textAlign: 'center',
+                                          padding: '4px'
+                                        }}
+                                        value={item.item}
+                                        onChange={(e) => handleItemChange('sov', index, 'item', e.target.value)}
+                                        onKeyDown={(e) => handleEstimateCellKeyDown(e, 'sov', index, 0, data.sovItems.length)}
+                                        data-estimate-table="sov"
+                                        data-estimate-row={index}
+                                        data-estimate-col={0}
+                                        readOnly={isViewMode}
+                                      />
+                                    ) : (
+                                      <div style={{ width: '80%', height: '1px', backgroundColor: 'var(--border-color)', opacity: 0.7 }} />
+                                    )}
+                                  </div>
+                                </td>
+                                <td style={{ ...styles.tableCell, backgroundColor: structuralBg }}>
+                                  {!isViewMode && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleClearRow('sov', index)}
+                                      onKeyDown={(e) => handleEstimateCellKeyDown(e, 'sov', index, 12, data.sovItems.length)}
+                                      data-estimate-table="sov"
+                                      data-estimate-row={index}
+                                      data-estimate-col={12}
+                                      style={{
+                                        backgroundColor: '#f87171',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        padding: '4px 8px',
+                                        fontSize: '12px',
+                                        cursor: 'pointer',
+                                        fontWeight: '500'
+                                      }}
+                                      title="Delete this row"
+                                    >
+                                      Delete
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          }
+
                           const materialExtension = calculateMaterialExtension(item.quantity, item.materialPrice);
                           const expenseExtension = calculateExpenseExtension(item.quantity, item.expensePrice);
                           const laborUnit = calculateLaborUnit(item.laborMen, item.laborHours);
@@ -5535,7 +5689,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                                   type="text"
                                   inputMode="decimal"
                                   style={styles.tableInput}
-                                  value={blankingKeys.has(makeKey('sov', index, 'laborMen')) ? '' : (isNaN(item.laborMen) ? '' : String(item.laborMen ?? ''))}
+                                  value={blankingKeys.has(makeKey('sov', index, 'laborMen')) ? '' : (Number.isNaN(Number(item.laborMen)) ? '' : String(item.laborMen ?? ''))}
                                   onChange={(e) => handleItemChange('sov', index, 'laborMen', e.target.value)}
                                   onKeyDown={(e) => {
                                     handleEstimateCellKeyDown(e, 'sov', index, 6, data.sovItems.length);
@@ -5558,7 +5712,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                                   type="text"
                                   inputMode="decimal"
                                   style={styles.tableInput}
-                                  value={blankingKeys.has(makeKey('sov', index, 'laborHours')) ? '' : (isNaN(item.laborHours) ? '' : String(item.laborHours ?? ''))}
+                                  value={blankingKeys.has(makeKey('sov', index, 'laborHours')) ? '' : (Number.isNaN(Number(item.laborHours)) ? '' : String(item.laborHours ?? ''))}
                                   onChange={(e) => handleItemChange('sov', index, 'laborHours', e.target.value)}
                                   onKeyDown={(e) => {
                                     handleEstimateCellKeyDown(e, 'sov', index, 7, data.sovItems.length);
@@ -5629,7 +5783,21 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                       </tbody>
                     </table>
                     
-                    <div className="mt-4 flex justify-end">
+                    <div className="mt-4 flex flex-wrap justify-end gap-2">
+                      <Button
+                        onClick={() => handleAddLine('sov', 'section')}
+                        className="inline-flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <FileText className="h-4 w-4" />
+                        Add Section
+                      </Button>
+                      <Button
+                        onClick={() => handleAddLine('sov', 'blank')}
+                        className="inline-flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <SeparatorHorizontal className="h-4 w-4" />
+                        Add Blank Row
+                      </Button>
                       <Button
                         onClick={() => handleAddLine('sov')}
                         className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
@@ -5795,7 +5963,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                                   type="number" 
                                   step="0.01"
                                   style={styles.tableInput}
-                                  value={isNaN(item.laborMen) ? '' : item.laborMen} 
+                                  value={Number.isNaN(Number(item.laborMen)) ? '' : item.laborMen} 
                                   onChange={(e) => handleItemChange('nonSov', index, 'laborMen', e.target.value)}
                                   onKeyDown={(e) => handleEstimateCellKeyDown(e, 'nonSov', index, 6, data.nonSovItems.length)}
                                   data-estimate-table="nonSov"
@@ -5809,7 +5977,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                                   type="number" 
                                   step="0.01"
                                   style={styles.tableInput}
-                                  value={isNaN(item.laborHours) ? '' : item.laborHours} 
+                                  value={Number.isNaN(Number(item.laborHours)) ? '' : item.laborHours} 
                                   onChange={(e) => handleItemChange('nonSov', index, 'laborHours', e.target.value)}
                                   onKeyDown={(e) => handleEstimateCellKeyDown(e, 'nonSov', index, 7, data.nonSovItems.length)}
                                   data-estimate-table="nonSov"

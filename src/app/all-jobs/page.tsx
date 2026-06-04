@@ -5,6 +5,7 @@ import { supabase, isConnectionError } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { PageLayout } from '@/components/ui/PageLayout';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const PAGE_SIZE = 50;
 
@@ -427,7 +428,7 @@ export default function UnifiedJobsPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-gray-600 dark:text-gray-400">Loading jobs…</div>
+          <div className="text-center py-12 text-gray-600 dark:text-gray-400"><LoadingSpinner size="md" /></div>
         ) : (
           <>
             <div className="mt-8 -mx-4 overflow-x-auto sm:mx-0 shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">

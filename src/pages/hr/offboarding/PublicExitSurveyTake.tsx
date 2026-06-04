@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Textarea } from '../../../components/ui/Textarea';
 import type { ExitSurveyAssignment, ExitSurveyQuestion, ExitSurveyResponse } from './ExitSurveys';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { MessageSquare, CheckCircle, Loader2, AlertCircle, FileText, ExternalLink } from 'lucide-react';
 
 const ASSIGNMENTS_STORAGE_KEY = 'hr_exit_survey_assignments';
@@ -103,7 +104,7 @@ export const PublicExitSurveyTake: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-10 w-10 animate-spin text-[#f26722]" />
-          <p className="text-sm text-gray-500">Loading survey…</p>
+          <p className="text-sm text-gray-500"><LoadingSpinner size="md" /></p>
         </div>
       </div>
     );

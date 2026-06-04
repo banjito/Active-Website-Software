@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import IssueNotes from "@/components/feedback/IssueNotes";
 import { HeaderBar } from "@/components/ui/HeaderBar";
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 type Issue = {
   id: string;
@@ -1115,7 +1116,7 @@ const FeaturesFixesPage: React.FC = () => {
 
           <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-4">
             {loading ? (
-              <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+              <div className="text-gray-500 dark:text-gray-400"><LoadingSpinner size="md" /></div>
             ) : filtered.length === 0 ? (
               <div className="text-gray-500 dark:text-gray-400">
                 No issues found.

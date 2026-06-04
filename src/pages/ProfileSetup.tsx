@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EditProfilePopup } from '../components/ui/EditProfilePopup';
 
 export default function ProfileSetup() {
@@ -53,7 +54,7 @@ export default function ProfileSetup() {
         />
       ) : (
         // Only show redirecting message if popup isn't open and auth isn't loading
-        !authLoading && <p className="text-center pt-10">Loading profile editor or redirecting...</p>
+        !authLoading && <p className="text-center pt-10"><LoadingSpinner size="md" /></p>
       )}
     </div>
   );

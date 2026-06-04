@@ -28,6 +28,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 // Types
@@ -1733,7 +1734,7 @@ const MediumVoltageCableVLFTest = () => {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <div className="spinner mb-4"></div>
-          <p>Loading report...</p>
+          <p><LoadingSpinner size="md" /></p>
         </div>
       </div>
     );

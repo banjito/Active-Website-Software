@@ -11,6 +11,7 @@ import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import _ from 'lodash';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Temperature conversion and TCF tables
 const tempConvTable = [
@@ -945,7 +946,7 @@ const DryTypeTransformerReport: React.FC = () => {
   // ... rest of your component logic
 
   if (loading) {
-    return <div>Loading Report Data...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   // Header render function

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { toast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { onboardingService } from '../../../services/hr/onboardingService';
 
 const ASSIGNMENTS_STORAGE_KEY = 'hr_exit_survey_assignments';
@@ -988,7 +989,7 @@ export const ExitSurveys: React.FC = () => {
                   {loadingEmployees ? (
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Loading employees…
+                      <LoadingSpinner size="md" />
                     </div>
                   ) : (
                     <div className="space-y-2">

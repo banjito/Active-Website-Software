@@ -9,6 +9,7 @@ import { schedulingService } from '@/lib/services/schedulingService';
 import { AvailableTechnician, PortalType, TechnicianAssignment } from '@/lib/types/scheduling';
 import { supabase } from '@/lib/supabase';
 import { useDemoMode } from '@/lib/DemoModeContext';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 type Props = {
   portalType: PortalType;
@@ -465,7 +466,7 @@ export const TechnicianListedView: React.FC<Props> = ({ portalType, division, da
 
             {/* Rows */}
             {loading ? (
-              <div className="p-6 text-center">Loading...</div>
+              <div className="p-6 text-center"><LoadingSpinner size="md" /></div>
             ) : (
               filteredTechs.map((t) => {
                 const techId = t.user_id;

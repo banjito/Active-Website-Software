@@ -7,6 +7,7 @@ import { ReportWrapper } from './ReportWrapper';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { getReportName } from './reportMappings';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import {
   LineChart,
   Line,
@@ -342,7 +343,7 @@ const TanDeltaChartMTS: React.FC = () => {
   );
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   return (

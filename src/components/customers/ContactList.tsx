@@ -259,7 +259,7 @@ export default function ContactList() {
 
     const timeoutId = setTimeout(() => {
       console.error("ContactList: fetchContacts timed out after 30 seconds");
-      setLoadError("Loading is taking longer than expected. Please try again.");
+      setLoadError("This is taking longer than expected. Please try again.");
       setLoading(false);
       setSearchLoading(false);
     }, 30000);
@@ -674,7 +674,7 @@ export default function ContactList() {
   }
 
   if (loading) {
-    return <div className="text-gray-900 dark:text-gray-100">Loading...</div>;
+    return <div className="text-gray-900 dark:text-gray-100"><LoadingSpinner size="md" /></div>;
   }
 
   return (

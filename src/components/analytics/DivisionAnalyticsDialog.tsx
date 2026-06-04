@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/Chart';
 
 interface DivisionAnalyticsDialogProps {
@@ -167,7 +168,7 @@ export function DivisionAnalyticsDialog({ division, isOpen, onClose }: DivisionA
           </DialogTitle>
 
           {loading ? (
-            <div className="text-center py-4 text-gray-600 dark:text-white">Loading...</div>
+            <div className="text-center py-4 text-gray-600 dark:text-white"><LoadingSpinner size="md" /></div>
           ) : (
             <div className="space-y-6">
               {/* Stats Grid */}

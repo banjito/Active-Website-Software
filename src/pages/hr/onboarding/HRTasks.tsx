@@ -9,6 +9,7 @@ import { Users, Plus, Edit, Trash2, Eye, ChevronLeft, ChevronRight } from 'lucid
 import { onboardingService, HRTask } from '../../../services/hr/onboardingService';
 import { useAuth } from '../../../lib/AuthContext';
 import { toast } from '../../../components/ui/toast';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const PAGE_SIZE = 15;
 
@@ -253,7 +254,7 @@ export const HRTasks: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-12">Loading...</div>
+        <div className="text-center py-12"><LoadingSpinner size="md" /></div>
       ) : filteredTasks.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">

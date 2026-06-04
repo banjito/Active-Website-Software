@@ -9,6 +9,7 @@ import { navigateAfterSave } from './ReportUtils';
 import { getReportName, getAssetName } from './reportMappings';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
 
 const VISUAL_INSPECTION_OPTIONS = [
@@ -653,7 +654,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
     return () => { try { document.head.removeChild(style); } catch { /* ignore */ } };
   }, []);
 
-  if (loading && currentReportId) return <div className="p-4">Loading report...</div>;
+  if (loading && currentReportId) return <div className="p-4"><LoadingSpinner size="md" /></div>;
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>

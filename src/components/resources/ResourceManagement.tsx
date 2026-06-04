@@ -21,6 +21,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import BuildIcon from '@mui/icons-material/Build';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import CarIcon from '@mui/icons-material/DirectionsCar';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Define the Resource and ResourceType types if they're not available from jobService
 interface Resource {
@@ -310,7 +311,7 @@ export default function ResourceManagement() {
           <Box sx={{ p: 3 }}>
             <LinearProgress />
             <Typography variant="body1" sx={{ mt: 2, textAlign: 'center' }}>
-              Loading resources...
+              <LoadingSpinner size="md" />
             </Typography>
           </Box>
         ) : (

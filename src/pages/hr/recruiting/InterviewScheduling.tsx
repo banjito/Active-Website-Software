@@ -1065,7 +1065,6 @@ ${interviewFormData.overallFeedback || 'N/A'}
           {loading ? (
             <div className="text-center py-12">
               <LoadingSpinner size="md" />
-              <p className="mt-4 text-gray-600 dark:text-gray-400">Loading interviews...</p>
             </div>
           ) : filteredInterviews.length === 0 ? (
             <div className="text-center py-12">
@@ -1310,7 +1309,7 @@ ${interviewFormData.overallFeedback || 'N/A'}
               </label>
               <div className="border border-gray-300 dark:border-gray-600 rounded-md p-3 max-h-40 overflow-y-auto">
                 {users.length === 0 ? (
-                  <p className="text-sm text-gray-500">Loading users...</p>
+                  <p className="text-sm text-gray-500"><LoadingSpinner size="md" /></p>
                 ) : (
                   <div className="space-y-2">
                     {users.map((user) => (

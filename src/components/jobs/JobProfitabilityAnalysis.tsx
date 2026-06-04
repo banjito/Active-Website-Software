@@ -43,6 +43,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import PaymentIcon from '@mui/icons-material/Payment';
 import { format } from 'date-fns';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { 
   getJobRevenue, 
   addJobRevenue, 
@@ -372,7 +373,7 @@ export default function JobProfitabilityAnalysis({ jobId, budget }: JobProfitabi
       <Box sx={{ width: '100%', p: 2 }}>
         <CircularProgress />
         <Typography variant="body2" sx={{ mt: 1 }}>
-          Loading profitability data...
+          <LoadingSpinner size="md" />
         </Typography>
       </Box>
     );

@@ -11,6 +11,7 @@ import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Temperature conversion and correction factor lookup tables
 const tcfData: Array<{ celsius: number; multiplier: number }> = [
@@ -580,7 +581,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="p-4 dark:text-white">Loading...</div>;
+  if (loading) return <div className="p-4 dark:text-white"><LoadingSpinner size="md" /></div>;
 
 
 

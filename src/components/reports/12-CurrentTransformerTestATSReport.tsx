@@ -12,6 +12,7 @@ import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
 import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -1100,7 +1101,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     </div>
   );
 
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) return <div className="p-4"><LoadingSpinner size="md" /></div>;
 
   return (
     <div className="w-full overflow-visible" style={{ minHeight: 'calc(100vh + 300px)', paddingBottom: '200px' }}>

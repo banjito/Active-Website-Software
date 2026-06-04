@@ -7,6 +7,7 @@ import { getReportName, getAssetName } from './reportMappings';
 import JobInfoPrintTable from './common/JobInfoPrintTable';
 import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
 import { formatLocalDateShort } from '@/utils/dateUtils';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useDemoMode } from '@/lib/DemoModeContext';
 
 // Types
@@ -1063,7 +1064,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div><LoadingSpinner size="md" /></div>;
   }
 
   if (error) {

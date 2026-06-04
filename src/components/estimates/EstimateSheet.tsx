@@ -5785,15 +5785,27 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                     
                     <div className="mt-4 flex flex-wrap justify-end gap-2">
                       <Button
+                        variant="outline"
                         onClick={() => handleAddLine('sov', 'section')}
-                        className="inline-flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="inline-flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        style={{
+                          backgroundColor: 'var(--cell-bg)',
+                          borderColor: 'var(--border-color)',
+                          color: 'var(--text-color)'
+                        }}
                       >
                         <FileText className="h-4 w-4" />
                         Add Section
                       </Button>
                       <Button
+                        variant="outline"
                         onClick={() => handleAddLine('sov', 'blank')}
-                        className="inline-flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="inline-flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        style={{
+                          backgroundColor: 'var(--cell-bg)',
+                          borderColor: 'var(--border-color)',
+                          color: 'var(--text-color)'
+                        }}
                       >
                         <SeparatorHorizontal className="h-4 w-4" />
                         Add Blank Row

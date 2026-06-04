@@ -55,6 +55,7 @@ import NewGoalPage from './app/(dashboard)/sales/goals/new/page';
 import EditGoalPage from './app/(dashboard)/sales/goals/[id]/edit/page';
 import GoalsDashboardPage from './app/(dashboard)/sales/goals/dashboard/page';
 import GoalManagementPage from './app/(dashboard)/sales/goals/management/page';
+import PipelineCalendarPage from './app/(dashboard)/sales/pipeline-calendar/page';
 import EngineeringPage from './app/engineering/page';
 import EngineeringDashboard from './app/engineering/dashboard/page';
 import { EncryptionSettings } from './components/admin/EncryptionSettings';
@@ -538,6 +539,7 @@ function App() {
                   <Route path="/sales/goals/new" element={<RequireAuth><SalesLayout><NewGoalPage /></SalesLayout></RequireAuth>} />
                   <Route path="/sales/goals/:id/edit" element={<RequireAuth><SalesLayout><EditGoalPage /></SalesLayout></RequireAuth>} />
                   <Route path="/sales/goals/management" element={<RequireAuth><SalesLayout><GoalManagementPage /></SalesLayout></RequireAuth>} />
+                  <Route path="/sales/pipeline-calendar" element={<RequireAuth><SalesLayout><PipelineCalendarPage /></SalesLayout></RequireAuth>} />
                   
                   {/* === Estimating Presets Route === */}
                   <Route path="/sales/estimating-presets" element={<RequireAuth><SalesLayout><EstimatingPresetsPage /></SalesLayout></RequireAuth>} />

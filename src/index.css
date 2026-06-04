@@ -216,6 +216,27 @@
     }
 }
 
+.letter-proposal-editor ul {
+    list-style: disc outside !important;
+    margin: 4px 0 4px 18px !important;
+    padding-left: 18px !important;
+}
+
+.letter-proposal-editor ol {
+    list-style: decimal outside !important;
+    margin: 4px 0 4px 18px !important;
+    padding-left: 18px !important;
+}
+
+.letter-proposal-editor li {
+    display: list-item !important;
+    margin: 2px 0 !important;
+}
+
+.letter-proposal-editor li::marker {
+    color: #111827;
+}
+
 /* Global Keyboard Navigation for Input Fields */
 @layer utilities {
     /* Add a subtle visual indicator for keyboard navigation */

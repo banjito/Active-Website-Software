@@ -95,6 +95,17 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
                   </Button>
                 </Link>
 
+                <Link to="/sales/pipeline-calendar">
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                      location.pathname === '/sales/pipeline-calendar' ? 'bg-black/5 dark:bg-dark-50' : ''
+                    }`}
+                  >
+                    Pipeline Calendar
+                  </Button>
+                </Link>
+
                 <Link to="/sales-dashboard/customers" state={{ from: 'sales' }}>
                   <Button
                     variant="ghost"

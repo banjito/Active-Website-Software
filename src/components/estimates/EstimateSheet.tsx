@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Tab, Dialog } from '@headlessui/react';
-import { X, GripHorizontal, Copy, FileText, ImagePlus, SeparatorHorizontal } from 'lucide-react';
+import { X, GripHorizontal, Copy, FileText, ImagePlus, List, ListOrdered, SeparatorHorizontal } from 'lucide-react';
 import { LetterImageHandler, LetterImageHandlerRef } from './LetterImageHandler';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/Button';
@@ -3256,6 +3256,27 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   const [netaStandard, setNetaStandard] = useState<string>('');
   const [letterProposalName, setLetterProposalName] = useState<string>('');
 
+  const syncLetterEditorHtmlFromDom = () => {
+    const editor = letterEditorRef.current;
+    if (!editor) return;
+    letterUpdateSourceRef.current = 'user';
+    const newHtml = editor.innerHTML;
+    if (newHtml !== letterHtml) {
+      setLetterHtml(newHtml);
+    }
+    if (newHtml.trim() !== savedLetterHtmlRef.current.trim()) {
+      setIsLetterDirty(true);
+    }
+  };
+
+  const runLetterEditorCommand = (command: string) => {
+    const editor = letterEditorRef.current;
+    if (!editor) return;
+    editor.focus();
+    document.execCommand(command, false);
+    syncLetterEditorHtmlFromDom();
+  };
+
   const NETA_OPTIONS = [
     { value: '', text: '-- Select --' },
     { value: 'mts', text: 'All tests will be performed in accordance with ANSI/NETA MTS 2023 - Standard for Maintenance Testing Specifications for Electrical power Equipment and Systems.' },
@@ -4559,10 +4580,10 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             li.remove();
           }
         });
-        // Remove empty <ul> elements
-        tempDiv.querySelectorAll('ul').forEach(ul => {
-          if (!ul.textContent?.trim() && !ul.querySelector('li')) {
-            ul.remove();
+        // Remove empty lists
+        tempDiv.querySelectorAll('ul, ol').forEach(list => {
+          if (!list.textContent?.trim() && !list.querySelector('li')) {
+            list.remove();
           }
         });
         bodyHtml = tempDiv.innerHTML;
@@ -4613,9 +4634,22 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           li:empty { display: none !important; }
           li:empty::before,
           li:empty::after { content: none !important; display: none !important; }
-          /* Ensure ul elements don't show extra bullets after the last li */
-          ul { list-style-position: inside !important; }
-          ul::after { content: none !important; display: none !important; }
+          /* Keep list markers visible in print, matching the editor */
+          ul,
+          #letter-proposal ul {
+            list-style: disc outside !important;
+            margin: 4px 0 4px 18px !important;
+            padding-left: 18px !important;
+          }
+          ol,
+          #letter-proposal ol {
+            list-style: decimal outside !important;
+            margin: 4px 0 4px 18px !important;
+            padding-left: 18px !important;
+          }
+          li { display: list-item !important; margin: 2px 0 !important; }
+          ul::after,
+          ol::after { content: none !important; display: none !important; }
           /* Manual page breaks inserted by user */
           .amp-page-break {
             break-before: page !important;
@@ -4629,7 +4663,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         }
         /* Signature should render well */
         img[alt="Signature"] { max-height: 60px; }
-      </style></head><body>${bodyHtml}</body></html>`;
+      </style></head><body class="letter-proposal-print-content">${bodyHtml}</body></html>`;
       try { printWindow.document.open(); } catch {}
       printWindow.document.write(html);
       printWindow.document.close();
@@ -8382,12 +8416,12 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         </div>
           {/* Inline control bar, confined to the same width as the letter content */}
           <div className="p-3 border-b bg-gray-50">
-            <div className="flex items-center gap-2" style={{ maxWidth: 900, margin: '0 auto' }}>
+            <div className="flex flex-wrap items-center gap-2" style={{ maxWidth: 900, margin: '0 auto' }}>
               <span className="text-sm font-medium">NETA Standard:</span>
               <select
                 value={netaStandard}
                 onChange={(e) => applyNetaTextByValue(e.target.value)}
-                className="border rounded px-2 py-1 w-full"
+                className="border rounded px-2 py-1 flex-1 min-w-[220px]"
               >
                 {NETA_OPTIONS.map(o => (
                   <option key={o.value} value={o.value}>{o.text}</option>
@@ -8405,6 +8439,38 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                 className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white"
               >
                 Scope Notes
+              </Button>
+              <Button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  runLetterEditorCommand('insertUnorderedList');
+                }}
+                variant="outline"
+                size="sm"
+                title="Bullet List"
+                className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white flex items-center gap-1"
+              >
+                <List className="w-4 h-4" />
+                Bullets
+              </Button>
+              <Button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  runLetterEditorCommand('insertOrderedList');
+                }}
+                variant="outline"
+                size="sm"
+                title="Numbered List"
+                className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white flex items-center gap-1"
+              >
+                <ListOrdered className="w-4 h-4" />
+                Numbered
               </Button>
               <Button
                 type="button"
@@ -8451,6 +8517,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
               ref={letterEditorRef}
               contentEditable
               suppressContentEditableWarning
+              className="letter-proposal-editor"
               style={{ minHeight: '1000px', outline: 'none', background: 'white', padding: 32, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', maxWidth: 900, margin: '0 auto' }}
               onInput={e => {
                 letterUpdateSourceRef.current = 'user';

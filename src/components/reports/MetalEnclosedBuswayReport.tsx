@@ -2089,8 +2089,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             <tbody>
               <tr>
                 <td className="p-2 align-top border border-gray-300 print:border-black">
-                  <div className="font-semibold">Comments</div>
-                  <div className="mt-1 whitespace-pre-wrap break-words">{formData.comments}</div>
+                  <div className="whitespace-pre-wrap break-words">{formData.comments}</div>
                 </td>
               </tr>
             </tbody>

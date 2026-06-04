@@ -52,13 +52,39 @@ function formatMonthYear(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
+function formatWeekRange(start: Date, end: Date): string {
+  const lastDay = new Date(end);
+  lastDay.setDate(lastDay.getDate() - 1);
+
+  const sameYear = start.getFullYear() === lastDay.getFullYear();
+  const sameMonth = sameYear && start.getMonth() === lastDay.getMonth();
+
+  if (sameMonth) {
+    return `${start.toLocaleDateString('en-US', { month: 'long' })} ${start.getDate()}-${lastDay.getDate()}, ${start.getFullYear()}`;
+  }
+
+  if (sameYear) {
+    return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${lastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  }
+
+  return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${lastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+}
+
+type CalendarView = 'dayGridMonth' | 'dayGridWeek';
+
 export function OpportunitiesCalendarView() {
   const navigate = useNavigate();
   const calendarRef = useRef<FullCalendar>(null);
   const [opportunities, setOpportunities] = useState<OpportunityCalendarItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
+  const [currentView, setCurrentView] = useState<CalendarView>('dayGridMonth');
+  const [currentStart, setCurrentStart] = useState<Date>(() => new Date());
+  const [currentEnd, setCurrentEnd] = useState<Date>(() => {
+    const end = new Date();
+    end.setMonth(end.getMonth() + 1);
+    return end;
+  });
 
   const loadOpportunities = useCallback(async () => {
     setLoading(true);
@@ -138,8 +164,10 @@ export function OpportunitiesCalendarView() {
   };
 
   const handleDatesSet = (arg: DatesSetArg) => {
-    if (arg.view.type === 'dayGridMonth' && arg.view.currentStart) {
-      setCurrentDate(arg.view.currentStart);
+    if ((arg.view.type === 'dayGridMonth' || arg.view.type === 'dayGridWeek') && arg.view.currentStart && arg.view.currentEnd) {
+      setCurrentView(arg.view.type);
+      setCurrentStart(arg.view.currentStart);
+      setCurrentEnd(arg.view.currentEnd);
     }
   };
 
@@ -155,8 +183,14 @@ export function OpportunitiesCalendarView() {
     calendarRef.current?.getApi().today();
   };
 
+  const changeView = (view: CalendarView) => {
+    calendarRef.current?.getApi().changeView(view);
+    setCurrentView(view);
+  };
+
   const today = new Date();
-  const isCurrentMonth = currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear();
+  const isCurrentPeriod = today >= currentStart && today < currentEnd;
+  const calendarTitle = currentView === 'dayGridWeek' ? formatWeekRange(currentStart, currentEnd) : formatMonthYear(currentStart);
 
   return (
     <div className="opportunities-calendar space-y-5">
@@ -210,6 +244,16 @@ export function OpportunitiesCalendarView() {
         .opportunities-calendar .fc-daygrid-day {
           min-height: 100px;
         }
+        .opportunities-calendar .fc-dayGridWeek-view .fc-daygrid-day,
+        .opportunities-calendar .fc-dayGridWeek-view .fc-daygrid-day-frame {
+          min-height: 600px;
+        }
+        @media (max-width: 640px) {
+          .opportunities-calendar .fc-dayGridWeek-view .fc-daygrid-day,
+          .opportunities-calendar .fc-dayGridWeek-view .fc-daygrid-day-frame {
+            min-height: 420px;
+          }
+        }
         .opportunities-calendar .fc-daygrid-day-number {
           font-size: 0.8125rem;
           font-weight: 500;
@@ -238,6 +282,15 @@ export function OpportunitiesCalendarView() {
           padding: 2px 6px;
           font-size: 0.75rem;
           font-weight: 500;
+        }
+        .opportunities-calendar .fc-dayGridWeek-view .fc-event {
+          min-height: 38px;
+          padding: 6px 7px;
+        }
+        .opportunities-calendar .fc-dayGridWeek-view .fc-event-title {
+          white-space: normal;
+          overflow: visible;
+          line-height: 1.25;
         }
         .opportunities-calendar .fc-event:hover {
           filter: brightness(0.95);
@@ -292,29 +345,48 @@ export function OpportunitiesCalendarView() {
                 type="button"
                 onClick={goPrev}
                 className="flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 dark:text-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 hover:text-gray-900 dark:hover:text-dark-900 transition-colors"
-                aria-label="Previous month"
+                aria-label={currentView === 'dayGridWeek' ? 'Previous week' : 'Previous month'}
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <span className="text-sm font-semibold text-gray-900 dark:text-dark-900 tabular-nums">
-                {formatMonthYear(currentDate)}
+                {calendarTitle}
               </span>
               <button
                 type="button"
                 onClick={goNext}
                 className="flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 dark:text-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 hover:text-gray-900 dark:hover:text-dark-900 transition-colors"
-                aria-label="Next month"
+                aria-label={currentView === 'dayGridWeek' ? 'Next week' : 'Next month'}
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>
             <div className="px-4 pb-4 pt-1">
               <div className="flex items-center justify-center gap-2 mb-3">
+                <div className="inline-flex rounded-lg bg-gray-100 dark:bg-dark-200 p-1">
+                  {[
+                    { label: 'Month', view: 'dayGridMonth' as CalendarView },
+                    { label: 'Week', view: 'dayGridWeek' as CalendarView }
+                  ].map((item) => (
+                    <button
+                      key={item.view}
+                      type="button"
+                      onClick={() => changeView(item.view)}
+                      className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${
+                        currentView === item.view
+                          ? 'bg-white dark:bg-dark-100 text-gray-900 dark:text-dark-900 shadow-sm'
+                          : 'text-gray-600 dark:text-dark-400 hover:text-gray-900 dark:hover:text-dark-900'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
                 <button
                   type="button"
                   onClick={goToday}
                   className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
-                    isCurrentMonth
+                    isCurrentPeriod
                       ? 'bg-gray-200 dark:bg-dark-300 text-gray-700 dark:text-dark-200'
                       : 'text-gray-600 dark:text-dark-400 hover:bg-gray-100 dark:hover:bg-dark-200'
                   }`}
@@ -336,19 +408,22 @@ export function OpportunitiesCalendarView() {
               <FullCalendar
                 ref={calendarRef}
                 plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
+                initialView={currentView}
                 headerToolbar={false}
                 firstDay={0}
                 dayHeaders={false}
                 datesSet={handleDatesSet}
                 events={events}
                 eventClick={handleEventClick}
-                dayMaxEvents={4}
+                dayMaxEvents={currentView === 'dayGridWeek' ? 10 : 4}
                 height="auto"
                 eventDisplay="block"
                 eventContent={(arg) => (
-                  <div className="fc-event-main-frame overflow-hidden">
-                    <div className="fc-event-title truncate text-xs font-medium" title={arg.event.title}>
+                  <div className={`fc-event-main-frame ${currentView === 'dayGridWeek' ? '' : 'overflow-hidden'}`}>
+                    <div
+                      className={`fc-event-title text-xs font-medium ${currentView === 'dayGridWeek' ? 'whitespace-normal break-words' : 'truncate'}`}
+                      title={arg.event.title}
+                    >
                       {arg.event.title}
                     </div>
                   </div>

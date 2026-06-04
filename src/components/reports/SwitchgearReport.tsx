@@ -1422,7 +1422,6 @@ const SwitchgearReport: React.FC = () => {
                   <tbody>
                     <tr>
                       <td className="p-2 align-top border border-gray-300 print:border-black">
-                        <div className="font-semibold">Comments</div>
                         <div className="mt-0 whitespace-pre-wrap break-words">{formData.comments}</div>
                       </td>
                     </tr>

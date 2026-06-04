@@ -1375,7 +1375,6 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 <tbody>
                   <tr>
                     <td className="p-2 border border-gray-300 print:border-black">
-                      <div className="font-semibold text-xs">Comments</div>
                       <div className="text-xs whitespace-pre-wrap break-words">{formData.comments}</div>
                     </td>
                   </tr>

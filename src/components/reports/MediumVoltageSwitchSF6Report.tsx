@@ -1646,7 +1646,6 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
               <tbody>
                 <tr>
                   <td className="border border-black px-2 py-2 align-top">
-                    <div className="font-semibold mb-1">Comments:</div>
                     <div className="whitespace-pre-wrap">{formData.comments}</div>
                   </td>
                 </tr>
@@ -1661,5 +1660,4 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 };
 
 export default MediumVoltageSwitchSF6Report;
-
 

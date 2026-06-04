@@ -2586,8 +2586,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
                 <tbody>
                   <tr>
                     <td className="p-2 align-top border border-gray-300 print:border-black print:border">
-                      <div className="font-semibold">Comments</div>
-                      <div className="mt-1 whitespace-pre-wrap">{formData.testEquipment.comments}</div>
+                      <div className="whitespace-pre-wrap">{formData.testEquipment.comments}</div>
                     </td>
                   </tr>
                 </tbody>

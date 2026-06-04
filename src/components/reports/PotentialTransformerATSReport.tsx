@@ -2384,7 +2384,6 @@ const PotentialTransformerATSReport: React.FC = () => {
               <tbody>
                 <tr>
                   <td className="border border-black px-2 py-2 align-top">
-                    <div className="font-semibold mb-1">Comments:</div>
                     <div className="whitespace-pre-wrap">{formData.comments}</div>
                   </td>
                 </tr>

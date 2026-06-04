@@ -2450,7 +2450,7 @@ export default function OpportunityList() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-white">
-                    Prepared By (Auto-populated from estimate creators)
+                    Quote Prepared By (Auto-populated)
                   </label>
                   <input
                     type="text"
@@ -2459,7 +2459,7 @@ export default function OpportunityList() {
                     onChange={handleChange}
                     readOnly
                     className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 dark:text-white cursor-not-allowed"
-                    placeholder="Auto-populated from estimate creators"
+                    placeholder="Auto-populated from quote creators"
                   />
                 </div>
               </div>

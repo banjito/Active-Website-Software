@@ -113,6 +113,7 @@ export interface Opportunity {
   id: string;
   created_at: string;
   updated_at: string;
+  user_id?: string | null;
   customer_id: string;
   contact_id?: string | null;
   title?: string;

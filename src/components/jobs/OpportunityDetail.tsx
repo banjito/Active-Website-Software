@@ -42,6 +42,16 @@ interface OpportunityWithCustomer extends Opportunity {
   quoted_amount?: number | null;
 }
 
+function formatOpportunityCreator(profile: any, fallbackEmail?: string | null): string | null {
+  const name = profile?.full_name || profile?.name || profile?.display_name;
+  if (typeof name === 'string' && name.trim()) return name.trim();
+
+  const email = profile?.email || fallbackEmail;
+  if (typeof email === 'string' && email.trim()) return email.trim();
+
+  return null;
+}
+
 const initialFormData: OpportunityFormData = {
   customer_id: '',
   contact_id: null,
@@ -403,6 +413,8 @@ export default function OpportunityDetail() {
   const mergedIds = (mergedIdsParam ? mergedIdsParam.split(',').filter(Boolean) : []);
   const { user, softRefresh } = useAuth();
   const [opportunity, setOpportunity] = useState<OpportunityWithCustomer | null>(null);
+  const [opportunityCreator, setOpportunityCreator] = useState<string | null>(null);
+  const [quotePreparedBy, setQuotePreparedBy] = useState<string | null>(null);
   const [mergedList, setMergedList] = useState<OpportunityWithCustomer[]>([]);
   const [groupLockJobId, setGroupLockJobId] = useState<string | null>(null);
   const [savedMergeIds, setSavedMergeIds] = useState<string[]>([]);
@@ -453,30 +465,78 @@ export default function OpportunityDetail() {
   const [customerSearch, setCustomerSearch] = useState('');
   const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
   const [showEstimate, setShowEstimate] = useState<'new' | 'view' | 'letter' | 'letters' | 'combined-letter' | false>(false);
-  
-  // Function to update prepared_by field based on estimate creators
-  const updatePreparedByFromEstimates = async (opportunityId: string) => {
+
+  const resolveQuotePreparedByNames = async (opportunityId: string, existingPreparedBy = '') => {
+    const fallbackParts = existingPreparedBy
+      .split(',')
+      .map(part => part.trim())
+      .filter(Boolean);
+
     try {
-      // Get all estimates for this opportunity with user information
       const { data: estimates, error } = await supabase
         .schema('business')
         .from('estimates')
-        .select(`
-          user_id,
-          auth.users!inner(email)
-        `)
+        .select('user_id')
         .eq('opportunity_id', opportunityId);
 
-      if (error) {
-        console.error('Error fetching estimates for prepared_by:', error);
-        return;
+      if (error) throw error;
+
+      const userIds = [...new Set((estimates || []).map((est: any) => est.user_id).filter(Boolean))];
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .schema('common')
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', userIds);
+
+        const profileById = new Map((profiles || []).map((profile: any) => [profile.id, profile]));
+        const names = userIds
+          .map((estimateUserId: string) => {
+            const currentUserFallback = estimateUserId === user?.id
+              ? user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email
+              : null;
+            return formatOpportunityCreator(profileById.get(estimateUserId), currentUserFallback);
+          })
+          .filter(Boolean) as string[];
+
+        if (names.length > 0) {
+          return [...new Set(names)].join(', ');
+        }
       }
 
-      if (estimates && estimates.length > 0) {
-        // Get unique user emails from estimate creators
-        const uniqueEmails = [...new Set(estimates.map(est => est.auth?.users?.email).filter(Boolean))];
-        const preparedByValue = uniqueEmails.join(', ');
+      const emails = fallbackParts.filter(part => part.includes('@'));
+      if (emails.length > 0) {
+        const { data: profiles } = await supabase
+          .schema('common')
+          .from('profiles')
+          .select('full_name, email')
+          .in('email', emails);
 
+        const profileByEmail = new Map(
+          (profiles || []).map((profile: any) => [String(profile.email || '').toLowerCase(), profile])
+        );
+
+        const resolved = fallbackParts.map(part => {
+          const profile = profileByEmail.get(part.toLowerCase());
+          return formatOpportunityCreator(profile, part) || part;
+        });
+
+        return [...new Set(resolved)].join(', ');
+      }
+    } catch (error) {
+      console.error('Error resolving quote prepared by names:', error);
+    }
+
+    return fallbackParts.join(', ');
+  };
+  
+  // Function to update prepared_by field based on estimate creators
+  const updatePreparedByFromEstimates = async (opportunityId: string, existingPreparedBy = (opportunity as any)?.prepared_by || '') => {
+    try {
+      const preparedByValue = await resolveQuotePreparedByNames(opportunityId, existingPreparedBy);
+      setQuotePreparedBy(preparedByValue || null);
+
+      if (preparedByValue) {
         // Update the opportunity's prepared_by field
         const { error: updateError } = await supabase
           .schema('business')
@@ -488,8 +548,6 @@ export default function OpportunityDetail() {
           console.error('Error updating prepared_by:', updateError);
         } else {
           console.log('Updated prepared_by:', preparedByValue);
-          // Refresh the opportunity data to show the updated field
-          fetchOpportunity();
         }
       }
     } catch (error) {
@@ -591,6 +649,8 @@ export default function OpportunityDetail() {
     if (userId && id) {
       // Reset state when navigating to a different opportunity to prevent stale data
       setOpportunity(null);
+      setOpportunityCreator(null);
+      setQuotePreparedBy(null);
       setLoadError(null);
       setMergedList([]);
       setGroupLockJobId(null);
@@ -977,6 +1037,7 @@ export default function OpportunityDetail() {
     
     // Track the fetched opportunity ID locally to avoid stale closure issues
     let fetchedOpportunityId: string | null = null;
+    let fetchedPreparedBy = '';
     
     try {
       // Ensure valid session/cookies before fetching - fixes stale cookie issues
@@ -1157,6 +1218,34 @@ export default function OpportunityDetail() {
       }
 
       if (!opportunityData) throw new Error('Opportunity not found');
+      fetchedPreparedBy = (opportunityData as any).prepared_by || '';
+      setQuotePreparedBy(fetchedPreparedBy || null);
+
+      const creatorId = opportunityData.user_id;
+      let creatorDisplay = formatOpportunityCreator(null, opportunityData.sales_person);
+      if (creatorId) {
+        if (creatorId === user?.id) {
+          creatorDisplay = formatOpportunityCreator(
+            {
+              full_name: user?.user_metadata?.full_name || user?.user_metadata?.name,
+              email: user?.email
+            },
+            opportunityData.sales_person
+          );
+        }
+
+        const { data: profileData, error: profileError } = await supabase
+          .schema('common')
+          .from('profiles')
+          .select('id, full_name, email')
+          .eq('id', creatorId)
+          .maybeSingle();
+
+        if (!profileError && profileData) {
+          creatorDisplay = formatOpportunityCreator(profileData, opportunityData.sales_person);
+        }
+      }
+      setOpportunityCreator(creatorDisplay);
       
       // Then fetch the customer data from common schema if we have a customer_id
       let customerInfo: CustomerInfo | null = null;
@@ -1289,7 +1378,7 @@ export default function OpportunityDetail() {
       // Update prepared_by field based on existing estimates
       // Use the locally tracked ID to avoid stale closure issues
       if (fetchedOpportunityId) {
-        updatePreparedByFromEstimates(fetchedOpportunityId);
+        updatePreparedByFromEstimates(fetchedOpportunityId, fetchedPreparedBy);
       }
     }
   }
@@ -2957,17 +3046,17 @@ export default function OpportunityDetail() {
 
                   <div>
                     <label htmlFor="prepared_by" className="block text-sm font-medium text-gray-700 dark:text-white">
-                      Prepared By (Auto-populated from estimate creators)
+                      Quote Prepared By (Auto-populated)
                     </label>
                     <input
                       type="text"
                       id="prepared_by"
                       name="prepared_by"
-                      value={editFormData.prepared_by}
+                      value={quotePreparedBy || editFormData.prepared_by}
                       onChange={handleInputChange}
                       readOnly
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-200 dark:text-white cursor-not-allowed"
-                      placeholder="Auto-populated from estimate creators"
+                      placeholder="Auto-populated from quote creators"
                     />
                   </div>
                 </div>
@@ -3506,13 +3595,22 @@ export default function OpportunityDetail() {
                         })()}
                       </p>
                     </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Opportunity Created Date</p>
-                      <p className="text-gray-900 dark:text-dark-900">
-                        {opportunity.opportunity_created_date
-                          ? formatDateSafe(opportunity.opportunity_created_date)
-                          : 'Not specified'}
-                      </p>
+                    <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-dark-400">Opportunity Created Date</p>
+                        <p className="text-gray-900 dark:text-dark-900">
+                          {opportunity.opportunity_created_date
+                            ? formatDateSafe(opportunity.opportunity_created_date)
+                            : 'Not specified'}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-dark-400">Opportunity Created By</p>
+                        <p className="text-gray-900 dark:text-dark-900">
+                          {opportunityCreator || 'Not specified'}
+                        </p>
+                      </div>
                     </div>
 
                     <div className="mb-4">
@@ -3547,9 +3645,9 @@ export default function OpportunityDetail() {
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Prepared By</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">Quote Prepared By</p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {(opportunity as any).prepared_by || 'Not specified'}
+                        {quotePreparedBy || (opportunity as any).prepared_by || 'Not specified'}
                       </p>
                     </div>
 

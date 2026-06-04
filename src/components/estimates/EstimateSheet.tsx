@@ -514,6 +514,25 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   const [linkOutOfTownTravelToDays, setLinkOutOfTownTravelToDays] = useState(false);
   const { user } = useAuth(); // Get user at component level
   const { preferences, updatePreference, deletePreference } = useUserPreferences();
+  const getCurrentUserPreparedByName = useCallback(async () => {
+    if (!user) return '';
+
+    const fallbackName = user.user_metadata?.full_name || user.user_metadata?.name || user.email || '';
+
+    try {
+      const { data: profile } = await supabase
+        .schema('common')
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      return profile?.full_name || profile?.email || fallbackName;
+    } catch (error) {
+      console.error('Failed to fetch quote prepared by profile:', error);
+      return fallbackName;
+    }
+  }, [user]);
 
   // State for the travel data object - uses DEFAULT_TRAVEL_DATA so all arrays are always defined
   const [travelData, setTravelData] = useState({ ...DEFAULT_TRAVEL_DATA });
@@ -1533,19 +1552,29 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             setIsDirty(false);
             setDraftRestored(false);
             
-            // Update prepared_by on the opportunity to include current user's email
-            if (opportunityId && user?.email) {
+            // Update prepared_by on the opportunity to include current user's name
+            if (opportunityId && user) {
               try {
+                const preparedByName = await getCurrentUserPreparedByName();
                 const { data: opp, error: oppErr } = await supabase
                   .schema('business')
                   .from('opportunities')
                   .select('prepared_by')
                   .eq('id', opportunityId)
                   .maybeSingle();
-                if (!oppErr) {
+                if (!oppErr && preparedByName) {
                   const existing = (opp?.prepared_by as string | null) || '';
-                  const parts = existing.split(',').map(s => s.trim()).filter(Boolean);
-                  if (!parts.includes(user.email)) parts.push(user.email);
+                  const currentEmail = user.email?.toLowerCase();
+                  const currentName = preparedByName.toLowerCase();
+                  const parts = existing
+                    .split(',')
+                    .map(s => s.trim())
+                    .filter(Boolean)
+                    .filter(s => {
+                      const lower = s.toLowerCase();
+                      return lower !== currentEmail && lower !== currentName;
+                    });
+                  parts.push(preparedByName);
                   const newPreparedBy = parts.join(', ');
                   await supabase
                     .schema('business')
@@ -1589,19 +1618,29 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             
             // Trigger prepared_by update for the opportunity
             if (opportunityId) {
-              // First, directly update prepared_by to include current user's email
-              if (user?.email) {
+              // First, directly update prepared_by to include current user's name
+              if (user) {
                 try {
+                  const preparedByName = await getCurrentUserPreparedByName();
                   const { data: opp, error: oppErr } = await supabase
                     .schema('business')
                     .from('opportunities')
                     .select('prepared_by')
                     .eq('id', opportunityId)
                     .maybeSingle();
-                  if (!oppErr) {
+                  if (!oppErr && preparedByName) {
                     const existing = (opp?.prepared_by as string | null) || '';
-                    const parts = existing.split(',').map(s => s.trim()).filter(Boolean);
-                    if (!parts.includes(user.email)) parts.push(user.email);
+                    const currentEmail = user.email?.toLowerCase();
+                    const currentName = preparedByName.toLowerCase();
+                    const parts = existing
+                      .split(',')
+                      .map(s => s.trim())
+                      .filter(Boolean)
+                      .filter(s => {
+                        const lower = s.toLowerCase();
+                        return lower !== currentEmail && lower !== currentName;
+                      });
+                    parts.push(preparedByName);
                     const newPreparedBy = parts.join(', ');
                     await supabase
                       .schema('business')

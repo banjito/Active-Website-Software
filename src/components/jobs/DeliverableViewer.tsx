@@ -713,7 +713,7 @@ export default function DeliverableViewer() {
         
         // Force print-only sections to be visible (they have 'hidden print:block' classes)
         // This applies to ALL platforms, not just Windows
-        const printSections = tempDiv.querySelectorAll('.job-info-print, .nameplate-print, .test-eqpt-print, .device-print, .overview-print, [class*="-print"]:not([class*="no-print"])');
+        const printSections = tempDiv.querySelectorAll('.job-info-print, .nameplate-print, .test-eqpt-print, .device-print, .overview-print');
         printSections.forEach(el => {
           const htmlEl = el as HTMLElement;
           htmlEl.style.cssText += 'display:block !important;visibility:visible !important;';
@@ -743,6 +743,18 @@ export default function DeliverableViewer() {
           const htmlEl = el as HTMLElement;
           const current = (htmlEl.style.cssText || '');
           if (!current.includes('display:')) htmlEl.style.cssText += 'display:block !important;visibility:visible !important;';
+        });
+
+        // Grounding master headers rely on print CSS. Inline the basics so the
+        // deliverable copy keeps the same title/header structure.
+        const groundingHeaders = tempDiv.querySelectorAll('.gsm-header');
+        groundingHeaders.forEach(el => {
+          const htmlEl = el as HTMLElement;
+          htmlEl.style.cssText += 'display:flex !important;position:relative !important;align-items:flex-start !important;justify-content:space-between !important;visibility:visible !important;';
+          el.querySelectorAll('img, h1').forEach(child => {
+            const childEl = child as HTMLElement;
+            childEl.style.cssText += 'display:block !important;visibility:visible !important;color:#000 !important;';
+          });
         });
         
         // Add print-color-adjust to all elements
@@ -868,6 +880,27 @@ export default function DeliverableViewer() {
     .text-right {
       text-align: right !important;
     }
+    .relative {
+      position: relative !important;
+    }
+    .absolute {
+      position: absolute !important;
+    }
+    .left-0 {
+      left: 0 !important;
+    }
+    .right-0 {
+      right: 0 !important;
+    }
+    .items-start {
+      align-items: flex-start !important;
+    }
+    .items-end {
+      align-items: flex-end !important;
+    }
+    .flex-col {
+      flex-direction: column !important;
+    }
     
     /* Table layout fixes - prevent vertical text stacking */
     table {
@@ -931,7 +964,7 @@ export default function DeliverableViewer() {
     .nameplate-print,
     .test-eqpt-print,
     .device-print,
-    [class*="-print"]:not([class*="no-print"]) {
+    .overview-print {
       display: block !important;
       visibility: visible !important;
     }
@@ -1238,6 +1271,23 @@ export default function DeliverableViewer() {
       border-collapse: collapse !important;
       width: 100% !important;
     }
+
+    .report-section .job-info-print-table {
+      display: table !important;
+      table-layout: fixed !important;
+    }
+
+    .report-section .job-info-print-table tbody {
+      display: table-row-group !important;
+    }
+
+    .report-section .job-info-print-table tr {
+      display: table-row !important;
+    }
+
+    .report-section .job-info-print-table td {
+      display: table-cell !important;
+    }
   </style>
   
   <!-- All document styles -->
@@ -1262,7 +1312,7 @@ export default function DeliverableViewer() {
   <div class="print-section report-section">
     ${report.html}
   </div>
-  ${report.styles ? `<style>${report.styles}</style>` : ''}
+  ${report.styles || ''}
   `).join('\n')}
   
   <script>

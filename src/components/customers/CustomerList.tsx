@@ -1,12 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X, Filter, Tag, ArrowUpAZ, ArrowDownAZ, Users, Phone, Mail } from 'lucide-react';
-import { Dialog } from '@headlessui/react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '../../lib/AuthContext';
-import { useDemoMode } from '../../lib/DemoModeContext';
-import { useDivision } from '../../App';
-import { Pagination } from '../ui/Pagination';
-import { supabase } from '../../lib/supabase';
+import React, { useEffect, useState } from "react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Filter,
+  Tag,
+  ArrowUpAZ,
+  ArrowDownAZ,
+  Users,
+  Phone,
+  Mail,
+} from "lucide-react";
+import { Dialog } from "@headlessui/react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useAuth } from "../../lib/AuthContext";
+import { useDemoMode } from "../../lib/DemoModeContext";
+import { useDivision } from "../../App";
+import { Pagination } from "../ui/Pagination";
+import { supabase } from "../../lib/supabase";
 import {
   Customer,
   CustomerCategory,
@@ -15,9 +27,9 @@ import {
   updateCustomer,
   deleteCustomer,
   getCategories,
-  DIVISION_OPTIONS
-} from '../../services/customerService';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+  DIVISION_OPTIONS,
+} from "../../services/customerService";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface ContactInfo {
   id: string;
@@ -39,51 +51,56 @@ interface CustomerFormData {
 }
 
 const initialFormData: CustomerFormData = {
-  company_name: '',
-  email: '',
-  phone: '',
-  address: '',
+  company_name: "",
+  email: "",
+  phone: "",
+  address: "",
   category_id: null,
   divisions: [],
 };
 
 const DIVISION_TO_PORTAL: Record<string, string> = {
-  'north_alabama': 'neta',
-  'northAlabama': 'neta',
-  'tennessee': 'neta',
-  'georgia': 'neta',
-  'international': 'neta',
-  'neta': 'neta',
-  'field_tech': 'field_tech',
-  'scavenger': 'scavenger',
-  'armadillo': 'armadillo',
-  'engineering': 'engineering',
+  north_alabama: "neta",
+  northAlabama: "neta",
+  tennessee: "neta",
+  georgia: "neta",
+  international: "neta",
+  neta: "neta",
+  field_tech: "field_tech",
+  scavenger: "scavenger",
+  armadillo: "armadillo",
+  engineering: "engineering",
 };
 
 // Function to get initial filter settings from localStorage synchronously
 function getInitialFilterSettings() {
   try {
-    const savedPage = localStorage.getItem('customerListPage');
-    const savedSearch = localStorage.getItem('customerListSearch');
-    const savedFilters = localStorage.getItem('customerListFilters');
-    const savedSortOrder = localStorage.getItem('customerListSortOrder');
-    const savedDivisionTabs = localStorage.getItem('customerListDivisionTabs');
-    
+    const savedPage = localStorage.getItem("customerListPage");
+    const savedSearch = localStorage.getItem("customerListSearch");
+    const savedFilters = localStorage.getItem("customerListFilters");
+    const savedSortOrder = localStorage.getItem("customerListSortOrder");
+    const savedDivisionTabs = localStorage.getItem("customerListDivisionTabs");
+
     return {
       page: savedPage ? parseInt(savedPage, 10) : 1,
-      searchTerm: savedSearch || '',
+      searchTerm: savedSearch || "",
       activeFilters: savedFilters ? JSON.parse(savedFilters) : {},
-      sortOrder: (savedSortOrder as 'asc' | 'desc' | null) || null,
-      activeDivisionTabs: savedDivisionTabs ? JSON.parse(savedDivisionTabs) : [] as string[]
+      sortOrder: (savedSortOrder as "asc" | "desc" | null) || null,
+      activeDivisionTabs: savedDivisionTabs
+        ? JSON.parse(savedDivisionTabs)
+        : ([] as string[]),
     };
   } catch (error) {
-    console.error('Error loading customer list settings from localStorage:', error);
+    console.error(
+      "Error loading customer list settings from localStorage:",
+      error,
+    );
     return {
       page: 1,
-      searchTerm: '',
+      searchTerm: "",
       activeFilters: {},
-      sortOrder: null as 'asc' | 'desc' | null,
-      activeDivisionTabs: [] as string[]
+      sortOrder: null as "asc" | "desc" | null,
+      activeDivisionTabs: [] as string[],
     };
   }
 }
@@ -94,7 +111,7 @@ export default function CustomerList() {
   const { division } = useDivision();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Load initial settings synchronously before first render
   const initialSettings = getInitialFilterSettings();
 
@@ -104,12 +121,15 @@ export default function CustomerList() {
       return initialSettings.activeDivisionTabs;
     }
     const portalDivision = division ? DIVISION_TO_PORTAL[division] : null;
-    if (portalDivision && DIVISION_OPTIONS.some(d => d.value === portalDivision)) {
+    if (
+      portalDivision &&
+      DIVISION_OPTIONS.some((d) => d.value === portalDivision)
+    ) {
       return [portalDivision];
     }
     return [];
   };
-  
+
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [page, setPage] = useState<number>(initialSettings.page);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -123,22 +143,31 @@ export default function CustomerList() {
   const [customerToEdit, setCustomerToEdit] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState<string>(initialSettings.searchTerm);
-  const [debouncedSearch, setDebouncedSearch] = useState<string>(initialSettings.searchTerm);
+  const [searchTerm, setSearchTerm] = useState<string>(
+    initialSettings.searchTerm,
+  );
+  const [debouncedSearch, setDebouncedSearch] = useState<string>(
+    initialSettings.searchTerm,
+  );
   const [searchLoading, setSearchLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeFilters, setActiveFilters] = useState<{
     category_id?: string | null;
     status?: string | null;
   }>(initialSettings.activeFilters);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(initialSettings.sortOrder);
-  const [startsWithFilter, setStartsWithFilter] = useState<string>('');
-  const [activeDivisionTabs, setActiveDivisionTabs] = useState<string[]>(getInitialDivisionTabs);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(
+    initialSettings.sortOrder,
+  );
+  const [startsWithFilter, setStartsWithFilter] = useState<string>("");
+  const [activeDivisionTabs, setActiveDivisionTabs] = useState<string[]>(
+    getInitialDivisionTabs,
+  );
   const [contactsPopupOpen, setContactsPopupOpen] = useState(false);
-  const [contactsPopupCustomer, setContactsPopupCustomer] = useState<Customer | null>(null);
+  const [contactsPopupCustomer, setContactsPopupCustomer] =
+    useState<Customer | null>(null);
   const [contactsPopupData, setContactsPopupData] = useState<ContactInfo[]>([]);
   const [contactsPopupLoading, setContactsPopupLoading] = useState(false);
-  
+
   const pageSize = 50;
   const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -148,7 +177,16 @@ export default function CustomerList() {
     } else if (!authLoading) {
       setLoading(false);
     }
-  }, [user, authLoading, activeFilters, page, debouncedSearch, sortOrder, startsWithFilter, activeDivisionTabs]);
+  }, [
+    user,
+    authLoading,
+    activeFilters,
+    page,
+    debouncedSearch,
+    sortOrder,
+    startsWithFilter,
+    activeDivisionTabs,
+  ]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -162,37 +200,40 @@ export default function CustomerList() {
 
   // Save page to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('customerListPage', page.toString());
+    localStorage.setItem("customerListPage", page.toString());
   }, [page]);
 
   // Save search term to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('customerListSearch', searchTerm);
+    localStorage.setItem("customerListSearch", searchTerm);
   }, [searchTerm]);
 
   // Save active filters to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('customerListFilters', JSON.stringify(activeFilters));
+    localStorage.setItem("customerListFilters", JSON.stringify(activeFilters));
   }, [activeFilters]);
 
   // Save sort order to localStorage whenever it changes
   useEffect(() => {
     if (sortOrder) {
-      localStorage.setItem('customerListSortOrder', sortOrder);
+      localStorage.setItem("customerListSortOrder", sortOrder);
     } else {
-      localStorage.removeItem('customerListSortOrder');
+      localStorage.removeItem("customerListSortOrder");
     }
   }, [sortOrder]);
 
   // Save division tabs to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('customerListDivisionTabs', JSON.stringify(activeDivisionTabs));
+    localStorage.setItem(
+      "customerListDivisionTabs",
+      JSON.stringify(activeDivisionTabs),
+    );
   }, [activeDivisionTabs]);
 
   function toggleDivisionTab(divisionValue: string) {
-    setActiveDivisionTabs(prev => {
+    setActiveDivisionTabs((prev) => {
       const next = prev.includes(divisionValue)
-        ? prev.filter(d => d !== divisionValue)
+        ? prev.filter((d) => d !== divisionValue)
         : [...prev, divisionValue];
       return next;
     });
@@ -214,8 +255,8 @@ export default function CustomerList() {
 
     // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
-      console.error('CustomerList: fetchData timed out after 30 seconds');
-      setLoadError('Loading is taking longer than expected. Please try again.');
+      console.error("CustomerList: fetchData timed out after 30 seconds");
+      setLoadError("Loading is taking longer than expected. Please try again.");
       setLoading(false);
       setSearchLoading(false);
     }, 30000);
@@ -224,44 +265,45 @@ export default function CustomerList() {
       const filters = {
         ...activeFilters,
         startsWith: startsWithFilter || null,
-        divisions: activeDivisionTabs.length > 0 ? activeDivisionTabs : null
+        divisions: activeDivisionTabs.length > 0 ? activeDivisionTabs : null,
       };
-      const effectiveSortOrder = activeDivisionTabs.length > 0 && !sortOrder ? 'asc' : sortOrder;
+      const effectiveSortOrder =
+        activeDivisionTabs.length > 0 && !sortOrder ? "asc" : sortOrder;
       let customersData;
       let count;
       try {
-        const result = await getCustomers(filters, { 
-          page, 
-          pageSize, 
+        const result = await getCustomers(filters, {
+          page,
+          pageSize,
           search: debouncedSearch,
-          sortBy: (effectiveSortOrder || sortOrder) ? 'company_name' : undefined,
-          sortOrder: effectiveSortOrder || sortOrder || undefined
+          sortBy: effectiveSortOrder || sortOrder ? "company_name" : undefined,
+          sortOrder: effectiveSortOrder || sortOrder || undefined,
         });
         customersData = result.data;
         count = result.totalCount;
       } catch {
         // Fallback: query without divisions filter if column doesn't exist
         const { divisions: _d, ...filtersWithoutDiv } = filters;
-        const result = await getCustomers(filtersWithoutDiv, { 
-          page, 
-          pageSize, 
+        const result = await getCustomers(filtersWithoutDiv, {
+          page,
+          pageSize,
           search: debouncedSearch,
-          sortBy: sortOrder ? 'company_name' : undefined,
-          sortOrder: sortOrder || undefined
+          sortBy: sortOrder ? "company_name" : undefined,
+          sortOrder: sortOrder || undefined,
         });
         customersData = result.data;
         count = result.totalCount;
       }
       setTotalCount(count);
-      
+
       // Get categories
       const categoriesData = await getCategories();
-      
+
       setCustomers(customersData);
       setCategories(categoriesData);
     } catch (error) {
-      console.error('CustomerList: Error fetching data:', error);
-      setLoadError('Failed to load customers. Please try again.');
+      console.error("CustomerList: Error fetching data:", error);
+      setLoadError("Failed to load customers. Please try again.");
     } finally {
       clearTimeout(timeoutId);
       // Always clear loading state - BOTH states to handle all scenarios
@@ -274,20 +316,20 @@ export default function CustomerList() {
     e.preventDefault();
     try {
       if (!user) return;
-      
+
       setFormLoading(true);
 
       const { divisions, ...baseData } = formData;
       const dataWithDivisions = {
         ...baseData,
         name: baseData.company_name,
-        divisions: divisions.length > 0 ? divisions : null
+        divisions: divisions.length > 0 ? divisions : null,
       };
       const dataWithoutDivisions = {
         ...baseData,
         name: baseData.company_name,
       };
-      
+
       if (isEditing && customerToEdit) {
         try {
           await updateCustomer(customerToEdit, dataWithDivisions);
@@ -296,28 +338,28 @@ export default function CustomerList() {
         }
       } else {
         try {
-          await createCustomer({ 
-            ...dataWithDivisions, 
-            status: 'active',
-            user_id: user.id 
+          await createCustomer({
+            ...dataWithDivisions,
+            status: "active",
+            user_id: user.id,
           });
         } catch {
-          await createCustomer({ 
-            ...dataWithoutDivisions, 
-            status: 'active',
-            user_id: user.id 
+          await createCustomer({
+            ...dataWithoutDivisions,
+            status: "active",
+            user_id: user.id,
           });
         }
       }
-      
+
       setIsOpen(false);
       setFormData(initialFormData);
       setIsEditing(false);
       setCustomerToEdit(null);
       fetchData();
     } catch (error) {
-      console.error('Error saving customer:', error);
-      alert('Failed to save customer. Please try again.');
+      console.error("Error saving customer:", error);
+      alert("Failed to save customer. Please try again.");
     } finally {
       setFormLoading(false);
     }
@@ -330,15 +372,17 @@ export default function CustomerList() {
       setCustomerToDelete(null);
       fetchData();
     } catch (error) {
-      console.error('Error deleting customer:', error);
+      console.error("Error deleting customer:", error);
     }
   }
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+  function handleInputChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
     const { name, value } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: name === 'category_id' ? (value || null) : value 
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "category_id" ? value || null : value,
     }));
   }
 
@@ -357,38 +401,45 @@ export default function CustomerList() {
       phone: customer.phone,
       address: customer.address,
       category_id: customer.category_id || null,
-      divisions: customer.divisions || []
+      divisions: customer.divisions || [],
     });
     setIsOpen(true);
   }
 
   const handleRowClick = (customerId: string) => {
     const currentPath = location.pathname;
-    let targetPath = '';
+    let targetPath = "";
 
-    if (currentPath.startsWith('/sales-dashboard')) {
+    if (currentPath.startsWith("/sales-dashboard")) {
       targetPath = `/sales-dashboard/customers/${customerId}`;
     } else {
       // Check if we are in a division context (e.g., /north_alabama/customers)
-      const pathParts = currentPath.split('/').filter(part => part !== ''); // filter empty strings
-      if (pathParts.length >= 2 && pathParts[1] === 'customers') {
+      const pathParts = currentPath.split("/").filter((part) => part !== ""); // filter empty strings
+      if (pathParts.length >= 2 && pathParts[1] === "customers") {
         const division = pathParts[0];
         targetPath = `/${division}/customers/${customerId}`;
       } else {
         // Fallback or default behavior if context is unclear (shouldn't happen with current routes)
-        console.warn(`[CustomerList] Unclear navigation context from path: ${currentPath}. Falling back to generic path.`);
+        console.warn(
+          `[CustomerList] Unclear navigation context from path: ${currentPath}. Falling back to generic path.`,
+        );
         targetPath = `/customers/${customerId}`; // This path might not exist anymore, leading to redirect
       }
     }
-      
-    console.log(`[CustomerList] handleRowClick: Current Path = ${currentPath}, Target Path = ${targetPath}`);
+
+    console.log(
+      `[CustomerList] handleRowClick: Current Path = ${currentPath}, Target Path = ${targetPath}`,
+    );
     navigate(targetPath);
   };
 
-  function handleFilterChange(type: 'category_id' | 'status', value: string | null) {
-    setActiveFilters(prev => ({
+  function handleFilterChange(
+    type: "category_id" | "status",
+    value: string | null,
+  ) {
+    setActiveFilters((prev) => ({
       ...prev,
-      [type]: value
+      [type]: value,
     }));
   }
 
@@ -399,9 +450,9 @@ export default function CustomerList() {
   }
 
   function toggleSortOrder() {
-    setSortOrder(prev => {
-      if (prev === null) return 'asc';
-      if (prev === 'asc') return 'desc';
+    setSortOrder((prev) => {
+      if (prev === null) return "asc";
+      if (prev === "asc") return "desc";
       return null;
     });
     setPage(1);
@@ -409,13 +460,13 @@ export default function CustomerList() {
 
   function getCategoryNameById(categoryId: string | null | undefined) {
     if (!categoryId) return null;
-    const category = categories.find(c => c.id === categoryId);
+    const category = categories.find((c) => c.id === categoryId);
     return category ? category.name : null;
   }
 
   function getCategoryColorById(categoryId: string | null | undefined) {
     if (!categoryId) return null;
-    const category = categories.find(c => c.id === categoryId);
+    const category = categories.find((c) => c.id === categoryId);
     return category ? category.color : null;
   }
 
@@ -426,15 +477,15 @@ export default function CustomerList() {
     setContactsPopupLoading(true);
     try {
       const { data, error } = await supabase
-        .schema('common')
-        .from('contacts')
-        .select('id, first_name, last_name, email, phone, position, is_primary')
-        .eq('customer_id', customer.id)
-        .order('is_primary', { ascending: false });
+        .schema("common")
+        .from("contacts")
+        .select("id, first_name, last_name, email, phone, position, is_primary")
+        .eq("customer_id", customer.id)
+        .order("is_primary", { ascending: false });
       if (error) throw error;
       setContactsPopupData(data || []);
     } catch (err) {
-      console.error('Error fetching contacts for popup:', err);
+      console.error("Error fetching contacts for popup:", err);
       setContactsPopupData([]);
     } finally {
       setContactsPopupLoading(false);
@@ -444,17 +495,17 @@ export default function CustomerList() {
   function navigateToCategoriesPage() {
     const currentPath = location.pathname;
 
-    if (currentPath.startsWith('/sales-dashboard')) {
-      navigate('/sales-dashboard/customer-categories');
+    if (currentPath.startsWith("/sales-dashboard")) {
+      navigate("/sales-dashboard/customer-categories");
     } else {
       // Check if we are in a division context (e.g., /north_alabama/customers)
-      const pathParts = currentPath.split('/').filter(part => part !== ''); // filter empty strings
-      if (pathParts.length >= 2 && pathParts[1] === 'customers') {
+      const pathParts = currentPath.split("/").filter((part) => part !== ""); // filter empty strings
+      if (pathParts.length >= 2 && pathParts[1] === "customers") {
         const division = pathParts[0];
         navigate(`/${division}/customer-categories`);
       } else {
         // Fallback to sales dashboard path if context is unclear
-        navigate('/sales-dashboard/customer-categories');
+        navigate("/sales-dashboard/customer-categories");
       }
     }
   }
@@ -463,8 +514,18 @@ export default function CustomerList() {
     return (
       <div className="p-6 flex flex-col items-center justify-center min-h-[400px]">
         <div className="text-red-600 dark:text-red-400 mb-4">
-          <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <svg
+            className="w-12 h-12"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
           </svg>
         </div>
         <div className="text-gray-900 dark:text-gray-100 mb-4">{loadError}</div>
@@ -487,21 +548,20 @@ export default function CustomerList() {
   }
 
   const statusOptions = [
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' },
-    { value: 'lead', label: 'Lead' },
-    { value: 'prospect', label: 'Prospect' },
-    { value: 'customer', label: 'Customer' }
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+    { value: "lead", label: "Lead" },
+    { value: "prospect", label: "Prospect" },
+    { value: "customer", label: "Customer" },
   ];
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Customers</h2>
-          <p className="mt-1 text-sm text-gray-600 dark:text-white">
-            Manage your customer accounts and view their details.
-          </p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Customers
+          </h2>
         </div>
         <div className="flex space-x-2 flex-wrap gap-y-2">
           <input
@@ -526,7 +586,7 @@ export default function CustomerList() {
               <button
                 type="button"
                 onClick={() => {
-                  setStartsWithFilter('');
+                  setStartsWithFilter("");
                   setPage(1);
                 }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -544,18 +604,28 @@ export default function CustomerList() {
             type="button"
             onClick={toggleSortOrder}
             className={`inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm ${
-              sortOrder 
-                ? 'border-[#f26722] bg-[#f26722]/10 text-[#f26722] hover:bg-[#f26722]/20' 
-                : 'border-gray-300 bg-white dark:bg-dark-150 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-200'
+              sortOrder
+                ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722] hover:bg-[#f26722]/20"
+                : "border-gray-300 bg-white dark:bg-dark-150 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-200"
             }`}
-            title={sortOrder === 'asc' ? 'Sorted A-Z (click to sort Z-A)' : sortOrder === 'desc' ? 'Sorted Z-A (click to clear sort)' : 'Sort alphabetically'}
+            title={
+              sortOrder === "asc"
+                ? "Sorted A-Z (click to sort Z-A)"
+                : sortOrder === "desc"
+                  ? "Sorted Z-A (click to clear sort)"
+                  : "Sort alphabetically"
+            }
           >
-            {sortOrder === 'desc' ? (
+            {sortOrder === "desc" ? (
               <ArrowDownAZ className="h-4 w-4 mr-2" />
             ) : (
               <ArrowUpAZ className="h-4 w-4 mr-2" />
             )}
-            {sortOrder === 'asc' ? 'A-Z' : sortOrder === 'desc' ? 'Z-A' : 'Sort'}
+            {sortOrder === "asc"
+              ? "A-Z"
+              : sortOrder === "desc"
+                ? "Z-A"
+                : "Sort"}
           </button>
           <button
             onClick={navigateToCategoriesPage}
@@ -600,8 +670,8 @@ export default function CustomerList() {
           onClick={clearDivisionTabs}
           className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
             activeDivisionTabs.length === 0
-              ? 'bg-[#f26722] text-white'
-              : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100'
+              ? "bg-[#f26722] text-white"
+              : "bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100"
           }`}
         >
           All
@@ -613,8 +683,8 @@ export default function CustomerList() {
             onClick={() => toggleDivisionTab(div.value)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               activeDivisionTabs.includes(div.value)
-                ? 'bg-[#f26722] text-white'
-                : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100'
+                ? "bg-[#f26722] text-white"
+                : "bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100"
             }`}
           >
             {div.label}
@@ -631,37 +701,44 @@ export default function CustomerList() {
       {Object.keys(activeFilters).length > 0 && (
         <div className="mb-4 bg-gray-50 dark:bg-dark-150 p-3 rounded-md">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-gray-500 dark:text-white">Active filters:</span>
-            
+            <span className="text-sm text-gray-500 dark:text-white">
+              Active filters:
+            </span>
+
             {activeFilters.category_id && (
               <div className="flex items-center bg-white dark:bg-neutral-800 rounded-full px-3 py-1 text-sm">
-                <div 
-                  className="w-3 h-3 rounded-full mr-2" 
-                  style={{ backgroundColor: getCategoryColorById(activeFilters.category_id) || '#ccc' }}
+                <div
+                  className="w-3 h-3 rounded-full mr-2"
+                  style={{
+                    backgroundColor:
+                      getCategoryColorById(activeFilters.category_id) || "#ccc",
+                  }}
                 />
-                <span className="mr-1">Category: {getCategoryNameById(activeFilters.category_id)}</span>
-                <button 
-                  onClick={() => handleFilterChange('category_id', null)}
+                <span className="mr-1">
+                  Category: {getCategoryNameById(activeFilters.category_id)}
+                </span>
+                <button
+                  onClick={() => handleFilterChange("category_id", null)}
                   className="text-gray-400 hover:text-gray-500"
                 >
                   <X className="h-3 w-3" />
                 </button>
               </div>
             )}
-            
+
             {activeFilters.status && (
               <div className="flex items-center bg-white dark:bg-neutral-800 rounded-full px-3 py-1 text-sm">
                 <span className="mr-1">Status: {activeFilters.status}</span>
-                <button 
-                  onClick={() => handleFilterChange('status', null)}
+                <button
+                  onClick={() => handleFilterChange("status", null)}
                   className="text-gray-400 hover:text-gray-500"
                 >
                   <X className="h-3 w-3" />
                 </button>
               </div>
             )}
-            
-            <button 
+
+            <button
               onClick={clearFilters}
               className="text-sm text-[#f26722] hover:text-[#f26722]/80"
             >
@@ -677,13 +754,27 @@ export default function CustomerList() {
             <li className="px-6 py-4">
               <div className="text-center py-8">
                 <div className="mx-auto h-12 w-12 text-gray-400 flex items-center justify-center rounded-full bg-gray-100 dark:bg-dark-150 mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white">No customers found</h3>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                  No customers found
+                </h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-white">
-                  You don't have any customers yet. Get started by adding your first customer.
+                  You don't have any customers yet. Get started by adding your
+                  first customer.
                 </p>
                 <div className="mt-6">
                   <button
@@ -702,8 +793,8 @@ export default function CustomerList() {
               </div>
             </li>
           ) : (
-            customers.map(customer => (
-              <li 
+            customers.map((customer) => (
+              <li
                 key={customer.id}
                 onClick={() => handleRowClick(customer.id)}
                 className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
@@ -713,7 +804,8 @@ export default function CustomerList() {
                     <div className="flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
                         <span className="text-gray-500 dark:text-white text-lg font-medium">
-                          {maskCustomerName(customer.company_name)?.charAt(0) || 'C'}
+                          {maskCustomerName(customer.company_name)?.charAt(0) ||
+                            "C"}
                         </span>
                       </div>
                     </div>
@@ -721,16 +813,24 @@ export default function CustomerList() {
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {maskCustomerName(customer.company_name)}
                         {customer.category_id && categories.length > 0 && (
-                          <span 
+                          <span
                             className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                            style={{ 
-                              backgroundColor: (getCategoryColorById(customer.category_id) + '20') as string,
-                              color: getCategoryColorById(customer.category_id) as string 
+                            style={{
+                              backgroundColor: (getCategoryColorById(
+                                customer.category_id,
+                              ) + "20") as string,
+                              color: getCategoryColorById(
+                                customer.category_id,
+                              ) as string,
                             }}
                           >
-                            <div 
+                            <div
                               className="w-2 h-2 rounded-full mr-1"
-                              style={{ backgroundColor: getCategoryColorById(customer.category_id) as string }}
+                              style={{
+                                backgroundColor: getCategoryColorById(
+                                  customer.category_id,
+                                ) as string,
+                              }}
                             ></div>
                             {getCategoryNameById(customer.category_id)}
                           </span>
@@ -738,10 +838,15 @@ export default function CustomerList() {
                       </div>
                       {customer.divisions && customer.divisions.length > 0 && (
                         <div className="flex gap-1 mt-1">
-                          {customer.divisions.map(d => {
-                            const divOption = DIVISION_OPTIONS.find(o => o.value === d);
+                          {customer.divisions.map((d) => {
+                            const divOption = DIVISION_OPTIONS.find(
+                              (o) => o.value === d,
+                            );
                             return divOption ? (
-                              <span key={d} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#f26722]/10 text-[#f26722]">
+                              <span
+                                key={d}
+                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#f26722]/10 text-[#f26722]"
+                              >
                                 {divOption.label}
                               </span>
                             ) : null;
@@ -754,17 +859,19 @@ export default function CustomerList() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                      customer.status === 'active' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                        : customer.status === 'inactive'
-                        ? 'bg-gray-100 text-gray-800 dark:bg-dark-150 dark:text-gray-200'
-                        : customer.status === 'lead'
-                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                        : customer.status === 'prospect'
-                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                        : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                    }`}>
+                    <span
+                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                        customer.status === "active"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                          : customer.status === "inactive"
+                            ? "bg-gray-100 text-gray-800 dark:bg-dark-150 dark:text-gray-200"
+                            : customer.status === "lead"
+                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                              : customer.status === "prospect"
+                                ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                                : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                      }`}
+                    >
                       {customer.status}
                     </span>
                     <div className="flex space-x-1">
@@ -806,7 +913,8 @@ export default function CustomerList() {
       {totalPages > 0 && (
         <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-gray-600 dark:text-white">
-            Showing {((page - 1) * pageSize) + 1} - {Math.min(page * pageSize, totalCount)} of {totalCount} customers
+            Showing {(page - 1) * pageSize + 1} -{" "}
+            {Math.min(page * pageSize, totalCount)} of {totalCount} customers
           </div>
           {totalPages > 1 && (
             <Pagination
@@ -819,7 +927,11 @@ export default function CustomerList() {
       )}
 
       {/* Filter Dialog */}
-      <Dialog open={filterOpen} onClose={() => setFilterOpen(false)} className="relative z-50">
+      <Dialog
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-md rounded bg-white dark:bg-neutral-900 p-6 shadow-xl">
@@ -835,21 +947,26 @@ export default function CustomerList() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               {categories.length > 0 && (
                 <div>
-                  <label htmlFor="category_filter" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="category_filter"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Category
                   </label>
                   <select
                     id="category_filter"
-                    value={activeFilters.category_id || ''}
-                    onChange={(e) => handleFilterChange('category_id', e.target.value || null)}
+                    value={activeFilters.category_id || ""}
+                    onChange={(e) =>
+                      handleFilterChange("category_id", e.target.value || null)
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-gray-600 dark:text-white"
                   >
                     <option value="">All Categories</option>
-                    {categories.map(category => (
+                    {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
                       </option>
@@ -859,17 +976,22 @@ export default function CustomerList() {
               )}
 
               <div>
-                <label htmlFor="status_filter" className="block text-sm font-medium text-gray-700 dark:text-white">
+                <label
+                  htmlFor="status_filter"
+                  className="block text-sm font-medium text-gray-700 dark:text-white"
+                >
                   Status
                 </label>
                 <select
                   id="status_filter"
-                  value={activeFilters.status || ''}
-                  onChange={(e) => handleFilterChange('status', e.target.value || null)}
+                  value={activeFilters.status || ""}
+                  onChange={(e) =>
+                    handleFilterChange("status", e.target.value || null)
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-gray-600 dark:text-white"
                 >
                   <option value="">All Statuses</option>
-                  {statusOptions.map(status => (
+                  {statusOptions.map((status) => (
                     <option key={status.value} value={status.value}>
                       {status.label}
                     </option>
@@ -899,13 +1021,17 @@ export default function CustomerList() {
       </Dialog>
 
       {/* Add/Edit Customer Dialog */}
-      <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
+      <Dialog
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-md rounded bg-white dark:bg-neutral-900 p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
               <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
-                {isEditing ? 'Edit Customer' : 'Add New Customer'}
+                {isEditing ? "Edit Customer" : "Add New Customer"}
               </Dialog.Title>
               <button
                 type="button"
@@ -915,11 +1041,14 @@ export default function CustomerList() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="company_name"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Company Name
                   </label>
                   <input
@@ -934,7 +1063,10 @@ export default function CustomerList() {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Email Address
                   </label>
                   <input
@@ -948,7 +1080,10 @@ export default function CustomerList() {
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Phone Number
                   </label>
                   <input
@@ -962,7 +1097,10 @@ export default function CustomerList() {
                 </div>
 
                 <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Address
                   </label>
                   <input
@@ -977,18 +1115,21 @@ export default function CustomerList() {
 
                 {categories.length > 0 && (
                   <div>
-                    <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="category_id"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Category
                     </label>
                     <select
                       id="category_id"
                       name="category_id"
-                      value={formData.category_id || ''}
+                      value={formData.category_id || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-gray-600 dark:text-white"
                     >
                       <option value="">No Category</option>
-                      {categories.map(category => (
+                      {categories.map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.name}
                         </option>
@@ -1007,17 +1148,17 @@ export default function CustomerList() {
                         key={div.value}
                         type="button"
                         onClick={() => {
-                          setFormData(prev => ({
+                          setFormData((prev) => ({
                             ...prev,
                             divisions: prev.divisions.includes(div.value)
-                              ? prev.divisions.filter(d => d !== div.value)
-                              : [...prev.divisions, div.value]
+                              ? prev.divisions.filter((d) => d !== div.value)
+                              : [...prev.divisions, div.value],
                           }));
                         }}
                         className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                           formData.divisions.includes(div.value)
-                            ? 'bg-[#f26722] text-white'
-                            : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600'
+                            ? "bg-[#f26722] text-white"
+                            : "bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 border border-gray-300 dark:border-gray-600"
                         }`}
                       >
                         {div.label}
@@ -1042,14 +1183,32 @@ export default function CustomerList() {
                 >
                   {formLoading ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
-                      {isEditing ? 'Updating...' : 'Creating...'}
+                      {isEditing ? "Updating..." : "Creating..."}
                     </>
+                  ) : isEditing ? (
+                    "Update"
                   ) : (
-                    isEditing ? 'Update' : 'Create'
+                    "Create"
                   )}
                 </button>
               </div>
@@ -1059,7 +1218,11 @@ export default function CustomerList() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)} className="relative z-50">
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-sm rounded bg-white dark:bg-dark-150 p-6 shadow-xl">
@@ -1067,7 +1230,8 @@ export default function CustomerList() {
               Confirm Delete
             </Dialog.Title>
             <p className="text-sm text-gray-500 dark:text-white">
-              Are you sure you want to delete this customer? This action cannot be undone.
+              Are you sure you want to delete this customer? This action cannot
+              be undone.
             </p>
             <div className="mt-5 sm:mt-6 flex space-x-2 justify-end">
               <button
@@ -1079,7 +1243,9 @@ export default function CustomerList() {
               </button>
               <button
                 type="button"
-                onClick={() => customerToDelete && handleDelete(customerToDelete)}
+                onClick={() =>
+                  customerToDelete && handleDelete(customerToDelete)
+                }
                 className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
                 Delete
@@ -1090,14 +1256,21 @@ export default function CustomerList() {
       </Dialog>
 
       {/* Contacts Popup Dialog */}
-      <Dialog open={contactsPopupOpen} onClose={() => setContactsPopupOpen(false)} className="relative z-50">
+      <Dialog
+        open={contactsPopupOpen}
+        onClose={() => setContactsPopupOpen(false)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-md rounded-lg bg-white dark:bg-neutral-900 p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
               <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
                 <Users className="h-5 w-5 text-[#f26722] mr-2" />
-                Contacts {contactsPopupCustomer ? `- ${maskCustomerName(contactsPopupCustomer.company_name)}` : ''}
+                Contacts{" "}
+                {contactsPopupCustomer
+                  ? `- ${maskCustomerName(contactsPopupCustomer.company_name)}`
+                  : ""}
               </Dialog.Title>
               <button
                 type="button"
@@ -1111,22 +1284,30 @@ export default function CustomerList() {
             {contactsPopupLoading ? (
               <div className="flex items-center justify-center py-8">
                 <LoadingSpinner size="sm" />
-                <span className="ml-2 text-sm text-gray-500 dark:text-gray-300">Loading contacts...</span>
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-300">
+                  Loading contacts...
+                </span>
               </div>
             ) : contactsPopupData.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">No contacts found for this customer.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  No contacts found for this customer.
+                </p>
               </div>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {contactsPopupData.map((contact) => (
-                  <div key={contact.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <div
+                    key={contact.id}
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
                         <div className="h-9 w-9 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center mr-3">
                           <span className="text-gray-500 dark:text-white text-sm font-medium">
-                            {contact.first_name?.charAt(0)}{contact.last_name?.charAt(0)}
+                            {contact.first_name?.charAt(0)}
+                            {contact.last_name?.charAt(0)}
                           </span>
                         </div>
                         <div>
@@ -1134,7 +1315,9 @@ export default function CustomerList() {
                             {contact.first_name} {contact.last_name}
                           </p>
                           {contact.position && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{contact.position}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {contact.position}
+                            </p>
                           )}
                         </div>
                       </div>

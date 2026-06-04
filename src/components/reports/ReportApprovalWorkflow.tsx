@@ -877,6 +877,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
             const updateData: any = {
               status: 'approved',
               reviewed_by: user.id,
+              approved_by: user.id,
               reviewed_at: now,
               approved_at: now,
               review_comments: commentsInput?.value || null
@@ -1168,6 +1169,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
               .update({
                 status: 'approved',
                 reviewed_by: user.id,
+                approved_by: user.id,
                 reviewed_at: now,
                 approved_at: now,
                 review_comments: comments
@@ -1301,7 +1303,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
         .update({
           status: 'sent',
           sent_at: now,
-          reviewed_by: user.id
+          sent_by: user.id
         })
         .eq('id', report.id);
       
@@ -1349,6 +1351,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
         .update({
           status: 'approved',
           reviewed_by: user.id,
+          approved_by: user.id,
           reviewed_at: now,
           approved_at: now,
           review_comments: 'Report marked as approved from sent status'
@@ -1404,6 +1407,7 @@ export function ReportApprovalWorkflow({ division, jobId, onUpdate }: ReportAppr
       // Add approved_at timestamp if approved
       if (reviewStatus === 'approved') {
         updateData.approved_at = now;
+        updateData.approved_by = user.id;
       }
       
       const { error } = await supabase

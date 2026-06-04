@@ -31,6 +31,7 @@ import { formatDivisionDisplay } from '../../lib/utils/divisionDisplay';
 import { compareAlphanumericLabels, compareLinkedAssetFolderLabels } from '../../utils/sortUtils';
 import { SignatureProfileSelector } from './SignatureProfileSelector';
 import { getQuickBooksStatus, searchQuickBooksProjects, getQuickBooksHoursByProject } from '../../services/quickbooksService';
+import { loadAuthorsForUserIds } from '@/lib/communityProfiles';
 // TrackingSection is defined locally below
 
 // Inline component to show accepted letter proposal for the job's originating opportunity
@@ -120,13 +121,33 @@ interface Asset {
   name: string;
   file_url: string;
   created_at: string;
+  substation?: string | null;
   template_type?: 'MTS' | 'ATS' | null;
   status?: 'not started' | 'in_progress' | 'ready_for_review' | 'approved' | 'sent' | 'issue' | 'archived';
   urgency?: 'normal' | 'critical';
   submitted_at?: string | null;
   approved_at?: string | null;
   sent_at?: string | null;
+  submitted_by?: string | null;
+  approved_by?: string | null;
+  sent_by?: string | null;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  review_comments?: string | null;
 }
+
+type ReportAuditInfo = {
+  submitted_at?: string | null;
+  approved_at?: string | null;
+  issued_at?: string | null;
+  sent_at?: string | null;
+  submitted_by?: string | null;
+  approved_by?: string | null;
+  sent_by?: string | null;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  review_comments?: string | null;
+};
 
 interface RelatedOpportunity {
   id: string;
@@ -292,7 +313,7 @@ export default function JobDetail() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [jobAssets, setJobAssets] = useState<Asset[]>([]);
   const [filteredJobAssets, setFilteredJobAssets] = useState<Asset[]>([]);
-  const [reportTimestampsByAsset, setReportTimestampsByAsset] = useState<Record<string, { submitted_at?: string | null; approved_at?: string | null; issued_at?: string | null; sent_at?: string | null }>>({});
+  const [reportTimestampsByAsset, setReportTimestampsByAsset] = useState<Record<string, ReportAuditInfo>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [assetStatusFilter, setAssetStatusFilter] = useState<'all' | 'not started' | 'in_progress' | 'ready_for_review' | 'approved' | 'approved_internal_forms' | 'sent' | 'issue' | 'archived'>('all');
   const [reportSearchQuery, setReportSearchQuery] = useState('');
@@ -1226,6 +1247,47 @@ export default function JobDetail() {
   const [selectedAssetForComments, setSelectedAssetForComments] = useState<Asset | null>(null);
   const [dynamicAssetNames, setDynamicAssetNames] = useState<Record<string, string>>({});
   const [assetSubstations, setAssetSubstations] = useState<Record<string, string>>({});
+  const [reportAuditUsers, setReportAuditUsers] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    const ids = new Set<string>();
+    const addId = (value?: string | null) => {
+      if (value) ids.add(value);
+    };
+
+    jobAssets.forEach((asset) => {
+      addId(asset.submitted_by);
+      addId(asset.approved_by);
+      addId(asset.sent_by);
+      addId(asset.reviewed_by);
+    });
+
+    Object.values(reportTimestampsByAsset).forEach((audit) => {
+      addId(audit.submitted_by);
+      addId(audit.approved_by);
+      addId(audit.sent_by);
+      addId(audit.reviewed_by);
+    });
+
+    if (ids.size === 0) {
+      setReportAuditUsers({});
+      return;
+    }
+
+    loadAuthorsForUserIds(Array.from(ids)).then((authorMap) => {
+      if (cancelled) return;
+      const next: Record<string, string> = {};
+      authorMap.forEach((author, userId) => {
+        next[userId] = author.displayName;
+      });
+      setReportAuditUsers(next);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [jobAssets, reportTimestampsByAsset]);
 
   // Initialize manual tracker from loaded job (support both old/new shapes)
   useEffect(() => {
@@ -1844,7 +1906,7 @@ export default function JobDetail() {
       return;
     }
     
-    if (tabParam && ['overview', 'assets', 'deliverables', 'notes', 'sla', 'tracking', 'reports', 'after-action'].includes(tabParam)) {
+    if (tabParam && ['overview', 'assets', 'deliverables', 'notes', 'sla', 'tracking', 'reports', 'report-audit', 'after-action'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
     
@@ -2094,6 +2156,78 @@ export default function JobDetail() {
         asset.name.toLowerCase().includes(reportSearchQuery.toLowerCase())
       );
 
+  const reportAuditRows = useMemo(() => {
+    return jobAssets
+      .filter((asset) => {
+        const fileUrl = asset.file_url || '';
+        return fileUrl.startsWith('report:') || fileUrl.toLowerCase().endsWith('.pdf');
+      })
+      .map((asset) => {
+        const audit = reportTimestampsByAsset[asset.id] || {};
+        const displayName = dynamicAssetNames[asset.id] || asset.name;
+
+        return {
+          asset,
+          displayName,
+          status: asset.status || 'not started',
+          substation: assetSubstations[asset.id] || asset.substation || '',
+          submittedAt: audit.submitted_at || asset.submitted_at || null,
+          submittedBy: asset.submitted_by || audit.submitted_by || null,
+          approvedAt: audit.issued_at || audit.approved_at || asset.approved_at || null,
+          approvedBy: asset.approved_by || asset.reviewed_by || audit.approved_by || audit.reviewed_by || null,
+          sentAt: audit.sent_at || asset.sent_at || null,
+          sentBy: asset.sent_by || audit.sent_by || null,
+          reviewComments: asset.review_comments || audit.review_comments || null
+        };
+      })
+      .sort((a, b) => {
+        const subCompare = a.substation.localeCompare(b.substation, undefined, { sensitivity: 'base' });
+        if (subCompare !== 0) return subCompare;
+        return compareAlphanumericLabels(a.displayName, b.displayName);
+      });
+  }, [jobAssets, dynamicAssetNames, assetSubstations, reportTimestampsByAsset]);
+
+  const formatAuditDate = (dateStr?: string | null) => {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return '-';
+    return format(date, 'MMM d, yyyy h:mm a');
+  };
+
+  const getAuditUserName = (userId?: string | null) => {
+    if (!userId) return '-';
+    const knownUser = users.find((u) => u.id === userId);
+    const currentUserName = user?.id === userId
+      ? (user.user_metadata?.name || user.user_metadata?.full_name)
+      : null;
+    const currentUserEmail = user?.id === userId ? user.email : null;
+    const loadedName = reportAuditUsers[userId];
+    return (
+      knownUser?.user_metadata?.name ||
+      knownUser?.user_metadata?.full_name ||
+      currentUserName ||
+      (loadedName && loadedName !== 'Member' ? loadedName : null) ||
+      knownUser?.email ||
+      currentUserEmail ||
+      'Unknown'
+    );
+  };
+
+  const getAuditStatusLabel = (status?: string | null) => {
+    switch (status) {
+      case 'ready_for_review':
+        return 'Ready for Review';
+      case 'in_progress':
+        return 'In Progress';
+      case 'not started':
+        return 'Not Started';
+      case 'issue':
+        return 'Issue';
+      default:
+        return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Not Started';
+    }
+  };
+
   async function fetchAssets() {
     try {
       const { data, error } = await supabase
@@ -2157,7 +2291,7 @@ export default function JobDetail() {
         const { data: assetsData, error: assetsError } = await supabase
           .schema('neta_ops')
           .from('assets')
-          .select('id, name, file_url, created_at, status, submitted_at, approved_at, sent_at, substation')
+          .select('id, name, file_url, created_at, status, submitted_at, approved_at, sent_at, submitted_by, approved_by, sent_by, reviewed_by, reviewed_at, review_comments, substation, urgency, template_type')
           .in('id', chunk);
 
         if (assetsError) throw assetsError;
@@ -2190,13 +2324,13 @@ export default function JobDetail() {
             const { data: reports, error: repErr } = await supabase
               .schema('neta_ops')
               .from('technical_reports')
-              .select('id, submitted_at, approved_at, issued_at, sent_at')
+              .select('id, submitted_at, approved_at, issued_at, sent_at, submitted_by, approved_by, sent_by, reviewed_by, reviewed_at, review_comments')
               .in('id', chunk);
             if (repErr) throw repErr;
             (reports || []).forEach(r => repMap.set(r.id, r));
           }
 
-          const tsByAsset: Record<string, { submitted_at?: string | null; approved_at?: string | null; issued_at?: string | null; sent_at?: string | null }> = {};
+          const tsByAsset: Record<string, ReportAuditInfo> = {};
           (links || []).forEach(link => {
             const r = repMap.get(link.report_id);
             if (r) {
@@ -2204,7 +2338,13 @@ export default function JobDetail() {
                 submitted_at: (r as any).submitted_at || null,
                 approved_at: (r as any).approved_at || null,
                 issued_at: (r as any).issued_at || null,
-                sent_at: (r as any).sent_at || null
+                sent_at: (r as any).sent_at || null,
+                submitted_by: (r as any).submitted_by || null,
+                approved_by: (r as any).approved_by || null,
+                sent_by: (r as any).sent_by || null,
+                reviewed_by: (r as any).reviewed_by || null,
+                reviewed_at: (r as any).reviewed_at || null,
+                review_comments: (r as any).review_comments || null
               };
             }
           });
@@ -2676,6 +2816,7 @@ export default function JobDetail() {
         .getPublicUrl(filePath);
 
       const publicUrl = publicUrlData.publicUrl;
+      const now = new Date().toISOString();
 
       // 3. Create asset record in database with status 'ready_for_review' so it appears in Reports tab
       const { data: assetData, error: assetError } = await supabase
@@ -2685,8 +2826,10 @@ export default function JobDetail() {
           name: pdfReportName.trim(),
           file_url: publicUrl,
           substation: pdfReportSubstation.trim() || null,
-          created_at: new Date().toISOString(),
+          created_at: now,
           status: 'ready_for_review', // Start ready for review so it appears in Reports tab
+          submitted_at: now,
+          submitted_by: user?.id || null,
         })
         .select('id')
         .single();
@@ -3255,16 +3398,21 @@ export default function JobDetail() {
       // Stamp submitted_at when marking as ready_for_review
       if (newStatus === 'ready_for_review') {
         updatePayload.submitted_at = now;
+        updatePayload.submitted_by = user?.id || null;
       }
       
       // Stamp approved_at when marking as approved
       if (newStatus === 'approved') {
         updatePayload.approved_at = now;
+        updatePayload.approved_by = user?.id || null;
+        updatePayload.reviewed_by = user?.id || null;
+        updatePayload.reviewed_at = now;
       }
       
       // Stamp sent_at when marking as sent
       if (newStatus === 'sent') {
         updatePayload.sent_at = now;
+        updatePayload.sent_by = user?.id || null;
         // If no approved_at exists yet, stamp it now (assume approved at same time)
         if (!asset?.approved_at) {
           updatePayload.approved_at = now;
@@ -3288,7 +3436,12 @@ export default function JobDetail() {
         status: newStatus,
         submitted_at: newStatus === 'ready_for_review' ? now : asset.submitted_at,
         approved_at: newStatus === 'approved' ? now : (newStatus === 'sent' && !asset.approved_at ? now : asset.approved_at),
-        sent_at: newStatus === 'sent' ? now : asset.sent_at
+        sent_at: newStatus === 'sent' ? now : asset.sent_at,
+        submitted_by: newStatus === 'ready_for_review' ? user?.id || null : asset.submitted_by,
+        approved_by: newStatus === 'approved' ? user?.id || null : asset.approved_by,
+        sent_by: newStatus === 'sent' ? user?.id || null : asset.sent_by,
+        reviewed_by: newStatus === 'approved' ? user?.id || null : asset.reviewed_by,
+        reviewed_at: newStatus === 'approved' ? now : asset.reviewed_at
       };
       
       setJobAssets(prev => prev.map(a => 
@@ -4228,7 +4381,8 @@ export default function JobDetail() {
         .from('assets')
         .update({ 
           status: 'sent', 
-          sent_at: now 
+          sent_at: now,
+          sent_by: user?.id || null
         })
         .in('id', assetIds);
 
@@ -4238,10 +4392,10 @@ export default function JobDetail() {
 
       // Update local state
       setJobAssets(prev => prev.map(a => 
-        assetIds.includes(a.id) ? { ...a, status: 'sent' as const, sent_at: now } : a
+        assetIds.includes(a.id) ? { ...a, status: 'sent' as const, sent_at: now, sent_by: user?.id || null } : a
       ));
       setFilteredJobAssets(prev => prev.map(a => 
-        assetIds.includes(a.id) ? { ...a, status: 'sent' as const, sent_at: now } : a
+        assetIds.includes(a.id) ? { ...a, status: 'sent' as const, sent_at: now, sent_by: user?.id || null } : a
       ));
 
       // Mark linked technical reports as sent in parallel
@@ -4314,7 +4468,8 @@ export default function JobDetail() {
         .from('assets')
         .update({ 
           status: 'sent', 
-          sent_at: now 
+          sent_at: now,
+          sent_by: user?.id || null
         })
         .in('id', assetIds);
 
@@ -4324,10 +4479,10 @@ export default function JobDetail() {
 
       // Update local state
       setJobAssets(prev => prev.map(a => 
-        assetIds.includes(a.id) ? { ...a, status: 'sent' as const, sent_at: now } : a
+        assetIds.includes(a.id) ? { ...a, status: 'sent' as const, sent_at: now, sent_by: user?.id || null } : a
       ));
       setFilteredJobAssets(prev => prev.map(a => 
-        assetIds.includes(a.id) ? { ...a, status: 'sent' as const, sent_at: now } : a
+        assetIds.includes(a.id) ? { ...a, status: 'sent' as const, sent_at: now, sent_by: user?.id || null } : a
       ));
 
       // Mark linked technical reports as sent in parallel
@@ -6586,6 +6741,16 @@ ${newBodyHtml}
                     Report Approvals
                   </button>
                   <button
+                    onClick={() => handleTabChange('report-audit')}
+                    className={`py-4 px-6 text-sm font-medium ${
+                      activeTab === 'report-audit'
+                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-white dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Report Audit
+                  </button>
+                  <button
                     onClick={() => handleTabChange('tracking')}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === 'tracking'
@@ -8246,6 +8411,86 @@ ${newBodyHtml}
                         </CardContent>
                     </div>
                   )
+                )}
+
+                {activeTab === 'report-audit' && job && (
+                  <div className="space-y-6">
+                    <CardHeader>
+                      <CardTitle>Report Audit</CardTitle>
+                      <CardDescription>Dates and people for report review steps.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {reportAuditRows.length === 0 ? (
+                        <div className="text-center py-6 text-gray-500 dark:text-white">
+                          <p>No reports found for this project.</p>
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Report</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Submitted for Review</TableHead>
+                                <TableHead>Approved</TableHead>
+                                <TableHead>Sent</TableHead>
+                                <TableHead>Reviewer Comments</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {reportAuditRows.map((row) => (
+                                <TableRow key={row.asset.id}>
+                                  <TableCell className="font-medium min-w-[240px]">
+                                    <div>{row.displayName}</div>
+                                    {row.substation && (
+                                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        {row.substation}
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline">{getAuditStatusLabel(row.status)}</Badge>
+                                  </TableCell>
+                                  <TableCell className="min-w-[180px]">
+                                    <div>{formatAuditDate(row.submittedAt)}</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                      {getAuditUserName(row.submittedBy)}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="min-w-[180px]">
+                                    <div>{formatAuditDate(row.approvedAt)}</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                      {getAuditUserName(row.approvedBy)}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="min-w-[180px]">
+                                    <div>{formatAuditDate(row.sentAt)}</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                      {getAuditUserName(row.sentBy)}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {row.reviewComments ? (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        leftIcon={<MessageCircle className="h-4 w-4" />}
+                                        onClick={() => handleViewComments(row.asset)}
+                                      >
+                                        View
+                                      </Button>
+                                    ) : (
+                                      <span className="text-sm text-gray-500 dark:text-gray-400">None</span>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </div>
                 )}
                 
                 {activeTab === 'deliverables' && job && (

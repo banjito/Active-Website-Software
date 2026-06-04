@@ -510,6 +510,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   const [letterIncludeMF, setLetterIncludeMF] = useState(true);
   const [letterIncludeSaturday, setLetterIncludeSaturday] = useState(false);
   const [letterIncludeSunday, setLetterIncludeSunday] = useState(false);
+  const [letterIncludeSovNotes, setLetterIncludeSovNotes] = useState(false);
   const [linkLocalTravelToDays, setLinkLocalTravelToDays] = useState(false);
   const [linkOutOfTownTravelToDays, setLinkOutOfTownTravelToDays] = useState(false);
   const { user } = useAuth(); // Get user at component level
@@ -3244,6 +3245,48 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     return html.replace(/<span id="neta-standard-text">[^<]*<\/span>/g, `<span id="neta-standard-text">${escaped}</span>`);
   }
 
+  function escapeLetterHtml(value: unknown): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function buildSovProposalTableHtml(sovItems: any[], includeNotes: boolean): string {
+    const cellStyle = 'border:1px solid #ccc;padding:4px 12px;white-space:normal;overflow-wrap:anywhere;word-break:normal;vertical-align:top;';
+    const quantityCellStyle = `${cellStyle}text-align:center;`;
+    const headerStyle = `${cellStyle}position:relative;background:#f9fafb;font-weight:bold;`;
+    const quantityHeaderStyle = `${headerStyle}text-align:center;`;
+    const resizeHandle = '<span class="amp-col-resize print-hidden" contenteditable="false" style="position:absolute;right:-5px;top:0;width:10px;height:100%;cursor:col-resize;z-index:2;border-right:2px solid rgba(242,103,34,0.35);"></span>';
+    const rows = sovItems && sovItems.length > 0
+      ? sovItems
+      : [{ item: '24-hour Power Study', quantity: 1, notes: '' }];
+    const colgroup = includeNotes
+      ? '<colgroup><col style="width:55%;" /><col style="width:15%;" /><col style="width:30%;" /></colgroup>'
+      : '<colgroup><col style="width:75%;" /><col style="width:25%;" /></colgroup>';
+    const header = includeNotes
+      ? `<tr><th style="${headerStyle}">Item${resizeHandle}</th><th style="${quantityHeaderStyle}">Quantity${resizeHandle}</th><th style="${headerStyle}">Notes</th></tr>`
+      : `<tr><th style="${headerStyle}">Item${resizeHandle}</th><th style="${quantityHeaderStyle}">Quantity</th></tr>`;
+    const bodyRows = rows.map((item: any) => {
+      const name = escapeLetterHtml(item?.item || '');
+      const qty = escapeLetterHtml(item?.quantity ?? item?.qty ?? 1);
+      const notesCell = includeNotes
+        ? `<td style="${cellStyle}">${escapeLetterHtml(item?.notes || '')}</td>`
+        : '';
+      return `<tr><td style="${cellStyle}">${name}</td><td style="${quantityCellStyle}">${qty}</td>${notesCell}</tr>`;
+    }).join('');
+
+    return `
+      <table class="amp-section amp-sov-table" style="width:100%;border-collapse:collapse;margin-bottom:16px;table-layout:fixed;">
+        ${colgroup}
+        <thead>${header}</thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    `;
+  }
+
   function applyNetaTextByValue(value: string) {
     try {
       const option = NETA_OPTIONS.find(o => o.value === value);
@@ -3438,6 +3481,79 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       }, 100);
     }
   }, [isLetterProposalOpen, letterHtml]);
+
+  useEffect(() => {
+    if (!isLetterProposalOpen) return;
+    const editor = letterEditorRef.current;
+    if (!editor) return;
+
+    const onMouseDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const handle = target?.closest?.('.amp-col-resize') as HTMLElement | null;
+      if (!handle) return;
+
+      const headerCell = handle.closest('th') as HTMLTableCellElement | null;
+      const table = headerCell?.closest('table.amp-sov-table') as HTMLTableElement | null;
+      const headerRow = headerCell?.parentElement;
+      if (!headerCell || !table || !headerRow) return;
+
+      const columnIndex = Array.from(headerRow.children).indexOf(headerCell);
+      const columns = Array.from(table.querySelectorAll('col')) as HTMLTableColElement[];
+      const nextColumnIndex = columnIndex + 1;
+      if (columnIndex < 0 || !columns[columnIndex] || !columns[nextColumnIndex]) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const tableWidth = table.getBoundingClientRect().width || 1;
+      const headerCells = Array.from(headerRow.children) as HTMLTableCellElement[];
+      const startWidths = columns.map((column, index) => {
+        const measured = headerCells[index]?.getBoundingClientRect().width || 0;
+        const percent = parseFloat(column.style.width || '0');
+        return measured || (Number.isFinite(percent) ? (percent / 100) * tableWidth : tableWidth / columns.length);
+      });
+      const startX = event.clientX;
+      const currentStart = startWidths[columnIndex];
+      const nextStart = startWidths[nextColumnIndex];
+      const combinedWidth = currentStart + nextStart;
+      const minWidth = Math.max(24, Math.min(56, combinedWidth / 3));
+      const previousCursor = document.body.style.cursor;
+      const previousUserSelect = document.body.style.userSelect;
+
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        const delta = moveEvent.clientX - startX;
+        const currentWidth = Math.max(minWidth, Math.min(combinedWidth - minWidth, currentStart + delta));
+        const nextWidth = combinedWidth - currentWidth;
+
+        columns[columnIndex].style.width = `${(currentWidth / tableWidth) * 100}%`;
+        columns[nextColumnIndex].style.width = `${(nextWidth / tableWidth) * 100}%`;
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = previousCursor;
+        document.body.style.userSelect = previousUserSelect;
+
+        letterUpdateSourceRef.current = 'user';
+        const newHtml = editor.innerHTML;
+        setLetterHtml(newHtml);
+        setIsLetterDirty(newHtml.trim() !== savedLetterHtmlRef.current.trim());
+        saveLetterProposalHtml(newHtml);
+      };
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    };
+
+    editor.addEventListener('mousedown', onMouseDown);
+    return () => {
+      editor.removeEventListener('mousedown', onMouseDown);
+    };
+  }, [isLetterProposalOpen, saveLetterProposalHtml]);
 
   // Drag-and-drop for scope notes: allow moving the scope notes block anywhere in the letter
   useEffect(() => {
@@ -3802,13 +3918,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
     
     // Get scope title for display
     const scopeTitle = (parsedData?.title && String(parsedData.title).trim()) ? String(parsedData.title).trim() : 'Scope';
-    const sovTableRows = sovItems && sovItems.length > 0
-      ? sovItems.map((item: any) => {
-          const name = (item.item || '').toString();
-          const qty = item.quantity ?? item.qty ?? 1;
-          return `<tr><td style='padding:4px 12px;border:1px solid #ccc;'>${name}</td><td style='padding:4px 12px;border:1px solid #ccc;text-align:center;'>${qty}</td></tr>`;
-        }).join('')
-      : `<tr><td style='padding:4px 12px;border:1px solid #ccc;'>24-hour Power Study</td><td style='padding:4px 12px;border:1px solid #ccc;text-align:center;'>1</td></tr>`;
+    const sovTableHtml = buildSovProposalTableHtml(sovItems, letterIncludeSovNotes);
 
     const contactName = contactData ? `${contactData.first_name} ${contactData.last_name}`.trim() : (customer.name || 'Contact Name');
     // Prefer opportunity's quote_number for the letter number
@@ -3837,14 +3947,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
         <div class="amp-section amp-keep-with-next" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <b>Scope</b>
         </div>
-        <table class="amp-section" style='width:100%;border-collapse:collapse;margin-bottom:16px;'>
-          <thead>
-            <tr><th style='border:1px solid #ccc;padding:4px 12px;text-align:left;'>Item</th><th style='border:1px solid #ccc;padding:4px 12px;text-align:center;'>Quantity</th></tr>
-          </thead>
-          <tbody>
-            ${sovTableRows}
-          </tbody>
-        </table>
+        ${sovTableHtml}
         <div class="amp-section" style="margin-top: 12px;"><b>Pricing & Terms</b></div>
         ${(singleLetterScopeQuantity || 1) > 1 ? `
         <div class="amp-section" style="margin:4px 0;">
@@ -4136,13 +4239,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
       const scopeNumber = index + 1;
       const headingText = processedQuote.displayTitle || `Scope ${scopeNumber}`;
-      const sovTableRows = processedQuote.sovItems && processedQuote.sovItems.length > 0
-        ? processedQuote.sovItems.map((item: any) => {
-            const name = (item.item || '').toString();
-            const qty = item.quantity ?? item.qty ?? 1;
-            return `<tr><td style='padding:4px 12px;border:1px solid #ccc;'>${name}</td><td style='padding:4px 12px;border:1px solid #ccc;text-align:center;'>${qty}</td></tr>`;
-          }).join('')
-        : `<tr><td style='padding:4px 12px;border:1px solid #ccc;'>24-hour Power Study</td><td style='padding:4px 12px;border:1px solid #ccc;text-align:center;'>1</td></tr>`;
+      const sovTableHtml = buildSovProposalTableHtml(processedQuote.sovItems, letterIncludeSovNotes);
       
       const scopeMobilizationRaw = (() => {
         const factor = computeMobilizationFactor(processedQuote.finalValue, processedQuote.scopeMobFactors);
@@ -4225,14 +4322,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           <div class="amp-section amp-keep-with-next" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff0e6;padding:6px 8px;border-radius:6px;margin-bottom:6px;">
             <b>${headingText}</b>
           </div>
-        <table class="amp-section" style='width:100%;border-collapse:collapse;margin-bottom:16px;'>
-            <thead>
-            <tr><th style='border:1px solid #ccc;padding:4px 12px;text-align:left;'>Item</th><th style='border:1px solid #ccc;padding:4px 12px;text-align:center;'>Quantity</th></tr>
-            </thead>
-            <tbody>
-              ${sovTableRows}
-            </tbody>
-          </table>
+          ${sovTableHtml}
         ${individualPricingHtml}
         </div>
       `;
@@ -4446,6 +4536,16 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           #neta-standard-select { display: none !important; }
           /* Hide scope reordering controls in print */
           .amp-scope-controls { display: none !important; }
+          .print-hidden,
+          .amp-col-resize { display: none !important; }
+          .amp-sov-table { table-layout: fixed !important; }
+          .amp-sov-table th,
+          .amp-sov-table td {
+            white-space: normal !important;
+            overflow-wrap: anywhere !important;
+            word-break: normal !important;
+            vertical-align: top !important;
+          }
           /* Hide quantity input in print but keep label */
           .scope-qty { display: none !important; }
           .scope-qty-tag { display: inline !important; }
@@ -6693,6 +6793,45 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                         </tr>
                         {showTravel && (<>
                         <tr><td colSpan={4} style={{...styles.tableCell, padding: '6px 8px', backgroundColor: 'var(--header-bg)', fontWeight: 'bold', textAlign: 'left', fontSize: '12px'}}>TRAVEL LABOR</td></tr>
+                        <tr><td colSpan={4} style={{padding: '0'}}>
+                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 8px', backgroundColor: (() => {
+                            const quotedTravel = toNum(data.hoursSummary.travelHours);
+                            const sat = data.saturdayHoursSummary || { travelStraightTimeHours: 0, travelOvertimeHours: 0, travelDoubleTimeHours: 0 };
+                            const allocatedTravel = toNum(sat.travelStraightTimeHours) + toNum(sat.travelOvertimeHours) + toNum(sat.travelDoubleTimeHours);
+                            const diff = Math.abs(allocatedTravel - quotedTravel);
+                            if (diff < 0.01) return '#d4edda';
+                            return '#fff3cd';
+                          })(), borderRadius: '4px', margin: '4px 0', border: (() => {
+                            const quotedTravel = toNum(data.hoursSummary.travelHours);
+                            const sat = data.saturdayHoursSummary || { travelStraightTimeHours: 0, travelOvertimeHours: 0, travelDoubleTimeHours: 0 };
+                            const allocatedTravel = toNum(sat.travelStraightTimeHours) + toNum(sat.travelOvertimeHours) + toNum(sat.travelDoubleTimeHours);
+                            const diff = Math.abs(allocatedTravel - quotedTravel);
+                            if (diff < 0.01) return '1px solid #c3e6cb';
+                            return '1px solid #ffc107';
+                          })()}}>
+                            <div style={{fontSize: '12px', fontWeight: 'bold', color: '#495057'}}>
+                              Travel Hours from Travel Section: {toNum(data.hoursSummary.travelHours).toFixed(2)}
+                            </div>
+                            <div style={{fontSize: '12px', fontWeight: 'bold', color: (() => {
+                              const quotedTravel = toNum(data.hoursSummary.travelHours);
+                              const sat = data.saturdayHoursSummary || { travelStraightTimeHours: 0, travelOvertimeHours: 0, travelDoubleTimeHours: 0 };
+                              const allocatedTravel = toNum(sat.travelStraightTimeHours) + toNum(sat.travelOvertimeHours) + toNum(sat.travelDoubleTimeHours);
+                              const diff = Math.abs(allocatedTravel - quotedTravel);
+                              if (diff < 0.01) return '#28a745';
+                              return '#dc3545';
+                            })()}}>
+                              {(() => {
+                                const quotedTravel = toNum(data.hoursSummary.travelHours);
+                                const sat = data.saturdayHoursSummary || { travelStraightTimeHours: 0, travelOvertimeHours: 0, travelDoubleTimeHours: 0 };
+                                const allocatedTravel = toNum(sat.travelStraightTimeHours) + toNum(sat.travelOvertimeHours) + toNum(sat.travelDoubleTimeHours);
+                                const diff = allocatedTravel - quotedTravel;
+                                if (Math.abs(diff) < 0.01) return 'Travel hours match';
+                                if (diff > 0) return `${diff.toFixed(2)} hours over`;
+                                return `${Math.abs(diff).toFixed(2)} hours not allocated — will not be charged!`;
+                              })()}
+                            </div>
+                          </div>
+                        </td></tr>
                         <tr>
                           <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>TRAVEL @ STRAIGHT TIME:</td>
                           <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>
@@ -6817,6 +6956,45 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                         </tr>
                         {showTravel && (<>
                         <tr><td colSpan={4} style={{...styles.tableCell, padding: '6px 8px', backgroundColor: 'var(--header-bg)', fontWeight: 'bold', textAlign: 'left', fontSize: '12px'}}>TRAVEL LABOR</td></tr>
+                        <tr><td colSpan={4} style={{padding: '0'}}>
+                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 8px', backgroundColor: (() => {
+                            const quotedTravel = toNum(data.hoursSummary.travelHours);
+                            const sun = data.sundayHoursSummary || { travelStraightTimeHours: 0, travelOvertimeHours: 0, travelDoubleTimeHours: 0 };
+                            const allocatedTravel = toNum(sun.travelStraightTimeHours) + toNum(sun.travelOvertimeHours) + toNum(sun.travelDoubleTimeHours);
+                            const diff = Math.abs(allocatedTravel - quotedTravel);
+                            if (diff < 0.01) return '#d4edda';
+                            return '#fff3cd';
+                          })(), borderRadius: '4px', margin: '4px 0', border: (() => {
+                            const quotedTravel = toNum(data.hoursSummary.travelHours);
+                            const sun = data.sundayHoursSummary || { travelStraightTimeHours: 0, travelOvertimeHours: 0, travelDoubleTimeHours: 0 };
+                            const allocatedTravel = toNum(sun.travelStraightTimeHours) + toNum(sun.travelOvertimeHours) + toNum(sun.travelDoubleTimeHours);
+                            const diff = Math.abs(allocatedTravel - quotedTravel);
+                            if (diff < 0.01) return '1px solid #c3e6cb';
+                            return '1px solid #ffc107';
+                          })()}}>
+                            <div style={{fontSize: '12px', fontWeight: 'bold', color: '#495057'}}>
+                              Travel Hours from Travel Section: {toNum(data.hoursSummary.travelHours).toFixed(2)}
+                            </div>
+                            <div style={{fontSize: '12px', fontWeight: 'bold', color: (() => {
+                              const quotedTravel = toNum(data.hoursSummary.travelHours);
+                              const sun = data.sundayHoursSummary || { travelStraightTimeHours: 0, travelOvertimeHours: 0, travelDoubleTimeHours: 0 };
+                              const allocatedTravel = toNum(sun.travelStraightTimeHours) + toNum(sun.travelOvertimeHours) + toNum(sun.travelDoubleTimeHours);
+                              const diff = Math.abs(allocatedTravel - quotedTravel);
+                              if (diff < 0.01) return '#28a745';
+                              return '#dc3545';
+                            })()}}>
+                              {(() => {
+                                const quotedTravel = toNum(data.hoursSummary.travelHours);
+                                const sun = data.sundayHoursSummary || { travelStraightTimeHours: 0, travelOvertimeHours: 0, travelDoubleTimeHours: 0 };
+                                const allocatedTravel = toNum(sun.travelStraightTimeHours) + toNum(sun.travelOvertimeHours) + toNum(sun.travelDoubleTimeHours);
+                                const diff = allocatedTravel - quotedTravel;
+                                if (Math.abs(diff) < 0.01) return 'Travel hours match';
+                                if (diff > 0) return `${diff.toFixed(2)} hours over`;
+                                return `${Math.abs(diff).toFixed(2)} hours not allocated — will not be charged!`;
+                              })()}
+                            </div>
+                          </div>
+                        </td></tr>
                         <tr>
                           <td style={{...styles.tableCell, fontWeight: 'bold', padding: '12px 8px', textAlign: 'left'}}>TRAVEL @ STRAIGHT TIME:</td>
                           <td style={{...styles.tableCell, ...styles.calculated, padding: '12px 8px'}}>
@@ -7245,6 +7423,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           setIsQuoteSelectOpen(false);
           setSingleLetterScopeQuantity(1);
           setIncludeMobilizationWhenZero(false);
+          setLetterIncludeSovNotes(false);
           // Reset mode to allow immediate reopening
           if (mode === 'letter') {
             // Use a timeout to reset the mode, allowing immediate reopening
@@ -7277,6 +7456,15 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                   className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                 />
                 <span className="text-sm text-gray-700">Include mobilization in letter even when $0</span>
+              </label>
+              <label className="flex items-center cursor-pointer mt-2">
+                <input
+                  type="checkbox"
+                  checked={letterIncludeSovNotes}
+                  onChange={(e) => setLetterIncludeSovNotes(e.target.checked)}
+                  className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                />
+                <span className="text-sm text-gray-700">Include SOV item notes</span>
               </label>
               <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <p className="text-sm font-medium text-gray-700 mb-2">Work Schedule Pricing in Letter</p>
@@ -7333,6 +7521,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
               setIsQuoteSelectOpen(false);
               setSingleLetterScopeQuantity(1);
               setIncludeMobilizationWhenZero(false);
+              setLetterIncludeSovNotes(false);
               // Reset mode to allow immediate reopening
               if (mode === 'letter') {
                 setTimeout(() => {
@@ -7353,6 +7542,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           setShowIndividualPricing(true);
           setShowGrandTotalPricing(true);
           setIncludeMobilizationWhenZero(false);
+          setLetterIncludeSovNotes(false);
           // Reset mode to allow immediate reopening
           if (mode === 'combined-letter') {
             setTimeout(() => {
@@ -7394,6 +7584,15 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                     className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">Include mobilization in letter even when $0</span>
+                </label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={letterIncludeSovNotes}
+                    onChange={(e) => setLetterIncludeSovNotes(e.target.checked)}
+                    className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Include SOV item notes</span>
                 </label>
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Schedule Pricing in Letter</p>
@@ -7507,6 +7706,7 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
                 setShowIndividualPricing(true);
                 setShowGrandTotalPricing(true);
                 setIncludeMobilizationWhenZero(false);
+                setLetterIncludeSovNotes(false);
                 // Reset mode to allow immediate reopening
                 if (mode === 'combined-letter') {
                   setTimeout(() => {

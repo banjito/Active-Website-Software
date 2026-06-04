@@ -1,20 +1,51 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, Edit, Award, X, ChevronDown, Pencil, Save, Trash2, Upload, FileText, Download, Eye, ExternalLink, Copy, Settings } from 'lucide-react';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/DropdownMenu';
-import { Dialog } from '@headlessui/react';
-import { format } from 'date-fns';
-import { supabase, ensureValidSession, isCookieAuthError, isAuthError } from '../../lib/supabase';
-import { useAuth } from '../../lib/AuthContext';
-import { Opportunity, OpportunityFormData, SubcontractorAgreement } from '../../lib/types/index';
-import EstimateSheet from '../estimates/EstimateSheet';
-import { Button } from '@/components/ui/Button';
-import { useJobDetails } from '../../lib/hooks/useJobDetails';
-import { DivisionAnalyticsDialog } from '../analytics/DivisionAnalyticsDialog';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { addDefaultFilesToJob } from '../../lib/services/defaultJobFiles';
-import { PDFEditor } from '../pdf/PDFEditor';
-import OpportunityNotes from './OpportunityNotes';
+import React, { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
+import {
+  ArrowLeft,
+  Edit,
+  Award,
+  X,
+  ChevronDown,
+  Pencil,
+  Save,
+  Trash2,
+  Upload,
+  FileText,
+  Download,
+  Eye,
+  ExternalLink,
+  Copy,
+  Settings,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/DropdownMenu";
+import { Dialog } from "@headlessui/react";
+import { format } from "date-fns";
+import {
+  supabase,
+  ensureValidSession,
+  isCookieAuthError,
+  isAuthError,
+} from "../../lib/supabase";
+import { useAuth } from "../../lib/AuthContext";
+import {
+  Opportunity,
+  OpportunityFormData,
+  SubcontractorAgreement,
+} from "../../lib/types/index";
+import EstimateSheet from "../estimates/EstimateSheet";
+import { Button } from "@/components/ui/Button";
+import { useJobDetails } from "../../lib/hooks/useJobDetails";
+import { DivisionAnalyticsDialog } from "../analytics/DivisionAnalyticsDialog";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
+import { PDFEditor } from "../pdf/PDFEditor";
+import OpportunityNotes from "./OpportunityNotes";
 
 interface Customer {
   id: string;
@@ -42,58 +73,238 @@ interface OpportunityWithCustomer extends Opportunity {
   quoted_amount?: number | null;
 }
 
-function formatOpportunityCreator(profile: any, fallbackEmail?: string | null): string | null {
+function formatOpportunityCreator(
+  profile: any,
+  fallbackEmail?: string | null,
+): string | null {
   const name = profile?.full_name || profile?.name || profile?.display_name;
-  if (typeof name === 'string' && name.trim()) return name.trim();
+  if (typeof name === "string" && name.trim()) return name.trim();
 
   const email = profile?.email || fallbackEmail;
-  if (typeof email === 'string' && email.trim()) return email.trim();
+  if (typeof email === "string" && email.trim()) return email.trim();
 
   return null;
 }
 
 const initialFormData: OpportunityFormData = {
-  customer_id: '',
+  customer_id: "",
   contact_id: null,
-  title: '',
-  description: '',
-  status: 'awareness',
-  expected_value: '',
-  probability: '0',
-  opportunity_created_date: '',
-  letter_proposal_date: '',
-  proposal_due_date: '',
-  notes: '',
-  sales_person: '',
-  amp_division: '',
-  quoted_amount: '',
-  selected_letter_proposal: '',
-  reviewed_by: '',
-  prepared_by: '',
-  jobsite_location: '',
-  estimated_start_date: '',
-  period_of_performance: '',
-  total_man_hours: '0',
-  opportunity_type: 'other'
+  title: "",
+  description: "",
+  status: "awareness",
+  expected_value: "",
+  probability: "0",
+  opportunity_created_date: "",
+  letter_proposal_date: "",
+  proposal_due_date: "",
+  notes: "",
+  sales_person: "",
+  amp_division: "",
+  quoted_amount: "",
+  selected_letter_proposal: "",
+  reviewed_by: "",
+  prepared_by: "",
+  jobsite_location: "",
+  estimated_start_date: "",
+  period_of_performance: "",
+  total_man_hours: "0",
+  opportunity_type: "other",
 };
 
 // Add this utility function to handle date formatting consistently
 function formatDateSafe(dateString: string | null | undefined): string {
-  if (!dateString) return 'Not specified';
-  
+  if (!dateString) return "Not specified";
+
   // For YYYY-MM-DD format strings, parse them in a timezone-safe way
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
     // Split the date parts and construct a new date
-    const [year, month, day] = dateString.split('-').map(Number);
+    const [year, month, day] = dateString.split("-").map(Number);
     // Note: month is 0-indexed in JavaScript Date
-    return format(new Date(year, month - 1, day), 'MMM d, yyyy');
+    return format(new Date(year, month - 1, day), "MMM d, yyyy");
   }
-  
+
   // For ISO strings or other formats, use a different approach
   // Add 12 hours to avoid timezone day boundary issues
   const date = new Date(dateString);
   date.setHours(12, 0, 0, 0);
-  return format(date, 'MMM d, yyyy');
+  return format(date, "MMM d, yyyy");
+}
+
+function parseMoneyValue(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return Math.round(value * 100) / 100;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value.replace(/[$,\s]/g, ""));
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return Math.round(parsed * 100) / 100;
+    }
+  }
+
+  return null;
+}
+
+function extractNet30FromLetterHtml(
+  html: string | null | undefined,
+): number | null {
+  if (!html) return null;
+
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    const grandElement = doc.querySelector('.grand-price[data-kind="net30"]');
+    const grandAmount = parseMoneyValue(
+      grandElement?.getAttribute("data-base"),
+    );
+    if (grandAmount) return grandAmount;
+
+    const headers = Array.from(doc.querySelectorAll("b"));
+    const grandHeader = headers.find(
+      (el) => (el.textContent || "").trim() === "Grand Total Pricing",
+    );
+    if (grandHeader) {
+      const block =
+        grandHeader.closest(".amp-scope-block") ||
+        grandHeader.parentElement?.parentElement ||
+        grandHeader.parentElement;
+      const liNet30 = block
+        ? Array.from(block.querySelectorAll("li")).find((li) =>
+            /NET\s*30/i.test(li.textContent || ""),
+          )
+        : null;
+      const match = (liNet30?.textContent || "").match(/\$([0-9,]+\.?[0-9]*)/);
+      const amount = parseMoneyValue(match?.[1]);
+      if (amount) return amount;
+    }
+
+    const scopePrices = Array.from(
+      doc.querySelectorAll('.scope-price[data-kind="net30"]'),
+    );
+    if (scopePrices.length > 0) {
+      let sum = 0;
+      scopePrices.forEach((el) => {
+        const base = parseMoneyValue(el.getAttribute("data-base")) || 0;
+        const block =
+          el.closest(".amp-section")?.parentElement || el.parentElement;
+        let qtyEl = block?.querySelector(
+          "input.scope-qty",
+        ) as HTMLInputElement | null;
+        if (!qtyEl)
+          qtyEl = doc.querySelector(
+            "input.scope-qty",
+          ) as HTMLInputElement | null;
+        const qtyRaw = qtyEl?.getAttribute("value") || qtyEl?.value || "1";
+        const qty = Math.max(1, parseInt(qtyRaw || "1", 10) || 1);
+        sum += base * qty;
+      });
+      const amount = parseMoneyValue(sum);
+      if (amount) return amount;
+    }
+
+    let best = 0;
+    Array.from(doc.querySelectorAll("li")).forEach((li) => {
+      if (/NET\s*30/i.test(li.textContent || "")) {
+        const match = (li.textContent || "").match(/\$([0-9,]+\.?[0-9]*)/);
+        const amount = parseMoneyValue(match?.[1]) || 0;
+        if (amount > best) best = amount;
+      }
+    });
+
+    return parseMoneyValue(best);
+  } catch (error) {
+    console.error("Error extracting NET 30 amount from letter:", error);
+    return null;
+  }
+}
+
+function formatMoney(amount: number): string {
+  return `$${amount.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function toNumber(value: unknown): number {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value.replace(/[$,\s]/g, ""));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+function getEstimateTravelData(estimateData: any): any {
+  return estimateData?.travel_data || estimateData?.travelData || {};
+}
+
+function getEstimateMobilizationFactor(
+  finalValue: number,
+  estimateData: any,
+): number {
+  const factors = estimateData?.mobilizationFactors || {};
+  if (finalValue > 1000000) return toNumber(factors.over1m) || 0.05;
+  if (finalValue > 500000) return toNumber(factors.over500k) || 0.05;
+  if (finalValue > 100000) return toNumber(factors.over100k) || 0.1;
+  return toNumber(factors.base);
+}
+
+function calculateEstimateNet30Amount(estimateData: any): number | null {
+  if (!estimateData) return null;
+
+  const directAmount =
+    parseMoneyValue(estimateData?.net30) ||
+    parseMoneyValue(estimateData?.net_30) ||
+    parseMoneyValue(estimateData?.quoted_amount) ||
+    parseMoneyValue(estimateData?.quotedAmount);
+  if (directAmount) return directAmount;
+
+  const calculatedValues = estimateData.calculatedValues || {};
+  const hoursSummary = estimateData.hoursSummary || {};
+  const hourlyRates = estimateData.hourlyRates || {};
+  const paymentTermFactors = estimateData.paymentTermFactors || {};
+  const travelData = getEstimateTravelData(estimateData);
+  const materialMarkup = toNumber(estimateData.materialMarkup) || 1.3;
+
+  const straightTimeRate = toNumber(hourlyRates.straightTime) || 240;
+  const overtimeRate = toNumber(hourlyRates.overtime) || 360;
+  const doubleTimeRate = toNumber(hourlyRates.doubleTime) || 480;
+
+  const travelNonLabor =
+    toNumber(travelData?.travelExpense?.[0]?.vehicleTravelCost) +
+    toNumber(travelData?.perDiem?.[0]?.totalPerDiem) +
+    toNumber(travelData?.lodging?.[0]?.totalAmount) +
+    toNumber(travelData?.localMiles?.[0]?.totalLocalMilesCost) +
+    toNumber(travelData?.flights?.[0]?.totalFlightAmount) +
+    toNumber(travelData?.rentalCar?.[0]?.totalAmount);
+
+  const travelLabor =
+    toNumber(hoursSummary.travelStraightTimeHours) * straightTimeRate +
+    toNumber(hoursSummary.travelOvertimeHours) * overtimeRate +
+    toNumber(hoursSummary.travelDoubleTimeHours) * doubleTimeRate;
+
+  const workLabor =
+    toNumber(hoursSummary.straightTimeHours) * straightTimeRate +
+    toNumber(hoursSummary.overtimeHours) * overtimeRate +
+    toNumber(hoursSummary.doubleTimeHours) * doubleTimeRate;
+
+  const materialExpenseBase =
+    toNumber(calculatedValues.totalMaterial) * 1.09 * materialMarkup +
+    toNumber(calculatedValues.totalExpense) * 1.09 +
+    toNumber(calculatedValues.nonSovExpense);
+
+  const baseValue =
+    materialExpenseBase + workLabor + travelLabor + travelNonLabor;
+  if (baseValue <= 0) return parseMoneyValue(calculatedValues.grandTotal);
+
+  const finalValue = Math.ceil(baseValue / 0.96);
+  const net30Factor = toNumber(paymentTermFactors.net30) || 1;
+  const mobilization = Math.ceil(
+    finalValue * getEstimateMobilizationFactor(finalValue, estimateData),
+  );
+
+  return parseMoneyValue(Math.ceil(finalValue * net30Factor) + mobilization);
 }
 
 // Add this function after the imports but before the component definition
@@ -101,153 +312,90 @@ function formatDateSafe(dateString: string | null | undefined): string {
 async function extractQuotedAmountFromLetterProposal(
   letterProposalId: string | null,
   opportunityId: string,
-  supabase: SupabaseClient<any, "common" | "public", any>
+  supabase: SupabaseClient<any, "common" | "public", any>,
 ): Promise<number | null> {
   if (!letterProposalId) return null;
 
   try {
     const { data: letter, error } = await supabase
-      .schema('business')
-      .from('letter_proposals')
-      .select('html')
-      .eq('id', letterProposalId)
+      .schema("business")
+      .from("letter_proposals")
+      .select("html")
+      .eq("id", letterProposalId)
       .maybeSingle();
 
     if (error || !letter?.html) return null;
 
-    const htmlContent = letter.html;
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlContent, 'text/html');
-    let price = 0;
-
-    // Method 1: Try to get grand total from data-base attribute
-    const grandElement = doc.querySelector('.grand-price[data-kind="net30"]');
-    if (grandElement) {
-      const grandBaseAttr = grandElement.getAttribute('data-base');
-      if (grandBaseAttr) {
-        const v = Number(grandBaseAttr.replace(/,/g, '')) || 0;
-        if (v > 0) {
-          price = Math.round(v * 100) / 100;
-        }
-      }
-    }
-
-    // Method 2: If no data-base, try to parse from Grand Total Pricing section
-    if (!price || price <= 0) {
-      const headers = Array.from(doc.querySelectorAll('b'));
-      const grandHeader = headers.find(el => (el.textContent || '').trim() === 'Grand Total Pricing');
-      if (grandHeader) {
-        const block = grandHeader.closest('.amp-scope-block') || grandHeader.parentElement?.parentElement || grandHeader.parentElement;
-        if (block) {
-          const listItems = Array.from(block.querySelectorAll('li'));
-          const liNet30 = listItems.find(li => /NET\s*30/i.test(li.textContent || ''));
-          if (liNet30) {
-            const match = (liNet30.textContent || '').match(/\$([0-9,]+\.?[0-9]*)/);
-            if (match && match[1]) {
-              const v = Number(match[1].replace(/,/g, '')) || 0;
-              if (v > 0) {
-                price = Math.round(v * 100) / 100;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Method 3: Sum individual scope prices if no grand total found
-    if (!price || price <= 0) {
-      const scopePrices = Array.from(doc.querySelectorAll('.scope-price[data-kind="net30"]'));
-      if (scopePrices.length > 0) {
-        let sum = 0;
-        scopePrices.forEach((el) => {
-          const baseAttr = el.getAttribute('data-base') || '0';
-          const base = Number((baseAttr || '0').replace(/,/g, '')) || 0;
-          const block = el.closest('.amp-section')?.parentElement || el.parentElement;
-          let qtyEl = block?.querySelector('input.scope-qty') as HTMLInputElement | null;
-          if (!qtyEl) {
-            qtyEl = doc.querySelector('input.scope-qty') as HTMLInputElement | null;
-          }
-          const qtyRaw = qtyEl?.getAttribute('value') || qtyEl?.value || '1';
-          const qty = Math.max(1, parseInt(qtyRaw || '1', 10) || 1);
-          sum += base * qty;
-        });
-        if (sum > 0) {
-          price = Math.round(sum * 100) / 100;
-        }
-      }
-    }
-
-    return price > 0 ? price : null;
+    return extractNet30FromLetterHtml(letter.html);
   } catch (e) {
-    console.error('Error extracting quoted amount from letter proposal:', e);
+    console.error("Error extracting quoted amount from letter proposal:", e);
     return null;
   }
 }
 
 async function createJobManually(
-  opportunity: any, 
-  supabase: SupabaseClient<any, "common" | "public", any>, 
-  userId: string
+  opportunity: any,
+  supabase: SupabaseClient<any, "common" | "public", any>,
+  userId: string,
 ): Promise<string> {
   if (!opportunity) {
-    throw new Error('Cannot create job: opportunity data is missing');
+    throw new Error("Cannot create job: opportunity data is missing");
   }
 
   if (!opportunity.customer_id) {
-    throw new Error('Cannot create job: customer_id is required');
+    throw new Error("Cannot create job: customer_id is required");
   }
-  
+
   if (!userId) {
-    throw new Error('Cannot create job: user ID is missing');
+    throw new Error("Cannot create job: user ID is missing");
   }
 
   // Check if a job already exists for this opportunity (prevent duplicates)
   const { data: existingJob } = await supabase
-    .schema('neta_ops')
-    .from('jobs')
-    .select('id')
-    .eq('opportunity_id', opportunity.id)
-    .is('deleted_at', null)
+    .schema("neta_ops")
+    .from("jobs")
+    .select("id")
+    .eq("opportunity_id", opportunity.id)
+    .is("deleted_at", null)
     .maybeSingle();
 
   if (existingJob) {
-    console.warn('Job already exists for this opportunity:', existingJob.id);
+    console.warn("Job already exists for this opportunity:", existingJob.id);
     // Update the opportunity to link to the existing job if not already linked
     try {
       const { data: oppData } = await supabase
-        .schema('business')
-        .from('opportunities')
-        .select('job_id')
-        .eq('id', opportunity.id)
+        .schema("business")
+        .from("opportunities")
+        .select("job_id")
+        .eq("id", opportunity.id)
         .maybeSingle();
-      
+
       if (!oppData?.job_id) {
         await supabase
-          .schema('business')
-          .from('opportunities')
-          .update({ job_id: existingJob.id, status: 'awarded' })
-          .eq('id', opportunity.id);
+          .schema("business")
+          .from("opportunities")
+          .update({ job_id: existingJob.id, status: "awarded" })
+          .eq("id", opportunity.id);
       }
     } catch (e) {
-      console.error('Error updating opportunity with existing job:', e);
+      console.error("Error updating opportunity with existing job:", e);
     }
     return existingJob.id;
   }
-  
+
   // Determine next job number: try DB RPC first, then fall back to client scan
   // RPC returns bigint which may be number or string in JSON
   let nextJobNumberNumeric = 26001; // default if both paths fail
   let gotFromRpc = false;
   try {
-    const { data: fnResult } = await supabase
-      .rpc('get_max_job_number');
+    const { data: fnResult } = await supabase.rpc("get_max_job_number");
     const raw = Array.isArray(fnResult) ? (fnResult[0] as any) : fnResult;
     const value =
-      typeof raw === 'number' && Number.isFinite(raw)
+      typeof raw === "number" && Number.isFinite(raw)
         ? raw
-        : typeof raw === 'string' && /^\d+$/.test(raw)
+        : typeof raw === "string" && /^\d+$/.test(raw)
           ? parseInt(raw, 10)
-          : typeof (raw as any)?.get_max_job_number === 'number'
+          : typeof (raw as any)?.get_max_job_number === "number"
             ? (raw as any).get_max_job_number
             : null;
     if (value != null && Number.isFinite(value)) {
@@ -259,17 +407,17 @@ async function createJobManually(
   if (!gotFromRpc) {
     try {
       const { data: jobsScan } = await supabase
-        .schema('neta_ops')
-        .from('jobs')
-        .select('job_number')
+        .schema("neta_ops")
+        .from("jobs")
+        .select("job_number")
         .limit(2000);
       const nums = (jobsScan || [])
         .map((j: any) => j?.job_number)
-        .filter((s: any) => s != null && s !== '')
+        .filter((s: any) => s != null && s !== "")
         .map((s: any) => {
-          const str = typeof s === 'string' ? s : String(s);
+          const str = typeof s === "string" ? s : String(s);
           if (/^[0-9]+$/.test(str)) return parseInt(str, 10);
-          const digits = str.replace(/\D/g, '');
+          const digits = str.replace(/\D/g, "");
           return digits ? parseInt(digits, 10) : 0;
         })
         .filter((n: number) => Number.isFinite(n));
@@ -282,49 +430,57 @@ async function createJobManually(
   // Get quoted amount - try letter proposal first (selected or first available), then fallback to manually entered value
   // This matches the display logic on the opportunity detail page
   let quotedAmount: number | null = null;
-  
+
   // First, try selected letter proposal
   let letterProposalId = opportunity.selected_letter_proposal;
-  
+
   // If no selected letter proposal, try to get the first/most recent one (matching display logic)
   if (!letterProposalId) {
     try {
       const { data: letters } = await supabase
-        .schema('business')
-        .from('letter_proposals')
-        .select('id')
-        .eq('opportunity_id', opportunity.id)
-        .order('created_at', { ascending: false })
+        .schema("business")
+        .from("letter_proposals")
+        .select("id")
+        .eq("opportunity_id", opportunity.id)
+        .order("created_at", { ascending: false })
         .limit(1);
-      
+
       if (letters && letters.length > 0) {
         letterProposalId = letters[0].id;
       }
     } catch (e) {
-      console.error('Error fetching letter proposals:', e);
+      console.error("Error fetching letter proposals:", e);
     }
   }
-  
+
   // Extract amount from letter proposal if available
   if (letterProposalId) {
-    const letterAmount = await extractQuotedAmountFromLetterProposal(letterProposalId, opportunity.id, supabase);
+    const letterAmount = await extractQuotedAmountFromLetterProposal(
+      letterProposalId,
+      opportunity.id,
+      supabase,
+    );
     if (letterAmount && letterAmount > 0) {
       quotedAmount = letterAmount;
     }
   }
-  
+
   // Fallback to manually entered quoted_amount if no letter proposal value found
-  if (!quotedAmount && opportunity.quoted_amount && Number(opportunity.quoted_amount) > 0) {
+  if (
+    !quotedAmount &&
+    opportunity.quoted_amount &&
+    Number(opportunity.quoted_amount) > 0
+  ) {
     quotedAmount = Number(opportunity.quoted_amount);
   }
 
   // Re-check for existing job right before insert (prevents race from double-submit)
   const { data: recheck } = await supabase
-    .schema('neta_ops')
-    .from('jobs')
-    .select('id')
-    .eq('opportunity_id', opportunity.id)
-    .is('deleted_at', null)
+    .schema("neta_ops")
+    .from("jobs")
+    .select("id")
+    .eq("opportunity_id", opportunity.id)
+    .is("deleted_at", null)
     .maybeSingle();
   if (recheck?.id) {
     return recheck.id;
@@ -332,74 +488,96 @@ async function createJobManually(
 
   // Create the job in neta_ops schema, using quoted_amount from opportunity as budget
   const { data: newJob, error: jobError } = await supabase
-    .schema('neta_ops')
-    .from('jobs')
+    .schema("neta_ops")
+    .from("jobs")
     .insert({
       user_id: userId,
       customer_id: opportunity.customer_id,
       title: opportunity.title,
       description: opportunity.description,
-      status: 'pending',
-      start_date: (opportunity as any).estimated_start_date || new Date().toISOString().substring(0, 10),
-      site_address: (opportunity as any).jobsite_location || '',
+      status: "pending",
+      start_date:
+        (opportunity as any).estimated_start_date ||
+        new Date().toISOString().substring(0, 10),
+      site_address: (opportunity as any).jobsite_location || "",
       budget: quotedAmount,
-      notes: (opportunity.notes || '') + '\n\nConverted from opportunity: ' + opportunity.quote_number,
-      priority: 'medium',
-      division: opportunity.amp_division === 'Decatur' ? 'north_alabama' : opportunity.amp_division,
+      notes:
+        (opportunity.notes || "") +
+        "\n\nConverted from opportunity: " +
+        opportunity.quote_number,
+      priority: "medium",
+      division:
+        opportunity.amp_division === "Decatur"
+          ? "north_alabama"
+          : opportunity.amp_division,
       job_number: nextJobNumberString,
-      opportunity_id: opportunity.id  // Add the opportunity link
+      opportunity_id: opportunity.id, // Add the opportunity link
     })
     .select()
     .single();
-    
+
   if (jobError) {
-    console.error('Manual job creation error:', jobError);
+    console.error("Manual job creation error:", jobError);
     throw new Error(`Manual job creation failed: ${jobError.message}`);
   }
-  
+
   try {
     // First check if job_id column exists in business.opportunities
     const { error: checkError } = await supabase
-      .schema('business')
-      .from('opportunities')
-      .select('job_id')
+      .schema("business")
+      .from("opportunities")
+      .select("job_id")
       .limit(1);
-    
+
     if (checkError) {
       // Column doesn't exist - log warning but don't fail
-      console.warn('Warning: job_id column not found in opportunities table:', checkError.message);
-      console.warn('Job was created successfully but opportunity could not be linked to it.');
+      console.warn(
+        "Warning: job_id column not found in opportunities table:",
+        checkError.message,
+      );
+      console.warn(
+        "Job was created successfully but opportunity could not be linked to it.",
+      );
     } else {
       // Column exists, so update the opportunity in business schema
       const { error: updateError } = await supabase
-        .schema('business')
-        .from('opportunities')
+        .schema("business")
+        .from("opportunities")
         .update({ job_id: newJob.id })
-        .eq('id', opportunity.id);
-        
+        .eq("id", opportunity.id);
+
       if (updateError) {
-        console.error('Opportunity update error:', updateError);
+        console.error("Opportunity update error:", updateError);
         // Don't throw, just log the error
-        console.warn('Job was created successfully but opportunity could not be linked to it.');
+        console.warn(
+          "Job was created successfully but opportunity could not be linked to it.",
+        );
       }
     }
   } catch (error) {
-    console.error('Error updating opportunity:', error);
+    console.error("Error updating opportunity:", error);
     // Don't throw, just log the error
-    console.warn('Job was created successfully but opportunity could not be linked to it.');
+    console.warn(
+      "Job was created successfully but opportunity could not be linked to it.",
+    );
   }
-  
+
   // Add default files to the newly created job
   try {
-    const division = opportunity.amp_division === 'Decatur' ? 'north_alabama' : opportunity.amp_division;
+    const division =
+      opportunity.amp_division === "Decatur"
+        ? "north_alabama"
+        : opportunity.amp_division;
     await addDefaultFilesToJob(newJob.id, userId, division);
-    console.log('Default files added successfully to job:', newJob.id);
+    console.log("Default files added successfully to job:", newJob.id);
   } catch (fileError) {
-    console.error('Error adding default files to job:', fileError);
+    console.error("Error adding default files to job:", fileError);
     // Don't fail the job creation if default files fail
-    console.warn('Job was created successfully but some default files could not be added');
+    console.warn(
+      "Job was created successfully but some default files could not be added",
+    );
   }
-  
+
   return newJob.id;
 }
 
@@ -408,12 +586,17 @@ export default function OpportunityDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const search = new URLSearchParams(location.search);
-  const mergedIdsParam = search.get('ids');
-  const primaryIdParam = search.get('primary');
-  const mergedIds = (mergedIdsParam ? mergedIdsParam.split(',').filter(Boolean) : []);
+  const mergedIdsParam = search.get("ids");
+  const primaryIdParam = search.get("primary");
+  const mergedIds = mergedIdsParam
+    ? mergedIdsParam.split(",").filter(Boolean)
+    : [];
   const { user, softRefresh } = useAuth();
-  const [opportunity, setOpportunity] = useState<OpportunityWithCustomer | null>(null);
-  const [opportunityCreator, setOpportunityCreator] = useState<string | null>(null);
+  const [opportunity, setOpportunity] =
+    useState<OpportunityWithCustomer | null>(null);
+  const [opportunityCreator, setOpportunityCreator] = useState<string | null>(
+    null,
+  );
   const [quotePreparedBy, setQuotePreparedBy] = useState<string | null>(null);
   const [mergedList, setMergedList] = useState<OpportunityWithCustomer[]>([]);
   const [groupLockJobId, setGroupLockJobId] = useState<string | null>(null);
@@ -424,134 +607,167 @@ export default function OpportunityDetail() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<OpportunityFormData>(initialFormData);
+  const [formData, setFormData] =
+    useState<OpportunityFormData>(initialFormData);
   const [confirmConvertToJobOpen, setConfirmConvertToJobOpen] = useState(false);
   const [isConvertingToJob, setIsConvertingToJob] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [isStatusEditing, setIsStatusEditing] = useState(false);
-  const [isEstimateApprovalEditing, setIsEstimateApprovalEditing] = useState(false);
+  const [isEstimateApprovalEditing, setIsEstimateApprovalEditing] =
+    useState(false);
   const [isDocumentsStageEditing, setIsDocumentsStageEditing] = useState(false);
-  const [isOpportunityTypeEditing, setIsOpportunityTypeEditing] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState<string | null>(null);
+  const [isOpportunityTypeEditing, setIsOpportunityTypeEditing] =
+    useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState<string | null>(
+    null,
+  );
   const [editFormData, setEditFormData] = useState<OpportunityFormData>({
-    customer_id: '',
+    customer_id: "",
     contact_id: null,
-    title: '',
-    description: '',
-    expected_value: '',
-    status: 'awareness',
-    sales_person: '',
-    notes: '',
-    probability: '0',
-    amp_division: '',
-    quoted_amount: '',
-    selected_letter_proposal: '',
-    reviewed_by: '',
-    prepared_by: '',
-    jobsite_location: '',
-    estimated_start_date: '',
-    period_of_performance: '',
-    total_man_hours: '0',
-    opportunity_type: 'other',
-    documents_stage: ''
+    title: "",
+    description: "",
+    expected_value: "",
+    status: "awareness",
+    sales_person: "",
+    notes: "",
+    probability: "0",
+    amp_division: "",
+    quoted_amount: "",
+    selected_letter_proposal: "",
+    reviewed_by: "",
+    prepared_by: "",
+    jobsite_location: "",
+    estimated_start_date: "",
+    period_of_performance: "",
+    total_man_hours: "0",
+    opportunity_type: "other",
+    documents_stage: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showJobDialog, setShowJobDialog] = useState(false);
-  const [selectedLetterId, setSelectedLetterId] = useState<string>('');
-  const [lettersForSelect, setLettersForSelect] = useState<Array<{ id: string; title: string; created_at: string }>>([]);
+  const [selectedLetterId, setSelectedLetterId] = useState<string>("");
+  const [lettersForSelect, setLettersForSelect] = useState<
+    Array<{ id: string; title: string; created_at: string }>
+  >([]);
   const { jobDetails } = useJobDetails(jobId || undefined);
   const [showDivisionAnalytics, setShowDivisionAnalytics] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
-  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerSearch, setCustomerSearch] = useState("");
   const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
-  const [showEstimate, setShowEstimate] = useState<'new' | 'view' | 'letter' | 'letters' | 'combined-letter' | false>(false);
+  const [showEstimate, setShowEstimate] = useState<
+    "new" | "view" | "letter" | "letters" | "combined-letter" | false
+  >(false);
 
-  const resolveQuotePreparedByNames = async (opportunityId: string, existingPreparedBy = '') => {
+  const resolveQuotePreparedByNames = async (
+    opportunityId: string,
+    existingPreparedBy = "",
+  ) => {
     const fallbackParts = existingPreparedBy
-      .split(',')
-      .map(part => part.trim())
+      .split(",")
+      .map((part) => part.trim())
       .filter(Boolean);
 
     try {
       const { data: estimates, error } = await supabase
-        .schema('business')
-        .from('estimates')
-        .select('user_id')
-        .eq('opportunity_id', opportunityId);
+        .schema("business")
+        .from("estimates")
+        .select("user_id")
+        .eq("opportunity_id", opportunityId);
 
       if (error) throw error;
 
-      const userIds = [...new Set((estimates || []).map((est: any) => est.user_id).filter(Boolean))];
+      const userIds = [
+        ...new Set(
+          (estimates || []).map((est: any) => est.user_id).filter(Boolean),
+        ),
+      ];
       if (userIds.length > 0) {
         const { data: profiles } = await supabase
-          .schema('common')
-          .from('profiles')
-          .select('id, full_name, email')
-          .in('id', userIds);
+          .schema("common")
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", userIds);
 
-        const profileById = new Map((profiles || []).map((profile: any) => [profile.id, profile]));
+        const profileById = new Map(
+          (profiles || []).map((profile: any) => [profile.id, profile]),
+        );
         const names = userIds
           .map((estimateUserId: string) => {
-            const currentUserFallback = estimateUserId === user?.id
-              ? user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email
-              : null;
-            return formatOpportunityCreator(profileById.get(estimateUserId), currentUserFallback);
+            const currentUserFallback =
+              estimateUserId === user?.id
+                ? user?.user_metadata?.full_name ||
+                  user?.user_metadata?.name ||
+                  user?.email
+                : null;
+            return formatOpportunityCreator(
+              profileById.get(estimateUserId),
+              currentUserFallback,
+            );
           })
           .filter(Boolean) as string[];
 
         if (names.length > 0) {
-          return [...new Set(names)].join(', ');
+          return [...new Set(names)].join(", ");
         }
       }
 
-      const emails = fallbackParts.filter(part => part.includes('@'));
+      const emails = fallbackParts.filter((part) => part.includes("@"));
       if (emails.length > 0) {
         const { data: profiles } = await supabase
-          .schema('common')
-          .from('profiles')
-          .select('full_name, email')
-          .in('email', emails);
+          .schema("common")
+          .from("profiles")
+          .select("full_name, email")
+          .in("email", emails);
 
         const profileByEmail = new Map(
-          (profiles || []).map((profile: any) => [String(profile.email || '').toLowerCase(), profile])
+          (profiles || []).map((profile: any) => [
+            String(profile.email || "").toLowerCase(),
+            profile,
+          ]),
         );
 
-        const resolved = fallbackParts.map(part => {
+        const resolved = fallbackParts.map((part) => {
           const profile = profileByEmail.get(part.toLowerCase());
           return formatOpportunityCreator(profile, part) || part;
         });
 
-        return [...new Set(resolved)].join(', ');
+        return [...new Set(resolved)].join(", ");
       }
     } catch (error) {
-      console.error('Error resolving quote prepared by names:', error);
+      console.error("Error resolving quote prepared by names:", error);
     }
 
-    return fallbackParts.join(', ');
+    return fallbackParts.join(", ");
   };
-  
+
   // Function to update prepared_by field based on estimate creators
-  const updatePreparedByFromEstimates = async (opportunityId: string, existingPreparedBy = (opportunity as any)?.prepared_by || '') => {
+  const updatePreparedByFromEstimates = async (
+    opportunityId: string,
+    existingPreparedBy = (opportunity as any)?.prepared_by || "",
+  ) => {
     try {
-      const preparedByValue = await resolveQuotePreparedByNames(opportunityId, existingPreparedBy);
+      const preparedByValue = await resolveQuotePreparedByNames(
+        opportunityId,
+        existingPreparedBy,
+      );
       setQuotePreparedBy(preparedByValue || null);
 
       if (preparedByValue) {
         // Update the opportunity's prepared_by field
         const { error: updateError } = await supabase
-          .schema('business')
-          .from('opportunities')
+          .schema("business")
+          .from("opportunities")
           .update({ prepared_by: preparedByValue })
-          .eq('id', opportunityId);
+          .eq("id", opportunityId);
 
         if (updateError) {
-          console.error('Error updating prepared_by:', updateError);
+          console.error("Error updating prepared_by:", updateError);
         } else {
-          console.log('Updated prepared_by:', preparedByValue);
+          console.log("Updated prepared_by:", preparedByValue);
         }
       }
     } catch (error) {
-      console.error('Error in updatePreparedByFromEstimates:', error);
+      console.error("Error in updatePreparedByFromEstimates:", error);
     }
   };
 
@@ -575,8 +791,8 @@ export default function OpportunityDetail() {
         // Refresh estimate approval status so the dropdown reflects the latest estimate
         if (id) fetchLatestEstimateStatus(id);
         // Switch to view mode to show the saved estimate in read mode
-        if (showEstimate === 'new') {
-          setShowEstimate('view');
+        if (showEstimate === "new") {
+          setShowEstimate("view");
         }
       }
     };
@@ -589,12 +805,24 @@ export default function OpportunityDetail() {
       }
     };
 
-    window.addEventListener('estimateSaved', handleEstimateSaved as EventListener);
-    window.addEventListener('letterProposalGenerated', handleLetterProposalGenerated as EventListener);
-    
+    window.addEventListener(
+      "estimateSaved",
+      handleEstimateSaved as EventListener,
+    );
+    window.addEventListener(
+      "letterProposalGenerated",
+      handleLetterProposalGenerated as EventListener,
+    );
+
     return () => {
-      window.removeEventListener('estimateSaved', handleEstimateSaved as EventListener);
-      window.removeEventListener('letterProposalGenerated', handleLetterProposalGenerated as EventListener);
+      window.removeEventListener(
+        "estimateSaved",
+        handleEstimateSaved as EventListener,
+      );
+      window.removeEventListener(
+        "letterProposalGenerated",
+        handleLetterProposalGenerated as EventListener,
+      );
     };
   }, [id, showEstimate, fetchOpportunity]);
 
@@ -611,36 +839,46 @@ export default function OpportunityDetail() {
           localStorage.removeItem(`letter-quote-index-${id}`);
           localStorage.removeItem(`letter-neta-standard-${id}`);
         }
-        localStorage.removeItem('AMP_SUSPEND_REFRESH');
+        localStorage.removeItem("AMP_SUSPEND_REFRESH");
       } catch {}
     };
   }, [id]);
   const [estimateOpenSignal, setEstimateOpenSignal] = useState(0);
-  const [subcontractorAgreements, setSubcontractorAgreements] = useState<SubcontractorAgreement[]>([]);
+  const [subcontractorAgreements, setSubcontractorAgreements] = useState<
+    SubcontractorAgreement[]
+  >([]);
   const [showSubcontractorDialog, setShowSubcontractorDialog] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [previewFile, setPreviewFile] = useState<SubcontractorAgreement | null>(null);
+  const [previewFile, setPreviewFile] = useState<SubcontractorAgreement | null>(
+    null,
+  );
   const [isEditingPDF, setIsEditingPDF] = useState(false);
   const [isSavingPDF, setIsSavingPDF] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
-  const [letterProposals, setLetterProposals] = useState<Array<{
-    id: string;
-    letter_number: string;
-    net_30_price: number;
-    opportunity_id: string;
-  }>>([]);
-  const [availableQuotes, setAvailableQuotes] = useState<Array<{
-    id: string;
-    title: string;
-    totalManHours: number;
-    data: any;
-  }>>([]);
+  const [letterProposals, setLetterProposals] = useState<
+    Array<{
+      id: string;
+      letter_number: string;
+      net_30_price: number;
+      opportunity_id: string;
+    }>
+  >([]);
+  const [availableQuotes, setAvailableQuotes] = useState<
+    Array<{
+      id: string;
+      title: string;
+      totalManHours: number;
+      data: any;
+    }>
+  >([]);
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
   const [latestEstimateId, setLatestEstimateId] = useState<string | null>(null);
-  const [estimateApprovalStatus, setEstimateApprovalStatus] = useState<string | null>(null);
+  const [estimateApprovalStatus, setEstimateApprovalStatus] = useState<
+    string | null
+  >(null);
   const [isSavingEstimateStatus, setIsSavingEstimateStatus] = useState(false);
 
   // Only fetch when ID or URL params change, use user ID instead of user object to prevent unnecessary re-renders
@@ -664,7 +902,7 @@ export default function OpportunityDetail() {
       setSelectedQuoteIds([]);
       setShowEstimate(false);
       setIsEditing(false);
-      
+
       fetchOpportunity();
       fetchCustomers();
     }
@@ -676,17 +914,17 @@ export default function OpportunityDetail() {
       setShowEstimate(false);
     };
 
-    window.addEventListener('resetEstimateMode', handleResetEstimateMode);
+    window.addEventListener("resetEstimateMode", handleResetEstimateMode);
     return () => {
-      window.removeEventListener('resetEstimateMode', handleResetEstimateMode);
+      window.removeEventListener("resetEstimateMode", handleResetEstimateMode);
     };
   }, []);
 
   // Read any existing merge lock for this group from localStorage
   useEffect(() => {
-    if (id === 'merge' && mergedIds.length > 0) {
+    if (id === "merge" && mergedIds.length > 0) {
       try {
-        const key = `opportunity-merge-lock-${mergedIds.slice().sort().join(',')}`;
+        const key = `opportunity-merge-lock-${mergedIds.slice().sort().join(",")}`;
         const raw = localStorage.getItem(key);
         if (raw) {
           const parsed = JSON.parse(raw);
@@ -700,61 +938,69 @@ export default function OpportunityDetail() {
 
   useEffect(() => {
     if (opportunity) {
-      console.log('Updating editFormData with opportunity:', { id: opportunity.id, title: opportunity.title });
-      
+      console.log("Updating editFormData with opportunity:", {
+        id: opportunity.id,
+        title: opportunity.title,
+      });
+
       // Determine opportunity_type - infer from quoted_amount if not set (matches list view behavior)
       let opportunityType = (opportunity as any).opportunity_type;
       if (!opportunityType) {
         const quotedAmount = (opportunity as any).quoted_amount;
         if (quotedAmount && Number(quotedAmount) > 0) {
-          opportunityType = Number(quotedAmount) >= 100000 ? 'large_acceptance' : 'small_acceptance';
+          opportunityType =
+            Number(quotedAmount) >= 100000
+              ? "large_acceptance"
+              : "small_acceptance";
         } else {
-          opportunityType = 'other';
+          opportunityType = "other";
         }
       }
-      
+
       setEditFormData({
-        customer_id: opportunity.customer_id || '',
-        title: opportunity.title || '',
-        description: opportunity.description || '',
-        expected_value: opportunity.expected_value?.toString() || '',
-        status: opportunity.status || '',
-        opportunity_created_date: opportunity.opportunity_created_date 
+        customer_id: opportunity.customer_id || "",
+        title: opportunity.title || "",
+        description: opportunity.description || "",
+        expected_value: opportunity.expected_value?.toString() || "",
+        status: opportunity.status || "",
+        opportunity_created_date: opportunity.opportunity_created_date
           ? opportunity.opportunity_created_date.substring(0, 10)
-          : '',
-        letter_proposal_date: opportunity.letter_proposal_date 
+          : "",
+        letter_proposal_date: opportunity.letter_proposal_date
           ? opportunity.letter_proposal_date.substring(0, 10)
-          : '',
-        proposal_due_date: opportunity.proposal_due_date 
+          : "",
+        proposal_due_date: opportunity.proposal_due_date
           ? opportunity.proposal_due_date.substring(0, 10)
-          : '',
-        sales_person: opportunity.sales_person || '',
-        notes: opportunity.notes || '',
-        probability: opportunity.probability?.toString() || '0',
-        amp_division: opportunity.amp_division || '',
-        quoted_amount: (opportunity as any).quoted_amount?.toString() || '',
-        selected_letter_proposal: (opportunity as any).selected_letter_proposal || '',
-        reviewed_by: (opportunity as any).reviewed_by || '',
-        prepared_by: (opportunity as any).prepared_by || '',
-        jobsite_location: (opportunity as any).jobsite_location || '',
-        estimated_start_date: (opportunity as any).estimated_start_date 
+          : "",
+        sales_person: opportunity.sales_person || "",
+        notes: opportunity.notes || "",
+        probability: opportunity.probability?.toString() || "0",
+        amp_division: opportunity.amp_division || "",
+        quoted_amount: (opportunity as any).quoted_amount?.toString() || "",
+        selected_letter_proposal:
+          (opportunity as any).selected_letter_proposal || "",
+        reviewed_by: (opportunity as any).reviewed_by || "",
+        prepared_by: (opportunity as any).prepared_by || "",
+        jobsite_location: (opportunity as any).jobsite_location || "",
+        estimated_start_date: (opportunity as any).estimated_start_date
           ? (opportunity as any).estimated_start_date.substring(0, 10)
-          : '',
-        period_of_performance: (opportunity as any).period_of_performance || '',
-        total_man_hours: (opportunity as any).total_man_hours?.toString() || '0',
+          : "",
+        period_of_performance: (opportunity as any).period_of_performance || "",
+        total_man_hours:
+          (opportunity as any).total_man_hours?.toString() || "0",
         opportunity_type: opportunityType,
-        documents_stage: (opportunity as any).documents_stage || ''
+        documents_stage: (opportunity as any).documents_stage || "",
       });
       // Fetch letter proposals for this opportunity
       fetchLetterProposals(opportunity.id);
       // Fetch all documents for this opportunity
       (async () => {
         const { data: agreements, error } = await supabase
-          .schema('business')
-          .from('subcontractor_agreements')
-          .select('*')
-          .eq('opportunity_id', opportunity.id)
-          .order('upload_date', { ascending: false });
+          .schema("business")
+          .from("subcontractor_agreements")
+          .select("*")
+          .eq("opportunity_id", opportunity.id)
+          .order("upload_date", { ascending: false });
         if (!error && agreements) {
           setSubcontractorAgreements(agreements);
         }
@@ -764,23 +1010,23 @@ export default function OpportunityDetail() {
 
   async function fetchLetterProposals(opportunityId: string) {
     try {
-      console.log('Fetching letter proposals for opportunity:', opportunityId);
+      console.log("Fetching letter proposals for opportunity:", opportunityId);
       const { data, error } = await supabase
-        .schema('business')
-        .from('letter_proposals')
-        .select('*')
-        .eq('opportunity_id', opportunityId)
-        .order('created_at', { ascending: false });
+        .schema("business")
+        .from("letter_proposals")
+        .select("*")
+        .eq("opportunity_id", opportunityId)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      console.log('Letter proposals fetched:', data);
-      console.log('First letter proposal structure:', data?.[0]);
+      console.log("Letter proposals fetched:", data);
+      console.log("First letter proposal structure:", data?.[0]);
       setLetterProposals(data || []);
-      
+
       // Also fetch quotes for man hours calculation
       await fetchQuotesForManHours(opportunityId);
     } catch (error) {
-      console.error('Error fetching letter proposals:', error);
+      console.error("Error fetching letter proposals:", error);
     }
   }
 
@@ -796,7 +1042,7 @@ export default function OpportunityDetail() {
         const quantity = Number(item.quantity) || 0;
         const laborMen = Number(item.laborMen) || 0;
         const laborHours = Number(item.laborHours) || 0;
-        return total + (quantity * laborMen * laborHours);
+        return total + quantity * laborMen * laborHours;
       }, 0);
     }
 
@@ -806,7 +1052,7 @@ export default function OpportunityDetail() {
         const quantity = Number(item.quantity) || 0;
         const laborMen = Number(item.laborMen) || 0;
         const laborHours = Number(item.laborHours) || 0;
-        return total + (quantity * laborMen * laborHours);
+        return total + quantity * laborMen * laborHours;
       }, 0);
     }
 
@@ -815,27 +1061,41 @@ export default function OpportunityDetail() {
 
   async function fetchQuotesForManHours(opportunityId: string) {
     try {
-      console.log('Fetching estimates for man hours calculation:', opportunityId);
+      console.log(
+        "Fetching estimates for man hours calculation:",
+        opportunityId,
+      );
       const { data, error } = await supabase
-        .schema('business')
-        .from('estimates')
-        .select('id, created_at, data, travel_data')
-        .eq('opportunity_id', opportunityId)
-        .order('created_at', { ascending: false });
+        .schema("business")
+        .from("estimates")
+        .select("id, created_at, data, travel_data")
+        .eq("opportunity_id", opportunityId)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
       const processedQuotes = (data || []).map((estimate: any) => {
         let estimateData = null;
         let title = `Estimate ${estimate.id?.slice(0, 6)}`;
-        
+
         try {
-          estimateData = typeof estimate.data === 'string' ? JSON.parse(estimate.data) : estimate.data;
+          estimateData =
+            typeof estimate.data === "string"
+              ? JSON.parse(estimate.data)
+              : estimate.data;
+          const travelData =
+            typeof estimate.travel_data === "string"
+              ? JSON.parse(estimate.travel_data || "{}")
+              : estimate.travel_data;
+          estimateData = {
+            ...(estimateData || {}),
+            travel_data: estimateData?.travel_data || travelData || {},
+          };
           if (estimateData?.title && estimateData.title.trim()) {
             title = estimateData.title.trim();
           }
         } catch (error) {
-          console.error('Error parsing estimate data:', error);
+          console.error("Error parsing estimate data:", error);
         }
 
         const totalManHours = calculateManHoursFromQuoteData(estimateData);
@@ -844,14 +1104,14 @@ export default function OpportunityDetail() {
           id: estimate.id,
           title,
           totalManHours,
-          data: estimateData
+          data: estimateData,
         };
       });
 
       setAvailableQuotes(processedQuotes);
-      console.log('Available estimates for man hours:', processedQuotes);
+      console.log("Available estimates for man hours:", processedQuotes);
     } catch (error) {
-      console.error('Error fetching estimates for man hours:', error);
+      console.error("Error fetching estimates for man hours:", error);
       setAvailableQuotes([]);
     }
   }
@@ -859,16 +1119,16 @@ export default function OpportunityDetail() {
   async function fetchLatestEstimateStatus(opportunityId: string) {
     try {
       const { data, error } = await supabase
-        .schema('business')
-        .from('estimates')
-        .select('id, status')
-        .eq('opportunity_id', opportunityId)
-        .order('created_at', { ascending: false })
+        .schema("business")
+        .from("estimates")
+        .select("id, status")
+        .eq("opportunity_id", opportunityId)
+        .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching latest estimate status:', error);
+        console.error("Error fetching latest estimate status:", error);
         setLatestEstimateId(null);
         setEstimateApprovalStatus(null);
         return;
@@ -881,7 +1141,7 @@ export default function OpportunityDetail() {
         setEstimateApprovalStatus(null);
       }
     } catch (err) {
-      console.error('Error in fetchLatestEstimateStatus:', err);
+      console.error("Error in fetchLatestEstimateStatus:", err);
       setLatestEstimateId(null);
       setEstimateApprovalStatus(null);
     }
@@ -889,88 +1149,114 @@ export default function OpportunityDetail() {
 
   async function handleEstimateApprovalStatusChange(newStatus: string) {
     if (!id) return;
-    const raw = newStatus === '' ? null : newStatus;
-    const value = raw === 'no quote' ? 'no_quote' : raw;
+    const raw = newStatus === "" ? null : newStatus;
+    const value = raw === "no quote" ? "no_quote" : raw;
     const previous = estimateApprovalStatus;
     setEstimateApprovalStatus(value);
     setIsSavingEstimateStatus(true);
     try {
       if (latestEstimateId) {
         const { error } = await supabase
-          .schema('business')
-          .from('estimates')
+          .schema("business")
+          .from("estimates")
           .update({ status: value })
-          .eq('id', latestEstimateId);
+          .eq("id", latestEstimateId);
         if (error) throw error;
       } else {
         // No estimate yet: create a placeholder estimate with this status so it can be marked e.g. Sent
         const minimalData = {
-          client: opportunity?.customers?.company_name || opportunity?.customers?.name || '',
-          jobDescription: opportunity?.description || '',
-          dateDue: '',
-          location: '',
-          periodOfPerformance: '',
-          estimatedStartDate: '',
-          poNumber: '',
-          notes: '',
+          client:
+            opportunity?.customers?.company_name ||
+            opportunity?.customers?.name ||
+            "",
+          jobDescription: opportunity?.description || "",
+          dateDue: "",
+          location: "",
+          periodOfPerformance: "",
+          estimatedStartDate: "",
+          poNumber: "",
+          notes: "",
           sovItems: [],
           nonSovItems: [],
           calculatedValues: {
-            subtotalMaterial: 0, subtotalExpense: 0, subtotalLabor: 0,
-            totalMaterial: 0, totalExpense: 0, totalLabor: 0, grandTotal: 0,
-            nonSovMaterial: 0, nonSovExpense: 0, nonSovLabor: 0,
-            sovLaborHours: 0, nonSovLaborHours: 0, totalLaborHours: 0
+            subtotalMaterial: 0,
+            subtotalExpense: 0,
+            subtotalLabor: 0,
+            totalMaterial: 0,
+            totalExpense: 0,
+            totalLabor: 0,
+            grandTotal: 0,
+            nonSovMaterial: 0,
+            nonSovExpense: 0,
+            nonSovLabor: 0,
+            sovLaborHours: 0,
+            nonSovLaborHours: 0,
+            totalLaborHours: 0,
           },
           hoursSummary: {
-            men: 1, hoursPerDay: 8, daysOnsite: 0, workHours: 0,
-            nonSovHours: 0, travelHours: 0, totalHours: 0,
-            straightTimeHours: 0, overtimeHours: 0, doubleTimeHours: 0
+            men: 1,
+            hoursPerDay: 8,
+            daysOnsite: 0,
+            workHours: 0,
+            nonSovHours: 0,
+            travelHours: 0,
+            totalHours: 0,
+            straightTimeHours: 0,
+            overtimeHours: 0,
+            doubleTimeHours: 0,
           },
           travel_data: {},
           hourlyRates: {},
           paymentTermFactors: {},
           mobilizationFactors: {},
           isManualLaborHours: false,
-          materialMarkup: 0
+          materialMarkup: 0,
         };
         const { data: newEstimate, error } = await supabase
-          .schema('business')
-          .from('estimates')
+          .schema("business")
+          .from("estimates")
           .insert({
             opportunity_id: id,
             data: JSON.stringify(minimalData),
             travel_data: JSON.stringify({}),
-            quote_number: 'v1',
+            quote_number: "v1",
             user_id: user?.id ?? null,
-            status: value
+            status: value,
           })
-          .select('id')
+          .select("id")
           .single();
         if (error) throw error;
         if (newEstimate?.id) {
           setLatestEstimateId(newEstimate.id);
         }
       }
-      if (value === 'sent') {
+      if (value === "sent") {
         const { error: oppError } = await supabase
-          .schema('business')
-          .from('opportunities')
-          .update({ status: 'decision' })
-          .eq('id', id);
+          .schema("business")
+          .from("opportunities")
+          .update({ status: "decision" })
+          .eq("id", id);
         if (!oppError && opportunity) {
-          setOpportunity((prev) => (prev ? { ...prev, status: 'decision' } : prev));
+          setOpportunity((prev) =>
+            prev ? { ...prev, status: "decision" } : prev,
+          );
         }
       }
       setIsEstimateApprovalEditing(false);
-      window.dispatchEvent(new CustomEvent('estimateSaved', { detail: { opportunityId: id } }));
+      window.dispatchEvent(
+        new CustomEvent("estimateSaved", { detail: { opportunityId: id } }),
+      );
     } catch (err) {
-      console.error('Error updating estimate approval status:', err);
+      console.error("Error updating estimate approval status:", err);
       setEstimateApprovalStatus(previous);
       const msg = err instanceof Error ? err.message : String(err);
-      const hint = msg.includes('check') || msg.includes('constraint') || msg.includes('violates')
-        ? ' The database may need the migration that allows "No Quote" (2025-02_add_no_quote_estimate_status.sql).'
-        : '';
-      alert('Failed to update estimate approval status.' + hint);
+      const hint =
+        msg.includes("check") ||
+        msg.includes("constraint") ||
+        msg.includes("violates")
+          ? ' The database may need the migration that allows "No Quote" (2025-02_add_no_quote_estimate_status.sql).'
+          : "";
+      alert("Failed to update estimate approval status." + hint);
     } finally {
       setIsSavingEstimateStatus(false);
     }
@@ -979,25 +1265,25 @@ export default function OpportunityDetail() {
   // Handle quote selection changes and recalculate total man hours
   const handleQuoteSelectionChange = (quoteId: string, isSelected: boolean) => {
     let newSelectedIds: string[];
-    
+
     if (isSelected) {
       newSelectedIds = [...selectedQuoteIds, quoteId];
     } else {
-      newSelectedIds = selectedQuoteIds.filter(id => id !== quoteId);
+      newSelectedIds = selectedQuoteIds.filter((id) => id !== quoteId);
     }
-    
+
     setSelectedQuoteIds(newSelectedIds);
-    
+
     // Calculate total man hours from selected quotes
     const totalHours = newSelectedIds.reduce((total, id) => {
-      const quote = availableQuotes.find(q => q.id === id);
+      const quote = availableQuotes.find((q) => q.id === id);
       return total + (quote?.totalManHours || 0);
     }, 0);
-    
+
     // Update the form data
-    setEditFormData(prev => ({
+    setEditFormData((prev) => ({
       ...prev,
-      total_man_hours: totalHours.toFixed(1)
+      total_man_hours: totalHours.toFixed(1),
     }));
   };
 
@@ -1009,24 +1295,24 @@ export default function OpportunityDetail() {
 
     try {
       const { data: contactsData, error } = await supabase
-        .schema('common')
-        .from('contacts')
-        .select('id, first_name, last_name, email, phone, customer_id')
-        .eq('customer_id', customerId);
+        .schema("common")
+        .from("contacts")
+        .select("id, first_name, last_name, email, phone, customer_id")
+        .eq("customer_id", customerId);
 
       if (error) throw error;
 
-      const formattedContacts = contactsData.map(contact => ({
+      const formattedContacts = contactsData.map((contact) => ({
         id: contact.id,
         name: `${contact.first_name} ${contact.last_name}`,
-        email: contact.email || '',
+        email: contact.email || "",
         phone: contact.phone,
-        customer_id: contact.customer_id
+        customer_id: contact.customer_id,
       }));
 
       setAvailableContacts(formattedContacts);
     } catch (error) {
-      console.error('Error fetching contacts:', error);
+      console.error("Error fetching contacts:", error);
       setAvailableContacts([]);
     }
   }
@@ -1034,81 +1320,100 @@ export default function OpportunityDetail() {
   async function fetchOpportunity(retryOnCookieError = true) {
     setLoading(true);
     setLoadError(null);
-    
+
     // Track the fetched opportunity ID locally to avoid stale closure issues
     let fetchedOpportunityId: string | null = null;
-    let fetchedPreparedBy = '';
-    
+    let fetchedPreparedBy = "";
+
     try {
       // Ensure valid session/cookies before fetching - fixes stale cookie issues
       const sessionValid = await ensureValidSession();
       if (!sessionValid) {
-        console.warn('Session invalid, but continuing with fetch attempt');
+        console.warn("Session invalid, but continuing with fetch attempt");
       }
-      
+
       // Use select('*') to include all columns including opportunity_type if it exists
       // This avoids errors if the opportunity_type column hasn't been added yet
-      const opportunityColumns = '*';
+      const opportunityColumns = "*";
 
-        let opportunityData: Opportunity | null = null;
-        let primaryId: string | null = null;
+      let opportunityData: Opportunity | null = null;
+      let primaryId: string | null = null;
 
-        if (id === 'merge' && mergedIds.length > 0) {
+      if (id === "merge" && mergedIds.length > 0) {
         // Merged view: fetch all listed opportunities and pick primary (most recent if not provided)
         const { data: list, error } = await supabase
-          .schema('business')
-          .from('opportunities')
+          .schema("business")
+          .from("opportunities")
           .select(opportunityColumns)
-          .in('id', mergedIds);
+          .in("id", mergedIds);
         if (error) throw error;
         // Determine primary
         let primary = null as any;
         if (primaryIdParam) {
-          primary = list?.find(o => String(o.id) === primaryIdParam) || null;
+          primary = list?.find((o) => String(o.id) === primaryIdParam) || null;
         }
         if (!primary) {
-          primary = (list || []).slice().sort((a: any, b: any) => {
-            const at = a.created_at ? new Date(a.created_at).getTime() : 0;
-            const bt = b.created_at ? new Date(b.created_at).getTime() : 0;
-            return bt - at; // most recent first
-          })[0] || null;
+          primary =
+            (list || []).slice().sort((a: any, b: any) => {
+              const at = a.created_at ? new Date(a.created_at).getTime() : 0;
+              const bt = b.created_at ? new Date(b.created_at).getTime() : 0;
+              return bt - at; // most recent first
+            })[0] || null;
         }
         opportunityData = (primary as any) || null;
         primaryId = primary ? String(primary.id) : null;
 
         // Batch-fetch all customers for merged opportunities (avoids N+1 queries)
-        const customerIds = [...new Set((list || []).map((o: any) => o.customer_id).filter(Boolean))];
+        const customerIds = [
+          ...new Set(
+            (list || []).map((o: any) => o.customer_id).filter(Boolean),
+          ),
+        ];
         let customerMap: Record<string, CustomerInfo> = {};
         if (customerIds.length > 0) {
           const { data: customersData } = await supabase
-            .schema('common')
-            .from('customers')
-            .select('id, name, company_name')
-            .in('id', customerIds);
+            .schema("common")
+            .from("customers")
+            .select("id, name, company_name")
+            .in("id", customerIds);
           if (customersData) {
-            customersData.forEach((c: any) => { customerMap[c.id] = c as CustomerInfo; });
+            customersData.forEach((c: any) => {
+              customerMap[c.id] = c as CustomerInfo;
+            });
           }
         }
-        const withCustomers = (list || []).map((o: any) => ({
-          ...(o as Opportunity),
-          customers: o.customer_id ? (customerMap[o.customer_id] || null) : null,
-        } as OpportunityWithCustomer));
+        const withCustomers = (list || []).map(
+          (o: any) =>
+            ({
+              ...(o as Opportunity),
+              customers: o.customer_id
+                ? customerMap[o.customer_id] || null
+                : null,
+            }) as OpportunityWithCustomer,
+        );
         setMergedList(withCustomers);
         const existingJob = withCustomers.find((m) => !!m.job_id)?.job_id;
         if (existingJob) {
           setGroupLockJobId(String(existingJob));
           try {
-            const key = `opportunity-merge-lock-${mergedIds.slice().sort().join(',')}`;
-            localStorage.setItem(key, JSON.stringify({ jobId: existingJob, ids: mergedIds, lockedAt: new Date().toISOString() }));
+            const key = `opportunity-merge-lock-${mergedIds.slice().sort().join(",")}`;
+            localStorage.setItem(
+              key,
+              JSON.stringify({
+                jobId: existingJob,
+                ids: mergedIds,
+                lockedAt: new Date().toISOString(),
+              }),
+            );
           } catch {}
         }
       } else {
         // Normal view: fetch by id
         const { data, error } = await supabase
-          .schema('business')
-          .from('opportunities')
+          .schema("business")
+          .from("opportunities")
           .select(opportunityColumns)
-          .eq('id', id)
+          .eq("id", id)
           .single<Opportunity>();
         if (error) throw error;
         opportunityData = data || null;
@@ -1117,94 +1422,125 @@ export default function OpportunityDetail() {
         // Prefer DB-backed merge groups if present
         try {
           const { data: membership } = await supabase
-            .schema('business')
-            .from('opportunity_merge_members')
-            .select('merge_group_id, opportunity_id, is_primary')
-            .eq('opportunity_id', id)
+            .schema("business")
+            .from("opportunity_merge_members")
+            .select("merge_group_id, opportunity_id, is_primary")
+            .eq("opportunity_id", id)
             .maybeSingle();
 
           if (membership && membership.merge_group_id) {
             const groupId = membership.merge_group_id as string;
             const [{ data: group }, { data: members }] = await Promise.all([
               supabase
-                .schema('business')
-                .from('opportunity_merge_groups')
-                .select('primary_opportunity_id, job_id')
-                .eq('id', groupId)
+                .schema("business")
+                .from("opportunity_merge_groups")
+                .select("primary_opportunity_id, job_id")
+                .eq("id", groupId)
                 .maybeSingle(),
               supabase
-                .schema('business')
-                .from('opportunity_merge_members')
-                .select('opportunity_id, is_primary')
-                .eq('merge_group_id', groupId)
+                .schema("business")
+                .from("opportunity_merge_members")
+                .select("opportunity_id, is_primary")
+                .eq("merge_group_id", groupId),
             ]);
 
-            const ids = (members || []).map(m => String((m as any).opportunity_id));
+            const ids = (members || []).map((m) =>
+              String((m as any).opportunity_id),
+            );
             if (ids.length > 1) {
               setSavedMergeIds(ids);
               const pId = (group as any)?.primary_opportunity_id
                 ? String((group as any).primary_opportunity_id)
-                : ((members || []).find(m => (m as any).is_primary)?.opportunity_id ? String((members as any[]).find(m => (m as any).is_primary)!.opportunity_id) : primaryId);
+                : (members || []).find((m) => (m as any).is_primary)
+                      ?.opportunity_id
+                  ? String(
+                      (members as any[]).find((m) => (m as any).is_primary)!
+                        .opportunity_id,
+                    )
+                  : primaryId;
               setSavedPrimaryId(pId || primaryId);
-              if ((group as any)?.job_id) setGroupLockJobId(String((group as any).job_id));
+              if ((group as any)?.job_id)
+                setGroupLockJobId(String((group as any).job_id));
 
               // Fetch peers and batch-fetch customers (avoids N+1 queries)
               const { data: peers } = await supabase
-                .schema('business')
-                .from('opportunities')
+                .schema("business")
+                .from("opportunities")
                 .select(opportunityColumns)
-                .in('id', ids);
-              const peerCustomerIds = [...new Set((peers || []).map((o: any) => o.customer_id).filter(Boolean))];
+                .in("id", ids);
+              const peerCustomerIds = [
+                ...new Set(
+                  (peers || []).map((o: any) => o.customer_id).filter(Boolean),
+                ),
+              ];
               let peerCustomerMap: Record<string, CustomerInfo> = {};
               if (peerCustomerIds.length > 0) {
                 const { data: peerCustomersData } = await supabase
-                  .schema('common')
-                  .from('customers')
-                  .select('id, name, company_name')
-                  .in('id', peerCustomerIds);
+                  .schema("common")
+                  .from("customers")
+                  .select("id, name, company_name")
+                  .in("id", peerCustomerIds);
                 if (peerCustomersData) {
-                  peerCustomersData.forEach((c: any) => { peerCustomerMap[c.id] = c as CustomerInfo; });
+                  peerCustomersData.forEach((c: any) => {
+                    peerCustomerMap[c.id] = c as CustomerInfo;
+                  });
                 }
               }
-              const withCustomers = (peers || []).map((o: any) => ({
-                ...(o as Opportunity),
-                customers: o.customer_id ? (peerCustomerMap[o.customer_id] || null) : null,
-              } as OpportunityWithCustomer));
+              const withCustomers = (peers || []).map(
+                (o: any) =>
+                  ({
+                    ...(o as Opportunity),
+                    customers: o.customer_id
+                      ? peerCustomerMap[o.customer_id] || null
+                      : null,
+                  }) as OpportunityWithCustomer,
+              );
               setMergedList(withCustomers);
             }
           }
         } catch (e) {
-          console.warn('Merge group lookup failed (non-fatal):', e);
+          console.warn("Merge group lookup failed (non-fatal):", e);
         }
 
         // Parse saved merge info from notes for non-merge route
-        if (opportunityData && typeof opportunityData.notes === 'string') {
+        if (opportunityData && typeof opportunityData.notes === "string") {
           const meta = extractMergeMetaFromNotes(opportunityData.notes);
           if (meta && meta.ids && meta.ids.length > 1) {
             setSavedMergeIds(meta.ids);
             setSavedPrimaryId(meta.primary || primaryId);
             // Fetch merged peers and batch-fetch customers (avoids N+1 queries)
             const { data: peers } = await supabase
-              .schema('business')
-              .from('opportunities')
+              .schema("business")
+              .from("opportunities")
               .select(opportunityColumns)
-              .in('id', meta.ids);
-            const metaCustomerIds = [...new Set((peers || []).map((o: any) => o.customer_id).filter(Boolean))];
+              .in("id", meta.ids);
+            const metaCustomerIds = [
+              ...new Set(
+                (peers || []).map((o: any) => o.customer_id).filter(Boolean),
+              ),
+            ];
             let metaCustomerMap: Record<string, CustomerInfo> = {};
             if (metaCustomerIds.length > 0) {
               const { data: metaCustomersData } = await supabase
-                .schema('common')
-                .from('customers')
-                .select('id, name, company_name')
-                .in('id', metaCustomerIds);
+                .schema("common")
+                .from("customers")
+                .select("id, name, company_name")
+                .in("id", metaCustomerIds);
               if (metaCustomersData) {
-                metaCustomersData.forEach((c: any) => { metaCustomerMap[c.id] = c as CustomerInfo; });
+                metaCustomersData.forEach((c: any) => {
+                  metaCustomerMap[c.id] = c as CustomerInfo;
+                });
               }
             }
-            const withCustomers = (peers || []).map((o: any) => ({
-              ...(o as Opportunity),
-              customers: o.customer_id ? (metaCustomerMap[o.customer_id] || null) : null,
-            } as OpportunityWithCustomer));
+            const withCustomers = (peers || []).map(
+              (o: any) =>
+                ({
+                  ...(o as Opportunity),
+                  customers: o.customer_id
+                    ? metaCustomerMap[o.customer_id] || null
+                    : null,
+                }) as OpportunityWithCustomer,
+            );
             setMergedList(withCustomers);
             const existingJob = withCustomers.find((m) => !!m.job_id)?.job_id;
             if (existingJob) {
@@ -1217,67 +1553,74 @@ export default function OpportunityDetail() {
         }
       }
 
-      if (!opportunityData) throw new Error('Opportunity not found');
-      fetchedPreparedBy = (opportunityData as any).prepared_by || '';
+      if (!opportunityData) throw new Error("Opportunity not found");
+      fetchedPreparedBy = (opportunityData as any).prepared_by || "";
       setQuotePreparedBy(fetchedPreparedBy || null);
 
       const creatorId = opportunityData.user_id;
-      let creatorDisplay = formatOpportunityCreator(null, opportunityData.sales_person);
+      let creatorDisplay = formatOpportunityCreator(
+        null,
+        opportunityData.sales_person,
+      );
       if (creatorId) {
         if (creatorId === user?.id) {
           creatorDisplay = formatOpportunityCreator(
             {
-              full_name: user?.user_metadata?.full_name || user?.user_metadata?.name,
-              email: user?.email
+              full_name:
+                user?.user_metadata?.full_name || user?.user_metadata?.name,
+              email: user?.email,
             },
-            opportunityData.sales_person
+            opportunityData.sales_person,
           );
         }
 
         const { data: profileData, error: profileError } = await supabase
-          .schema('common')
-          .from('profiles')
-          .select('id, full_name, email')
-          .eq('id', creatorId)
+          .schema("common")
+          .from("profiles")
+          .select("id, full_name, email")
+          .eq("id", creatorId)
           .maybeSingle();
 
         if (!profileError && profileData) {
-          creatorDisplay = formatOpportunityCreator(profileData, opportunityData.sales_person);
+          creatorDisplay = formatOpportunityCreator(
+            profileData,
+            opportunityData.sales_person,
+          );
         }
       }
       setOpportunityCreator(creatorDisplay);
-      
+
       // Then fetch the customer data from common schema if we have a customer_id
       let customerInfo: CustomerInfo | null = null;
       if (opportunityData.customer_id) {
         const { data: customerData, error: customerError } = await supabase
-          .schema('common')
-          .from('customers')
-          .select('id, name, company_name')
-          .eq('id', opportunityData.customer_id)
+          .schema("common")
+          .from("customers")
+          .select("id, name, company_name")
+          .eq("id", opportunityData.customer_id)
           .single<CustomerInfo>();
-          
+
         if (!customerError && customerData) {
           customerInfo = customerData;
         }
       }
-      
+
       // Optionally fetch the linked contact
       let contactInfo: Contact | null = null;
       if (opportunityData.contact_id) {
         const { data: cData, error: cErr } = await supabase
-          .schema('common')
-          .from('contacts')
-          .select('id, first_name, last_name, email, phone, customer_id')
-          .eq('id', opportunityData.contact_id)
+          .schema("common")
+          .from("contacts")
+          .select("id, first_name, last_name, email, phone, customer_id")
+          .eq("id", opportunityData.contact_id)
           .maybeSingle();
         if (!cErr && cData) {
           contactInfo = {
             id: cData.id,
             name: `${cData.first_name} ${cData.last_name}`,
-            email: cData.email || '',
+            email: cData.email || "",
             phone: cData.phone,
-            customer_id: cData.customer_id
+            customer_id: cData.customer_id,
           };
         }
       }
@@ -1286,11 +1629,11 @@ export default function OpportunityDetail() {
       fetchedOpportunityId = opportunityData.id;
       setOpportunity({
         ...opportunityData,
-        customers: customerInfo
+        customers: customerInfo,
       });
       if (contactInfo) {
-        setContacts(prev => {
-          const exists = prev.some(c => c.id === contactInfo!.id);
+        setContacts((prev) => {
+          const exists = prev.some((c) => c.id === contactInfo!.id);
           return exists ? prev : [contactInfo!, ...prev];
         });
       }
@@ -1299,28 +1642,32 @@ export default function OpportunityDetail() {
       try {
         const pdTargetId = primaryId || id;
         const { data: pd, error: pdError } = await supabase
-          .schema('business')
-          .from('opportunities')
-          .select('proposal_due_date')
-          .eq('id', pdTargetId)
+          .schema("business")
+          .from("opportunities")
+          .select("proposal_due_date")
+          .eq("id", pdTargetId)
           .maybeSingle();
-        if (!pdError && pd && 'proposal_due_date' in (pd as any)) {
-          setOpportunity(prev => prev ? { ...prev, proposal_due_date: (pd as any).proposal_due_date } : prev);
+        if (!pdError && pd && "proposal_due_date" in (pd as any)) {
+          setOpportunity((prev) =>
+            prev
+              ? { ...prev, proposal_due_date: (pd as any).proposal_due_date }
+              : prev,
+          );
         }
       } catch (e: any) {
         // If column doesn't exist (42703) or any other error, ignore gracefully
-        if (e?.code !== '42703') {
-          console.warn('Optional proposal_due_date fetch warning:', e);
+        if (e?.code !== "42703") {
+          console.warn("Optional proposal_due_date fetch warning:", e);
         }
       }
-         
+
       // Check if linked job exists and is not deleted
       if (opportunityData.job_id) {
         const { data: linkedJob } = await supabase
-          .schema('neta_ops')
-          .from('jobs')
-          .select('id, deleted_at')
-          .eq('id', opportunityData.job_id)
+          .schema("neta_ops")
+          .from("jobs")
+          .select("id, deleted_at")
+          .eq("id", opportunityData.job_id)
           .maybeSingle();
 
         if (linkedJob && !linkedJob.deleted_at) {
@@ -1328,38 +1675,48 @@ export default function OpportunityDetail() {
           setJobId(opportunityData.job_id.toString());
         } else {
           // Job is deleted or doesn't exist - clear the job_id from opportunity
-          console.log('Linked job is deleted or missing, clearing job_id from opportunity');
+          console.log(
+            "Linked job is deleted or missing, clearing job_id from opportunity",
+          );
           await supabase
-            .schema('business')
-            .from('opportunities')
+            .schema("business")
+            .from("opportunities")
             .update({ job_id: null })
-            .eq('id', opportunityData.id);
-          
+            .eq("id", opportunityData.id);
+
           // Update local state to remove job_id
-          setOpportunity(prev => 
-            prev ? { ...prev, job_id: null } as OpportunityWithCustomer : null
+          setOpportunity((prev) =>
+            prev
+              ? ({ ...prev, job_id: null } as OpportunityWithCustomer)
+              : null,
           );
           setJobId(null);
         }
       }
-
     } catch (error: any) {
-      console.error('Error fetching opportunity:', error);
-      
+      console.error("Error fetching opportunity:", error);
+
       // If it's an auth error and we haven't retried yet, try soft refresh (like sign-out/sign-in) and retry
-      if ((isCookieAuthError(error) || isAuthError(error)) && retryOnCookieError) {
-        console.log('🔄 Auth error detected - attempting automatic session recovery (soft refresh)...');
+      if (
+        (isCookieAuthError(error) || isAuthError(error)) &&
+        retryOnCookieError
+      ) {
+        console.log(
+          "🔄 Auth error detected - attempting automatic session recovery (soft refresh)...",
+        );
         try {
           // Use softRefresh from AuthContext which clears cache and refreshes session
           const recovered = await softRefresh();
           if (recovered) {
             // Retry the fetch once after recovering session (with retry flag disabled to prevent infinite loop)
-            console.log('✅ Session recovered via soft refresh, retrying opportunity fetch...');
+            console.log(
+              "✅ Session recovered via soft refresh, retrying opportunity fetch...",
+            );
             await fetchOpportunity(false);
             return; // Exit early on successful retry
           } else {
             // Fallback to ensureValidSession if softRefresh failed
-            console.log('  ↳ softRefresh failed, trying ensureValidSession...');
+            console.log("  ↳ softRefresh failed, trying ensureValidSession...");
             const refreshed = await ensureValidSession();
             if (refreshed) {
               await fetchOpportunity(false);
@@ -1367,14 +1724,17 @@ export default function OpportunityDetail() {
             }
           }
         } catch (retryError) {
-          console.error('Retry after session recovery failed:', retryError);
+          console.error("Retry after session recovery failed:", retryError);
         }
       }
-      
-      setLoadError(error?.message || 'Failed to load opportunity. Please try refreshing the page.');
+
+      setLoadError(
+        error?.message ||
+          "Failed to load opportunity. Please try refreshing the page.",
+      );
     } finally {
       setLoading(false);
-      
+
       // Update prepared_by field based on existing estimates
       // Use the locally tracked ID to avoid stale closure issues
       if (fetchedOpportunityId) {
@@ -1384,28 +1744,36 @@ export default function OpportunityDetail() {
   }
 
   // --- Merge metadata helpers ---
-  function buildMergeMeta(ids: string[], primary: string | null, jobId?: string | null) {
-    return `[MERGE_GROUP]primary=${primary || ''};ids=${ids.join(',')};locked_job=${jobId || ''};[/MERGE_GROUP]`;
+  function buildMergeMeta(
+    ids: string[],
+    primary: string | null,
+    jobId?: string | null,
+  ) {
+    return `[MERGE_GROUP]primary=${primary || ""};ids=${ids.join(",")};locked_job=${jobId || ""};[/MERGE_GROUP]`;
   }
 
-  function extractMergeMetaFromNotes(notes: string | null | undefined): { ids: string[]; primary: string | null; locked_job: string | null } | null {
+  function extractMergeMetaFromNotes(notes: string | null | undefined): {
+    ids: string[];
+    primary: string | null;
+    locked_job: string | null;
+  } | null {
     if (!notes) return null;
-    const start = notes.indexOf('[MERGE_GROUP]');
-    const end = notes.indexOf('[/MERGE_GROUP]');
+    const start = notes.indexOf("[MERGE_GROUP]");
+    const end = notes.indexOf("[/MERGE_GROUP]");
     if (start === -1 || end === -1 || end <= start) return null;
     const block = notes.substring(start + 13, end).trim();
     // format: primary=...;ids=a,b,c;locked_job=...
-    const parts = block.split(';').map(s => s.trim());
+    const parts = block.split(";").map((s) => s.trim());
     const map: Record<string, string> = {};
-    parts.forEach(p => {
-      const idx = p.indexOf('=');
+    parts.forEach((p) => {
+      const idx = p.indexOf("=");
       if (idx > -1) {
         map[p.substring(0, idx)] = p.substring(idx + 1);
       }
     });
-    const ids = (map['ids'] || '').split(',').filter(Boolean);
-    const primary = map['primary'] || null;
-    const locked_job = map['locked_job'] || null;
+    const ids = (map["ids"] || "").split(",").filter(Boolean);
+    const primary = map["primary"] || null;
+    const locked_job = map["locked_job"] || null;
     if (ids.length < 2) return null;
     return { ids, primary, locked_job };
   }
@@ -1413,18 +1781,18 @@ export default function OpportunityDetail() {
   async function fetchCustomers() {
     try {
       const { data, error } = await supabase
-        .schema('common')
-        .from('customers')
-        .select('id, name, company_name')
-        .order('name');
+        .schema("common")
+        .from("customers")
+        .select("id, name, company_name")
+        .order("name");
 
       if (error) throw error;
       setCustomers(data || []);
     } catch (error) {
-      console.error('Error fetching customers:', error);
+      console.error("Error fetching customers:", error);
     }
   }
-  
+
   async function fetchContacts(customerId: string) {
     if (!customerId) {
       setContacts([]); // Ensure setContacts exists in component state
@@ -1432,25 +1800,25 @@ export default function OpportunityDetail() {
     }
     try {
       const { data, error } = await supabase
-        .schema('common') 
-        .from('contacts')
-        .select('id, first_name, last_name, email, phone, customer_id') // Select all needed fields
-        .eq('customer_id', customerId);
+        .schema("common")
+        .from("contacts")
+        .select("id, first_name, last_name, email, phone, customer_id") // Select all needed fields
+        .eq("customer_id", customerId);
 
       if (error) throw error;
-      
+
       // Transform the data to match the Contact interface
-      const transformedContacts = (data || []).map(contact => ({
+      const transformedContacts = (data || []).map((contact) => ({
         id: contact.id,
         name: `${contact.first_name} ${contact.last_name}`,
-        email: contact.email || '',
+        email: contact.email || "",
         phone: contact.phone,
-        customer_id: contact.customer_id
+        customer_id: contact.customer_id,
       }));
-      
+
       setContacts(transformedContacts);
     } catch (error) {
-      console.error('Error fetching contacts:', error);
+      console.error("Error fetching contacts:", error);
       setContacts([]); // Set to empty array on error
     }
   }
@@ -1462,29 +1830,35 @@ export default function OpportunityDetail() {
 
     try {
       const proposalDueDate = editFormData.proposal_due_date
-        ? editFormData.proposal_due_date + 'T12:00:00.000Z' // Add noon UTC to prevent timezone shifts
+        ? editFormData.proposal_due_date + "T12:00:00.000Z" // Add noon UTC to prevent timezone shifts
         : null;
 
       const opportunityCreatedDate = editFormData.opportunity_created_date
-        ? editFormData.opportunity_created_date + 'T12:00:00.000Z' // Add noon UTC to prevent timezone shifts
+        ? editFormData.opportunity_created_date + "T12:00:00.000Z" // Add noon UTC to prevent timezone shifts
         : null;
 
       const letterProposalDate = editFormData.letter_proposal_date
-        ? editFormData.letter_proposal_date + 'T12:00:00.000Z' // Add noon UTC to prevent timezone shifts
+        ? editFormData.letter_proposal_date + "T12:00:00.000Z" // Add noon UTC to prevent timezone shifts
         : null;
 
-      console.log('Updating opportunity with editFormData:', { 
-        id: opportunity.id, 
+      console.log("Updating opportunity with editFormData:", {
+        id: opportunity.id,
         title: editFormData.title,
-        originalTitle: opportunity.title 
+        originalTitle: opportunity.title,
       });
-      
+
       // Auto-adjust opportunity_type based on quoted_amount for acceptance categories
-      let opportunityType = editFormData.opportunity_type || 'other';
-      const quotedAmount = editFormData.quoted_amount ? parseFloat(editFormData.quoted_amount) : null;
-      if (opportunityType === 'large_acceptance' || opportunityType === 'small_acceptance') {
+      let opportunityType = editFormData.opportunity_type || "other";
+      const quotedAmount = editFormData.quoted_amount
+        ? parseFloat(editFormData.quoted_amount)
+        : null;
+      if (
+        opportunityType === "large_acceptance" ||
+        opportunityType === "small_acceptance"
+      ) {
         if (quotedAmount !== null) {
-          opportunityType = quotedAmount >= 100000 ? 'large_acceptance' : 'small_acceptance';
+          opportunityType =
+            quotedAmount >= 100000 ? "large_acceptance" : "small_acceptance";
         }
       }
 
@@ -1493,11 +1867,15 @@ export default function OpportunityDetail() {
         contact_id: editFormData.contact_id || null,
         title: editFormData.title,
         description: editFormData.description,
-        expected_value: editFormData.expected_value ? parseFloat(editFormData.expected_value) : null,
+        expected_value: editFormData.expected_value
+          ? parseFloat(editFormData.expected_value)
+          : null,
         status: editFormData.status,
         sales_person: editFormData.sales_person,
         notes: editFormData.notes,
-        probability: editFormData.probability ? parseFloat(editFormData.probability) : 0,
+        probability: editFormData.probability
+          ? parseFloat(editFormData.probability)
+          : 0,
         amp_division: editFormData.amp_division,
         quoted_amount: quotedAmount,
         selected_letter_proposal: editFormData.selected_letter_proposal || null,
@@ -1506,9 +1884,11 @@ export default function OpportunityDetail() {
         jobsite_location: editFormData.jobsite_location || null,
         estimated_start_date: editFormData.estimated_start_date || null,
         period_of_performance: editFormData.period_of_performance || null,
-        total_man_hours: editFormData.total_man_hours ? parseFloat(editFormData.total_man_hours) : null,
+        total_man_hours: editFormData.total_man_hours
+          ? parseFloat(editFormData.total_man_hours)
+          : null,
         opportunity_type: opportunityType,
-        documents_stage: editFormData.documents_stage || null
+        documents_stage: editFormData.documents_stage || null,
       };
       updatePayload.proposal_due_date = proposalDueDate;
       updatePayload.opportunity_created_date = opportunityCreatedDate;
@@ -1518,56 +1898,70 @@ export default function OpportunityDetail() {
       const isColumnMissingError = (err: any) => {
         if (!err) return false;
         // PostgreSQL error code for undefined column
-        if (err.code === '42703') return true;
+        if (err.code === "42703") return true;
         // Supabase schema cache error
-        if (err.message && err.message.includes("Could not find the") && err.message.includes("column")) return true;
+        if (
+          err.message &&
+          err.message.includes("Could not find the") &&
+          err.message.includes("column")
+        )
+          return true;
         return false;
       };
 
       // Helper to check if error mentions a specific column
       const errorMentionsColumn = (err: any, columnName: string) => {
         if (!err || !err.message) return false;
-        return err.message.includes(`'${columnName}'`) || err.message.includes(`"${columnName}"`);
+        return (
+          err.message.includes(`'${columnName}'`) ||
+          err.message.includes(`"${columnName}"`)
+        );
       };
 
       // Start with payload without opportunity_type if we suspect the column might not exist
       // We'll add it back in if it succeeds, or handle the error gracefully
       const { opportunity_type: oppType, ...basePayload } = updatePayload;
-      
+
       // Try update without opportunity_type first (safer approach)
       let updateError = null as any;
       let res = await supabase
-        .schema('business')
-        .from('opportunities')
+        .schema("business")
+        .from("opportunities")
         .update({ ...basePayload, proposal_due_date: proposalDueDate })
-        .eq('id', opportunity.id)
+        .eq("id", opportunity.id)
         .select();
       updateError = res.error;
 
       // If that succeeded, try to update opportunity_type separately (if column exists)
       if (!updateError && oppType) {
         const typeRes = await supabase
-          .schema('business')
-          .from('opportunities')
+          .schema("business")
+          .from("opportunities")
           .update({ opportunity_type: oppType })
-          .eq('id', opportunity.id)
+          .eq("id", opportunity.id)
           .select();
         // If opportunity_type column doesn't exist, just log and continue (data was already saved)
         if (typeRes.error && isColumnMissingError(typeRes.error)) {
-          console.log('opportunity_type column does not exist yet, skipping...');
+          console.log(
+            "opportunity_type column does not exist yet, skipping...",
+          );
         } else if (typeRes.error) {
-          console.warn('Could not update opportunity_type:', typeRes.error);
+          console.warn("Could not update opportunity_type:", typeRes.error);
         }
       }
 
       // If column missing (42703 or schema cache error), retry without proposal_due_date
-      if (updateError && isColumnMissingError(updateError) && errorMentionsColumn(updateError, 'proposal_due_date')) {
-        console.log('proposal_due_date column missing, retrying without it...');
+      if (
+        updateError &&
+        isColumnMissingError(updateError) &&
+        errorMentionsColumn(updateError, "proposal_due_date")
+      ) {
+        console.log("proposal_due_date column missing, retrying without it...");
         res = await supabase
-          .schema('business')
-          .from('opportunities')
+          .schema("business")
+          .from("opportunities")
           .update(basePayload)
-          .eq('id', opportunity.id)
+          .eq("id", opportunity.id)
           .select();
         updateError = res.error;
       }
@@ -1575,186 +1969,244 @@ export default function OpportunityDetail() {
       const error = updateError;
 
       if (error) {
-        console.error('Database update error:', error);
+        console.error("Database update error:", error);
         throw error;
       }
 
       // Sync customer_id to linked job(s)
       if (editFormData.customer_id) {
         try {
-          console.log('🔄 Starting customer sync to linked job...');
-          console.log('  - Opportunity ID:', opportunity.id);
-          console.log('  - Opportunity job_id:', opportunity.job_id);
-          console.log('  - New customer_id:', editFormData.customer_id);
-          
+          console.log("🔄 Starting customer sync to linked job...");
+          console.log("  - Opportunity ID:", opportunity.id);
+          console.log("  - Opportunity job_id:", opportunity.job_id);
+          console.log("  - New customer_id:", editFormData.customer_id);
+
           // Find jobs linked to this opportunity (by job_id on opportunity OR opportunity_id on job)
           let linkedJobId = opportunity.job_id;
-          
+
           // If no job_id on opportunity, look for job by opportunity_id
           if (!linkedJobId) {
-            console.log('  - No job_id on opportunity, searching jobs by opportunity_id...');
+            console.log(
+              "  - No job_id on opportunity, searching jobs by opportunity_id...",
+            );
             const { data: linkedJob, error: searchError } = await supabase
-              .schema('neta_ops')
-              .from('jobs')
-              .select('id, customer_id')
-              .eq('opportunity_id', String(opportunity.id))
+              .schema("neta_ops")
+              .from("jobs")
+              .select("id, customer_id")
+              .eq("opportunity_id", String(opportunity.id))
               .maybeSingle();
-            
+
             if (searchError) {
-              console.warn('  - Error searching for linked job:', searchError);
+              console.warn("  - Error searching for linked job:", searchError);
             }
-            
+
             if (linkedJob) {
               linkedJobId = linkedJob.id;
-              console.log('  - Found linked job by opportunity_id:', linkedJobId, 'current customer:', linkedJob.customer_id);
+              console.log(
+                "  - Found linked job by opportunity_id:",
+                linkedJobId,
+                "current customer:",
+                linkedJob.customer_id,
+              );
             } else {
-              console.log('  - No linked job found by opportunity_id');
+              console.log("  - No linked job found by opportunity_id");
             }
           }
 
           if (linkedJobId) {
-            console.log('  - Updating job', linkedJobId, 'with customer_id:', editFormData.customer_id);
+            console.log(
+              "  - Updating job",
+              linkedJobId,
+              "with customer_id:",
+              editFormData.customer_id,
+            );
             const { data: updateData, error: jobUpdateError } = await supabase
-              .schema('neta_ops')
-              .from('jobs')
+              .schema("neta_ops")
+              .from("jobs")
               .update({ customer_id: editFormData.customer_id })
-              .eq('id', linkedJobId)
-              .select('id, customer_id');
+              .eq("id", linkedJobId)
+              .select("id, customer_id");
 
             if (jobUpdateError) {
-              console.warn('  - ❌ Could not sync customer to linked job:', jobUpdateError);
+              console.warn(
+                "  - ❌ Could not sync customer to linked job:",
+                jobUpdateError,
+              );
             } else {
-              console.log('  - ✅ Customer synced to linked job:', linkedJobId, 'result:', updateData);
+              console.log(
+                "  - ✅ Customer synced to linked job:",
+                linkedJobId,
+                "result:",
+                updateData,
+              );
             }
           } else {
-            console.log('  - No linked job found to sync customer to');
+            console.log("  - No linked job found to sync customer to");
           }
         } catch (syncError) {
-          console.warn('Error syncing customer to linked job:', syncError);
+          console.warn("Error syncing customer to linked job:", syncError);
         }
       }
 
       setIsEditing(false);
-      
+
       // Force refresh the opportunity data from database
       await fetchOpportunity();
-      
+
       // Show success message
-      console.log('Opportunity updated successfully');
-      setShowSuccessMessage('Opportunity saved successfully!');
+      console.log("Opportunity updated successfully");
+      setShowSuccessMessage("Opportunity saved successfully!");
       setTimeout(() => setShowSuccessMessage(null), 3000);
     } catch (error: any) {
-      console.error('Error updating opportunity:', error);
+      console.error("Error updating opportunity:", error);
       // Show error to user
-      alert(`Failed to save changes: ${error?.message || 'Unknown error'}. Please try again.`);
+      alert(
+        `Failed to save changes: ${error?.message || "Unknown error"}. Please try again.`,
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
   function handleInputChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) {
     const { name, value } = e.target;
-    console.log('Input changed:', { name, value });
-    
-    setEditFormData(prev => {
+    console.log("Input changed:", { name, value });
+
+    setEditFormData((prev) => {
       const updated = { ...prev, [name]: value };
-      
+
       // Auto-adjust opportunity_type based on quoted_amount for acceptance categories
       // This happens in real-time as the user types
-      if (name === 'quoted_amount') {
+      if (name === "quoted_amount") {
         const amount = value ? parseFloat(value) : null;
-        if ((prev.opportunity_type === 'large_acceptance' || prev.opportunity_type === 'small_acceptance') && amount !== null) {
-          updated.opportunity_type = amount >= 100000 ? 'large_acceptance' : 'small_acceptance';
+        if (
+          (prev.opportunity_type === "large_acceptance" ||
+            prev.opportunity_type === "small_acceptance") &&
+          amount !== null
+        ) {
+          updated.opportunity_type =
+            amount >= 100000 ? "large_acceptance" : "small_acceptance";
         }
       }
-      
+
       // When user switches TO an acceptance category, auto-adjust based on current quoted amount
-      if (name === 'opportunity_type' && (value === 'large_acceptance' || value === 'small_acceptance')) {
-        const amount = prev.quoted_amount ? parseFloat(prev.quoted_amount) : null;
+      if (
+        name === "opportunity_type" &&
+        (value === "large_acceptance" || value === "small_acceptance")
+      ) {
+        const amount = prev.quoted_amount
+          ? parseFloat(prev.quoted_amount)
+          : null;
         if (amount !== null) {
-          updated.opportunity_type = amount >= 100000 ? 'large_acceptance' : 'small_acceptance';
+          updated.opportunity_type =
+            amount >= 100000 ? "large_acceptance" : "small_acceptance";
         }
       }
-      
+
       return updated;
     });
   }
 
   function handleLetterProposalChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const selectedProposalId = e.target.value;
-    const selectedProposal = letterProposals.find(p => p.id === selectedProposalId);
-    const newQuotedAmount = selectedProposal ? selectedProposal.net_30_price : null;
-    
-    setEditFormData(prev => {
+    const selectedProposal = letterProposals.find(
+      (p) => p.id === selectedProposalId,
+    ) as any;
+    const newQuotedAmount = selectedProposal
+      ? parseMoneyValue(selectedProposal.net_30_price) ||
+        extractNet30FromLetterHtml(selectedProposal.html)
+      : null;
+
+    setEditFormData((prev) => {
       const updated = {
         ...prev,
         selected_letter_proposal: selectedProposalId,
-        quoted_amount: newQuotedAmount ? newQuotedAmount.toString() : ''
+        quoted_amount: newQuotedAmount ? newQuotedAmount.toString() : "",
       };
-      
+
       // Auto-adjust opportunity_type based on the new quoted amount for acceptance categories
-      if ((prev.opportunity_type === 'large_acceptance' || prev.opportunity_type === 'small_acceptance') && newQuotedAmount !== null) {
-        updated.opportunity_type = newQuotedAmount >= 100000 ? 'large_acceptance' : 'small_acceptance';
+      if (
+        (prev.opportunity_type === "large_acceptance" ||
+          prev.opportunity_type === "small_acceptance") &&
+        newQuotedAmount !== null
+      ) {
+        updated.opportunity_type =
+          newQuotedAmount >= 100000 ? "large_acceptance" : "small_acceptance";
       }
-      
+
       return updated;
     });
   }
 
   function getStatusColor(status: string) {
     switch (status.toLowerCase()) {
-      case 'awareness':
-        return 'bg-gray-100 text-gray-800 dark:bg-dark-150 dark:text-gray-100';
-      case 'interest':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100';
-      case 'quote':
-        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100';
-      case 'decision':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
-      case 'decision - forecasted win':
-        return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
-      case 'decision - forecast lose':
-        return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100';
-      case 'awarded':
-        return 'bg-green-500 text-white dark:bg-green-600';
-      case 'lost':
-        return 'bg-red-500 text-white dark:bg-red-600';
-      case 'no quote':
-        return 'bg-gray-500 text-white dark:bg-gray-600';
+      case "awareness":
+        return "bg-gray-100 text-gray-800 dark:bg-dark-150 dark:text-gray-100";
+      case "interest":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100";
+      case "quote":
+        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100";
+      case "decision":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100";
+      case "decision - forecasted win":
+        return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
+      case "decision - forecast lose":
+        return "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100";
+      case "awarded":
+        return "bg-green-500 text-white dark:bg-green-600";
+      case "lost":
+        return "bg-red-500 text-white dark:bg-red-600";
+      case "no quote":
+        return "bg-gray-500 text-white dark:bg-gray-600";
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-dark-150 dark:text-gray-100';
+        return "bg-gray-100 text-gray-800 dark:bg-dark-150 dark:text-gray-100";
     }
   }
 
   function formatStatus(status: string) {
-    return status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
+    return status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ");
   }
 
   function getEstimateApprovalColor(status: string | null) {
-    if (!status) return 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400';
+    if (!status)
+      return "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400";
     switch (status) {
-      case 'sent': return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
-      case 'approved_to_send': return 'bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100';
-      case 'ready_for_review': return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100';
-      case 'in_progress': return 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100';
-      case 'no_quote':
-      case 'no quote': return 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400';
-      default: return 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400';
+      case "sent":
+        return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
+      case "approved_to_send":
+        return "bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100";
+      case "ready_for_review":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100";
+      case "in_progress":
+        return "bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100";
+      case "no_quote":
+      case "no quote":
+        return "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400";
+      default:
+        return "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400";
     }
   }
 
   function formatEstimateApprovalStatus(status: string | null) {
-    if (!status) return 'Not Started';
+    if (!status) return "Not Started";
     switch (status) {
-      case 'sent': return 'Sent';
-      case 'approved_to_send': return 'Approved to Send';
-      case 'ready_for_review': return 'Ready for Review';
-      case 'in_progress': return 'In Progress';
-      case 'no_quote':
-      case 'no quote': return 'No Quote';
-      default: return status.replace(/_/g, ' ');
+      case "sent":
+        return "Sent";
+      case "approved_to_send":
+        return "Approved to Send";
+      case "ready_for_review":
+        return "Ready for Review";
+      case "in_progress":
+        return "In Progress";
+      case "no_quote":
+      case "no quote":
+        return "No Quote";
+      default:
+        return status.replace(/_/g, " ");
     }
   }
 
@@ -1765,69 +2217,85 @@ export default function OpportunityDetail() {
     try {
       // Check if opportunity has required fields
       if (!opportunity?.customer_id) {
-        throw new Error('Opportunity is missing customer_id which is required for job creation');
+        throw new Error(
+          "Opportunity is missing customer_id which is required for job creation",
+        );
       }
 
       // Check if opportunity already has a job_id (prevent duplicates)
       const { data: currentOpportunity } = await supabase
-        .schema('business')
-        .from('opportunities')
-        .select('job_id')
-        .eq('id', opportunity.id)
+        .schema("business")
+        .from("opportunities")
+        .select("job_id")
+        .eq("id", opportunity.id)
         .maybeSingle();
 
       if (currentOpportunity?.job_id) {
         // Job already exists - check if it's still valid
         const { data: existingJob } = await supabase
-          .schema('neta_ops')
-          .from('jobs')
-          .select('id')
-          .eq('id', currentOpportunity.job_id)
-          .is('deleted_at', null)
+          .schema("neta_ops")
+          .from("jobs")
+          .select("id")
+          .eq("id", currentOpportunity.job_id)
+          .is("deleted_at", null)
           .maybeSingle();
 
         if (existingJob) {
           // Job exists and is not deleted - use it
           setJobId(currentOpportunity.job_id);
-          setOpportunity(prev => 
-            prev ? { ...prev, job_id: currentOpportunity.job_id, status: 'awarded' as any } as OpportunityWithCustomer : null
+          setOpportunity((prev) =>
+            prev
+              ? ({
+                  ...prev,
+                  job_id: currentOpportunity.job_id,
+                  status: "awarded" as any,
+                } as OpportunityWithCustomer)
+              : null,
           );
           setConfirmConvertToJobOpen(false);
           setIsConvertingToJob(false);
-          setShowSuccessMessage(`Job already exists! Job ID: ${currentOpportunity.job_id}`);
+          setShowSuccessMessage(
+            `Job already exists! Job ID: ${currentOpportunity.job_id}`,
+          );
           setTimeout(() => setShowSuccessMessage(null), 5000);
           return;
         } else {
           // Job was deleted or doesn't exist - clear the job_id and create a new one
           await supabase
-            .schema('business')
-            .from('opportunities')
+            .schema("business")
+            .from("opportunities")
             .update({ job_id: null })
-            .eq('id', opportunity.id);
+            .eq("id", opportunity.id);
         }
       }
 
       // Also check if a job with this opportunity_id already exists (prevent duplicates)
       const { data: existingJobByOpportunityId } = await supabase
-        .schema('neta_ops')
-        .from('jobs')
-        .select('id')
-        .eq('opportunity_id', opportunity.id)
-        .is('deleted_at', null)
+        .schema("neta_ops")
+        .from("jobs")
+        .select("id")
+        .eq("opportunity_id", opportunity.id)
+        .is("deleted_at", null)
         .maybeSingle();
 
       if (existingJobByOpportunityId) {
         // Job already exists with this opportunity_id - link it back to the opportunity
         const existingJobId = existingJobByOpportunityId.id;
         await supabase
-          .schema('business')
-          .from('opportunities')
-          .update({ status: 'awarded', job_id: existingJobId })
-          .eq('id', opportunity.id);
-        
+          .schema("business")
+          .from("opportunities")
+          .update({ status: "awarded", job_id: existingJobId })
+          .eq("id", opportunity.id);
+
         setJobId(existingJobId);
-        setOpportunity(prev => 
-          prev ? { ...prev, job_id: existingJobId, status: 'awarded' as any } as OpportunityWithCustomer : null
+        setOpportunity((prev) =>
+          prev
+            ? ({
+                ...prev,
+                job_id: existingJobId,
+                status: "awarded" as any,
+              } as OpportunityWithCustomer)
+            : null,
         );
         setConfirmConvertToJobOpen(false);
         setIsConvertingToJob(false);
@@ -1840,84 +2308,113 @@ export default function OpportunityDetail() {
       try {
         if (selectedLetterId) {
           await supabase
-            .schema('business')
-            .from('opportunities')
+            .schema("business")
+            .from("opportunities")
             .update({ selected_letter_proposal: selectedLetterId })
-            .eq('id', opportunity.id);
+            .eq("id", opportunity.id);
         }
       } catch {}
 
       // Create the job
       const newJobId = await createJobManually(opportunity, supabase, user.id);
       setJobId(newJobId);
-      
+
       // Update the opportunity status to "awarded" and set job_id
       try {
         const { error: statusError } = await supabase
-          .schema('business')
-          .from('opportunities')
-          .update({ status: 'awarded', job_id: newJobId })
-          .eq('id', opportunity.id);
+          .schema("business")
+          .from("opportunities")
+          .update({ status: "awarded", job_id: newJobId })
+          .eq("id", opportunity.id);
 
         if (statusError) {
-          console.error('Error updating opportunity status:', statusError);
+          console.error("Error updating opportunity status:", statusError);
           // Continue anyway - job was created successfully
         }
       } catch (e) {
-        console.error('Error updating opportunity status:', e);
+        console.error("Error updating opportunity status:", e);
         // Continue anyway - job was created successfully
       }
-      
+
       // Update the opportunity in state to include the job_id and status
-      setOpportunity(prev => 
-        prev ? { ...prev, job_id: newJobId, status: 'awarded' as any } as OpportunityWithCustomer : null
+      setOpportunity((prev) =>
+        prev
+          ? ({
+              ...prev,
+              job_id: newJobId,
+              status: "awarded" as any,
+            } as OpportunityWithCustomer)
+          : null,
       );
 
       // If this is a merged view, lock the group so others cannot convert
-      if (id === 'merge' && mergedIds.length > 0) {
+      if (id === "merge" && mergedIds.length > 0) {
         try {
-          const key = `opportunity-merge-lock-${mergedIds.slice().sort().join(',')}`;
-          localStorage.setItem(key, JSON.stringify({ jobId: newJobId, ids: mergedIds, lockedAt: new Date().toISOString() }));
+          const key = `opportunity-merge-lock-${mergedIds.slice().sort().join(",")}`;
+          localStorage.setItem(
+            key,
+            JSON.stringify({
+              jobId: newJobId,
+              ids: mergedIds,
+              lockedAt: new Date().toISOString(),
+            }),
+          );
           setGroupLockJobId(String(newJobId));
         } catch {}
       }
 
       // Persist merge metadata into notes so future loads show merged grouping
       try {
-        const idsToPersist = id === 'merge' && mergedIds.length > 0 ? mergedIds : (savedMergeIds.length > 0 ? savedMergeIds : []);
+        const idsToPersist =
+          id === "merge" && mergedIds.length > 0
+            ? mergedIds
+            : savedMergeIds.length > 0
+              ? savedMergeIds
+              : [];
         if (idsToPersist.length > 1) {
           const { data: currentRow } = await supabase
-            .schema('business')
-            .from('opportunities')
-            .select('notes')
-            .eq('id', opportunity.id)
+            .schema("business")
+            .from("opportunities")
+            .select("notes")
+            .eq("id", opportunity.id)
             .maybeSingle();
 
-          const currentNotes = (currentRow?.notes as string) || '';
-          const withoutOld = currentNotes.replace(/\[MERGE_GROUP\][\s\S]*?\[\/MERGE_GROUP\]/g, '').trim();
-          const newMeta = buildMergeMeta(idsToPersist, String(opportunity.id), newJobId);
-          const combined = (withoutOld ? (withoutOld + '\n\n') : '') + newMeta;
+          const currentNotes = (currentRow?.notes as string) || "";
+          const withoutOld = currentNotes
+            .replace(/\[MERGE_GROUP\][\s\S]*?\[\/MERGE_GROUP\]/g, "")
+            .trim();
+          const newMeta = buildMergeMeta(
+            idsToPersist,
+            String(opportunity.id),
+            newJobId,
+          );
+          const combined = (withoutOld ? withoutOld + "\n\n" : "") + newMeta;
           await supabase
-            .schema('business')
-            .from('opportunities')
+            .schema("business")
+            .from("opportunities")
             .update({ notes: combined })
-            .eq('id', opportunity.id);
+            .eq("id", opportunity.id);
         }
       } catch (e) {
-        console.warn('Failed to persist merge metadata:', e);
+        console.warn("Failed to persist merge metadata:", e);
       }
-      
+
       setConfirmConvertToJobOpen(false);
       setShowSuccessMessage(`Job successfully created! Job ID: ${newJobId}`);
-      
+
       // Refresh the opportunity data to show all updated fields
       await fetchOpportunity();
-      
+
       // Auto-hide success message after 5 seconds
       setTimeout(() => setShowSuccessMessage(null), 5000);
     } catch (error) {
-      console.error('Error creating job:', error);
-      alert('Failed to create job: ' + (error instanceof Error ? error.message : 'Please try again. If the problem persists, contact support.'));
+      console.error("Error creating job:", error);
+      alert(
+        "Failed to create job: " +
+          (error instanceof Error
+            ? error.message
+            : "Please try again. If the problem persists, contact support."),
+      );
     } finally {
       setIsConvertingToJob(false);
     }
@@ -1928,22 +2425,25 @@ export default function OpportunityDetail() {
 
     try {
       const { error } = await supabase
-        .schema('business')
-        .from('opportunities')
+        .schema("business")
+        .from("opportunities")
         .update({ status: newStatus })
-        .eq('id', opportunity.id);
+        .eq("id", opportunity.id);
 
       if (error) throw error;
 
       // Update the local state for all status changes
-      setOpportunity(prev => 
-        prev ? { ...prev, status: newStatus as any } : null
+      setOpportunity((prev) =>
+        prev ? { ...prev, status: newStatus as any } : null,
       );
-      
+
       setIsStatusEditing(false);
     } catch (error) {
-      console.error('Error updating opportunity status:', error);
-      alert('Failed to update opportunity status: ' + (error instanceof Error ? error.message : 'Please try again.'));
+      console.error("Error updating opportunity status:", error);
+      alert(
+        "Failed to update opportunity status: " +
+          (error instanceof Error ? error.message : "Please try again."),
+      );
     }
   };
 
@@ -1952,22 +2452,30 @@ export default function OpportunityDetail() {
 
     try {
       const { error } = await supabase
-        .schema('business')
-        .from('opportunities')
+        .schema("business")
+        .from("opportunities")
         .update({ documents_stage: newDocumentsStage || null })
-        .eq('id', opportunity.id);
+        .eq("id", opportunity.id);
 
       if (error) throw error;
 
       // Update the local state
-      setOpportunity(prev => 
-        prev ? { ...prev, documents_stage: newDocumentsStage || undefined } as any : null
+      setOpportunity((prev) =>
+        prev
+          ? ({
+              ...prev,
+              documents_stage: newDocumentsStage || undefined,
+            } as any)
+          : null,
       );
-      
+
       setIsDocumentsStageEditing(false);
     } catch (error) {
-      console.error('Error updating documents stage:', error);
-      alert('Failed to update documents stage: ' + (error instanceof Error ? error.message : 'Please try again.'));
+      console.error("Error updating documents stage:", error);
+      alert(
+        "Failed to update documents stage: " +
+          (error instanceof Error ? error.message : "Please try again."),
+      );
     }
   };
 
@@ -1976,22 +2484,30 @@ export default function OpportunityDetail() {
 
     try {
       const { error } = await supabase
-        .schema('business')
-        .from('opportunities')
+        .schema("business")
+        .from("opportunities")
         .update({ opportunity_type: newOpportunityType || null })
-        .eq('id', opportunity.id);
+        .eq("id", opportunity.id);
 
       if (error) throw error;
 
       // Update the local state
-      setOpportunity(prev => 
-        prev ? { ...prev, opportunity_type: newOpportunityType || undefined } as any : null
+      setOpportunity((prev) =>
+        prev
+          ? ({
+              ...prev,
+              opportunity_type: newOpportunityType || undefined,
+            } as any)
+          : null,
       );
-      
+
       setIsOpportunityTypeEditing(false);
     } catch (error) {
-      console.error('Error updating opportunity type:', error);
-      alert('Failed to update opportunity type: ' + (error instanceof Error ? error.message : 'Please try again.'));
+      console.error("Error updating opportunity type:", error);
+      alert(
+        "Failed to update opportunity type: " +
+          (error instanceof Error ? error.message : "Please try again."),
+      );
     }
   };
 
@@ -2001,77 +2517,89 @@ export default function OpportunityDetail() {
       if (!confirmConvertToJobOpen || !opportunity?.id) return;
       try {
         const { data } = await supabase
-          .schema('business')
-          .from('letter_proposals')
-          .select('id, title, created_at')
-          .eq('opportunity_id', opportunity.id)
-          .order('created_at', { ascending: false });
-        setLettersForSelect((data || []).map((l: any) => ({ id: l.id, title: l.title || 'Letter Proposal', created_at: l.created_at })));
+          .schema("business")
+          .from("letter_proposals")
+          .select("id, title, created_at")
+          .eq("opportunity_id", opportunity.id)
+          .order("created_at", { ascending: false });
+        setLettersForSelect(
+          (data || []).map((l: any) => ({
+            id: l.id,
+            title: l.title || "Letter Proposal",
+            created_at: l.created_at,
+          })),
+        );
       } catch {
         setLettersForSelect([]);
       }
     })();
   }, [confirmConvertToJobOpen, opportunity?.id]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file || !opportunity?.id) return;
 
-    console.log('Starting file upload...', { fileName: file.name, fileSize: file.size, fileType: file.type });
+    console.log("Starting file upload...", {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+    });
 
     setUploadingFile(true);
     try {
       // Upload file to Supabase Storage
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${opportunity.id}/${fileName}`;
 
-      console.log('Uploading to path:', filePath);
+      console.log("Uploading to path:", filePath);
 
       const { error: uploadError, data: uploadData } = await supabase.storage
-        .from('job-documents')
+        .from("job-documents")
         .upload(filePath, file);
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
+        console.error("Upload error:", uploadError);
         throw uploadError;
       }
 
       if (!uploadData) {
-        throw new Error('Upload completed but no data returned');
+        throw new Error("Upload completed but no data returned");
       }
 
-      console.log('Upload successful:', uploadData);
+      console.log("Upload successful:", uploadData);
 
       // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('job-documents')
-        .getPublicUrl(filePath);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("job-documents").getPublicUrl(filePath);
 
-      console.log('Public URL generated:', publicUrl);
+      console.log("Public URL generated:", publicUrl);
 
       // Save to database first to get the proper ID
       const { data: savedAgreement, error } = await supabase
-        .schema('business')
-        .from('subcontractor_agreements')
+        .schema("business")
+        .from("subcontractor_agreements")
         .insert({
           opportunity_id: opportunity.id,
           user_id: user?.id,
           name: file.name,
           file_url: publicUrl,
           upload_date: new Date().toISOString(),
-          status: 'pending',
-          description: ''
+          status: "pending",
+          description: "",
         })
         .select()
         .single();
 
       if (error) {
-        console.error('Database insert error:', error);
+        console.error("Database insert error:", error);
         throw error;
       }
 
-      console.log('Document saved to database:', savedAgreement);
+      console.log("Document saved to database:", savedAgreement);
 
       // Create new agreement object with the database-generated ID
       const newAgreement: SubcontractorAgreement = {
@@ -2079,64 +2607,84 @@ export default function OpportunityDetail() {
         name: file.name,
         file_url: publicUrl,
         upload_date: new Date().toISOString(),
-        status: 'pending',
-        description: ''
+        status: "pending",
+        description: "",
       };
 
       // Update agreements array
       const updatedAgreements = [...subcontractorAgreements, newAgreement];
       setSubcontractorAgreements(updatedAgreements);
 
-      alert('Document uploaded successfully!');
+      alert("Document uploaded successfully!");
     } catch (error) {
-      console.error('Error uploading file:', error);
-      alert('Failed to upload document: ' + (error instanceof Error ? error.message : 'Please try again.'));
+      console.error("Error uploading file:", error);
+      alert(
+        "Failed to upload document: " +
+          (error instanceof Error ? error.message : "Please try again."),
+      );
     } finally {
       setUploadingFile(false);
     }
   };
 
   const handleDeleteAgreement = async (agreementId: string) => {
-    if (!opportunity?.id || !confirm('Are you sure you want to delete this document?')) return;
+    if (
+      !opportunity?.id ||
+      !confirm("Are you sure you want to delete this document?")
+    )
+      return;
 
     try {
-      const updatedAgreements = subcontractorAgreements.filter(agreement => agreement.id !== agreementId);
-      setSubcontractorAgreements(updatedAgreements);
-
-      const { error } = await supabase
-        .schema('business')
-        .from('subcontractor_agreements')
-        .delete()
-        .eq('id', agreementId);
-
-      if (error) throw error;
-
-      alert('Document deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting agreement:', error);
-      alert('Failed to delete document: ' + (error instanceof Error ? error.message : 'Please try again.'));
-    }
-  };
-
-  const handleUpdateAgreementStatus = async (agreementId: string, newStatus: SubcontractorAgreement['status']) => {
-    if (!opportunity?.id) return;
-
-    try {
-      const updatedAgreements = subcontractorAgreements.map(agreement =>
-        agreement.id === agreementId ? { ...agreement, status: newStatus } : agreement
+      const updatedAgreements = subcontractorAgreements.filter(
+        (agreement) => agreement.id !== agreementId,
       );
       setSubcontractorAgreements(updatedAgreements);
 
       const { error } = await supabase
-        .schema('business')
-        .from('subcontractor_agreements')
+        .schema("business")
+        .from("subcontractor_agreements")
+        .delete()
+        .eq("id", agreementId);
+
+      if (error) throw error;
+
+      alert("Document deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting agreement:", error);
+      alert(
+        "Failed to delete document: " +
+          (error instanceof Error ? error.message : "Please try again."),
+      );
+    }
+  };
+
+  const handleUpdateAgreementStatus = async (
+    agreementId: string,
+    newStatus: SubcontractorAgreement["status"],
+  ) => {
+    if (!opportunity?.id) return;
+
+    try {
+      const updatedAgreements = subcontractorAgreements.map((agreement) =>
+        agreement.id === agreementId
+          ? { ...agreement, status: newStatus }
+          : agreement,
+      );
+      setSubcontractorAgreements(updatedAgreements);
+
+      const { error } = await supabase
+        .schema("business")
+        .from("subcontractor_agreements")
         .update({ status: newStatus })
-        .eq('id', agreementId);
+        .eq("id", agreementId);
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error updating agreement status:', error);
-      alert('Failed to update agreement status: ' + (error instanceof Error ? error.message : 'Please try again.'));
+      console.error("Error updating agreement status:", error);
+      alert(
+        "Failed to update agreement status: " +
+          (error instanceof Error ? error.message : "Please try again."),
+      );
     }
   };
 
@@ -2146,100 +2694,111 @@ export default function OpportunityDetail() {
   };
 
   const getFileExtension = (fileName: string) => {
-    return fileName.split('.').pop()?.toLowerCase() || '';
+    return fileName.split(".").pop()?.toLowerCase() || "";
   };
 
   const isPreviewable = (fileName: string) => {
     const ext = getFileExtension(fileName);
-    return ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'txt'].includes(ext);
+    return ["pdf", "jpg", "jpeg", "png", "gif", "txt"].includes(ext);
   };
 
   const handleSavePDF = async (editedBlob: Blob) => {
     if (!previewFile || !opportunity?.id) {
-      console.error('Missing previewFile or id:', { previewFile, id });
+      console.error("Missing previewFile or id:", { previewFile, id });
       return;
     }
 
-    console.log('Starting PDF save to storage...', {
+    console.log("Starting PDF save to storage...", {
       fileName: previewFile.name,
       blobSize: editedBlob.size,
-      blobType: editedBlob.type
+      blobType: editedBlob.type,
     });
 
     try {
       // Generate new filename for the updated version
-      const fileExt = previewFile.name.split('.').pop();
+      const fileExt = previewFile.name.split(".").pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${opportunity.id}/${fileName}`;
 
-      console.log('Uploading to path:', filePath);
+      console.log("Uploading to path:", filePath);
 
       // Upload the modified PDF back to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('job-documents')
-        .upload(filePath, editedBlob, { 
+        .from("job-documents")
+        .upload(filePath, editedBlob, {
           upsert: true,
-          contentType: 'application/pdf'
+          contentType: "application/pdf",
         });
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
+        console.error("Upload error:", uploadError);
         throw uploadError;
       }
 
-      console.log('Upload successful:', uploadData);
+      console.log("Upload successful:", uploadData);
 
       // Get the new public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('job-documents')
-        .getPublicUrl(filePath);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("job-documents").getPublicUrl(filePath);
 
-      console.log('Generated public URL:', publicUrl);
+      console.log("Generated public URL:", publicUrl);
 
       // Update the agreement with the new file URL
-      const updatedAgreements = subcontractorAgreements.map(agreement =>
-        agreement.id === previewFile.id 
-          ? { ...agreement, file_url: publicUrl, upload_date: new Date().toISOString() }
-          : agreement
+      const updatedAgreements = subcontractorAgreements.map((agreement) =>
+        agreement.id === previewFile.id
+          ? {
+              ...agreement,
+              file_url: publicUrl,
+              upload_date: new Date().toISOString(),
+            }
+          : agreement,
       );
       setSubcontractorAgreements(updatedAgreements);
 
-      console.log('Updated agreements array:', updatedAgreements);
+      console.log("Updated agreements array:", updatedAgreements);
 
       // Save to database
       const { error: dbError } = await supabase
-        .schema('business')
-        .from('subcontractor_agreements')
+        .schema("business")
+        .from("subcontractor_agreements")
         .update({ file_url: publicUrl, upload_date: new Date().toISOString() })
-        .eq('id', previewFile.id);
+        .eq("id", previewFile.id);
 
       if (dbError) {
-        console.error('Database update error:', dbError);
+        console.error("Database update error:", dbError);
         throw dbError;
       }
 
-      console.log('Database updated successfully');
+      console.log("Database updated successfully");
 
       // Update the preview file state with the new URL
-      const updatedPreviewFile = { ...previewFile, file_url: publicUrl, upload_date: new Date().toISOString() };
+      const updatedPreviewFile = {
+        ...previewFile,
+        file_url: publicUrl,
+        upload_date: new Date().toISOString(),
+      };
       setPreviewFile(updatedPreviewFile);
 
-      console.log('PDF save process completed successfully');
-      console.log('Updated preview file URL:', publicUrl);
+      console.log("PDF save process completed successfully");
+      console.log("Updated preview file URL:", publicUrl);
 
       // Close and reopen the preview to show the updated PDF
       setShowPreviewModal(false);
-      
+
       // Small delay then reopen with updated file
       setTimeout(() => {
         setPreviewFile(updatedPreviewFile);
         setShowPreviewModal(true);
       }, 500);
 
-      alert('PDF saved successfully! The preview will refresh with the updated version.');
+      alert(
+        "PDF saved successfully! The preview will refresh with the updated version.",
+      );
     } catch (error) {
-      console.error('Error saving PDF:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error("Error saving PDF:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
       alert(`Failed to save PDF: ${errorMessage}`);
       throw error;
     }
@@ -2250,23 +2809,23 @@ export default function OpportunityDetail() {
     try {
       // Unlink any jobs that reference this opportunity so the delete can succeed
       const { error: unlinkError } = await supabase
-        .schema('neta_ops')
-        .from('jobs')
+        .schema("neta_ops")
+        .from("jobs")
         .update({ opportunity_id: null })
-        .eq('opportunity_id', opportunity.id);
+        .eq("opportunity_id", opportunity.id);
       if (unlinkError) throw unlinkError;
 
       const { error } = await supabase
-        .schema('business')
-        .from('opportunities')
+        .schema("business")
+        .from("opportunities")
         .delete()
-        .eq('id', opportunity.id);
+        .eq("id", opportunity.id);
       if (error) throw error;
-      alert('Opportunity deleted.');
-      navigate('/sales-dashboard/opportunities');
+      alert("Opportunity deleted.");
+      navigate("/sales-dashboard/opportunities");
     } catch (err: any) {
-      console.error('Error deleting opportunity:', err);
-      alert(`Failed to delete: ${err?.message || 'Unknown error'}`);
+      console.error("Error deleting opportunity:", err);
+      alert(`Failed to delete: ${err?.message || "Unknown error"}`);
     } finally {
       setShowDeleteConfirm(false);
     }
@@ -2277,17 +2836,18 @@ export default function OpportunityDetail() {
     setIsDuplicating(true);
     try {
       const { data: recent, error: recentError } = await supabase
-        .schema('business')
-        .from('opportunities')
-        .select('quote_number')
-        .order('created_at', { ascending: false })
+        .schema("business")
+        .from("opportunities")
+        .select("quote_number")
+        .order("created_at", { ascending: false })
         .limit(500);
 
-      if (recentError) console.warn('Error reading quote numbers:', recentError);
+      if (recentError)
+        console.warn("Error reading quote numbers:", recentError);
 
       const nums: number[] = (recent || [])
         .map((r: any) => r?.quote_number)
-        .filter((q: any) => typeof q === 'string' && /^[0-9]+$/.test(q))
+        .filter((q: any) => typeof q === "string" && /^[0-9]+$/.test(q))
         .map((q: string) => parseInt(q, 10))
         .filter((n: number) => Number.isFinite(n));
 
@@ -2297,13 +2857,13 @@ export default function OpportunityDetail() {
       const duplicateData: any = {
         customer_id: opportunity.customer_id,
         contact_id: opportunity.contact_id || null,
-        title: `${opportunity.title || 'Untitled'} (Copy)`,
-        description: opportunity.description || '',
-        status: 'awareness',
+        title: `${opportunity.title || "Untitled"} (Copy)`,
+        description: opportunity.description || "",
+        status: "awareness",
         expected_value: opportunity.expected_value || 0,
         probability: opportunity.probability || 0,
-        notes: opportunity.notes || '',
-        amp_division: opportunity.amp_division || '',
+        notes: opportunity.notes || "",
+        amp_division: opportunity.amp_division || "",
         sales_person: user.email,
         user_id: user.id,
         quote_number: String(nextQuoteNumber),
@@ -2312,9 +2872,10 @@ export default function OpportunityDetail() {
         prepared_by: (opportunity as any).prepared_by || null,
         jobsite_location: (opportunity as any).jobsite_location || null,
         estimated_start_date: (opportunity as any).estimated_start_date || null,
-        period_of_performance: (opportunity as any).period_of_performance || null,
+        period_of_performance:
+          (opportunity as any).period_of_performance || null,
         total_man_hours: (opportunity as any).total_man_hours || null,
-        opportunity_type: (opportunity as any).opportunity_type || 'other',
+        opportunity_type: (opportunity as any).opportunity_type || "other",
         documents_stage: (opportunity as any).documents_stage || null,
         quoted_amount: (opportunity as any).quoted_amount || null,
       };
@@ -2323,18 +2884,18 @@ export default function OpportunityDetail() {
       let error: any = null;
       for (let attempt = 0; attempt < 5; attempt++) {
         ({ data, error } = await supabase
-          .schema('business')
-          .from('opportunities')
+          .schema("business")
+          .from("opportunities")
           .insert({ ...duplicateData, quote_number: String(nextQuoteNumber) })
           .select()
           .single());
 
         if (!error) break;
-        if (error?.code === '42703' && 'proposal_due_date' in duplicateData) {
+        if (error?.code === "42703" && "proposal_due_date" in duplicateData) {
           delete duplicateData.proposal_due_date;
           continue;
         }
-        if (error?.code === '23505') {
+        if (error?.code === "23505") {
           nextQuoteNumber += 1;
           continue;
         }
@@ -2349,11 +2910,11 @@ export default function OpportunityDetail() {
       // Duplicate estimates
       try {
         const { data: estimates } = await supabase
-          .schema('business')
-          .from('estimates')
-          .select('data, travel_data, quote_number, status')
-          .eq('opportunity_id', opportunity.id)
-          .order('created_at', { ascending: true });
+          .schema("business")
+          .from("estimates")
+          .select("data, travel_data, quote_number, status")
+          .eq("opportunity_id", opportunity.id)
+          .order("created_at", { ascending: true });
 
         if (estimates && estimates.length > 0) {
           const estimateInserts = estimates.map((est: any) => ({
@@ -2365,23 +2926,23 @@ export default function OpportunityDetail() {
             status: est.status || null,
           }));
           const { error: estErr } = await supabase
-            .schema('business')
-            .from('estimates')
+            .schema("business")
+            .from("estimates")
             .insert(estimateInserts);
-          if (estErr) console.warn('Could not duplicate estimates:', estErr);
+          if (estErr) console.warn("Could not duplicate estimates:", estErr);
         }
       } catch (estErr) {
-        console.warn('Error duplicating estimates:', estErr);
+        console.warn("Error duplicating estimates:", estErr);
       }
 
       // Duplicate letter proposals and remap selected_letter_proposal
       try {
         const { data: letters } = await supabase
-          .schema('business')
-          .from('letter_proposals')
-          .select('id, title, html, neta_standard, quote_number')
-          .eq('opportunity_id', opportunity.id)
-          .order('created_at', { ascending: true });
+          .schema("business")
+          .from("letter_proposals")
+          .select("id, title, html, neta_standard, quote_number")
+          .eq("opportunity_id", opportunity.id)
+          .order("created_at", { ascending: true });
 
         if (letters && letters.length > 0) {
           const oldSelectedId = (opportunity as any).selected_letter_proposal;
@@ -2389,8 +2950,8 @@ export default function OpportunityDetail() {
 
           for (const ltr of letters) {
             const { data: inserted, error: ltrErr } = await supabase
-              .schema('business')
-              .from('letter_proposals')
+              .schema("business")
+              .from("letter_proposals")
               .insert({
                 opportunity_id: newOppId,
                 title: ltr.title,
@@ -2399,11 +2960,11 @@ export default function OpportunityDetail() {
                 quote_number: newQuoteNum,
                 created_at: new Date().toISOString(),
               })
-              .select('id')
+              .select("id")
               .single();
 
             if (ltrErr) {
-              console.warn('Could not duplicate letter proposal:', ltrErr);
+              console.warn("Could not duplicate letter proposal:", ltrErr);
               continue;
             }
             if (oldSelectedId && ltr.id === oldSelectedId && inserted) {
@@ -2413,21 +2974,23 @@ export default function OpportunityDetail() {
 
           if (newSelectedId) {
             await supabase
-              .schema('business')
-              .from('opportunities')
+              .schema("business")
+              .from("opportunities")
               .update({ selected_letter_proposal: newSelectedId })
-              .eq('id', newOppId);
+              .eq("id", newOppId);
           }
         }
       } catch (ltrErr) {
-        console.warn('Error duplicating letter proposals:', ltrErr);
+        console.warn("Error duplicating letter proposals:", ltrErr);
       }
 
-      alert('Opportunity duplicated successfully (including estimates & letter proposals)!');
+      alert(
+        "Opportunity duplicated successfully (including estimates & letter proposals)!",
+      );
       navigate(`/sales-dashboard/opportunities/${newOppId}`);
     } catch (err: any) {
-      console.error('Error duplicating opportunity:', err);
-      alert(`Failed to duplicate: ${err?.message || 'Unknown error'}`);
+      console.error("Error duplicating opportunity:", err);
+      alert(`Failed to duplicate: ${err?.message || "Unknown error"}`);
     } finally {
       setIsDuplicating(false);
     }
@@ -2441,15 +3004,18 @@ export default function OpportunityDetail() {
     return <div>Opportunity not found</div>;
   }
 
-  const customer = customers.find(c => c.id === opportunity.customer_id);
+  const customer = customers.find((c) => c.id === opportunity.customer_id);
 
-  const isEmbed = new URLSearchParams(location.search).get('embed') === 'true';
+  const isEmbed = new URLSearchParams(location.search).get("embed") === "true";
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-background">
       {!isEmbed && (
         <div className="bg-white shadow-sm p-4 mb-6 dark:bg-dark-150 dark:border-b dark:border-dark-200">
-          <Link to="/sales-dashboard/opportunities" className="text-gray-600 hover:text-gray-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center">
+          <Link
+            to="/sales-dashboard/opportunities"
+            className="text-gray-600 hover:text-gray-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
+          >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Opportunities
           </Link>
@@ -2461,10 +3027,20 @@ export default function OpportunityDetail() {
           {mergedIds.length > 0 && (
             <div className="px-4 py-3 border-b border-blue-200 bg-blue-50 text-blue-900">
               <div className="flex items-center justify-between">
-                <div className="text-sm font-medium">Merged Opportunities: {mergedIds.join(', ')}</div>
-                <div className="text-xs">Primary: <span className="font-semibold">{primaryIdParam || opportunity.id}</span></div>
+                <div className="text-sm font-medium">
+                  Merged Opportunities: {mergedIds.join(", ")}
+                </div>
+                <div className="text-xs">
+                  Primary:{" "}
+                  <span className="font-semibold">
+                    {primaryIdParam || opportunity.id}
+                  </span>
+                </div>
               </div>
-              <p className="mt-1 text-xs text-blue-800">Converting to a job will bundle these into a single job (based on primary).</p>
+              <p className="mt-1 text-xs text-blue-800">
+                Converting to a job will bundle these into a single job (based
+                on primary).
+              </p>
             </div>
           )}
           <div className="flex justify-between items-center p-4 border-b border-gray-300 dark:border-dark-300">
@@ -2512,47 +3088,75 @@ export default function OpportunityDetail() {
                       onSelect={() => {
                         setIsEditing(true);
                         if (opportunity) {
-                          let opportunityType = (opportunity as any).opportunity_type;
+                          let opportunityType = (opportunity as any)
+                            .opportunity_type;
                           if (!opportunityType) {
-                            const quotedAmount = (opportunity as any).quoted_amount;
+                            const quotedAmount = (opportunity as any)
+                              .quoted_amount;
                             if (quotedAmount && Number(quotedAmount) > 0) {
-                              opportunityType = Number(quotedAmount) >= 100000 ? 'large_acceptance' : 'small_acceptance';
+                              opportunityType =
+                                Number(quotedAmount) >= 100000
+                                  ? "large_acceptance"
+                                  : "small_acceptance";
                             } else {
-                              opportunityType = 'other';
+                              opportunityType = "other";
                             }
                           }
                           setEditFormData({
-                            customer_id: opportunity.customer_id || '',
+                            customer_id: opportunity.customer_id || "",
                             contact_id: opportunity.contact_id || null,
-                            title: opportunity.title || '',
-                            description: opportunity.description || '',
-                            expected_value: opportunity.expected_value?.toString() || '',
-                            status: opportunity.status || '',
-                            opportunity_created_date: opportunity.opportunity_created_date
-                              ? opportunity.opportunity_created_date.substring(0, 10)
-                              : '',
-                            letter_proposal_date: opportunity.letter_proposal_date
-                              ? opportunity.letter_proposal_date.substring(0, 10)
-                              : '',
+                            title: opportunity.title || "",
+                            description: opportunity.description || "",
+                            expected_value:
+                              opportunity.expected_value?.toString() || "",
+                            status: opportunity.status || "",
+                            opportunity_created_date:
+                              opportunity.opportunity_created_date
+                                ? opportunity.opportunity_created_date.substring(
+                                    0,
+                                    10,
+                                  )
+                                : "",
+                            letter_proposal_date:
+                              opportunity.letter_proposal_date
+                                ? opportunity.letter_proposal_date.substring(
+                                    0,
+                                    10,
+                                  )
+                                : "",
                             proposal_due_date: opportunity.proposal_due_date
                               ? opportunity.proposal_due_date.substring(0, 10)
-                              : '',
-                            sales_person: opportunity.sales_person || '',
-                            notes: opportunity.notes || '',
-                            probability: opportunity.probability?.toString() || '0',
-                            amp_division: opportunity.amp_division || '',
-                            quoted_amount: (opportunity as any).quoted_amount?.toString() || '',
-                            selected_letter_proposal: (opportunity as any).selected_letter_proposal || '',
-                            reviewed_by: (opportunity as any).reviewed_by || '',
-                            prepared_by: (opportunity as any).prepared_by || '',
-                            jobsite_location: (opportunity as any).jobsite_location || '',
-                            estimated_start_date: (opportunity as any).estimated_start_date
-                              ? (opportunity as any).estimated_start_date.substring(0, 10)
-                              : '',
-                            period_of_performance: (opportunity as any).period_of_performance || '',
-                            total_man_hours: (opportunity as any).total_man_hours?.toString() || '0',
+                              : "",
+                            sales_person: opportunity.sales_person || "",
+                            notes: opportunity.notes || "",
+                            probability:
+                              opportunity.probability?.toString() || "0",
+                            amp_division: opportunity.amp_division || "",
+                            quoted_amount:
+                              (opportunity as any).quoted_amount?.toString() ||
+                              "",
+                            selected_letter_proposal:
+                              (opportunity as any).selected_letter_proposal ||
+                              "",
+                            reviewed_by: (opportunity as any).reviewed_by || "",
+                            prepared_by: (opportunity as any).prepared_by || "",
+                            jobsite_location:
+                              (opportunity as any).jobsite_location || "",
+                            estimated_start_date: (opportunity as any)
+                              .estimated_start_date
+                              ? (
+                                  opportunity as any
+                                ).estimated_start_date.substring(0, 10)
+                              : "",
+                            period_of_performance:
+                              (opportunity as any).period_of_performance || "",
+                            total_man_hours:
+                              (
+                                opportunity as any
+                              ).total_man_hours?.toString() || "0",
                             opportunity_type: opportunityType,
-                            documents_stage: (opportunity as any).documents_stage || ''
+                            documents_stage:
+                              (opportunity as any).documents_stage || "",
                           });
                           if (opportunity.customer_id) {
                             fetchContactsForCustomer(opportunity.customer_id);
@@ -2569,7 +3173,9 @@ export default function OpportunityDetail() {
                       onSelect={handleDuplicateOpportunity}
                     >
                       <Copy className="h-4 w-4 mr-2" />
-                      {isDuplicating ? 'Duplicating...' : 'Duplicate Opportunity'}
+                      {isDuplicating
+                        ? "Duplicating..."
+                        : "Duplicate Opportunity"}
                     </DropdownMenuItem>
                     {!opportunity.job_id && (
                       <>
@@ -2580,7 +3186,9 @@ export default function OpportunityDetail() {
                           onSelect={() => setConfirmConvertToJobOpen(true)}
                         >
                           <Award className="h-4 w-4 mr-2" />
-                          {mergedIds.length > 0 && !!groupLockJobId ? 'Locked (already converted)' : 'Convert to Job'}
+                          {mergedIds.length > 0 && !!groupLockJobId
+                            ? "Locked (already converted)"
+                            : "Convert to Job"}
                         </DropdownMenuItem>
                       </>
                     )}
@@ -2598,87 +3206,138 @@ export default function OpportunityDetail() {
             </div>
           </div>
 
-          {(mergedIds.length > 0 || savedMergeIds.length > 1) && mergedList.length > 0 && (
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-sm font-medium text-gray-800 dark:text-gray-200">Merged Opportunities</div>
-                <div className="space-x-2">
+          {(mergedIds.length > 0 || savedMergeIds.length > 1) &&
+            mergedList.length > 0 && (
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    Merged Opportunities
+                  </div>
+                  <div className="space-x-2">
+                    {mergedList.map((m) => {
+                      const isPrimary =
+                        String(m.id) ===
+                        (primaryIdParam ||
+                          savedPrimaryId ||
+                          String(opportunity.id));
+                      return (
+                        <button
+                          key={String(m.id)}
+                          onClick={() => {
+                            if (id === "merge") {
+                              const params = new URLSearchParams(
+                                location.search,
+                              );
+                              params.set("primary", String(m.id));
+                              navigate(
+                                `/sales-dashboard/opportunities/merge?${params.toString()}`,
+                              );
+                            } else if (savedMergeIds.length > 1) {
+                              // Navigate to merge view using saved IDs when in normal view
+                              const params = new URLSearchParams();
+                              params.set("ids", savedMergeIds.join(","));
+                              params.set("primary", String(m.id));
+                              navigate(
+                                `/sales-dashboard/opportunities/merge?${params.toString()}`,
+                              );
+                            }
+                          }}
+                          className={`text-xs px-3 py-1 rounded ${isPrimary ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-dark-150 text-gray-700 dark:text-gray-200"}`}
+                        >
+                          {m.quote_number}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {mergedList.map((m) => {
-                    const isPrimary = String(m.id) === ((primaryIdParam || savedPrimaryId) || String(opportunity.id));
+                    const isPrimary =
+                      String(m.id) ===
+                      (primaryIdParam || String(opportunity.id));
                     return (
-                      <button
+                      <div
                         key={String(m.id)}
-                        onClick={() => {
-                          if (id === 'merge') {
-                            const params = new URLSearchParams(location.search);
-                            params.set('primary', String(m.id));
-                            navigate(`/sales-dashboard/opportunities/merge?${params.toString()}`);
-                          } else if (savedMergeIds.length > 1) {
-                            // Navigate to merge view using saved IDs when in normal view
-                            const params = new URLSearchParams();
-                            params.set('ids', savedMergeIds.join(','));
-                            params.set('primary', String(m.id));
-                            navigate(`/sales-dashboard/opportunities/merge?${params.toString()}`);
-                          }
-                        }}
-                        className={`text-xs px-3 py-1 rounded ${isPrimary ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-dark-150 text-gray-700 dark:text-gray-200'}`}
+                        className={`border rounded-md p-3 bg-white dark:bg-dark-150 ${isPrimary ? "ring-2 ring-blue-400" : ""}`}
                       >
-                        {m.quote_number}
-                      </button>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                            {m.quote_number}
+                          </div>
+                          {isPrimary ? (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                              Primary
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                const params = new URLSearchParams(
+                                  location.search,
+                                );
+                                params.set("primary", String(m.id));
+                                navigate(
+                                  `/sales-dashboard/opportunities/merge?${params.toString()}`,
+                                );
+                              }}
+                              className="text-xs text-blue-600 hover:underline"
+                            >
+                              Make Primary
+                            </button>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-600 dark:text-white mb-2">
+                          {m.customers?.company_name ||
+                            m.customers?.name ||
+                            "Unknown Customer"}
+                        </div>
+                        <div className="text-sm text-gray-800 dark:text-gray-200 line-clamp-2">
+                          {m.title}
+                        </div>
+                        <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-gray-600 dark:text-white">
+                          <div>
+                            <span className="text-gray-500 dark:text-white">
+                              Status:
+                            </span>{" "}
+                            {m.status}
+                          </div>
+                          <div>
+                            <span className="text-gray-500 dark:text-white">
+                              Created:
+                            </span>{" "}
+                            {m.opportunity_created_date
+                              ? formatDateSafe(m.opportunity_created_date)
+                              : "-"}
+                          </div>
+                          {/* Removed Expected Value from merge cards */}
+                          <div>
+                            <span className="text-gray-500 dark:text-white">
+                              Probability:
+                            </span>{" "}
+                            {m.probability != null ? `${m.probability}%` : "-"}
+                          </div>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {mergedList.map((m) => {
-                  const isPrimary = String(m.id) === (primaryIdParam || String(opportunity.id));
-                  return (
-                    <div key={String(m.id)} className={`border rounded-md p-3 bg-white dark:bg-dark-150 ${isPrimary ? 'ring-2 ring-blue-400' : ''}`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="text-sm font-semibold text-gray-900 dark:text-white">{m.quote_number}</div>
-                        {isPrimary ? (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Primary</span>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              const params = new URLSearchParams(location.search);
-                              params.set('primary', String(m.id));
-                              navigate(`/sales-dashboard/opportunities/merge?${params.toString()}`);
-                            }}
-                            className="text-xs text-blue-600 hover:underline"
-                          >
-                            Make Primary
-                          </button>
-                        )}
-                      </div>
-                      <div className="text-xs text-gray-600 dark:text-white mb-2">{m.customers?.company_name || m.customers?.name || 'Unknown Customer'}</div>
-                      <div className="text-sm text-gray-800 dark:text-gray-200 line-clamp-2">{m.title}</div>
-                      <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-gray-600 dark:text-white">
-                        <div>
-                          <span className="text-gray-500 dark:text-white">Status:</span> {m.status}
-                        </div>
-                        <div>
-                          <span className="text-gray-500 dark:text-white">Created:</span> {m.opportunity_created_date ? formatDateSafe(m.opportunity_created_date) : '-'}
-                        </div>
-                        {/* Removed Expected Value from merge cards */}
-                        <div>
-                          <span className="text-gray-500 dark:text-white">Probability:</span> {m.probability != null ? `${m.probability}%` : '-'}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+            )}
 
           {/* Success Message */}
           {showSuccessMessage && (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4 mb-4">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  <svg
+                    className="h-5 w-5 text-green-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div className="ml-3">
@@ -2726,14 +3385,23 @@ export default function OpportunityDetail() {
                   />
                   {editFormData.customer_id && (
                     <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                      Selected: {(customers.find(c => c.id === editFormData.customer_id)?.company_name) || (customers.find(c => c.id === editFormData.customer_id)?.name) || 'Unknown'}
+                      Selected:{" "}
+                      {customers.find((c) => c.id === editFormData.customer_id)
+                        ?.company_name ||
+                        customers.find((c) => c.id === editFormData.customer_id)
+                          ?.name ||
+                        "Unknown"}
                       <button
                         type="button"
                         className="ml-2 underline text-[#f26722] hover:text-[#f26722]/90"
                         onClick={() => {
-                          setEditFormData(prev => ({ ...prev, customer_id: '', contact_id: null }));
+                          setEditFormData((prev) => ({
+                            ...prev,
+                            customer_id: "",
+                            contact_id: null,
+                          }));
                           setAvailableContacts([]);
-                          setCustomerSearch('');
+                          setCustomerSearch("");
                         }}
                       >
                         Clear
@@ -2742,38 +3410,56 @@ export default function OpportunityDetail() {
                   )}
                   <div className="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md">
                     {customers
-                      .filter(customer => 
-                        (customer.company_name?.toLowerCase().includes(customerSearch.toLowerCase())) ||
-                        (customer.name?.toLowerCase().includes(customerSearch.toLowerCase()))
+                      .filter(
+                        (customer) =>
+                          customer.company_name
+                            ?.toLowerCase()
+                            .includes(customerSearch.toLowerCase()) ||
+                          customer.name
+                            ?.toLowerCase()
+                            .includes(customerSearch.toLowerCase()),
                       )
                       .slice(0, 20)
                       .map((customer) => {
-                        const isSelected = editFormData.customer_id === customer.id;
+                        const isSelected =
+                          editFormData.customer_id === customer.id;
                         return (
                           <button
                             type="button"
                             key={customer.id}
                             onClick={() => {
-                              setEditFormData(prev => ({ ...prev, customer_id: customer.id, contact_id: null }));
+                              setEditFormData((prev) => ({
+                                ...prev,
+                                customer_id: customer.id,
+                                contact_id: null,
+                              }));
                               fetchContactsForCustomer(customer.id);
-                              setCustomerSearch('');
+                              setCustomerSearch("");
                             }}
                             className={`w-full text-left px-3 py-2 text-sm ${
                               isSelected
-                                ? 'bg-orange-50 text-gray-900 dark:bg-orange-900/20 dark:text-white'
-                                : 'hover:bg-gray-50 dark:hover:bg-dark-200 text-gray-700 dark:text-gray-200'
+                                ? "bg-orange-50 text-gray-900 dark:bg-orange-900/20 dark:text-white"
+                                : "hover:bg-gray-50 dark:hover:bg-dark-200 text-gray-700 dark:text-gray-200"
                             }`}
                           >
                             {customer.company_name || customer.name}
                           </button>
                         );
                       })}
-                    {customers.filter(customer => 
-                      (customer.company_name?.toLowerCase().includes(customerSearch.toLowerCase())) ||
-                      (customer.name?.toLowerCase().includes(customerSearch.toLowerCase()))
-                    ).length === 0 && customerSearch && (
-                      <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No matches</div>
-                    )}
+                    {customers.filter(
+                      (customer) =>
+                        customer.company_name
+                          ?.toLowerCase()
+                          .includes(customerSearch.toLowerCase()) ||
+                        customer.name
+                          ?.toLowerCase()
+                          .includes(customerSearch.toLowerCase()),
+                    ).length === 0 &&
+                      customerSearch && (
+                        <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                          No matches
+                        </div>
+                      )}
                   </div>
                 </div>
 
@@ -2783,14 +3469,28 @@ export default function OpportunityDetail() {
                   </label>
                   <select
                     name="contact_id"
-                    value={editFormData.contact_id || ''}
-                    onChange={(e) => setEditFormData(prev => ({ ...prev, contact_id: e.target.value || null }))}
+                    value={editFormData.contact_id || ""}
+                    onChange={(e) =>
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        contact_id: e.target.value || null,
+                      }))
+                    }
                     className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     disabled={!editFormData.customer_id}
                   >
-                    <option value="" className="dark:bg-dark-150 dark:text-white">No Contact</option>
+                    <option
+                      value=""
+                      className="dark:bg-dark-150 dark:text-white"
+                    >
+                      No Contact
+                    </option>
                     {availableContacts.map((contact) => (
-                      <option key={contact.id} value={contact.id} className="dark:bg-dark-150 dark:text-white">
+                      <option
+                        key={contact.id}
+                        value={contact.id}
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
                         {contact.name}
                       </option>
                     ))}
@@ -2798,7 +3498,10 @@ export default function OpportunityDetail() {
                 </div>
 
                 <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="title"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Title
                   </label>
                   <input
@@ -2813,7 +3516,10 @@ export default function OpportunityDetail() {
                 </div>
 
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Description
                   </label>
                   <textarea
@@ -2828,7 +3534,10 @@ export default function OpportunityDetail() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="expected_value" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="expected_value"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Expected Value ($)
                     </label>
                     <input
@@ -2842,7 +3551,10 @@ export default function OpportunityDetail() {
                   </div>
 
                   <div>
-                    <label htmlFor="probability" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="probability"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Probability (%)
                     </label>
                     <input
@@ -2860,7 +3572,10 @@ export default function OpportunityDetail() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="status"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Status
                     </label>
                     <select
@@ -2871,55 +3586,109 @@ export default function OpportunityDetail() {
                       required
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     >
-                      <option value="awareness" className="dark:bg-dark-150 dark:text-white">Awareness</option>
-                      <option value="interest" className="dark:bg-dark-150 dark:text-white">Interest</option>
-                      <option value="quote" className="dark:bg-dark-150 dark:text-white">Quote</option>
-                      <option value="decision" className="dark:bg-dark-150 dark:text-white">Decision</option>
-                      <option value="decision - forecasted win" className="dark:bg-dark-150 dark:text-white">Decision - Forecasted Win</option>
-                      <option value="decision - forecast lose" className="dark:bg-dark-150 dark:text-white">Decision - Forecast Lose</option>
-                      <option value="awarded" className="dark:bg-dark-150 dark:text-white">Awarded</option>
-                      <option value="lost" className="dark:bg-dark-150 dark:text-white">Lost</option>
-                      <option value="no quote" className="dark:bg-dark-150 dark:text-white">No Quote</option>
+                      <option
+                        value="awareness"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Awareness
+                      </option>
+                      <option
+                        value="interest"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Interest
+                      </option>
+                      <option
+                        value="quote"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Quote
+                      </option>
+                      <option
+                        value="decision"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Decision
+                      </option>
+                      <option
+                        value="decision - forecasted win"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Decision - Forecasted Win
+                      </option>
+                      <option
+                        value="decision - forecast lose"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Decision - Forecast Lose
+                      </option>
+                      <option
+                        value="awarded"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Awarded
+                      </option>
+                      <option
+                        value="lost"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Lost
+                      </option>
+                      <option
+                        value="no quote"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        No Quote
+                      </option>
                     </select>
                   </div>
 
                   <div>
-                    <label htmlFor="opportunity_created_date" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="opportunity_created_date"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Opportunity Created Date
                     </label>
                     <input
                       type="date"
                       id="opportunity_created_date"
                       name="opportunity_created_date"
-                      value={editFormData.opportunity_created_date || ''}
+                      value={editFormData.opportunity_created_date || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="letter_proposal_date" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="letter_proposal_date"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Letter Proposal Date
                     </label>
                     <input
                       type="date"
                       id="letter_proposal_date"
                       name="letter_proposal_date"
-                      value={editFormData.letter_proposal_date || ''}
+                      value={editFormData.letter_proposal_date || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="proposal_due_date" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="proposal_due_date"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Proposal Due Date
                     </label>
                     <input
                       type="date"
                       id="proposal_due_date"
                       name="proposal_due_date"
-                      value={editFormData.proposal_due_date || ''}
+                      value={editFormData.proposal_due_date || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     />
@@ -2928,7 +3697,10 @@ export default function OpportunityDetail() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="amp_division" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="amp_division"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       AMP Division
                     </label>
                     <select
@@ -2939,18 +3711,56 @@ export default function OpportunityDetail() {
                       required
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     >
-                      <option value="" className="dark:bg-dark-150 dark:text-white">Select a division</option>
-                      <option value="north_alabama" className="dark:bg-dark-150 dark:text-white">Alabama Division</option>
-                      <option value="tennessee" className="dark:bg-dark-150 dark:text-white">Tennessee Division</option>
-                      <option value="georgia" className="dark:bg-dark-150 dark:text-white">Georgia Division</option>
-                      <option value="international" className="dark:bg-dark-150 dark:text-white">International Division</option>
-                      <option value="engineering" className="dark:bg-dark-150 dark:text-white">Engineering</option>
-                      <option value="scavenger" className="dark:bg-dark-150 dark:text-white">Scavenger</option>
+                      <option
+                        value=""
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Select a division
+                      </option>
+                      <option
+                        value="north_alabama"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Alabama Division
+                      </option>
+                      <option
+                        value="tennessee"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Tennessee Division
+                      </option>
+                      <option
+                        value="georgia"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Georgia Division
+                      </option>
+                      <option
+                        value="international"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        International Division
+                      </option>
+                      <option
+                        value="engineering"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Engineering
+                      </option>
+                      <option
+                        value="scavenger"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Scavenger
+                      </option>
                     </select>
                   </div>
 
                   <div>
-                    <label htmlFor="opportunity_type" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="opportunity_type"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Opportunity Type
                     </label>
                     <select
@@ -2960,47 +3770,135 @@ export default function OpportunityDetail() {
                       onChange={handleInputChange}
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     >
-                      <option value="large_acceptance" className="dark:bg-dark-150 dark:text-white">Large Acceptance Project</option>
-                      <option value="small_acceptance" className="dark:bg-dark-150 dark:text-white">Small Acceptance Project</option>
-                      <option value="maintenance" className="dark:bg-dark-150 dark:text-white">Maintenance Project</option>
-                      <option value="engineering" className="dark:bg-dark-150 dark:text-white">Engineering</option>
-                      <option value="other" className="dark:bg-dark-150 dark:text-white">Other</option>
+                      <option
+                        value="large_acceptance"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Large Acceptance Project
+                      </option>
+                      <option
+                        value="small_acceptance"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Small Acceptance Project
+                      </option>
+                      <option
+                        value="maintenance"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Maintenance Project
+                      </option>
+                      <option
+                        value="engineering"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Engineering
+                      </option>
+                      <option
+                        value="other"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Other
+                      </option>
                     </select>
-                    {(editFormData.opportunity_type === 'large_acceptance' || editFormData.opportunity_type === 'small_acceptance') && (
+                    {(editFormData.opportunity_type === "large_acceptance" ||
+                      editFormData.opportunity_type === "small_acceptance") && (
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Auto-adjusts based on quoted amount (Small &lt;$100k, Large ≥$100k)
+                        Auto-adjusts based on quoted amount (Small &lt;$100k,
+                        Large ≥$100k)
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor="documents_stage" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="documents_stage"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Documents Stage
                     </label>
                     <select
                       id="documents_stage"
                       name="documents_stage"
-                      value={editFormData.documents_stage || ''}
+                      value={editFormData.documents_stage || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     >
-                      <option value="" className="dark:bg-dark-150 dark:text-white">Select Documents Stage</option>
-                      <option value="Budgetary" className="dark:bg-dark-150 dark:text-white">Budgetary</option>
-                      <option value="Not available" className="dark:bg-dark-150 dark:text-white">Not available</option>
-                      <option value="Design Development" className="dark:bg-dark-150 dark:text-white">Design Development</option>
-                      <option value="Issue for Proposal" className="dark:bg-dark-150 dark:text-white">Issue for Proposal</option>
-                      <option value="Issue for Construction" className="dark:bg-dark-150 dark:text-white">Issue for Construction</option>
-                      <option value="Post Construction" className="dark:bg-dark-150 dark:text-white">Post Construction</option>
-                      <option value="30%" className="dark:bg-dark-150 dark:text-white">30%</option>
-                      <option value="60%" className="dark:bg-dark-150 dark:text-white">60%</option>
-                      <option value="90%" className="dark:bg-dark-150 dark:text-white">90%</option>
-                      <option value="95%" className="dark:bg-dark-150 dark:text-white">95%</option>
+                      <option
+                        value=""
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Select Documents Stage
+                      </option>
+                      <option
+                        value="Budgetary"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Budgetary
+                      </option>
+                      <option
+                        value="Not available"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Not available
+                      </option>
+                      <option
+                        value="Design Development"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Design Development
+                      </option>
+                      <option
+                        value="Issue for Proposal"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Issue for Proposal
+                      </option>
+                      <option
+                        value="Issue for Construction"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Issue for Construction
+                      </option>
+                      <option
+                        value="Post Construction"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Post Construction
+                      </option>
+                      <option
+                        value="30%"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        30%
+                      </option>
+                      <option
+                        value="60%"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        60%
+                      </option>
+                      <option
+                        value="90%"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        90%
+                      </option>
+                      <option
+                        value="95%"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        95%
+                      </option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="quoted_amount" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="quoted_amount"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Quoted Amount (NET 30) ($)
                   </label>
                   <input
@@ -3015,7 +3913,10 @@ export default function OpportunityDetail() {
                 </div>
 
                 <div>
-                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="notes"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Notes
                   </label>
                   <textarea
@@ -3030,7 +3931,10 @@ export default function OpportunityDetail() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="reviewed_by" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="reviewed_by"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Reviewed By
                     </label>
                     <input
@@ -3045,7 +3949,10 @@ export default function OpportunityDetail() {
                   </div>
 
                   <div>
-                    <label htmlFor="prepared_by" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="prepared_by"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Quote Prepared By (Auto-populated)
                     </label>
                     <input
@@ -3063,11 +3970,16 @@ export default function OpportunityDetail() {
 
                 {/* Job Information Section */}
                 <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Job Information</h4>
-                  
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    Job Information
+                  </h4>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="jobsite_location" className="block text-sm font-medium text-gray-700 dark:text-white">
+                      <label
+                        htmlFor="jobsite_location"
+                        className="block text-sm font-medium text-gray-700 dark:text-white"
+                      >
                         Jobsite Location / Address
                       </label>
                       <input
@@ -3083,22 +3995,33 @@ export default function OpportunityDetail() {
 
                     {/* Accepted Letter Proposal */}
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Accepted Letter Proposal</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Accepted Letter Proposal
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
                         {(() => {
-                          const selectedId = (opportunity as any).selected_letter_proposal || '';
-                          let sel = selectedId ? letterProposals.find(lp => lp.id === selectedId) : undefined;
+                          const selectedId =
+                            (opportunity as any).selected_letter_proposal || "";
+                          let sel = selectedId
+                            ? letterProposals.find((lp) => lp.id === selectedId)
+                            : undefined;
                           // Regressive fallback: if not set, show most recent saved letter for this opportunity
                           if (!sel && letterProposals.length > 0) {
                             sel = letterProposals[0];
                           }
-                          return sel ? (sel.title || `Letter ${sel.letter_number || sel.id?.slice(0,8)}${selectedId ? '' : ' (latest)'}`) : 'Not specified';
+                          return sel
+                            ? sel.title ||
+                                `Letter ${sel.letter_number || sel.id?.slice(0, 8)}${selectedId ? "" : " (latest)"}`
+                            : "Not specified";
                         })()}
                       </p>
                     </div>
 
                     <div>
-                      <label htmlFor="estimated_start_date" className="block text-sm font-medium text-gray-700 dark:text-white">
+                      <label
+                        htmlFor="estimated_start_date"
+                        className="block text-sm font-medium text-gray-700 dark:text-white"
+                      >
                         Estimated Start Date
                       </label>
                       <input
@@ -3112,7 +4035,10 @@ export default function OpportunityDetail() {
                     </div>
 
                     <div>
-                      <label htmlFor="period_of_performance" className="block text-sm font-medium text-gray-700 dark:text-white">
+                      <label
+                        htmlFor="period_of_performance"
+                        className="block text-sm font-medium text-gray-700 dark:text-white"
+                      >
                         Period of Performance
                       </label>
                       <input
@@ -3139,15 +4065,26 @@ export default function OpportunityDetail() {
                             </p>
                             <div className="space-y-2 max-h-40 overflow-y-auto">
                               {availableQuotes.map((quote) => (
-                                <label key={quote.id} className="flex items-center space-x-2">
+                                <label
+                                  key={quote.id}
+                                  className="flex items-center space-x-2"
+                                >
                                   <input
                                     type="checkbox"
-                                    checked={selectedQuoteIds.includes(quote.id)}
-                                    onChange={(e) => handleQuoteSelectionChange(quote.id, e.target.checked)}
+                                    checked={selectedQuoteIds.includes(
+                                      quote.id,
+                                    )}
+                                    onChange={(e) =>
+                                      handleQuoteSelectionChange(
+                                        quote.id,
+                                        e.target.checked,
+                                      )
+                                    }
                                     className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                                   />
                                   <span className="text-sm text-gray-700 dark:text-white">
-                                    {quote.title} ({quote.totalManHours.toFixed(1)} hours)
+                                    {quote.title} (
+                                    {quote.totalManHours.toFixed(1)} hours)
                                   </span>
                                 </label>
                               ))}
@@ -3155,21 +4092,30 @@ export default function OpportunityDetail() {
                             {selectedQuoteIds.length > 0 && (
                               <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  {selectedQuoteIds.length} estimate{selectedQuoteIds.length !== 1 ? 's' : ''} selected
+                                  {selectedQuoteIds.length} estimate
+                                  {selectedQuoteIds.length !== 1
+                                    ? "s"
+                                    : ""}{" "}
+                                  selected
                                 </p>
                               </div>
                             )}
                           </div>
                         ) : (
                           <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                            No estimates available. Create an estimate to calculate man hours automatically.
+                            No estimates available. Create an estimate to
+                            calculate man hours automatically.
                           </p>
                         )}
-                        
+
                         {/* Manual Input Field */}
                         <div>
-                          <label htmlFor="total_man_hours" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                            Total Hours (calculated from selected estimates or enter manually):
+                          <label
+                            htmlFor="total_man_hours"
+                            className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1"
+                          >
+                            Total Hours (calculated from selected estimates or
+                            enter manually):
                           </label>
                           <input
                             type="number"
@@ -3202,7 +4148,7 @@ export default function OpportunityDetail() {
                     disabled={isSubmitting}
                     className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] border border-transparent rounded-md shadow-sm hover:bg-[#f26722]/90 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? 'Saving...' : 'Save'}
+                    {isSubmitting ? "Saving..." : "Save"}
                   </button>
                 </div>
               </form>
@@ -3211,87 +4157,150 @@ export default function OpportunityDetail() {
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-3">Opportunity Details</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-3">
+                    Opportunity Details
+                  </h3>
                   <div className="bg-white dark:bg-dark-150 shadow-sm rounded-md border border-gray-200 dark:border-dark-300 p-4">
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Quote Number</p>
-                      <p className="text-gray-900 dark:text-dark-900">{opportunity.quote_number}</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Quote Number
+                      </p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {opportunity.quote_number}
+                      </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Customer</p>
-                      <p className="text-gray-900 dark:text-dark-900">{customer?.company_name || customer?.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Customer
+                      </p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {customer?.company_name || customer?.name}
+                      </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Contact</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Contact
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
                         {(() => {
-                          const c = contacts.find(c => c.id === (opportunity as any).contact_id);
+                          const c = contacts.find(
+                            (c) => c.id === (opportunity as any).contact_id,
+                          );
                           return c ? (
-                            <span>{c.name} {c.email ? `• ${c.email}` : ''}</span>
-                          ) : 'No contact linked';
+                            <span>
+                              {c.name} {c.email ? `• ${c.email}` : ""}
+                            </span>
+                          ) : (
+                            "No contact linked"
+                          );
                         })()}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Title</p>
-                      <p className="text-gray-900 dark:text-dark-900">{opportunity.title}</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Title
+                      </p>
+                      <p className="text-gray-900 dark:text-dark-900">
+                        {opportunity.title}
+                      </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Description</p>
-                      <p className="text-gray-900 dark:text-dark-900 whitespace-pre-line">{opportunity.description || 'No description'}</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Description
+                      </p>
+                      <p className="text-gray-900 dark:text-dark-900 whitespace-pre-line">
+                        {opportunity.description || "No description"}
+                      </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Estimate Approval</p>
-                      <p className="text-xs text-gray-400 dark:text-dark-500 mt-0.5 mb-1">In Progress = working on the estimate. No Quote = not submitting a quote for this opportunity.</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Estimate Approval
+                      </p>
+                      <p className="text-xs text-gray-400 dark:text-dark-500 mt-0.5 mb-1">
+                        In Progress = working on the estimate. No Quote = not
+                        submitting a quote for this opportunity.
+                      </p>
                       {latestEstimateId && !isEstimateApprovalEditing ? (
                         <button
                           onClick={() => setIsEstimateApprovalEditing(true)}
                           className="mt-1"
                         >
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getEstimateApprovalColor(estimateApprovalStatus)}`}>
-                            {formatEstimateApprovalStatus(estimateApprovalStatus)}
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getEstimateApprovalColor(estimateApprovalStatus)}`}
+                          >
+                            {formatEstimateApprovalStatus(
+                              estimateApprovalStatus,
+                            )}
                             <ChevronDown className="ml-1 h-3 w-3" />
                           </span>
                         </button>
                       ) : (
                         <div className="relative mt-1">
                           <select
-                            value={estimateApprovalStatus === 'no quote' ? 'no_quote' : (estimateApprovalStatus ?? '')}
-                            onChange={(e) => handleEstimateApprovalStatusChange(e.target.value)}
+                            value={
+                              estimateApprovalStatus === "no quote"
+                                ? "no_quote"
+                                : (estimateApprovalStatus ?? "")
+                            }
+                            onChange={(e) =>
+                              handleEstimateApprovalStatusChange(e.target.value)
+                            }
                             disabled={isSavingEstimateStatus}
                             className="block w-full pl-3 pr-10 py-1 text-xs rounded-full appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-gray-200 dark:border-gray-600 dark:bg-dark-150 dark:text-white"
                             autoFocus={latestEstimateId != null}
-                            onBlur={() => latestEstimateId && !isSavingEstimateStatus && setIsEstimateApprovalEditing(false)}
+                            onBlur={() =>
+                              latestEstimateId &&
+                              !isSavingEstimateStatus &&
+                              setIsEstimateApprovalEditing(false)
+                            }
                           >
                             <option value="">Not Started</option>
-                            <option value="in_progress" title="Working on the estimate">In Progress — working on estimate</option>
-                            <option value="ready_for_review">Ready for Review</option>
-                            <option value="approved_to_send">Approved to Send</option>
+                            <option
+                              value="in_progress"
+                              title="Working on the estimate"
+                            >
+                              In Progress — working on estimate
+                            </option>
+                            <option value="ready_for_review">
+                              Ready for Review
+                            </option>
+                            <option value="approved_to_send">
+                              Approved to Send
+                            </option>
                             <option value="sent">Sent</option>
-                            <option value="no_quote" title="Not submitting a quote for this opportunity">No Quote — not submitting</option>
+                            <option
+                              value="no_quote"
+                              title="Not submitting a quote for this opportunity"
+                            >
+                              No Quote — not submitting
+                            </option>
                           </select>
                           <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-gray-500" />
                           {isSavingEstimateStatus && (
-                            <span className="text-xs text-gray-500 dark:text-dark-400 ml-2">Saving...</span>
+                            <span className="text-xs text-gray-500 dark:text-dark-400 ml-2">
+                              Saving...
+                            </span>
                           )}
                         </div>
                       )}
                       {!latestEstimateId && (
                         <p className="text-gray-500 dark:text-dark-500 text-xs mt-1.5">
-                          Set status above or{' '}
+                          Set status above or{" "}
                           <button
                             type="button"
-                            onClick={() => setShowEstimate('new')}
+                            onClick={() => setShowEstimate("new")}
                             className="text-[#f26722] hover:underline font-medium"
                           >
                             Open Estimate
-                          </button>
-                          {' '}to build a full quote.
+                          </button>{" "}
+                          to build a full quote.
                         </p>
                       )}
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Status</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Status
+                      </p>
                       {isStatusEditing ? (
                         <div className="relative mt-1">
                           <select
@@ -3305,8 +4314,12 @@ export default function OpportunityDetail() {
                             <option value="interest">Interest</option>
                             <option value="quote">Quote</option>
                             <option value="decision">Decision</option>
-                            <option value="decision - forecasted win">Decision - Forecasted Win</option>
-                            <option value="decision - forecast lose">Decision - Forecast Lose</option>
+                            <option value="decision - forecasted win">
+                              Decision - Forecasted Win
+                            </option>
+                            <option value="decision - forecast lose">
+                              Decision - Forecast Lose
+                            </option>
                             <option value="awarded">Awarded</option>
                             <option value="lost">Lost</option>
                             <option value="no quote">No Quote</option>
@@ -3318,31 +4331,47 @@ export default function OpportunityDetail() {
                           onClick={() => setIsStatusEditing(true)}
                           className="mt-1"
                         >
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(opportunity.status)}`}>
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(opportunity.status)}`}
+                          >
                             {formatStatus(opportunity.status)}
                             <ChevronDown className="ml-1 h-3 w-3" />
                           </span>
                         </button>
                       )}
-                      {opportunity.status !== 'awarded' && opportunity.status !== 'lost' && !opportunity.job_id && (
-                        <p className="text-xs text-gray-500 dark:text-white mt-1">
-                          Change status above or use "Convert to Job" button to create a job
-                        </p>
-                      )}
+                      {opportunity.status !== "awarded" &&
+                        opportunity.status !== "lost" &&
+                        !opportunity.job_id && (
+                          <p className="text-xs text-gray-500 dark:text-white mt-1">
+                            Change status above or use "Convert to Job" button
+                            to create a job
+                          </p>
+                        )}
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Accepted Letter Proposal</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Accepted Letter Proposal
+                      </p>
                       <p className="text-sm text-gray-900 dark:text-dark-900">
                         {(() => {
-                          const selectedId = (opportunity as any).selected_letter_proposal || '';
-                          let sel = selectedId ? letterProposals.find(lp => lp.id === selectedId) : undefined;
-                          if (!sel && letterProposals.length > 0) sel = letterProposals[0];
-                          return sel ? (sel.title || `Letter ${sel.letter_number || sel.id?.slice(0,8)}${selectedId ? '' : ' (latest)'}`) : 'Not specified';
+                          const selectedId =
+                            (opportunity as any).selected_letter_proposal || "";
+                          let sel = selectedId
+                            ? letterProposals.find((lp) => lp.id === selectedId)
+                            : undefined;
+                          if (!sel && letterProposals.length > 0)
+                            sel = letterProposals[0];
+                          return sel
+                            ? sel.title ||
+                                `Letter ${sel.letter_number || sel.id?.slice(0, 8)}${selectedId ? "" : " (latest)"}`
+                            : "Not specified";
                         })()}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">AMP Division</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        AMP Division
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
                         {opportunity.amp_division ? (
                           <button
@@ -3357,11 +4386,15 @@ export default function OpportunityDetail() {
                           >
                             {formatDivisionName(opportunity.amp_division)}
                           </button>
-                        ) : 'Not specified'}
+                        ) : (
+                          "Not specified"
+                        )}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Opportunity Type</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Opportunity Type
+                      </p>
                       {isOpportunityTypeEditing ? (
                         <div className="relative mt-1">
                           <select
@@ -3369,23 +4402,37 @@ export default function OpportunityDetail() {
                               let type = (opportunity as any).opportunity_type;
                               // If no type is set, infer from quoted amount
                               if (!type) {
-                                const quotedAmount = (opportunity as any).quoted_amount;
+                                const quotedAmount = (opportunity as any)
+                                  .quoted_amount;
                                 if (quotedAmount && Number(quotedAmount) > 0) {
-                                  type = Number(quotedAmount) >= 100000 ? 'large_acceptance' : 'small_acceptance';
+                                  type =
+                                    Number(quotedAmount) >= 100000
+                                      ? "large_acceptance"
+                                      : "small_acceptance";
                                 }
                               }
-                              return type || 'other';
+                              return type || "other";
                             })()}
-                            onChange={(e) => handleOpportunityTypeChange(e.target.value)}
+                            onChange={(e) =>
+                              handleOpportunityTypeChange(e.target.value)
+                            }
                             className="block w-full pl-3 pr-10 py-1 text-sm rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-gray-200 dark:border-gray-600 dark:bg-dark-150 dark:text-white"
                             autoFocus
                             onBlur={() => setIsOpportunityTypeEditing(false)}
                           >
-                            <option value="large_acceptance">Large Acceptance Project</option>
-                            <option value="small_acceptance">Small Acceptance Project</option>
-                            <option value="maintenance">Maintenance Project</option>
+                            <option value="large_acceptance">
+                              Large Acceptance Project
+                            </option>
+                            <option value="small_acceptance">
+                              Small Acceptance Project
+                            </option>
+                            <option value="maintenance">
+                              Maintenance Project
+                            </option>
                             <option value="engineering">Engineering</option>
-                            <option value="time_materials">Time & Materials (T&M)</option>
+                            <option value="time_materials">
+                              Time & Materials (T&M)
+                            </option>
                             <option value="other">Other</option>
                           </select>
                           <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-gray-500" />
@@ -3398,23 +4445,34 @@ export default function OpportunityDetail() {
                           <span className="text-gray-900 dark:text-dark-900 hover:text-[#f26722] dark:hover:text-[#f26722]">
                             {(() => {
                               let type = (opportunity as any).opportunity_type;
-                              
+
                               // If no type is set, infer from quoted amount
                               if (!type) {
-                                const quotedAmount = (opportunity as any).quoted_amount;
+                                const quotedAmount = (opportunity as any)
+                                  .quoted_amount;
                                 if (quotedAmount && Number(quotedAmount) > 0) {
-                                  type = Number(quotedAmount) >= 100000 ? 'large_acceptance' : 'small_acceptance';
+                                  type =
+                                    Number(quotedAmount) >= 100000
+                                      ? "large_acceptance"
+                                      : "small_acceptance";
                                 }
                               }
-                              
+
                               switch (type) {
-                                case 'large_acceptance': return 'Large Acceptance Project';
-                                case 'small_acceptance': return 'Small Acceptance Project';
-                                case 'maintenance': return 'Maintenance Project';
-                                case 'engineering': return 'Engineering';
-                                case 'time_materials': return 'Time & Materials (T&M)';
-                                case 'other': return 'Other';
-                                default: return 'Not specified';
+                                case "large_acceptance":
+                                  return "Large Acceptance Project";
+                                case "small_acceptance":
+                                  return "Small Acceptance Project";
+                                case "maintenance":
+                                  return "Maintenance Project";
+                                case "engineering":
+                                  return "Engineering";
+                                case "time_materials":
+                                  return "Time & Materials (T&M)";
+                                case "other":
+                                  return "Other";
+                                default:
+                                  return "Not specified";
                               }
                             })()}
                             <ChevronDown className="ml-1 h-3 w-3 inline" />
@@ -3423,12 +4481,16 @@ export default function OpportunityDetail() {
                       )}
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Documents Stage</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Documents Stage
+                      </p>
                       {isDocumentsStageEditing ? (
                         <div className="relative mt-1">
                           <select
-                            value={(opportunity as any).documents_stage || ''}
-                            onChange={(e) => handleDocumentsStageChange(e.target.value)}
+                            value={(opportunity as any).documents_stage || ""}
+                            onChange={(e) =>
+                              handleDocumentsStageChange(e.target.value)
+                            }
                             className="block w-full pl-3 pr-10 py-1 text-sm rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-gray-200 dark:border-gray-600 dark:bg-dark-150 dark:text-white"
                             autoFocus
                             onBlur={() => setIsDocumentsStageEditing(false)}
@@ -3436,10 +4498,18 @@ export default function OpportunityDetail() {
                             <option value="">Not specified</option>
                             <option value="Budgetary">Budgetary</option>
                             <option value="Not available">Not available</option>
-                            <option value="Design Development">Design Development</option>
-                            <option value="Issue for Proposal">Issue for Proposal</option>
-                            <option value="Issue for Construction">Issue for Construction</option>
-                            <option value="Post Construction">Post Construction</option>
+                            <option value="Design Development">
+                              Design Development
+                            </option>
+                            <option value="Issue for Proposal">
+                              Issue for Proposal
+                            </option>
+                            <option value="Issue for Construction">
+                              Issue for Construction
+                            </option>
+                            <option value="Post Construction">
+                              Post Construction
+                            </option>
                             <option value="30%">30%</option>
                             <option value="60%">60%</option>
                             <option value="90%">90%</option>
@@ -3453,7 +4523,8 @@ export default function OpportunityDetail() {
                           className="mt-1 text-left"
                         >
                           <span className="text-gray-900 dark:text-dark-900 hover:text-[#f26722] dark:hover:text-[#f26722]">
-                            {(opportunity as any).documents_stage || 'Not specified'}
+                            {(opportunity as any).documents_stage ||
+                              "Not specified"}
                             <ChevronDown className="ml-1 h-3 w-3 inline" />
                           </span>
                         </button>
@@ -3464,7 +4535,9 @@ export default function OpportunityDetail() {
                       if (opportunity.job_id) {
                         return (
                           <div className="mb-4">
-                            <p className="text-sm text-gray-500 dark:text-dark-400">Job Status</p>
+                            <p className="text-sm text-gray-500 dark:text-dark-400">
+                              Job Status
+                            </p>
                             <div className="flex items-center gap-2">
                               <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                 Converted to Job
@@ -3482,148 +4555,121 @@ export default function OpportunityDetail() {
                       return null;
                     })()}
                   </div>
-
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-3">Financial & Timeline</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-3">
+                    Financial & Timeline
+                  </h3>
                   <div className="bg-white dark:bg-dark-150 shadow-sm rounded-md border border-gray-200 dark:border-dark-300 p-4">
                     {/* Expected Value removed from details view */}
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Probability</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Probability
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {opportunity.probability !== null && opportunity.probability !== undefined
+                        {opportunity.probability !== null &&
+                        opportunity.probability !== undefined
                           ? `${opportunity.probability}%`
-                          : 'Not specified'}
+                          : "Not specified"}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Quoted Amount (NET 30)</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Quoted Amount (NET 30)
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
                         {(() => {
-                          // Primary: Extract from letter proposals' grand total
-                          if (letterProposals.length > 0) {
-                            const letter = letterProposals[0] as any;
-                            let price = 0;
-                            
-                            if (letter.html) {
-                              const htmlContent = letter.html;
-                              
-                              // Create a temporary DOM element to parse the HTML
-                              const parser = new DOMParser();
-                              const doc = parser.parseFromString(htmlContent, 'text/html');
-                              
-                              // Method 1: Try to get grand total from data-base attribute
-                              const grandElement = doc.querySelector('.grand-price[data-kind="net30"]');
-                              if (grandElement) {
-                                const grandBaseAttr = grandElement.getAttribute('data-base');
-                                if (grandBaseAttr) {
-                                  const v = Number(grandBaseAttr.replace(/,/g, '')) || 0;
-                                  if (v > 0) {
-                                    price = Math.round(v * 100) / 100;
-                                  }
-                                }
-                              }
-                              
-                              // Method 2: If no data-base, try to parse from Grand Total Pricing section
-                              if (!price || price <= 0) {
-                                const headers = Array.from(doc.querySelectorAll('b'));
-                                const grandHeader = headers.find(el => (el.textContent || '').trim() === 'Grand Total Pricing');
-                                if (grandHeader) {
-                                  const block = grandHeader.closest('.amp-scope-block') || grandHeader.parentElement?.parentElement || grandHeader.parentElement;
-                                  if (block) {
-                                    const listItems = Array.from(block.querySelectorAll('li'));
-                                    const liNet30 = listItems.find(li => /NET\s*30/i.test(li.textContent || ''));
-                                    if (liNet30) {
-                                      const match = (liNet30.textContent || '').match(/\$([0-9,]+\.?[0-9]*)/);
-                                      if (match && match[1]) {
-                                        const v = Number(match[1].replace(/,/g, '')) || 0;
-                                        if (v > 0) {
-                                          price = Math.round(v * 100) / 100;
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                              
-                              // Method 3: Sum individual scope prices if no grand total found
-                              if (!price || price <= 0) {
-                                const scopePrices = Array.from(doc.querySelectorAll('.scope-price[data-kind="net30"]'));
-                                if (scopePrices.length > 0) {
-                                  let sum = 0;
-                                  scopePrices.forEach((el) => {
-                                    const baseAttr = el.getAttribute('data-base') || '0';
-                                    const base = Number((baseAttr || '0').replace(/,/g, '')) || 0;
-                                    // Find scope quantity
-                                    const block = el.closest('.amp-section')?.parentElement || el.parentElement;
-                                    let qtyEl = block?.querySelector('input.scope-qty') as HTMLInputElement | null;
-                                    if (!qtyEl) {
-                                      qtyEl = doc.querySelector('input.scope-qty') as HTMLInputElement | null;
-                                    }
-                                    const qtyRaw = qtyEl?.getAttribute('value') || qtyEl?.value || '1';
-                                    const qty = Math.max(1, parseInt(qtyRaw || '1', 10) || 1);
-                                    sum += base * qty;
-                                  });
-                                  if (sum > 0) {
-                                    price = Math.round(sum * 100) / 100;
-                                  }
-                                }
-                              }
-                            }
-                            
-                            // If we found a price from the letter proposal, display it
-                            if (price > 0) {
-                              const letterNum = letter.letter_number || letter.quote_number || `Letter ${letter.id?.slice(0, 8)}`;
-                              return `$${price.toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })} (from ${letterNum})`;
+                          const selectedId =
+                            (opportunity as any).selected_letter_proposal || "";
+                          const selectedLetter = selectedId
+                            ? letterProposals.find(
+                                (letter) => letter.id === selectedId,
+                              )
+                            : null;
+                          const lettersToTry = [
+                            selectedLetter,
+                            ...letterProposals,
+                          ].filter((letter, index, allLetters) => {
+                            return (
+                              !!letter &&
+                              allLetters.findIndex(
+                                (item) => item?.id === letter.id,
+                              ) === index
+                            );
+                          }) as any[];
+
+                          for (const letter of lettersToTry) {
+                            const price =
+                              parseMoneyValue(letter.net_30_price) ||
+                              extractNet30FromLetterHtml(letter.html);
+
+                            if (price) {
+                              return formatMoney(price);
                             }
                           }
 
-                          // Fallback: Use manually entered quoted_amount if no letter proposal value found
-                          const quotedAmount = opportunity.quoted_amount;
-                          if (quotedAmount && Number(quotedAmount) > 0) {
-                            return `$${Number(quotedAmount).toLocaleString('en-US', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })} (manual entry)`;
+                          const quotedAmount = parseMoneyValue(
+                            (opportunity as any).quoted_amount,
+                          );
+                          if (quotedAmount) {
+                            return formatMoney(quotedAmount);
                           }
 
-                          return 'No quoted amount';
+                          const estimateWithAmount = availableQuotes.find(
+                            (quote) =>
+                              !!calculateEstimateNet30Amount(quote.data),
+                          );
+                          const estimateAmount = calculateEstimateNet30Amount(
+                            estimateWithAmount?.data,
+                          );
+                          if (estimateAmount) {
+                            return formatMoney(estimateAmount);
+                          }
+
+                          return "No quoted amount";
                         })()}
                       </p>
                     </div>
                     <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-dark-400">Opportunity Created Date</p>
+                        <p className="text-sm text-gray-500 dark:text-dark-400">
+                          Opportunity Created Date
+                        </p>
                         <p className="text-gray-900 dark:text-dark-900">
                           {opportunity.opportunity_created_date
-                            ? formatDateSafe(opportunity.opportunity_created_date)
-                            : 'Not specified'}
+                            ? formatDateSafe(
+                                opportunity.opportunity_created_date,
+                              )
+                            : "Not specified"}
                         </p>
                       </div>
 
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-dark-400">Opportunity Created By</p>
+                        <p className="text-sm text-gray-500 dark:text-dark-400">
+                          Opportunity Created By
+                        </p>
                         <p className="text-gray-900 dark:text-dark-900">
-                          {opportunityCreator || 'Not specified'}
+                          {opportunityCreator || "Not specified"}
                         </p>
                       </div>
                     </div>
 
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Letter Proposal Date</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Letter Proposal Date
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
                         {opportunity.letter_proposal_date
                           ? formatDateSafe(opportunity.letter_proposal_date)
-                          : 'Not generated yet'}
+                          : "Not generated yet"}
                       </p>
                     </div>
                     {opportunity.proposal_due_date && (
                       <div className="mb-4">
-                        <p className="text-sm text-gray-500 dark:text-dark-400">Proposal Due Date</p>
+                        <p className="text-sm text-gray-500 dark:text-dark-400">
+                          Proposal Due Date
+                        </p>
                         <p className="text-gray-900 dark:text-dark-900">
                           {formatDateSafe(opportunity.proposal_due_date)}
                         </p>
@@ -3631,7 +4677,9 @@ export default function OpportunityDetail() {
                     )}
                     {opportunity.awarded_date && (
                       <div className="mb-4">
-                        <p className="text-sm text-gray-500 dark:text-dark-400">Awarded Date</p>
+                        <p className="text-sm text-gray-500 dark:text-dark-400">
+                          Awarded Date
+                        </p>
                         <p className="text-gray-900 dark:text-dark-900">
                           {formatDateSafe(opportunity.awarded_date)}
                         </p>
@@ -3639,50 +4687,72 @@ export default function OpportunityDetail() {
                     )}
                     {/* Removed duplicate Proposal Due Date block (already shown above) */}
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Reviewed By</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Reviewed By
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {(opportunity as any).reviewed_by || 'Not specified'}
+                        {(opportunity as any).reviewed_by || "Not specified"}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Quote Prepared By</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Quote Prepared By
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {quotePreparedBy || (opportunity as any).prepared_by || 'Not specified'}
+                        {quotePreparedBy ||
+                          (opportunity as any).prepared_by ||
+                          "Not specified"}
                       </p>
                     </div>
 
                     {/* Job Information Fields */}
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Jobsite Location</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Jobsite Location
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {(opportunity as any).jobsite_location || 'Not specified'}
+                        {(opportunity as any).jobsite_location ||
+                          "Not specified"}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Estimated Start Date</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Estimated Start Date
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {(opportunity as any).estimated_start_date 
-                          ? formatDateSafe((opportunity as any).estimated_start_date)
-                          : 'Not specified'}
+                        {(opportunity as any).estimated_start_date
+                          ? formatDateSafe(
+                              (opportunity as any).estimated_start_date,
+                            )
+                          : "Not specified"}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Period of Performance</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Period of Performance
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {(opportunity as any).period_of_performance || 'Not specified'}
+                        {(opportunity as any).period_of_performance ||
+                          "Not specified"}
                       </p>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">Total Man Hours</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-400">
+                        Total Man Hours
+                      </p>
                       <p className="text-gray-900 dark:text-dark-900">
-                        {(opportunity as any).total_man_hours ? `${(opportunity as any).total_man_hours} hours` : 'Not specified'}
+                        {(opportunity as any).total_man_hours
+                          ? `${(opportunity as any).total_man_hours} hours`
+                          : "Not specified"}
                       </p>
                     </div>
 
                     {/* Documents Section */}
                     <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                       <div className="flex justify-between items-center mb-3">
-                        <p className="text-sm text-gray-500 dark:text-dark-400">Documents</p>
+                        <p className="text-sm text-gray-500 dark:text-dark-400">
+                          Documents
+                        </p>
                         <div className="flex gap-2">
                           <input
                             type="file"
@@ -3695,20 +4765,27 @@ export default function OpportunityDetail() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => document.getElementById('subcontractor-file')?.click()}
+                            onClick={() =>
+                              document
+                                .getElementById("subcontractor-file")
+                                ?.click()
+                            }
                             disabled={uploadingFile}
                             className="text-[#f26722] border-[#f26722] hover:bg-[#f26722] hover:text-white"
                           >
                             <Upload className="h-4 w-4 mr-1" />
-                            {uploadingFile ? 'Uploading...' : 'Upload'}
+                            {uploadingFile ? "Uploading..." : "Upload"}
                           </Button>
                         </div>
                       </div>
-                      
+
                       {subcontractorAgreements.length > 0 ? (
                         <div className="space-y-2">
                           {subcontractorAgreements.map((agreement) => (
-                            <div key={agreement.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-150 rounded-md">
+                            <div
+                              key={agreement.id}
+                              className="flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-150 rounded-md"
+                            >
                               <div className="flex items-center gap-2">
                                 <FileText className="h-4 w-4 text-gray-500" />
                                 <div className="flex-1">
@@ -3719,13 +4796,18 @@ export default function OpportunityDetail() {
                                     {agreement.name}
                                   </button>
                                   <p className="text-xs text-gray-500 dark:text-white">
-                                    {formatDateSafe(agreement.upload_date)} • 
-                                    <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
-                                      agreement.status === 'signed' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
-                                      agreement.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
-                                      agreement.status === 'expired' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
-                                      'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-white'
-                                    }`}>
+                                    {formatDateSafe(agreement.upload_date)} •
+                                    <span
+                                      className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
+                                        agreement.status === "signed"
+                                          ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                          : agreement.status === "pending"
+                                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                                            : agreement.status === "expired"
+                                              ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                                              : "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-white"
+                                      }`}
+                                    >
                                       {agreement.status}
                                     </span>
                                   </p>
@@ -3734,7 +4816,13 @@ export default function OpportunityDetail() {
                               <div className="flex items-center gap-1">
                                 <select
                                   value={agreement.status}
-                                  onChange={(e) => handleUpdateAgreementStatus(agreement.id, e.target.value as SubcontractorAgreement['status'])}
+                                  onChange={(e) =>
+                                    handleUpdateAgreementStatus(
+                                      agreement.id,
+                                      e.target
+                                        .value as SubcontractorAgreement["status"],
+                                    )
+                                  }
                                   className="text-xs p-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 text-gray-900 dark:text-white"
                                 >
                                   <option value="pending">Pending</option>
@@ -3755,10 +4843,10 @@ export default function OpportunityDetail() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => {
-                                    const link = document.createElement('a');
+                                    const link = document.createElement("a");
                                     link.href = agreement.file_url;
                                     link.download = agreement.name;
-                                    link.target = '_blank';
+                                    link.target = "_blank";
                                     document.body.appendChild(link);
                                     link.click();
                                     document.body.removeChild(link);
@@ -3771,7 +4859,9 @@ export default function OpportunityDetail() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleDeleteAgreement(agreement.id)}
+                                  onClick={() =>
+                                    handleDeleteAgreement(agreement.id)
+                                  }
                                   className="p-1 h-6 w-6 text-red-500 hover:bg-red-500 hover:text-white"
                                   title="Delete"
                                 >
@@ -3787,10 +4877,10 @@ export default function OpportunityDetail() {
                         </p>
                       )}
                     </div>
-                    
+
                     {jobId && (
                       <div className="mt-6">
-                        <Button 
+                        <Button
                           variant="outline"
                           className="bg-[#f26722] text-white hover:bg-[#f26722]/90"
                           onClick={() => setShowJobDialog(true)}
@@ -3804,9 +4894,13 @@ export default function OpportunityDetail() {
 
                 {opportunity.notes && (
                   <div className="col-span-1 md:col-span-2">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-3">Notes</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-3">
+                      Notes
+                    </h3>
                     <div className="bg-white dark:bg-dark-150 p-4 rounded-md">
-                      <p className="text-gray-900 dark:text-dark-900 whitespace-pre-line">{opportunity.notes}</p>
+                      <p className="text-gray-900 dark:text-dark-900 whitespace-pre-line">
+                        {opportunity.notes}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -3814,13 +4908,15 @@ export default function OpportunityDetail() {
 
               {/* Add Estimate Sheet section */}
               <div className="mt-8">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-3">Estimate</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-3">
+                  Estimate
+                </h3>
                 <div className="bg-white dark:bg-dark-150 p-4 rounded-md text-center">
                   {/* Always show the action buttons horizontally */}
                   <div className="flex flex-row justify-center gap-4 mb-4">
                     <button
                       onClick={() => {
-                        setShowEstimate('new');
+                        setShowEstimate("new");
                         setEstimateOpenSignal((s) => s + 1);
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
@@ -3829,7 +4925,7 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        setShowEstimate('view');
+                        setShowEstimate("view");
                         setEstimateOpenSignal((s) => s + 1);
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
@@ -3838,7 +4934,7 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        setShowEstimate('letters');
+                        setShowEstimate("letters");
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
@@ -3846,7 +4942,7 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        setShowEstimate('letter');
+                        setShowEstimate("letter");
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
@@ -3854,7 +4950,7 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
-                        setShowEstimate('combined-letter');
+                        setShowEstimate("combined-letter");
                       }}
                       className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-md font-medium transition-colors"
                     >
@@ -3863,7 +4959,11 @@ export default function OpportunityDetail() {
                   </div>
                   {/* Show EstimateSheet only if an action is selected */}
                   {showEstimate !== false && (
-                    <EstimateSheet opportunityId={id || ''} mode={showEstimate} openSignal={estimateOpenSignal} />
+                    <EstimateSheet
+                      opportunityId={id || ""}
+                      mode={showEstimate}
+                      openSignal={estimateOpenSignal}
+                    />
                   )}
                 </div>
               </div>
@@ -3897,15 +4997,20 @@ export default function OpportunityDetail() {
                     <X className="h-6 w-6" />
                   </button>
                 </div>
-                
+
                 <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Convert Opportunity to Job
                 </Dialog.Title>
-                
+
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Select Accepted Letter Proposal</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                    Select Accepted Letter Proposal
+                  </label>
                   {lettersForSelect.length === 0 ? (
-                    <p className="text-xs text-gray-500 dark:text-white">No saved letters found for this opportunity. You can continue without selecting one.</p>
+                    <p className="text-xs text-gray-500 dark:text-white">
+                      No saved letters found for this opportunity. You can
+                      continue without selecting one.
+                    </p>
                   ) : (
                     <select
                       value={selectedLetterId}
@@ -3914,24 +5019,28 @@ export default function OpportunityDetail() {
                     >
                       <option value="">-- Select Letter --</option>
                       {lettersForSelect.map((l) => (
-                        <option key={l.id} value={l.id}>{l.title} ({l.created_at?.slice(0,10)})</option>
+                        <option key={l.id} value={l.id}>
+                          {l.title} ({l.created_at?.slice(0, 10)})
+                        </option>
                       ))}
                     </select>
                   )}
                 </div>
 
                 <p className="text-gray-700 dark:text-white mb-4">
-                  Are you sure you want to create a job from this opportunity? This action will:
+                  Are you sure you want to create a job from this opportunity?
+                  This action will:
                 </p>
-                
+
                 <ul className="text-sm text-gray-600 dark:text-white mb-4 space-y-1">
                   <li>• Create a new job record in the system</li>
                   <li>• Link the opportunity to the new job</li>
                   <li>• Keep the opportunity status unchanged</li>
                 </ul>
-                
+
                 <p className="text-gray-700 dark:text-white mb-4">
-                  The opportunity will remain in its current status. You can change the status separately if needed.
+                  The opportunity will remain in its current status. You can
+                  change the status separately if needed.
                 </p>
 
                 <div className="mt-5 flex justify-end space-x-3">
@@ -3948,7 +5057,7 @@ export default function OpportunityDetail() {
                     className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] border border-transparent rounded-md shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleConvertToJob}
                   >
-                    {isConvertingToJob ? 'Creating...' : 'Convert to Job'}
+                    {isConvertingToJob ? "Creating..." : "Convert to Job"}
                   </button>
                 </div>
               </div>
@@ -3975,66 +5084,96 @@ export default function OpportunityDetail() {
                     <X className="h-6 w-6" />
                   </button>
                 </div>
-                
+
                 <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-dark-900 mb-4">
                   Job Details
                 </Dialog.Title>
-                
+
                 {jobDetails ? (
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">Job Title</h3>
-                      <p className="mt-1 text-sm text-gray-900 dark:text-white">{jobDetails.title}</p>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">Job Number</h3>
-                      <p className="mt-1 text-sm text-gray-900 dark:text-white">{jobDetails.job_number}</p>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">Status</h3>
-                      <p className="mt-1 text-sm text-gray-900 dark:text-white">{jobDetails.status}</p>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">Customer</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">
+                        Job Title
+                      </h3>
                       <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                        {jobDetails.customer?.company_name || jobDetails.customer?.name || 'No customer assigned'}
+                        {jobDetails.title}
                       </p>
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">Start Date</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">
+                        Job Number
+                      </h3>
                       <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                        {jobDetails.start_date ? formatDateSafe(jobDetails.start_date) : 'Not set'}
+                        {jobDetails.job_number}
                       </p>
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">Due Date</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">
+                        Status
+                      </h3>
                       <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                        {jobDetails.due_date ? formatDateSafe(jobDetails.due_date) : 'Not set'}
+                        {jobDetails.status}
                       </p>
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">Quoted Amount</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">
+                        Customer
+                      </h3>
                       <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                        ${jobDetails.budget?.toLocaleString() || '0'}
+                        {jobDetails.customer?.company_name ||
+                          jobDetails.customer?.name ||
+                          "No customer assigned"}
                       </p>
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">Division</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">
+                        Start Date
+                      </h3>
                       <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                        {formatDivisionName(jobDetails.division || '')}
+                        {jobDetails.start_date
+                          ? formatDateSafe(jobDetails.start_date)
+                          : "Not set"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">
+                        Due Date
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                        {jobDetails.due_date
+                          ? formatDateSafe(jobDetails.due_date)
+                          : "Not set"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">
+                        Quoted Amount
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                        ${jobDetails.budget?.toLocaleString() || "0"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-white">
+                        Division
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                        {formatDivisionName(jobDetails.division || "")}
                       </p>
                     </div>
 
                     {jobDetails.description && (
                       <div>
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-white">Description</h3>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-white">
+                          Description
+                        </h3>
                         <p className="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap">
                           {jobDetails.description}
                         </p>
@@ -4043,7 +5182,9 @@ export default function OpportunityDetail() {
                   </div>
                 ) : (
                   <div className="text-center py-4">
-                    <p className="text-gray-500 dark:text-white">Loading job details...</p>
+                    <p className="text-gray-500 dark:text-white">
+                      Loading job details...
+                    </p>
                   </div>
                 )}
               </div>
@@ -4070,7 +5211,7 @@ export default function OpportunityDetail() {
           >
             <div className="flex items-center justify-center min-h-screen px-4">
               <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-              
+
               <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-4xl w-full mx-auto shadow-xl max-h-[90vh] flex flex-col">
                 {/* Modal Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -4081,13 +5222,19 @@ export default function OpportunityDetail() {
                         {previewFile?.name}
                       </Dialog.Title>
                       <p className="text-sm text-gray-500 dark:text-white">
-                        {previewFile && formatDateSafe(previewFile.upload_date)} • 
-                        <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
-                          previewFile?.status === 'signed' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
-                          previewFile?.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
-                          previewFile?.status === 'expired' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
-                          'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-white'
-                        }`}>
+                        {previewFile && formatDateSafe(previewFile.upload_date)}{" "}
+                        •
+                        <span
+                          className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
+                            previewFile?.status === "signed"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                              : previewFile?.status === "pending"
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                                : previewFile?.status === "expired"
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                                  : "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-white"
+                          }`}
+                        >
                           {previewFile?.status}
                         </span>
                       </p>
@@ -4097,7 +5244,10 @@ export default function OpportunityDetail() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => previewFile && window.open(previewFile.file_url, '_blank')}
+                      onClick={() =>
+                        previewFile &&
+                        window.open(previewFile.file_url, "_blank")
+                      }
                       className="text-[#f26722] border-[#f26722] hover:bg-[#f26722] hover:text-white"
                     >
                       <ExternalLink className="h-4 w-4 mr-1" />
@@ -4118,14 +5268,16 @@ export default function OpportunityDetail() {
                 <div className="flex-1 p-4 overflow-hidden">
                   {previewFile && (
                     <div className="h-full">
-                      {getFileExtension(previewFile.name) === 'pdf' ? (
+                      {getFileExtension(previewFile.name) === "pdf" ? (
                         <PDFEditor
                           fileUrl={previewFile.file_url}
                           fileName={previewFile.name}
                           onSave={handleSavePDF}
                           onClose={() => setShowPreviewModal(false)}
                         />
-                      ) : ['jpg', 'jpeg', 'png', 'gif'].includes(getFileExtension(previewFile.name)) ? (
+                      ) : ["jpg", "jpeg", "png", "gif"].includes(
+                          getFileExtension(previewFile.name),
+                        ) ? (
                         <div className="flex items-center justify-center h-full">
                           <img
                             src={previewFile.file_url}
@@ -4133,7 +5285,7 @@ export default function OpportunityDetail() {
                             className="max-w-full max-h-full object-contain rounded"
                           />
                         </div>
-                      ) : getFileExtension(previewFile.name) === 'txt' ? (
+                      ) : getFileExtension(previewFile.name) === "txt" ? (
                         <div className="h-full">
                           <iframe
                             src={previewFile.file_url}
@@ -4151,7 +5303,10 @@ export default function OpportunityDetail() {
                             This file type cannot be previewed in the browser.
                           </p>
                           <Button
-                            onClick={() => previewFile && window.open(previewFile.file_url, '_blank')}
+                            onClick={() =>
+                              previewFile &&
+                              window.open(previewFile.file_url, "_blank")
+                            }
                             className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
                           >
                             <Download className="h-4 w-4 mr-2" />
@@ -4190,7 +5345,10 @@ export default function OpportunityDetail() {
                 <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Delete Opportunity
                 </Dialog.Title>
-                <p className="text-sm text-gray-600 dark:text-white mb-6">Are you sure you want to delete this opportunity? This action cannot be undone.</p>
+                <p className="text-sm text-gray-600 dark:text-white mb-6">
+                  Are you sure you want to delete this opportunity? This action
+                  cannot be undone.
+                </p>
                 <div className="flex justify-end gap-3">
                   <button
                     type="button"
@@ -4218,12 +5376,12 @@ export default function OpportunityDetail() {
 
 function formatDivisionName(division: string): string {
   const divisionMap: { [key: string]: string } = {
-    'north_alabama': 'Alabama Division',
-    'tennessee': 'Tennessee Division',
-    'georgia': 'Georgia Division',
-    'international': 'International Division',
-    'engineering': 'Engineering',
-    'scavenger': 'Scavenger'
+    north_alabama: "Alabama Division",
+    tennessee: "Tennessee Division",
+    georgia: "Georgia Division",
+    international: "International Division",
+    engineering: "Engineering",
+    scavenger: "Scavenger",
   };
   return divisionMap[division] || division;
 }

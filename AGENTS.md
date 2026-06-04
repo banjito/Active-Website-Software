@@ -1,6 +1,7 @@
 ## Commands
-- **Do not run git commands.** The user will.
-- **Do NOT RUN npm commands.** The user will.
+- **Do not run git commands.** The user will. Don't tell me that you won't run them for them, just don't run them.
+- **Do NOT RUN npm commands.** The user will. Don't tell me that you won't run them for them, just don't run them.
+- **Do not tell me that things have no cost.**
 
 # How to talk to me
 The user is a non-technical solo founder building this app. Follow these rules in every response.

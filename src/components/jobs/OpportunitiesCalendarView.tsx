@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import FullCalendar from '@fullcalendar/react';
-import { EventClickArg, DatesSetArg } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { supabase } from '@/lib/supabase';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import FullCalendar from "@fullcalendar/react";
+import { EventClickArg, DatesSetArg } from "@fullcalendar/core";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import { supabase } from "@/lib/supabase";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface OpportunityCalendarItem {
   id: string;
@@ -31,25 +31,25 @@ function parseDate(d: string | null): Date | null {
 
 // Calendar colors show estimate stage, not due-date urgency.
 function getEventColor(opportunity: OpportunityCalendarItem): string {
-  const status = (opportunity.estimate_approval_status || '').toLowerCase();
+  const status = (opportunity.estimate_approval_status || "").toLowerCase();
   const dueDate = parseDate(opportunity.proposal_due_date);
-  if (!dueDate) return 'var(--cal-gray)';
+  if (!dueDate) return "var(--cal-gray)";
 
-  if (status === 'no_quote' || status === 'no quote') return 'var(--cal-gray)';
-  if (status === 'sent') return 'var(--cal-sent)';
-  if (!status) return 'var(--cal-not-started)';
-  return 'var(--cal-in-progress)';
+  if (status === "no_quote" || status === "no quote") return "var(--cal-gray)";
+  if (status === "sent") return "var(--cal-sent)";
+  if (!status) return "var(--cal-not-started)";
+  return "var(--cal-in-progress)";
 }
 
 function getEventTitle(opportunity: OpportunityCalendarItem): string {
-  const title = (opportunity.title || '').trim();
-  const q = (opportunity.quote_number || '').trim();
+  const title = (opportunity.title || "").trim();
+  const q = (opportunity.quote_number || "").trim();
   if (title && q) return `${q} — ${title}`;
-  return title || q || 'Untitled';
+  return title || q || "Untitled";
 }
 
 function formatMonthYear(d: Date): string {
-  return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
 function formatWeekRange(start: Date, end: Date): string {
@@ -60,25 +60,27 @@ function formatWeekRange(start: Date, end: Date): string {
   const sameMonth = sameYear && start.getMonth() === lastDay.getMonth();
 
   if (sameMonth) {
-    return `${start.toLocaleDateString('en-US', { month: 'long' })} ${start.getDate()}-${lastDay.getDate()}, ${start.getFullYear()}`;
+    return `${start.toLocaleDateString("en-US", { month: "long" })} ${start.getDate()}-${lastDay.getDate()}, ${start.getFullYear()}`;
   }
 
   if (sameYear) {
-    return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${lastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    return `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${lastDay.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
   }
 
-  return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${lastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  return `${start.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} - ${lastDay.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 }
 
-type CalendarView = 'dayGridMonth' | 'dayGridWeek';
+type CalendarView = "dayGridMonth" | "dayGridWeek";
 
 export function OpportunitiesCalendarView() {
   const navigate = useNavigate();
   const calendarRef = useRef<FullCalendar>(null);
-  const [opportunities, setOpportunities] = useState<OpportunityCalendarItem[]>([]);
+  const [opportunities, setOpportunities] = useState<OpportunityCalendarItem[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<CalendarView>('dayGridMonth');
+  const [currentView, setCurrentView] = useState<CalendarView>("dayGridMonth");
   const [currentStart, setCurrentStart] = useState<Date>(() => new Date());
   const [currentEnd, setCurrentEnd] = useState<Date>(() => {
     const end = new Date();
@@ -91,11 +93,11 @@ export function OpportunitiesCalendarView() {
     setError(null);
     try {
       const { data: oppData, error: oppErr } = await supabase
-        .schema('business')
-        .from('opportunities')
-        .select('id, title, quote_number, proposal_due_date')
-        .not('proposal_due_date', 'is', null)
-        .order('proposal_due_date', { ascending: true });
+        .schema("business")
+        .from("opportunities")
+        .select("id, title, quote_number, proposal_due_date")
+        .not("proposal_due_date", "is", null)
+        .order("proposal_due_date", { ascending: true });
 
       if (oppErr) throw oppErr;
       const opps = (oppData || []) as OpportunityCalendarItem[];
@@ -108,29 +110,31 @@ export function OpportunitiesCalendarView() {
 
       const ids = opps.map((o) => o.id);
       const { data: estData, error: estErr } = await supabase
-        .schema('business')
-        .from('estimates')
-        .select('id, opportunity_id, status, created_at')
-        .in('opportunity_id', ids)
-        .order('created_at', { ascending: false });
+        .schema("business")
+        .from("estimates")
+        .select("id, opportunity_id, status, created_at")
+        .in("opportunity_id", ids)
+        .order("created_at", { ascending: false });
 
       const statusByOpp: Record<string, string> = {};
       if (!estErr && estData && estData.length > 0) {
-        (estData as { opportunity_id: string; status: string }[]).forEach((row) => {
-          if (row.opportunity_id && statusByOpp[row.opportunity_id] == null) {
-            statusByOpp[row.opportunity_id] = row.status || '';
-          }
-        });
+        (estData as { opportunity_id: string; status: string }[]).forEach(
+          (row) => {
+            if (row.opportunity_id && statusByOpp[row.opportunity_id] == null) {
+              statusByOpp[row.opportunity_id] = row.status || "";
+            }
+          },
+        );
       }
 
       const withStatus = opps.map((o) => ({
         ...o,
-        estimate_approval_status: statusByOpp[o.id] || null
+        estimate_approval_status: statusByOpp[o.id] || null,
       }));
       setOpportunities(withStatus);
     } catch (e) {
-      console.error('Error loading opportunities for calendar:', e);
-      setError(e instanceof Error ? e.message : 'Failed to load opportunities');
+      console.error("Error loading opportunities for calendar:", e);
+      setError(e instanceof Error ? e.message : "Failed to load opportunities");
       setOpportunities([]);
     } finally {
       setLoading(false);
@@ -152,10 +156,21 @@ export function OpportunitiesCalendarView() {
         allDay: true,
         backgroundColor: getEventColor(opp),
         borderColor: getEventColor(opp),
-        extendedProps: { opportunityId: opp.id, opportunity: opp }
+        extendedProps: { opportunityId: opp.id, opportunity: opp },
       };
     })
-    .filter(Boolean) as { id: string; title: string; start: Date; allDay: boolean; backgroundColor: string; borderColor: string; extendedProps: { opportunityId: string; opportunity: OpportunityCalendarItem } }[];
+    .filter(Boolean) as {
+    id: string;
+    title: string;
+    start: Date;
+    allDay: boolean;
+    backgroundColor: string;
+    borderColor: string;
+    extendedProps: {
+      opportunityId: string;
+      opportunity: OpportunityCalendarItem;
+    };
+  }[];
 
   const handleEventClick = (info: EventClickArg) => {
     info.jsEvent.preventDefault();
@@ -164,7 +179,11 @@ export function OpportunitiesCalendarView() {
   };
 
   const handleDatesSet = (arg: DatesSetArg) => {
-    if ((arg.view.type === 'dayGridMonth' || arg.view.type === 'dayGridWeek') && arg.view.currentStart && arg.view.currentEnd) {
+    if (
+      (arg.view.type === "dayGridMonth" || arg.view.type === "dayGridWeek") &&
+      arg.view.currentStart &&
+      arg.view.currentEnd
+    ) {
       setCurrentView(arg.view.type);
       setCurrentStart(arg.view.currentStart);
       setCurrentEnd(arg.view.currentEnd);
@@ -190,7 +209,10 @@ export function OpportunitiesCalendarView() {
 
   const today = new Date();
   const isCurrentPeriod = today >= currentStart && today < currentEnd;
-  const calendarTitle = currentView === 'dayGridWeek' ? formatWeekRange(currentStart, currentEnd) : formatMonthYear(currentStart);
+  const calendarTitle =
+    currentView === "dayGridWeek"
+      ? formatWeekRange(currentStart, currentEnd)
+      : formatMonthYear(currentStart);
 
   return (
     <div className="opportunities-calendar space-y-5">
@@ -306,23 +328,44 @@ export function OpportunitiesCalendarView() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-900 tracking-tight">Proposal due calendar</h1>
-          <p className="text-sm text-gray-500 dark:text-dark-400 mt-0.5">
-            By due date. Click a block to open the opportunity.
-          </p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-900 tracking-tight">
+            Proposal due calendar
+          </h1>
         </div>
         <div className="flex items-center gap-3 flex-wrap text-xs text-gray-500 dark:text-dark-400">
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-not-started)]" aria-hidden /> Not started
+            <span
+              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-not-started)]"
+              aria-hidden
+            />{" "}
+            Not started
           </span>
-          <span className="inline-flex items-center gap-1.5" title="Working on the estimate">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-in-progress)]" aria-hidden /> In progress
+          <span
+            className="inline-flex items-center gap-1.5"
+            title="Working on the estimate"
+          >
+            <span
+              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-in-progress)]"
+              aria-hidden
+            />{" "}
+            In progress
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-sent)]" aria-hidden /> Sent
+            <span
+              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-sent)]"
+              aria-hidden
+            />{" "}
+            Sent
           </span>
-          <span className="inline-flex items-center gap-1.5" title="Not submitting a quote for this opportunity">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-gray)]" aria-hidden /> No Quote
+          <span
+            className="inline-flex items-center gap-1.5"
+            title="Not submitting a quote for this opportunity"
+          >
+            <span
+              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-gray)]"
+              aria-hidden
+            />{" "}
+            No Quote
           </span>
         </div>
       </div>
@@ -345,7 +388,11 @@ export function OpportunitiesCalendarView() {
                 type="button"
                 onClick={goPrev}
                 className="flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 dark:text-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 hover:text-gray-900 dark:hover:text-dark-900 transition-colors"
-                aria-label={currentView === 'dayGridWeek' ? 'Previous week' : 'Previous month'}
+                aria-label={
+                  currentView === "dayGridWeek"
+                    ? "Previous week"
+                    : "Previous month"
+                }
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -356,7 +403,9 @@ export function OpportunitiesCalendarView() {
                 type="button"
                 onClick={goNext}
                 className="flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 dark:text-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 hover:text-gray-900 dark:hover:text-dark-900 transition-colors"
-                aria-label={currentView === 'dayGridWeek' ? 'Next week' : 'Next month'}
+                aria-label={
+                  currentView === "dayGridWeek" ? "Next week" : "Next month"
+                }
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -365,8 +414,8 @@ export function OpportunitiesCalendarView() {
               <div className="flex items-center justify-center gap-2 mb-3">
                 <div className="inline-flex rounded-lg bg-gray-100 dark:bg-dark-200 p-1">
                   {[
-                    { label: 'Month', view: 'dayGridMonth' as CalendarView },
-                    { label: 'Week', view: 'dayGridWeek' as CalendarView }
+                    { label: "Month", view: "dayGridMonth" as CalendarView },
+                    { label: "Week", view: "dayGridWeek" as CalendarView },
                   ].map((item) => (
                     <button
                       key={item.view}
@@ -374,8 +423,8 @@ export function OpportunitiesCalendarView() {
                       onClick={() => changeView(item.view)}
                       className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${
                         currentView === item.view
-                          ? 'bg-white dark:bg-dark-100 text-gray-900 dark:text-dark-900 shadow-sm'
-                          : 'text-gray-600 dark:text-dark-400 hover:text-gray-900 dark:hover:text-dark-900'
+                          ? "bg-white dark:bg-dark-100 text-gray-900 dark:text-dark-900 shadow-sm"
+                          : "text-gray-600 dark:text-dark-400 hover:text-gray-900 dark:hover:text-dark-900"
                       }`}
                     >
                       {item.label}
@@ -387,8 +436,8 @@ export function OpportunitiesCalendarView() {
                   onClick={goToday}
                   className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
                     isCurrentPeriod
-                      ? 'bg-gray-200 dark:bg-dark-300 text-gray-700 dark:text-dark-200'
-                      : 'text-gray-600 dark:text-dark-400 hover:bg-gray-100 dark:hover:bg-dark-200'
+                      ? "bg-gray-200 dark:bg-dark-300 text-gray-700 dark:text-dark-200"
+                      : "text-gray-600 dark:text-dark-400 hover:bg-gray-100 dark:hover:bg-dark-200"
                   }`}
                 >
                   Today
@@ -396,7 +445,15 @@ export function OpportunitiesCalendarView() {
               </div>
               {/* Days of the week at the top */}
               <div className="grid grid-cols-7 border-b border-gray-200 dark:border-dark-300 bg-gray-50 dark:bg-dark-200/60">
-                {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
+                {[
+                  "Sunday",
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                ].map((day) => (
                   <div
                     key={day}
                     className="py-2.5 text-center text-sm font-semibold text-gray-700 dark:text-dark-300"
@@ -415,13 +472,15 @@ export function OpportunitiesCalendarView() {
                 datesSet={handleDatesSet}
                 events={events}
                 eventClick={handleEventClick}
-                dayMaxEvents={currentView === 'dayGridWeek' ? 10 : 4}
+                dayMaxEvents={currentView === "dayGridWeek" ? 10 : 4}
                 height="auto"
                 eventDisplay="block"
                 eventContent={(arg) => (
-                  <div className={`fc-event-main-frame ${currentView === 'dayGridWeek' ? '' : 'overflow-hidden'}`}>
+                  <div
+                    className={`fc-event-main-frame ${currentView === "dayGridWeek" ? "" : "overflow-hidden"}`}
+                  >
                     <div
-                      className={`fc-event-title text-xs font-medium ${currentView === 'dayGridWeek' ? 'whitespace-normal break-words' : 'truncate'}`}
+                      className={`fc-event-title text-xs font-medium ${currentView === "dayGridWeek" ? "whitespace-normal break-words" : "truncate"}`}
                       title={arg.event.title}
                     >
                       {arg.event.title}
@@ -430,9 +489,9 @@ export function OpportunitiesCalendarView() {
                 )}
                 eventDidMount={(info) => {
                   const el = info.el as HTMLElement;
-                  el.style.cursor = 'pointer';
-                  el.style.overflow = 'hidden';
-                  el.style.textOverflow = 'ellipsis';
+                  el.style.cursor = "pointer";
+                  el.style.overflow = "hidden";
+                  el.style.textOverflow = "ellipsis";
                 }}
               />
             </div>

@@ -1,18 +1,17 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { GoalList } from '../../../../components/goals/GoalList';
-import { Button } from '../../../../components/ui/Button';
-import { PlusIcon, BarChartIcon } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import { GoalList } from "../../../../components/goals/GoalList";
+import { Button } from "../../../../components/ui/Button";
+import { PlusIcon, BarChartIcon } from "lucide-react";
 
 export default function GoalsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sales Goals</h1>
-          <p className="text-gray-500 dark:text-white mt-1">
-            Create, track, and manage your sales goals and targets
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Sales Goals
+          </h1>
         </div>
         <div className="flex space-x-3">
           <Link to="/sales/goals/dashboard">
@@ -29,10 +28,10 @@ export default function GoalsPage() {
           </Link>
         </div>
       </div>
-      
+
       <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm p-6">
         <GoalList />
       </div>
     </div>
   );
-} 
+}

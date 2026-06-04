@@ -21,7 +21,9 @@ export interface TechnicalReport {
   review_comments?: string;
   reviewed_by?: string;
   reviewed_at?: string;
+  approved_by?: string;
   approved_at?: string;
+  sent_by?: string;
   sent_at?: string;
   revision_history: RevisionHistory[];
   current_version: number;
@@ -304,6 +306,7 @@ export async function submitReportForApproval(id: string, userId: string, commen
     // Update the report
     const updates = {
       status: 'submitted' as ReportStatus,
+      submitted_by: userId,
       submitted_at: now,
       revision_history: updatedRevisionHistory,
       current_version: newVersion,
@@ -338,7 +341,8 @@ export async function submitReportForApproval(id: string, userId: string, commen
           .from('assets')
           .update({ 
             status: 'ready_for_review',
-            submitted_at: now 
+            submitted_at: now,
+            submitted_by: userId
           })
           .in('id', assetIds);
         
@@ -415,6 +419,7 @@ export async function reviewReport(approvalRequest: ReportApprovalRequest) {
     if (status === 'approved') {
       updates.approved_at = now;
       updates.issued_at = now;
+      updates.approved_by = reviewer_id;
     }
     
     const { data, error } = await supabase
@@ -453,11 +458,19 @@ export async function reviewReport(approvalRequest: ReportApprovalRequest) {
 
         // Update all linked assets with status and timestamp
         const assetIds = assetLinks.map(link => link.asset_id);
-        const assetUpdate: any = { status: newAssetStatus };
+        const assetUpdate: any = {
+          status: newAssetStatus,
+          reviewed_by: reviewer_id,
+          reviewed_at: now,
+          review_comments: comments || null
+        };
         
         // Stamp approved_at timestamp when approving
         if (status === 'approved') {
           assetUpdate.approved_at = now;
+          assetUpdate.approved_by = reviewer_id;
+          assetUpdate.reviewed_by = reviewer_id;
+          assetUpdate.reviewed_at = now;
         }
         
         const { error: updateError } = await supabase
@@ -581,7 +594,8 @@ export async function markReportAsSent(id: string, userId: string, comments?: st
       status: 'sent' as ReportStatus,
       revision_history: updatedRevisionHistory,
       updated_at: now,
-      sent_at: now
+      sent_at: now,
+      sent_by: userId
     };
     
     const { data, error } = await supabase
@@ -609,7 +623,8 @@ export async function markReportAsSent(id: string, userId: string, comments?: st
           .from('assets')
           .update({ 
             status: 'sent',
-            sent_at: now
+            sent_at: now,
+            sent_by: userId
           })
           .in('id', assetIds);
 

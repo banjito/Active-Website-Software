@@ -52,8 +52,8 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
           .select('id, email, full_name')
           .eq('id', userId)
           .maybeSingle();
-        if (!profileError && profileData?.email) {
-          map[userId] = profileData.email;
+        if (!profileError && profileData && (profileData.full_name || profileData.email)) {
+          map[userId] = profileData.full_name || profileData.email;
           continue;
         }
       } catch (_) {}

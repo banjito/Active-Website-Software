@@ -1710,13 +1710,14 @@ const FeaturesFixesPage: React.FC = () => {
                       </div>
                     )}
 
-                  {/* Comments & feedback (reporter + interested parties) */}
+                  {/* Comments & feedback */}
                   <div>
                     <IssueNotes
                       issueId={selectedIssue.id}
                       canComment={
                         !!user?.id &&
-                        (selectedIssue.reporter_id === user.id ||
+                        (hasIssueOpsAccess ||
+                          selectedIssue.reporter_id === user.id ||
                           (
                             interestedPartiesByIssue[selectedIssue.id] || []
                           ).includes(user.id))

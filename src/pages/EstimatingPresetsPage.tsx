@@ -1,21 +1,32 @@
 /**
  * Estimating Preset Settings Page
- * 
+ *
  * Allows users to view and modify company-wide default values used in estimates.
  * These presets pre-populate estimate forms with default values.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../lib/AuthContext';
-import { 
-  getEstimatingPresets, 
-  updateEstimatingPresets, 
+import React, { useState, useEffect, useCallback } from "react";
+import { useAuth } from "../lib/AuthContext";
+import {
+  getEstimatingPresets,
+  updateEstimatingPresets,
   resetEstimatingPresets,
   EstimatingPresets,
-  DEFAULT_ESTIMATING_PRESETS 
-} from '../services/estimatingPresetsService';
-import { Save, RotateCcw, Calculator, Truck, Plane, DollarSign, Users, Clock, AlertCircle, CheckCircle } from 'lucide-react';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+  DEFAULT_ESTIMATING_PRESETS,
+} from "../services/estimatingPresetsService";
+import {
+  Save,
+  RotateCcw,
+  Calculator,
+  Truck,
+  Plane,
+  DollarSign,
+  Users,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 // Input component for currency fields - moved outside to prevent recreation
 const CurrencyInput: React.FC<{
@@ -25,10 +36,13 @@ const CurrencyInput: React.FC<{
   helpText?: string;
   onChange: (field: keyof EstimatingPresets, value: number) => void;
 }> = React.memo(({ label, value, field, helpText, onChange }) => {
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const parsedValue = parseFloat(e.target.value) || 0;
-    onChange(field, parsedValue);
-  }, [field, onChange]);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const parsedValue = parseFloat(e.target.value) || 0;
+      onChange(field, parsedValue);
+    },
+    [field, onChange],
+  );
 
   return (
     <div className="mb-4">
@@ -43,21 +57,23 @@ const CurrencyInput: React.FC<{
           type="number"
           step="0.01"
           min="0"
-          value={value || ''}
+          value={value || ""}
           onChange={handleChange}
-          className="block w-full pl-8 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm 
-                     focus:ring-[#f26722] focus:border-[#f26722] 
+          className="block w-full pl-8 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm
+                     focus:ring-[#f26722] focus:border-[#f26722]
                      bg-white dark:bg-dark-100 text-gray-900 dark:text-white"
         />
       </div>
       {helpText && (
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{helpText}</p>
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          {helpText}
+        </p>
       )}
     </div>
   );
 });
 
-CurrencyInput.displayName = 'CurrencyInput';
+CurrencyInput.displayName = "CurrencyInput";
 
 // Input component for number fields - moved outside to prevent recreation
 const NumberInput: React.FC<{
@@ -69,42 +85,49 @@ const NumberInput: React.FC<{
   step?: number;
   min?: number;
   onChange: (field: keyof EstimatingPresets, value: number) => void;
-}> = React.memo(({ label, value, field, helpText, suffix, step = 1, min = 0, onChange }) => {
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const parsedValue = parseFloat(e.target.value) || 0;
-    onChange(field, parsedValue);
-  }, [field, onChange]);
+}> = React.memo(
+  ({ label, value, field, helpText, suffix, step = 1, min = 0, onChange }) => {
+    const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const parsedValue = parseFloat(e.target.value) || 0;
+        onChange(field, parsedValue);
+      },
+      [field, onChange],
+    );
 
-  return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {label}
-      </label>
-      <div className="relative">
-        <input
-          type="number"
-          step={step}
-          min={min}
-          value={value || ''}
-          onChange={handleChange}
-          className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm 
-                     focus:ring-[#f26722] focus:border-[#f26722] 
+    return (
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          {label}
+        </label>
+        <div className="relative">
+          <input
+            type="number"
+            step={step}
+            min={min}
+            value={value || ""}
+            onChange={handleChange}
+            className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm
+                     focus:ring-[#f26722] focus:border-[#f26722]
                      bg-white dark:bg-dark-100 text-gray-900 dark:text-white"
-        />
-        {suffix && (
-          <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 dark:text-gray-400 text-sm">
-            {suffix}
-          </span>
+          />
+          {suffix && (
+            <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 dark:text-gray-400 text-sm">
+              {suffix}
+            </span>
+          )}
+        </div>
+        {helpText && (
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {helpText}
+          </p>
         )}
       </div>
-      {helpText && (
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{helpText}</p>
-      )}
-    </div>
-  );
-});
+    );
+  },
+);
 
-NumberInput.displayName = 'NumberInput';
+NumberInput.displayName = "NumberInput";
 
 // Input component for factor/multiplier fields - moved outside to prevent recreation
 const FactorInput: React.FC<{
@@ -114,42 +137,49 @@ const FactorInput: React.FC<{
   helpText?: string;
   showPercentage?: boolean;
   onChange: (field: keyof EstimatingPresets, value: number) => void;
-}> = React.memo(({ label, value, field, helpText, showPercentage = false, onChange }) => {
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const parsedValue = parseFloat(e.target.value) || 0;
-    onChange(field, parsedValue);
-  }, [field, onChange]);
+}> = React.memo(
+  ({ label, value, field, helpText, showPercentage = false, onChange }) => {
+    const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const parsedValue = parseFloat(e.target.value) || 0;
+        onChange(field, parsedValue);
+      },
+      [field, onChange],
+    );
 
-  return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {label}
-      </label>
-      <div className="flex items-center gap-2">
-        <input
-          type="number"
-          step="0.01"
-          min="0"
-          value={value || ''}
-          onChange={handleChange}
-          className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm 
-                     focus:ring-[#f26722] focus:border-[#f26722] 
+    return (
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          {label}
+        </label>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={value || ""}
+            onChange={handleChange}
+            className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm
+                     focus:ring-[#f26722] focus:border-[#f26722]
                      bg-white dark:bg-dark-100 text-gray-900 dark:text-white"
-        />
-        {showPercentage && (
-          <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-            ({((value - 1) * 100).toFixed(0)}%)
-          </span>
+          />
+          {showPercentage && (
+            <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              ({((value - 1) * 100).toFixed(0)}%)
+            </span>
+          )}
+        </div>
+        {helpText && (
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {helpText}
+          </p>
         )}
       </div>
-      {helpText && (
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{helpText}</p>
-      )}
-    </div>
-  );
-});
+    );
+  },
+);
 
-FactorInput.displayName = 'FactorInput';
+FactorInput.displayName = "FactorInput";
 
 export default function EstimatingPresetsPage() {
   const { user } = useAuth();
@@ -172,10 +202,10 @@ export default function EstimatingPresetsPage() {
       const data = await getEstimatingPresets();
       setPresets(data);
     } catch (err) {
-      console.error('Error loading presets:', err);
-      setError('Failed to load estimating presets. Using default values.');
+      console.error("Error loading presets:", err);
+      setError("Failed to load estimating presets. Using default values.");
       setPresets({
-        id: '',
+        id: "",
         ...DEFAULT_ESTIMATING_PRESETS,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -186,36 +216,39 @@ export default function EstimatingPresetsPage() {
     }
   };
 
-  const handleInputChange = useCallback((field: keyof EstimatingPresets, value: number) => {
-    if (!presets) return;
-    
-    setPresets(prev => ({
-      ...prev!,
-      [field]: value,
-    }));
-    setHasChanges(true);
-    setSuccessMessage(null);
-  }, [presets]);
+  const handleInputChange = useCallback(
+    (field: keyof EstimatingPresets, value: number) => {
+      if (!presets) return;
+
+      setPresets((prev) => ({
+        ...prev!,
+        [field]: value,
+      }));
+      setHasChanges(true);
+      setSuccessMessage(null);
+    },
+    [presets],
+  );
 
   const handleSave = async () => {
     if (!presets || !user) return;
-    
+
     try {
       setSaving(true);
       setError(null);
       setSuccessMessage(null);
-      
+
       const { id, created_at, updated_at, updated_by, ...updateData } = presets;
       await updateEstimatingPresets(updateData, user.id);
-      
+
       setHasChanges(false);
-      setSuccessMessage('Estimating presets saved successfully!');
-      
+      setSuccessMessage("Estimating presets saved successfully!");
+
       // Auto-clear success message after 5 seconds
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err) {
-      console.error('Error saving presets:', err);
-      setError('Failed to save estimating presets. Please try again.');
+      console.error("Error saving presets:", err);
+      setError("Failed to save estimating presets. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -223,30 +256,33 @@ export default function EstimatingPresetsPage() {
 
   const handleReset = async () => {
     if (!user) return;
-    
-    if (!window.confirm('Are you sure you want to reset all presets to their default values? This cannot be undone.')) {
+
+    if (
+      !window.confirm(
+        "Are you sure you want to reset all presets to their default values? This cannot be undone.",
+      )
+    ) {
       return;
     }
-    
+
     try {
       setSaving(true);
       setError(null);
       setSuccessMessage(null);
-      
+
       const resetData = await resetEstimatingPresets(user.id);
       setPresets(resetData);
       setHasChanges(false);
-      setSuccessMessage('Presets reset to default values successfully!');
-      
+      setSuccessMessage("Presets reset to default values successfully!");
+
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err) {
-      console.error('Error resetting presets:', err);
-      setError('Failed to reset presets. Please try again.');
+      console.error("Error resetting presets:", err);
+      setError("Failed to reset presets. Please try again.");
     } finally {
       setSaving(false);
     }
   };
-
 
   if (loading) {
     return (
@@ -262,7 +298,9 @@ export default function EstimatingPresetsPage() {
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
             <AlertCircle className="h-5 w-5" />
-            <span>Unable to load estimating presets. Please refresh the page.</span>
+            <span>
+              Unable to load estimating presets. Please refresh the page.
+            </span>
           </div>
         </div>
       </div>
@@ -279,16 +317,13 @@ export default function EstimatingPresetsPage() {
               <Calculator className="h-7 w-7 text-[#f26722]" />
               Estimating Preset Settings
             </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Configure default values used when creating new estimates. These values will pre-populate estimate forms.
-            </p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={handleReset}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 
-                         bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md 
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300
+                         bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md
                          hover:bg-gray-50 dark:hover:bg-dark-200 disabled:opacity-50 transition-colors"
             >
               <RotateCcw className="h-4 w-4" />
@@ -297,16 +332,16 @@ export default function EstimatingPresetsPage() {
             <button
               onClick={handleSave}
               disabled={saving || !hasChanges}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white 
-                         bg-[#f26722] hover:bg-[#e55611] rounded-md shadow-sm 
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white
+                         bg-[#f26722] hover:bg-[#e55611] rounded-md shadow-sm
                          disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Save className="h-4 w-4" />
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </div>
-        
+
         {/* Status Messages */}
         {error && (
           <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
@@ -316,7 +351,7 @@ export default function EstimatingPresetsPage() {
             </div>
           </div>
         )}
-        
+
         {successMessage && (
           <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
             <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
@@ -325,7 +360,7 @@ export default function EstimatingPresetsPage() {
             </div>
           </div>
         )}
-        
+
         {hasChanges && !successMessage && (
           <div className="mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
@@ -341,9 +376,11 @@ export default function EstimatingPresetsPage() {
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <DollarSign className="h-5 w-5 text-[#f26722]" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">General Estimating Variables</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              General Estimating Variables
+            </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
             <CurrencyInput
               label="Default Hourly Rate (Straight Time)"
@@ -352,7 +389,7 @@ export default function EstimatingPresetsPage() {
               helpText="Base hourly labor rate"
               onChange={handleInputChange}
             />
-            
+
             <CurrencyInput
               label="Overtime Rate"
               value={presets.overtime_rate}
@@ -360,7 +397,7 @@ export default function EstimatingPresetsPage() {
               helpText="Typically 1.5x straight time"
               onChange={handleInputChange}
             />
-            
+
             <CurrencyInput
               label="Double Time Rate"
               value={presets.double_time_rate}
@@ -368,7 +405,7 @@ export default function EstimatingPresetsPage() {
               helpText="Typically 2x straight time"
               onChange={handleInputChange}
             />
-            
+
             <FactorInput
               label="Default Tax Factor"
               value={presets.default_tax_factor}
@@ -377,7 +414,7 @@ export default function EstimatingPresetsPage() {
               showPercentage={true}
               onChange={handleInputChange}
             />
-            
+
             <FactorInput
               label="Default Markup Factor"
               value={presets.default_markup_factor}
@@ -386,7 +423,7 @@ export default function EstimatingPresetsPage() {
               showPercentage={true}
               onChange={handleInputChange}
             />
-            
+
             <div className="sm:col-span-2 grid grid-cols-2 gap-6">
               <NumberInput
                 label="Default Number of Men"
@@ -396,7 +433,7 @@ export default function EstimatingPresetsPage() {
                 min={1}
                 onChange={handleInputChange}
               />
-              
+
               <NumberInput
                 label="Default Hours Per Day"
                 value={presets.default_hours_per_day}
@@ -414,9 +451,11 @@ export default function EstimatingPresetsPage() {
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <Truck className="h-5 w-5 text-[#f26722]" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Vehicle Travel Variables</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Vehicle Travel Variables
+            </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
             <NumberInput
               label="Default Number of Vehicles"
@@ -426,7 +465,7 @@ export default function EstimatingPresetsPage() {
               min={1}
               onChange={handleInputChange}
             />
-            
+
             <CurrencyInput
               label="Vehicle Cost Per Mile"
               value={presets.default_vehicle_cost_per_mile}
@@ -434,7 +473,7 @@ export default function EstimatingPresetsPage() {
               helpText="Per mile rate"
               onChange={handleInputChange}
             />
-            
+
             <NumberInput
               label="Average Speed"
               value={presets.default_average_speed}
@@ -444,7 +483,7 @@ export default function EstimatingPresetsPage() {
               min={1}
               onChange={handleInputChange}
             />
-            
+
             <NumberInput
               label="Local Miles Per Day"
               value={presets.default_local_miles_per_day}
@@ -461,9 +500,11 @@ export default function EstimatingPresetsPage() {
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <Users className="h-5 w-5 text-[#f26722]" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Per Diem & Lodging</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Per Diem & Lodging
+            </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
             <CurrencyInput
               label="Default Per Diem Rate"
@@ -472,7 +513,7 @@ export default function EstimatingPresetsPage() {
               helpText="Daily meal allowance"
               onChange={handleInputChange}
             />
-            
+
             <CurrencyInput
               label="Default Lodging Rate"
               value={presets.default_lodging_rate}
@@ -487,9 +528,11 @@ export default function EstimatingPresetsPage() {
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <Plane className="h-5 w-5 text-[#f26722]" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Flight Travel Variables</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Flight Travel Variables
+            </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
             <NumberInput
               label="Default Flight Number of Men"
@@ -499,7 +542,7 @@ export default function EstimatingPresetsPage() {
               min={1}
               onChange={handleInputChange}
             />
-            
+
             <CurrencyInput
               label="Default Flight Rate"
               value={presets.default_flight_rate}
@@ -507,7 +550,7 @@ export default function EstimatingPresetsPage() {
               helpText="Average cost per flight"
               onChange={handleInputChange}
             />
-            
+
             <CurrencyInput
               label="Default Luggage Fees"
               value={presets.default_flight_luggage_fees}
@@ -522,9 +565,11 @@ export default function EstimatingPresetsPage() {
         <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 lg:col-span-2">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <Clock className="h-5 w-5 text-[#f26722]" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Rental Car Variables</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Rental Car Variables
+            </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6">
             <NumberInput
               label="Default Number of Rental Cars"
@@ -534,7 +579,7 @@ export default function EstimatingPresetsPage() {
               min={0}
               onChange={handleInputChange}
             />
-            
+
             <CurrencyInput
               label="Default Rental Rate"
               value={presets.default_rental_rate}
@@ -555,4 +600,3 @@ export default function EstimatingPresetsPage() {
     </div>
   );
 }
-

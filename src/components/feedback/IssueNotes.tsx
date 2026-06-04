@@ -26,7 +26,7 @@ interface IssueNote {
 
 interface IssueNotesProps {
   issueId: string;
-  /** Reporter + interested parties can add notes */
+  /** Allowed users can add notes */
   canComment: boolean;
 }
 
@@ -260,7 +260,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
             Comments & feedback
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            {canComment ? 'Add a comment or feedback. Reporter and interested parties can post.' : 'Only the reporter and interested parties can add comments.'}
+            {canComment ? 'Add a comment or feedback.' : 'Only authorized users can add comments.'}
           </p>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-3">

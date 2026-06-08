@@ -610,7 +610,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
         await supabase
           .schema('neta_ops')
           .from('current_transformer_test_mts_reports')
-          .update(payload)
+          .update(reportPayload)
           .eq('id', reportIdRef.current);
       } else if (creatingRef.current) {
         pendingSaveRef.current = true;
@@ -620,7 +620,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
           const result = await supabase
             .schema('neta_ops')
             .from('current_transformer_test_mts_reports')
-            .insert(payload)
+            .insert(reportPayload)
             .select()
             .single();
 

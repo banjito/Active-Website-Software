@@ -91,6 +91,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [showProfileSetup, setShowProfileSetup] = useState(false);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
+  const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
   const [showResendOption, setShowResendOption] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendEmail, setResendEmail] = useState("");
@@ -167,6 +168,36 @@ export default function Login() {
       setLoading(false);
     }
   }
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setShowResendOption(false);
+
+    if (!email.trim()) {
+      setError("Enter your email first");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      );
+
+      if (resetError) throw resetError;
+
+      setError("Password reset email sent. Check your inbox.");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Could not send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -311,7 +342,11 @@ export default function Login() {
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-black mb-2">
-              {isSignUpMode ? "Make your account" : "Welcome back"}
+              {isForgotPasswordMode
+                ? "Reset password"
+                : isSignUpMode
+                  ? "Make your account"
+                  : "Welcome back"}
             </h2>
           </div>
 
@@ -319,7 +354,13 @@ export default function Login() {
             <CardContent className="p-12">
               <form
                 className="space-y-8"
-                onSubmit={isSignUpMode ? handleSignUp : handleSubmit}
+                onSubmit={
+                  isForgotPasswordMode
+                    ? handleForgotPassword
+                    : isSignUpMode
+                      ? handleSignUp
+                      : handleSubmit
+                }
               >
                 <div className="space-y-6 pt-4">
                   <Input
@@ -336,27 +377,46 @@ export default function Login() {
                     className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-gray-200"
                   />
 
-                  <Input
-                    label="Password"
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete={
-                      isSignUpMode ? "new-password" : "current-password"
-                    }
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    leftIcon={<Lock className="h-5 w-5 text-gray-400" />}
-                    minLength={6}
-                    placeholder="Enter your password"
-                    hint={
-                      isSignUpMode
-                        ? "Password must be at least 6 characters"
-                        : undefined
-                    }
-                    className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-gray-200"
-                  />
+                  {!isForgotPasswordMode && (
+                    <Input
+                      label="Password"
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete={
+                        isSignUpMode ? "new-password" : "current-password"
+                      }
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      leftIcon={<Lock className="h-5 w-5 text-gray-400" />}
+                      minLength={6}
+                      placeholder="Enter your password"
+                      hint={
+                        isSignUpMode
+                          ? "Password must be at least 6 characters"
+                          : undefined
+                      }
+                      className="bg-gray-200 border-gray-400 text-black placeholder-gray-500 h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-gray-200"
+                    />
+                  )}
+
+                  {!isSignUpMode && !isForgotPasswordMode && (
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsForgotPasswordMode(true);
+                          setError(null);
+                          setPassword("");
+                          setShowResendOption(false);
+                        }}
+                        className="text-sm font-medium text-black hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {error && (
@@ -364,12 +424,13 @@ export default function Login() {
                     className={`rounded-xl p-4 ${
                       error.startsWith("Success") ||
                       error.includes("created successfully") ||
-                      error.includes("Verification email sent")
-                        ? "bg-green-900/20 border border-green-700 text-green-200"
+                      error.includes("Verification email sent") ||
+                      error.includes("Password reset email sent")
+                        ? "bg-transparent border border-green-700 text-green-950"
                         : error.includes("already registered") ||
                             error.includes("haven't verified")
-                          ? "bg-yellow-900/20 border border-yellow-700 text-yellow-200"
-                          : "bg-red-900/20 border border-red-700 text-red-200"
+                          ? "bg-transparent border border-yellow-700 text-yellow-950"
+                          : "bg-transparent border border-red-700 text-red-950"
                     }`}
                   >
                     <div className="text-sm font-medium">{error}</div>
@@ -417,7 +478,9 @@ export default function Login() {
                     fullWidth
                     isLoading={loading}
                     leftIcon={
-                      isSignUpMode ? (
+                      isForgotPasswordMode ? (
+                        <Mail className="h-5 w-5" />
+                      ) : isSignUpMode ? (
                         <UserPlus className="h-5 w-5" />
                       ) : (
                         <LogIn className="h-5 w-5" />
@@ -425,7 +488,11 @@ export default function Login() {
                     }
                     className="h-12 font-medium hover:bg-[#f26722]/75"
                   >
-                    {isSignUpMode ? "Create account" : "Sign in"}
+                    {isForgotPasswordMode
+                      ? "Send reset link"
+                      : isSignUpMode
+                        ? "Create account"
+                        : "Sign in"}
                   </Button>
                 </div>
               </form>
@@ -437,12 +504,17 @@ export default function Login() {
                   size="lg"
                   fullWidth
                   onClick={() => {
-                    setIsSignUpMode(!isSignUpMode);
+                    if (isForgotPasswordMode) {
+                      setIsForgotPasswordMode(false);
+                    } else {
+                      setIsSignUpMode(!isSignUpMode);
+                    }
                     setError(null);
+                    setShowResendOption(false);
                   }}
                   disabled={loading}
                   leftIcon={
-                    isSignUpMode ? (
+                    isForgotPasswordMode || isSignUpMode ? (
                       <LogIn className="h-5 w-5" />
                     ) : (
                       <UserPlus className="h-5 w-5" />
@@ -450,7 +522,11 @@ export default function Login() {
                   }
                   className="mt-6 h-12 font-medium bg-transparent border-none hover:bg-gray-800/10"
                 >
-                  {isSignUpMode ? "Sign in instead" : "Create account"}
+                  {isForgotPasswordMode
+                    ? "Back to sign in"
+                    : isSignUpMode
+                      ? "Sign in instead"
+                      : "Create account"}
                 </Button>
               </div>
             </CardContent>

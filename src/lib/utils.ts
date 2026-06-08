@@ -91,11 +91,18 @@ export async function processAuthToken(url: string) {
       
       if (type === 'recovery') {
         // Password reset flow
-        await supabase.auth.resetPasswordForEmail(token);
+        const { data, error } = await supabase.auth.verifyOtp({
+          token_hash: token,
+          type: 'recovery',
+        });
+
         return { 
-          success: true, 
-          data: { type: 'recovery' }, 
-          error: null 
+          success: !error,
+          data: {
+            ...(data || {}),
+            type: 'recovery',
+          },
+          error,
         };
       } else if (type === 'signup' || type === 'email') {
         // Email verification

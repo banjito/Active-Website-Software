@@ -1,4 +1,4 @@
-import React, { FormEvent, useMemo, useState } from 'react';
+import React, { FormEvent, useMemo, useState } from "react";
 import {
   CalendarDays,
   CalendarRange,
@@ -10,9 +10,9 @@ import {
   Table2,
   Trash2,
   X,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { Button } from '@/components/ui/Button';
+import { Button } from "@/components/ui/Button";
 import {
   Dialog,
   DialogContent,
@@ -20,9 +20,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/Dialog';
-import { Input } from '@/components/ui/Input';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/Dialog";
+import { Input } from "@/components/ui/Input";
+import { cn } from "@/lib/utils";
 import {
   loadPipelineJobs,
   makePipelineJobId,
@@ -30,12 +30,12 @@ import {
   PipelineRegion,
   PipelineStatus,
   savePipelineJobs,
-} from '@/services/pipelineCalendarService';
+} from "@/services/pipelineCalendarService";
 
-type ViewMode = 'calendar' | 'list';
-type RangeMode = 'month' | 'quarter';
-type SortKey = 'startDate' | 'customer' | 'amount' | 'region';
-type SortDirection = 'asc' | 'desc';
+type ViewMode = "calendar" | "list";
+type RangeMode = "month" | "quarter";
+type SortKey = "startDate" | "customer" | "amount" | "region";
+type SortDirection = "asc" | "desc";
 
 interface PipelineJobForm {
   customer: string;
@@ -48,20 +48,23 @@ interface PipelineJobForm {
   status: PipelineStatus;
 }
 
-const regions: PipelineRegion[] = ['AL', 'TN', 'GA', 'International'];
-const statuses: PipelineStatus[] = ['confirmed', 'expected', 'dropped'];
+const regions: PipelineRegion[] = ["AL", "TN", "GA", "International"];
+const statuses: PipelineStatus[] = ["confirmed", "expected", "dropped"];
 
-const regionPalette: Record<PipelineRegion, { bg: string; light: string; border: string }> = {
-  AL: { bg: '#2563eb', light: '#dbeafe', border: '#93c5fd' },
-  TN: { bg: '#16a34a', light: '#dcfce7', border: '#86efac' },
-  GA: { bg: '#f26722', light: '#ffedd5', border: '#fdba74' },
-  International: { bg: '#7c3aed', light: '#ede9fe', border: '#c4b5fd' },
+const regionPalette: Record<
+  PipelineRegion,
+  { bg: string; light: string; border: string }
+> = {
+  AL: { bg: "#2563eb", light: "#dbeafe", border: "#93c5fd" },
+  TN: { bg: "#16a34a", light: "#dcfce7", border: "#86efac" },
+  GA: { bg: "#f26722", light: "#ffedd5", border: "#fdba74" },
+  International: { bg: "#7c3aed", light: "#ede9fe", border: "#c4b5fd" },
 };
 
 const statusLabels: Record<PipelineStatus, string> = {
-  confirmed: 'Confirmed',
-  expected: 'Expected',
-  dropped: 'Dropped',
+  confirmed: "Confirmed",
+  expected: "Expected",
+  dropped: "Dropped",
 };
 
 const defaultRegionFilter: Record<PipelineRegion, boolean> = {
@@ -80,14 +83,14 @@ const defaultStatusFilter: Record<PipelineStatus, boolean> = {
 const dayMs = 24 * 60 * 60 * 1000;
 
 function parseDate(value: string): Date {
-  const [year, month, day] = value.split('-').map(Number);
+  const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day);
 }
 
 function toDateInputValue(date: Date): string {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -128,25 +131,25 @@ function clampDate(date: Date, minDate: Date, maxDate: Date): Date {
 }
 
 function formatMillions(amount: number): string {
-  return `$${amount.toLocaleString('en-US', {
+  return `$${amount.toLocaleString("en-US", {
     minimumFractionDigits: amount % 1 === 0 ? 0 : 1,
     maximumFractionDigits: 2,
   })}m`;
 }
 
 function formatDate(value?: string): string {
-  if (!value) return 'Open';
+  if (!value) return "Open";
 
-  return parseDate(value).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+  return parseDate(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 
 function getRangeLabel(date: Date, rangeMode: RangeMode): string {
-  if (rangeMode === 'month') {
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  if (rangeMode === "month") {
+    return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
   }
 
   const quarter = Math.floor(date.getMonth() / 3) + 1;
@@ -155,31 +158,35 @@ function getRangeLabel(date: Date, rangeMode: RangeMode): string {
 
 function getEmptyForm(): PipelineJobForm {
   return {
-    customer: '',
-    dataCenterId: '',
-    location: '',
-    region: 'GA',
-    amount: '',
+    customer: "",
+    dataCenterId: "",
+    location: "",
+    region: "GA",
+    amount: "",
     startDate: toDateInputValue(new Date()),
-    endDate: '',
-    status: 'expected',
+    endDate: "",
+    status: "expected",
   };
 }
 
 function getFormFromJob(job: PipelineJob): PipelineJobForm {
   return {
     customer: job.customer,
-    dataCenterId: job.dataCenterId || '',
+    dataCenterId: job.dataCenterId || "",
     location: job.location,
     region: job.region,
     amount: String(job.amount),
     startDate: job.startDate,
-    endDate: job.endDate || '',
+    endDate: job.endDate || "",
     status: job.status,
   };
 }
 
-function jobOverlapsRange(job: PipelineJob, viewStart: Date, viewEnd: Date): boolean {
+function jobOverlapsRange(
+  job: PipelineJob,
+  viewStart: Date,
+  viewEnd: Date,
+): boolean {
   const jobStart = parseDate(job.startDate);
   const jobEnd = job.endDate ? parseDate(job.endDate) : viewEnd;
 
@@ -198,9 +205,11 @@ function getMonthSegments(viewStart: Date, viewEnd: Date) {
     const monthEnd = rawMonthEnd > viewEnd ? viewEnd : rawMonthEnd;
 
     segments.push({
-      label: cursor.toLocaleDateString('en-US', { month: 'short' }),
+      label: cursor.toLocaleDateString("en-US", { month: "short" }),
       left: ((monthStart.getTime() - viewStart.getTime()) / totalMs) * 100,
-      width: ((addDays(monthEnd, 1).getTime() - monthStart.getTime()) / totalMs) * 100,
+      width:
+        ((addDays(monthEnd, 1).getTime() - monthStart.getTime()) / totalMs) *
+        100,
     });
 
     cursor = addMonths(cursor, 1);
@@ -213,33 +222,40 @@ function getDateTicks(viewStart: Date, viewEnd: Date, rangeMode: RangeMode) {
   const viewEndExclusive = addDays(viewEnd, 1);
   const totalMs = viewEndExclusive.getTime() - viewStart.getTime();
   const ticks: Array<{ label: string; left: number }> = [];
-  let cursor = rangeMode === 'month' ? viewStart : startOfMonth(viewStart);
-  const stepDays = rangeMode === 'month' ? 7 : 0;
+  let cursor = rangeMode === "month" ? viewStart : startOfMonth(viewStart);
+  const stepDays = rangeMode === "month" ? 7 : 0;
 
   while (cursor <= viewEnd) {
     ticks.push({
       label:
-        rangeMode === 'month'
+        rangeMode === "month"
           ? String(cursor.getDate())
-          : cursor.toLocaleDateString('en-US', { month: 'short' }),
+          : cursor.toLocaleDateString("en-US", { month: "short" }),
       left: ((cursor.getTime() - viewStart.getTime()) / totalMs) * 100,
     });
 
-    cursor = rangeMode === 'month' ? addDays(cursor, stepDays) : addMonths(cursor, 1);
+    cursor =
+      rangeMode === "month" ? addDays(cursor, stepDays) : addMonths(cursor, 1);
   }
 
   return ticks;
 }
 
-function getBarStyle(job: PipelineJob, viewStart: Date, viewEnd: Date): React.CSSProperties {
+function getBarStyle(
+  job: PipelineJob,
+  viewStart: Date,
+  viewEnd: Date,
+): React.CSSProperties {
   const viewEndExclusive = addDays(viewEnd, 1);
   const totalMs = viewEndExclusive.getTime() - viewStart.getTime();
   const jobStart = clampDate(parseDate(job.startDate), viewStart, viewEnd);
   const rawJobEnd = job.endDate ? parseDate(job.endDate) : viewEnd;
   const jobEnd = clampDate(rawJobEnd, viewStart, viewEnd);
   const left = ((jobStart.getTime() - viewStart.getTime()) / totalMs) * 100;
-  const width = ((addDays(jobEnd, 1).getTime() - jobStart.getTime()) / totalMs) * 100;
-  const baseColor = job.status === 'dropped' ? '#9ca3af' : regionPalette[job.region].bg;
+  const width =
+    ((addDays(jobEnd, 1).getTime() - jobStart.getTime()) / totalMs) * 100;
+  const baseColor =
+    job.status === "dropped" ? "#9ca3af" : regionPalette[job.region].bg;
 
   return {
     left: `${left}%`,
@@ -248,59 +264,79 @@ function getBarStyle(job: PipelineJob, viewStart: Date, viewEnd: Date): React.CS
   };
 }
 
-function sortJobs(jobs: PipelineJob[], sortKey: SortKey, direction: SortDirection): PipelineJob[] {
+function sortJobs(
+  jobs: PipelineJob[],
+  sortKey: SortKey,
+  direction: SortDirection,
+): PipelineJob[] {
   return [...jobs].sort((jobA, jobB) => {
     let result = 0;
 
-    if (sortKey === 'amount') {
+    if (sortKey === "amount") {
       result = jobA.amount - jobB.amount;
-    } else if (sortKey === 'startDate') {
-      result = parseDate(jobA.startDate).getTime() - parseDate(jobB.startDate).getTime();
+    } else if (sortKey === "startDate") {
+      result =
+        parseDate(jobA.startDate).getTime() -
+        parseDate(jobB.startDate).getTime();
     } else {
       result = String(jobA[sortKey]).localeCompare(String(jobB[sortKey]));
     }
 
-    return direction === 'asc' ? result : -result;
+    return direction === "asc" ? result : -result;
   });
 }
 
 function StatusIcon({ status }: { status: PipelineStatus }) {
-  if (status === 'confirmed') return <Check className="h-3.5 w-3.5" />;
-  if (status === 'dropped') return <X className="h-3.5 w-3.5" />;
+  if (status === "confirmed") return <Check className="h-3.5 w-3.5" />;
+  if (status === "dropped") return <X className="h-3.5 w-3.5" />;
   return <span className="h-2 w-2 rounded-full bg-current" />;
 }
 
-function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+function DetailRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-gray-100 py-2 text-sm last:border-b-0 dark:border-gray-800">
       <dt className="text-gray-500 dark:text-gray-400">{label}</dt>
-      <dd className="text-right font-medium text-gray-900 dark:text-gray-100">{value}</dd>
+      <dd className="text-right font-medium text-gray-900 dark:text-gray-100">
+        {value}
+      </dd>
     </div>
   );
 }
 
 export default function PipelineCalendarPage() {
   const [jobs, setJobs] = useState<PipelineJob[]>(() => loadPipelineJobs());
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
-  const [rangeMode, setRangeMode] = useState<RangeMode>('quarter');
+  const [viewMode, setViewMode] = useState<ViewMode>("calendar");
+  const [rangeMode, setRangeMode] = useState<RangeMode>("quarter");
   const [anchorDate, setAnchorDate] = useState<Date>(() => new Date());
-  const [regionFilter, setRegionFilter] = useState<Record<PipelineRegion, boolean>>(defaultRegionFilter);
-  const [statusFilter, setStatusFilter] = useState<Record<PipelineStatus, boolean>>(defaultStatusFilter);
+  const [regionFilter, setRegionFilter] =
+    useState<Record<PipelineRegion, boolean>>(defaultRegionFilter);
+  const [statusFilter, setStatusFilter] =
+    useState<Record<PipelineStatus, boolean>>(defaultStatusFilter);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
   const [formState, setFormState] = useState<PipelineJobForm>(getEmptyForm);
-  const [formError, setFormError] = useState('');
-  const [storageError, setStorageError] = useState('');
-  const [sortKey, setSortKey] = useState<SortKey>('startDate');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [formError, setFormError] = useState("");
+  const [storageError, setStorageError] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("startDate");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   const viewStart = useMemo(
-    () => (rangeMode === 'month' ? startOfMonth(anchorDate) : startOfQuarter(anchorDate)),
+    () =>
+      rangeMode === "month"
+        ? startOfMonth(anchorDate)
+        : startOfQuarter(anchorDate),
     [anchorDate, rangeMode],
   );
   const viewEnd = useMemo(
-    () => (rangeMode === 'month' ? endOfMonth(anchorDate) : endOfQuarter(anchorDate)),
+    () =>
+      rangeMode === "month" ? endOfMonth(anchorDate) : endOfQuarter(anchorDate),
     [anchorDate, rangeMode],
   );
 
@@ -313,7 +349,12 @@ export default function PipelineCalendarPage() {
   );
 
   const visibleCalendarJobs = useMemo(
-    () => sortJobs(filteredJobs.filter((job) => jobOverlapsRange(job, viewStart, viewEnd)), 'startDate', 'asc'),
+    () =>
+      sortJobs(
+        filteredJobs.filter((job) => jobOverlapsRange(job, viewStart, viewEnd)),
+        "startDate",
+        "asc",
+      ),
     [filteredJobs, viewStart, viewEnd],
   );
 
@@ -323,19 +364,22 @@ export default function PipelineCalendarPage() {
   );
 
   const selectedJob = useMemo(
-    () => jobs.find((job) => job.id === selectedJobId) || visibleCalendarJobs[0] || null,
+    () =>
+      jobs.find((job) => job.id === selectedJobId) ||
+      visibleCalendarJobs[0] ||
+      null,
     [jobs, selectedJobId, visibleCalendarJobs],
   );
 
   const totals = useMemo(() => {
     const confirmed = filteredJobs
-      .filter((job) => job.status === 'confirmed')
+      .filter((job) => job.status === "confirmed")
       .reduce((sum, job) => sum + job.amount, 0);
     const expected = filteredJobs
-      .filter((job) => job.status === 'expected')
+      .filter((job) => job.status === "expected")
       .reduce((sum, job) => sum + job.amount, 0);
     const dropped = filteredJobs
-      .filter((job) => job.status === 'dropped')
+      .filter((job) => job.status === "dropped")
       .reduce((sum, job) => sum + job.amount, 0);
 
     return {
@@ -346,36 +390,47 @@ export default function PipelineCalendarPage() {
     };
   }, [filteredJobs]);
 
-  const monthSegments = useMemo(() => getMonthSegments(viewStart, viewEnd), [viewEnd, viewStart]);
-  const dateTicks = useMemo(() => getDateTicks(viewStart, viewEnd, rangeMode), [rangeMode, viewEnd, viewStart]);
+  const monthSegments = useMemo(
+    () => getMonthSegments(viewStart, viewEnd),
+    [viewEnd, viewStart],
+  );
+  const dateTicks = useMemo(
+    () => getDateTicks(viewStart, viewEnd, rangeMode),
+    [rangeMode, viewEnd, viewStart],
+  );
 
   const commitJobs = (nextJobs: PipelineJob[]) => {
     setJobs(nextJobs);
     const saved = savePipelineJobs(nextJobs);
-    setStorageError(saved ? '' : 'Saved on this screen only. Browser storage failed.');
+    setStorageError(
+      saved ? "" : "Saved on this screen only. Browser storage failed.",
+    );
   };
 
   const openAddForm = () => {
     setEditingJobId(null);
     setFormState(getEmptyForm());
-    setFormError('');
+    setFormError("");
     setIsFormOpen(true);
   };
 
   const openEditForm = (job: PipelineJob) => {
     setEditingJobId(job.id);
     setFormState(getFormFromJob(job));
-    setFormError('');
+    setFormError("");
     setIsFormOpen(true);
   };
 
-  const updateFormField = <Key extends keyof PipelineJobForm>(field: Key, value: PipelineJobForm[Key]) => {
+  const updateFormField = <Key extends keyof PipelineJobForm>(
+    field: Key,
+    value: PipelineJobForm[Key],
+  ) => {
     setFormState((currentForm) => ({ ...currentForm, [field]: value }));
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setFormError('');
+    setFormError("");
 
     try {
       const amount = Number(formState.amount);
@@ -384,17 +439,22 @@ export default function PipelineCalendarPage() {
       const dataCenterId = formState.dataCenterId.trim();
 
       if (!customer || !location || !formState.startDate || !formState.amount) {
-        setFormError('Customer, location, amount, and start date are required.');
+        setFormError(
+          "Customer, location, amount, and start date are required.",
+        );
         return;
       }
 
       if (!Number.isFinite(amount) || amount <= 0) {
-        setFormError('Amount must be greater than zero.');
+        setFormError("Amount must be greater than zero.");
         return;
       }
 
-      if (formState.endDate && parseDate(formState.endDate) < parseDate(formState.startDate)) {
-        setFormError('End date must be after start date.');
+      if (
+        formState.endDate &&
+        parseDate(formState.endDate) < parseDate(formState.startDate)
+      ) {
+        setFormError("End date must be after start date.");
         return;
       }
 
@@ -418,8 +478,8 @@ export default function PipelineCalendarPage() {
       setSelectedJobId(nextJob.id);
       setIsFormOpen(false);
     } catch (error) {
-      console.error('Error saving pipeline calendar job:', error);
-      setFormError('Could not save job.');
+      console.error("Error saving pipeline calendar job:", error);
+      setFormError("Could not save job.");
     }
   };
 
@@ -427,7 +487,9 @@ export default function PipelineCalendarPage() {
     const job = jobs.find((currentJob) => currentJob.id === jobId);
     if (!job) return;
 
-    const shouldDelete = window.confirm(`Delete ${job.customer} ${job.dataCenterId || 'job'}?`);
+    const shouldDelete = window.confirm(
+      `Delete ${job.customer} ${job.dataCenterId || "job"}?`,
+    );
     if (!shouldDelete) return;
 
     try {
@@ -436,31 +498,36 @@ export default function PipelineCalendarPage() {
       if (selectedJobId === jobId) setSelectedJobId(null);
       if (editingJobId === jobId) setIsFormOpen(false);
     } catch (error) {
-      console.error('Error deleting pipeline calendar job:', error);
-      setStorageError('Could not delete job.');
+      console.error("Error deleting pipeline calendar job:", error);
+      setStorageError("Could not delete job.");
     }
   };
 
   const moveRange = (direction: -1 | 1) => {
-    setAnchorDate((currentDate) => addMonths(currentDate, rangeMode === 'month' ? direction : direction * 3));
+    setAnchorDate((currentDate) =>
+      addMonths(currentDate, rangeMode === "month" ? direction : direction * 3),
+    );
   };
 
   const toggleSort = (nextSortKey: SortKey) => {
     if (sortKey === nextSortKey) {
-      setSortDirection((currentDirection) => (currentDirection === 'asc' ? 'desc' : 'asc'));
+      setSortDirection((currentDirection) =>
+        currentDirection === "asc" ? "desc" : "asc",
+      );
       return;
     }
 
     setSortKey(nextSortKey);
-    setSortDirection('asc');
+    setSortDirection("asc");
   };
 
   return (
     <div className="mx-auto flex max-w-[1500px] flex-col gap-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-950 dark:text-gray-50">Pipeline Calendar</h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Data center construction pipeline</p>
+          <h1 className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+            Pipeline Calendar
+          </h1>
         </div>
 
         <Button leftIcon={<Plus className="h-4 w-4" />} onClick={openAddForm}>
@@ -470,25 +537,33 @@ export default function PipelineCalendarPage() {
 
       <div className="grid gap-3 md:grid-cols-4">
         <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Pipeline</div>
+          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+            Pipeline
+          </div>
           <div className="mt-2 text-2xl font-semibold text-gray-950 dark:text-gray-50">
             {formatMillions(totals.confirmed)} / {formatMillions(totals.active)}
           </div>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Confirmed</div>
+          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+            Confirmed
+          </div>
           <div className="mt-2 text-2xl font-semibold text-gray-950 dark:text-gray-50">
             {formatMillions(totals.confirmed)}
           </div>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Expected</div>
+          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+            Expected
+          </div>
           <div className="mt-2 text-2xl font-semibold text-gray-950 dark:text-gray-50">
             {formatMillions(totals.expected)}
           </div>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Dropped</div>
+          <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+            Dropped
+          </div>
           <div className="mt-2 text-2xl font-semibold text-gray-500 dark:text-gray-400">
             {formatMillions(totals.dropped)}
           </div>
@@ -508,10 +583,11 @@ export default function PipelineCalendarPage() {
               <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-900">
                 <button
                   type="button"
-                  onClick={() => setViewMode('calendar')}
+                  onClick={() => setViewMode("calendar")}
                   className={cn(
-                    'inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300',
-                    viewMode === 'calendar' && 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50',
+                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300",
+                    viewMode === "calendar" &&
+                      "bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50",
                   )}
                 >
                   <CalendarRange className="h-4 w-4" />
@@ -519,10 +595,11 @@ export default function PipelineCalendarPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setViewMode('list')}
+                  onClick={() => setViewMode("list")}
                   className={cn(
-                    'inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300',
-                    viewMode === 'list' && 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50',
+                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300",
+                    viewMode === "list" &&
+                      "bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50",
                   )}
                 >
                   <Table2 className="h-4 w-4" />
@@ -533,20 +610,22 @@ export default function PipelineCalendarPage() {
               <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-900">
                 <button
                   type="button"
-                  onClick={() => setRangeMode('month')}
+                  onClick={() => setRangeMode("month")}
                   className={cn(
-                    'h-9 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300',
-                    rangeMode === 'month' && 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50',
+                    "h-9 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300",
+                    rangeMode === "month" &&
+                      "bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50",
                   )}
                 >
                   Month
                 </button>
                 <button
                   type="button"
-                  onClick={() => setRangeMode('quarter')}
+                  onClick={() => setRangeMode("quarter")}
                   className={cn(
-                    'h-9 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300',
-                    rangeMode === 'quarter' && 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50',
+                    "h-9 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300",
+                    rangeMode === "quarter" &&
+                      "bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50",
                   )}
                 >
                   Quarter
@@ -581,12 +660,17 @@ export default function PipelineCalendarPage() {
                 <button
                   key={region}
                   type="button"
-                  onClick={() => setRegionFilter((current) => ({ ...current, [region]: !current[region] }))}
+                  onClick={() =>
+                    setRegionFilter((current) => ({
+                      ...current,
+                      [region]: !current[region],
+                    }))
+                  }
                   className={cn(
-                    'inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium',
+                    "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium",
                     regionFilter[region]
-                      ? 'border-gray-300 bg-white text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50'
-                      : 'border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500',
+                      ? "border-gray-300 bg-white text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50"
+                      : "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500",
                   )}
                 >
                   <span
@@ -605,12 +689,17 @@ export default function PipelineCalendarPage() {
                 <button
                   key={status}
                   type="button"
-                  onClick={() => setStatusFilter((current) => ({ ...current, [status]: !current[status] }))}
+                  onClick={() =>
+                    setStatusFilter((current) => ({
+                      ...current,
+                      [status]: !current[status],
+                    }))
+                  }
                   className={cn(
-                    'inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium',
+                    "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium",
                     statusFilter[status]
-                      ? 'border-gray-300 bg-white text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50'
-                      : 'border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500',
+                      ? "border-gray-300 bg-white text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50"
+                      : "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500",
                   )}
                 >
                   <StatusIcon status={status} />
@@ -622,7 +711,10 @@ export default function PipelineCalendarPage() {
             <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
               {regions.map((region) => (
                 <span key={region} className="inline-flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: regionPalette[region].bg }} />
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: regionPalette[region].bg }}
+                  />
                   {region}
                 </span>
               ))}
@@ -630,18 +722,23 @@ export default function PipelineCalendarPage() {
           </div>
         </div>
 
-        {viewMode === 'calendar' ? (
+        {viewMode === "calendar" ? (
           <div className="grid gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_340px]">
             <div className="min-w-0 overflow-x-auto">
               <div className="min-w-[900px] overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
                 <div className="grid grid-cols-[230px_1fr] border-b border-gray-200 bg-gray-50 text-xs font-semibold uppercase text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
-                  <div className="border-r border-gray-200 px-3 py-3 dark:border-gray-800">Job</div>
+                  <div className="border-r border-gray-200 px-3 py-3 dark:border-gray-800">
+                    Job
+                  </div>
                   <div className="relative h-11">
                     {monthSegments.map((segment) => (
                       <div
                         key={segment.label}
                         className="absolute top-0 flex h-full items-center justify-center border-l border-gray-200 first:border-l-0 dark:border-gray-800"
-                        style={{ left: `${segment.left}%`, width: `${segment.width}%` }}
+                        style={{
+                          left: `${segment.left}%`,
+                          width: `${segment.width}%`,
+                        }}
                       >
                         {segment.label}
                       </div>
@@ -650,35 +747,40 @@ export default function PipelineCalendarPage() {
                 </div>
 
                 {visibleCalendarJobs.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">No jobs in this view.</div>
+                  <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                    No jobs in this view.
+                  </div>
                 ) : (
                   <div className="divide-y divide-gray-200 dark:divide-gray-800">
                     {visibleCalendarJobs.map((job) => (
                       <div
                         key={job.id}
                         className={cn(
-                          'grid min-h-14 grid-cols-[230px_1fr] bg-white dark:bg-dark-150',
-                          job.status === 'dropped' && 'bg-gray-50 text-gray-500 dark:bg-gray-900/60 dark:text-gray-500',
+                          "grid min-h-14 grid-cols-[230px_1fr] bg-white dark:bg-dark-150",
+                          job.status === "dropped" &&
+                            "bg-gray-50 text-gray-500 dark:bg-gray-900/60 dark:text-gray-500",
                         )}
                       >
                         <button
                           type="button"
                           onClick={() => setSelectedJobId(job.id)}
                           className={cn(
-                            'min-w-0 border-r border-gray-200 px-3 py-2 text-left hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900',
-                            selectedJob?.id === job.id && 'bg-orange-50 dark:bg-orange-950/20',
+                            "min-w-0 border-r border-gray-200 px-3 py-2 text-left hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900",
+                            selectedJob?.id === job.id &&
+                              "bg-orange-50 dark:bg-orange-950/20",
                           )}
                         >
                           <div
                             className={cn(
-                              'truncate text-sm font-semibold text-gray-950 dark:text-gray-50',
-                              job.status === 'dropped' && 'text-gray-500 line-through dark:text-gray-500',
+                              "truncate text-sm font-semibold text-gray-950 dark:text-gray-50",
+                              job.status === "dropped" &&
+                                "text-gray-500 line-through dark:text-gray-500",
                             )}
                           >
                             {job.customer}
                           </div>
                           <div className="truncate text-xs text-gray-500 dark:text-gray-400">
-                            {job.dataCenterId || 'No DC ID'} · {job.location}
+                            {job.dataCenterId || "No DC ID"} · {job.location}
                           </div>
                         </button>
 
@@ -694,12 +796,14 @@ export default function PipelineCalendarPage() {
                             type="button"
                             onClick={() => setSelectedJobId(job.id)}
                             className={cn(
-                              'absolute top-2 flex h-9 min-w-7 items-center gap-1.5 overflow-hidden rounded-md px-2 text-left text-xs font-semibold text-white shadow-sm ring-1 ring-black/10',
-                              selectedJob?.id === job.id && 'ring-2 ring-gray-950 dark:ring-white',
-                              job.status === 'dropped' && 'text-gray-100 line-through opacity-70',
+                              "absolute top-2 flex h-9 min-w-7 items-center gap-1.5 overflow-hidden rounded-md px-2 text-left text-xs font-semibold text-white shadow-sm ring-1 ring-black/10",
+                              selectedJob?.id === job.id &&
+                                "ring-2 ring-gray-950 dark:ring-white",
+                              job.status === "dropped" &&
+                                "text-gray-100 line-through opacity-70",
                             )}
                             style={getBarStyle(job, viewStart, viewEnd)}
-                            title={`${job.customer} ${job.dataCenterId || ''} ${formatMillions(job.amount)}`}
+                            title={`${job.customer} ${job.dataCenterId || ""} ${formatMillions(job.amount)}`}
                           >
                             <StatusIcon status={job.status} />
                             <span className="min-w-0 truncate">
@@ -710,7 +814,7 @@ export default function PipelineCalendarPage() {
                                 className="pointer-events-none absolute inset-y-0 right-0 w-10 rounded-r-md"
                                 style={{
                                   backgroundImage:
-                                    'repeating-linear-gradient(135deg, rgba(255,255,255,.72) 0 4px, rgba(255,255,255,.08) 4px 8px)',
+                                    "repeating-linear-gradient(135deg, rgba(255,255,255,.72) 0 4px, rgba(255,255,255,.08) 4px 8px)",
                                 }}
                               />
                             )}
@@ -731,22 +835,26 @@ export default function PipelineCalendarPage() {
                       <div className="min-w-0">
                         <h2
                           className={cn(
-                            'truncate text-lg font-semibold text-gray-950 dark:text-gray-50',
-                            selectedJob.status === 'dropped' && 'text-gray-500 line-through dark:text-gray-500',
+                            "truncate text-lg font-semibold text-gray-950 dark:text-gray-50",
+                            selectedJob.status === "dropped" &&
+                              "text-gray-500 line-through dark:text-gray-500",
                           )}
                         >
                           {selectedJob.customer}
                         </h2>
                         <p className="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">
-                          {selectedJob.dataCenterId || 'No DC ID'}
+                          {selectedJob.dataCenterId || "No DC ID"}
                         </p>
                       </div>
                       <span
                         className={cn(
-                          'inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
-                          selectedJob.status === 'confirmed' && 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200',
-                          selectedJob.status === 'expected' && 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200',
-                          selectedJob.status === 'dropped' && 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                          "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
+                          selectedJob.status === "confirmed" &&
+                            "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+                          selectedJob.status === "expected" &&
+                            "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
+                          selectedJob.status === "dropped" &&
+                            "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
                         )}
                       >
                         <StatusIcon status={selectedJob.status} />
@@ -758,9 +866,18 @@ export default function PipelineCalendarPage() {
                   <dl className="rounded-lg border border-gray-200 bg-white px-3 dark:border-gray-800 dark:bg-dark-150">
                     <DetailRow label="Location" value={selectedJob.location} />
                     <DetailRow label="Region" value={selectedJob.region} />
-                    <DetailRow label="Amount" value={formatMillions(selectedJob.amount)} />
-                    <DetailRow label="Start" value={formatDate(selectedJob.startDate)} />
-                    <DetailRow label="End" value={formatDate(selectedJob.endDate)} />
+                    <DetailRow
+                      label="Amount"
+                      value={formatMillions(selectedJob.amount)}
+                    />
+                    <DetailRow
+                      label="Start"
+                      value={formatDate(selectedJob.startDate)}
+                    />
+                    <DetailRow
+                      label="End"
+                      value={formatDate(selectedJob.endDate)}
+                    />
                   </dl>
 
                   <div className="mt-auto flex gap-2">
@@ -795,10 +912,10 @@ export default function PipelineCalendarPage() {
               <thead>
                 <tr className="border-b border-gray-200 text-left text-xs uppercase text-gray-500 dark:border-gray-800 dark:text-gray-400">
                   {[
-                    ['startDate', 'Date'],
-                    ['customer', 'Customer'],
-                    ['amount', 'Amount'],
-                    ['region', 'Region'],
+                    ["startDate", "Date"],
+                    ["customer", "Customer"],
+                    ["amount", "Amount"],
+                    ["region", "Region"],
                   ].map(([key, label]) => (
                     <th key={key} className="px-3 py-3 font-semibold">
                       <button
@@ -807,14 +924,18 @@ export default function PipelineCalendarPage() {
                         className="inline-flex items-center gap-1 hover:text-gray-950 dark:hover:text-gray-50"
                       >
                         {label}
-                        {sortKey === key && <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>}
+                        {sortKey === key && (
+                          <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
                       </button>
                     </th>
                   ))}
                   <th className="px-3 py-3 font-semibold">Data center</th>
                   <th className="px-3 py-3 font-semibold">Location</th>
                   <th className="px-3 py-3 font-semibold">Status</th>
-                  <th className="px-3 py-3 font-semibold text-right">Actions</th>
+                  <th className="px-3 py-3 font-semibold text-right">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -822,29 +943,39 @@ export default function PipelineCalendarPage() {
                   <tr
                     key={job.id}
                     className={cn(
-                      'hover:bg-gray-50 dark:hover:bg-gray-900',
-                      job.status === 'dropped' && 'bg-gray-50 text-gray-500 dark:bg-gray-900/60 dark:text-gray-500',
+                      "hover:bg-gray-50 dark:hover:bg-gray-900",
+                      job.status === "dropped" &&
+                        "bg-gray-50 text-gray-500 dark:bg-gray-900/60 dark:text-gray-500",
                     )}
                   >
                     <td className="whitespace-nowrap px-3 py-3">
-                      {formatDate(job.startDate)} – {job.endDate ? formatDate(job.endDate) : ''}
+                      {formatDate(job.startDate)} –{" "}
+                      {job.endDate ? formatDate(job.endDate) : ""}
                     </td>
                     <td
                       className={cn(
-                        'px-3 py-3 font-semibold text-gray-950 dark:text-gray-50',
-                        job.status === 'dropped' && 'text-gray-500 line-through dark:text-gray-500',
+                        "px-3 py-3 font-semibold text-gray-950 dark:text-gray-50",
+                        job.status === "dropped" &&
+                          "text-gray-500 line-through dark:text-gray-500",
                       )}
                     >
                       {job.customer}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3 font-semibold">{formatMillions(job.amount)}</td>
+                    <td className="whitespace-nowrap px-3 py-3 font-semibold">
+                      {formatMillions(job.amount)}
+                    </td>
                     <td className="px-3 py-3">
                       <span className="inline-flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: regionPalette[job.region].bg }} />
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{
+                            backgroundColor: regionPalette[job.region].bg,
+                          }}
+                        />
                         {job.region}
                       </span>
                     </td>
-                    <td className="px-3 py-3">{job.dataCenterId || '-'}</td>
+                    <td className="px-3 py-3">{job.dataCenterId || "-"}</td>
                     <td className="px-3 py-3">{job.location}</td>
                     <td className="px-3 py-3">
                       <span className="inline-flex items-center gap-1">
@@ -878,7 +1009,9 @@ export default function PipelineCalendarPage() {
             </table>
 
             {sortedListJobs.length === 0 && (
-              <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">No jobs match these filters.</div>
+              <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                No jobs match these filters.
+              </div>
             )}
           </div>
         )}
@@ -887,8 +1020,7 @@ export default function PipelineCalendarPage() {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="w-full max-w-3xl">
           <DialogHeader>
-            <DialogTitle>{editingJobId ? 'Edit job' : 'Add job'}</DialogTitle>
-            <DialogDescription>Pipeline calendar block</DialogDescription>
+            <DialogTitle>{editingJobId ? "Edit job" : "Add job"}</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-2">
@@ -902,18 +1034,24 @@ export default function PipelineCalendarPage() {
               <Input
                 label="Customer"
                 value={formState.customer}
-                onChange={(event) => updateFormField('customer', event.target.value)}
+                onChange={(event) =>
+                  updateFormField("customer", event.target.value)
+                }
                 required
               />
               <Input
                 label="Data center ID"
                 value={formState.dataCenterId}
-                onChange={(event) => updateFormField('dataCenterId', event.target.value)}
+                onChange={(event) =>
+                  updateFormField("dataCenterId", event.target.value)
+                }
               />
               <Input
                 label="Location"
                 value={formState.location}
-                onChange={(event) => updateFormField('location', event.target.value)}
+                onChange={(event) =>
+                  updateFormField("location", event.target.value)
+                }
                 required
               />
               <Input
@@ -922,21 +1060,27 @@ export default function PipelineCalendarPage() {
                 step="0.01"
                 min="0"
                 value={formState.amount}
-                onChange={(event) => updateFormField('amount', event.target.value)}
+                onChange={(event) =>
+                  updateFormField("amount", event.target.value)
+                }
                 required
               />
               <Input
                 label="Start date"
                 type="date"
                 value={formState.startDate}
-                onChange={(event) => updateFormField('startDate', event.target.value)}
+                onChange={(event) =>
+                  updateFormField("startDate", event.target.value)
+                }
                 required
               />
               <Input
                 label="End date"
                 type="date"
                 value={formState.endDate}
-                onChange={(event) => updateFormField('endDate', event.target.value)}
+                onChange={(event) =>
+                  updateFormField("endDate", event.target.value)
+                }
               />
             </div>
 
@@ -945,7 +1089,12 @@ export default function PipelineCalendarPage() {
                 <span className="mb-1.5 block">Region</span>
                 <select
                   value={formState.region}
-                  onChange={(event) => updateFormField('region', event.target.value as PipelineRegion)}
+                  onChange={(event) =>
+                    updateFormField(
+                      "region",
+                      event.target.value as PipelineRegion,
+                    )
+                  }
                   className="w-full rounded-lg border-2 border-dark-accent/30 bg-white px-4 py-2.5 text-dark-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-accent dark:border-dark-300 dark:bg-dark-150 dark:text-dark-secondary"
                 >
                   {regions.map((region) => (
@@ -960,7 +1109,12 @@ export default function PipelineCalendarPage() {
                 <span className="mb-1.5 block">Status</span>
                 <select
                   value={formState.status}
-                  onChange={(event) => updateFormField('status', event.target.value as PipelineStatus)}
+                  onChange={(event) =>
+                    updateFormField(
+                      "status",
+                      event.target.value as PipelineStatus,
+                    )
+                  }
                   className="w-full rounded-lg border-2 border-dark-accent/30 bg-white px-4 py-2.5 text-dark-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-accent dark:border-dark-300 dark:bg-dark-150 dark:text-dark-secondary"
                 >
                   {statuses.map((status) => (
@@ -973,10 +1127,16 @@ export default function PipelineCalendarPage() {
             </div>
 
             <DialogFooter className="pt-4">
-              <Button variant="outline" type="button" onClick={() => setIsFormOpen(false)}>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+              >
                 Cancel
               </Button>
-              <Button type="submit">{editingJobId ? 'Save changes' : 'Add job'}</Button>
+              <Button type="submit">
+                {editingJobId ? "Save changes" : "Add job"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

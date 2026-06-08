@@ -15,6 +15,7 @@ import SalesDashboard from './app/sales-dashboard/page';
 import MeetingsPage from './app/meetings/page';
 
 import Login from './components/auth/Login';
+import ResetPassword from './components/auth/ResetPassword';
 import JobDiagnostics from './components/jobs/JobDiagnostics';
 import OpportunityList from './components/jobs/OpportunityList';
 import OpportunityDetail from './components/jobs/OpportunityDetail';
@@ -469,6 +470,7 @@ function App() {
                   {/* === Core Routes === */}
                   <Route path="/login" element={<Login />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                   <Route path="/" element={<Navigate to="/portal" replace />} />
                   <Route path="/portal" element={<RequireAuth><PortalLanding /></RequireAuth>} />

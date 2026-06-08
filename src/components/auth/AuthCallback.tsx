@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { processAuthToken } from '../../lib/utils';
-import { queryByUUID } from '../../lib/supabaseHelpers';
-import { Session, User } from '@supabase/supabase-js';
+import { User } from '@supabase/supabase-js';
 
 export default function AuthCallback() {
   const [loading, setLoading] = useState(true);
@@ -27,6 +26,7 @@ export default function AuthCallback() {
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
+          const authType = hashParams.get('type');
 
           if (accessToken) {
             console.log('Found access token, setting session...');
@@ -39,6 +39,14 @@ export default function AuthCallback() {
             if (sessionError) {
               console.error('Error setting session:', sessionError);
               throw sessionError;
+            }
+
+            if (authType === 'recovery') {
+              setSuccess(true);
+              setTimeout(() => {
+                navigate('/reset-password', { replace: true });
+              }, 1000);
+              return;
             }
 
             setSuccess(true);
@@ -57,6 +65,20 @@ export default function AuthCallback() {
           setError('There was a problem verifying your email. Please try again or request a new verification link.');
         } else {
           console.log('Auth verification successful:', data);
+
+          const isRecoveryFlow =
+            !!data &&
+            typeof data === 'object' &&
+            'type' in data &&
+            data.type === 'recovery';
+
+          if (isRecoveryFlow) {
+            setSuccess(true);
+            setTimeout(() => {
+              navigate('/reset-password', { replace: true });
+            }, 1000);
+            return;
+          }
 
           // Extract user ID safely with type checking
           let userId: string | null = null;
@@ -140,8 +162,8 @@ export default function AuthCallback() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          <h2 className="text-xl font-semibold mb-2">Email Verified Successfully!</h2>
-          <p>You will be redirected to complete your profile in a moment...</p>
+          <h2 className="text-xl font-semibold mb-2">Success</h2>
+          <p>You will be redirected in a moment...</p>
         </div>
       </div>
     );

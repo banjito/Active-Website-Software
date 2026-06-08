@@ -568,7 +568,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
     const { data: existingAsset, error: existingAssetError } = await supabase
       .schema('neta_ops')
       .from('assets')
-      .select('id, name, template_type')
+      .select('id, name, template_type, status')
       .eq('file_url', fileUrl)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -586,24 +586,38 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           name: assetName,
           file_url: fileUrl,
           user_id: user.id,
-          template_type: 'MTS'
+          template_type: 'MTS',
+          status: 'in_progress'
         })
         .select('id')
         .single();
 
       if (assetError) throw assetError;
       assetId = assetResult.id;
-    } else if (existingAsset.name !== assetName || existingAsset.template_type !== 'MTS') {
-      const { error: assetUpdateError } = await supabase
-        .schema('neta_ops')
-        .from('assets')
-        .update({
-          name: assetName,
-          template_type: 'MTS'
-        })
-        .eq('id', assetId);
+    } else {
+      const assetUpdate: { name?: string; template_type?: string; status?: string } = {};
 
-      if (assetUpdateError) throw assetUpdateError;
+      if (existingAsset.name !== assetName) {
+        assetUpdate.name = assetName;
+      }
+
+      if (existingAsset.template_type !== 'MTS') {
+        assetUpdate.template_type = 'MTS';
+      }
+
+      if (!existingAsset.status || existingAsset.status === 'not started') {
+        assetUpdate.status = 'in_progress';
+      }
+
+      if (Object.keys(assetUpdate).length > 0) {
+        const { error: assetUpdateError } = await supabase
+          .schema('neta_ops')
+          .from('assets')
+          .update(assetUpdate)
+          .eq('id', assetId);
+
+        if (assetUpdateError) throw assetUpdateError;
+      }
     }
 
     const { data: existingLink, error: existingLinkError } = await supabase
@@ -664,6 +678,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           if (result.data) {
             const newReportId = result.data.id;
             reportIdRef.current = newReportId;
+            creatingRef.current = false;
             await ensureReportAsset(newReportId);
 
             setCurrentReportId(newReportId);
@@ -756,6 +771,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           if (result.data) {
             reportIdRef.current = result.data.id;
             setCurrentReportId(result.data.id);
+            creatingRef.current = false;
           } else {
             creatingRef.current = false;
           }

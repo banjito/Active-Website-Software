@@ -6,7 +6,7 @@ export default function MeetingsPage() {
       <div className="flex min-h-[60vh] items-center justify-center px-4">
         <div className="flex flex-col items-center gap-6">
           <img
-            src="/runway-logo.svg"
+            src="/runway-animated.svg"
             alt="Runway"
             className="w-full max-w-[360px]"
           />

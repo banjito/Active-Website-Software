@@ -85,6 +85,38 @@ function getStatusColor(status: string) {
   }
 }
 
+function getOpportunityTypeValue(opportunity: any) {
+  let type = opportunity?.opportunity_type;
+
+  if (!type) {
+    const quotedAmount = Number(opportunity?.quoted_amount);
+    if (Number.isFinite(quotedAmount) && quotedAmount > 0) {
+      type =
+        quotedAmount >= 100000 ? "large_acceptance" : "small_acceptance";
+    }
+  }
+
+  return type || "other";
+}
+
+function getOpportunityTypeColor(type: string) {
+  switch (type) {
+    case "large_acceptance":
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-400";
+    case "small_acceptance":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400";
+    case "maintenance":
+      return "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400";
+    case "engineering":
+      return "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-400";
+    case "time_materials":
+      return "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400";
+    case "other":
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400";
+  }
+}
+
 function formatStatus(status: string) {
   return status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ");
 }
@@ -534,6 +566,43 @@ export default function OpportunityList() {
           ? ' The database may need the migration that allows "No Quote" (2025-02_add_no_quote_estimate_status.sql).'
           : "";
       alert("Failed to update estimate approval status." + hint);
+    }
+  }
+
+  async function handleOpportunityTypeChange(
+    opportunityId: string,
+    newOpportunityType: string,
+  ) {
+    const previousType =
+      opportunities.find((o) => o.id === opportunityId)?.opportunity_type ??
+      null;
+
+    setOpportunities((prev) =>
+      prev.map((o) =>
+        o.id === opportunityId
+          ? { ...o, opportunity_type: newOpportunityType }
+          : o,
+      ),
+    );
+
+    try {
+      const { error } = await supabase
+        .schema("business")
+        .from("opportunities")
+        .update({ opportunity_type: newOpportunityType || null })
+        .eq("id", opportunityId);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error("Error updating opportunity type:", err);
+      setOpportunities((prev) =>
+        prev.map((o) =>
+          o.id === opportunityId
+            ? { ...o, opportunity_type: previousType }
+            : o,
+        ),
+      );
+      alert("Failed to update opportunity type. Please try again.");
     }
   }
 
@@ -2346,69 +2415,36 @@ export default function OpportunityList() {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm">
-                          {(() => {
-                            let type = (opportunity as any).opportunity_type;
-
-                            // If no type is set, infer from quoted amount
-                            if (!type) {
-                              const quotedAmount = (opportunity as any)
-                                .quoted_amount;
-                              if (quotedAmount && Number(quotedAmount) > 0) {
-                                type =
-                                  Number(quotedAmount) >= 100000
-                                    ? "large_acceptance"
-                                    : "small_acceptance";
-                              }
-                            }
-
-                            switch (type) {
-                              case "large_acceptance":
-                                return (
-                                  <span className="px-2 py-1 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-400">
-                                    Large Acceptance
-                                  </span>
-                                );
-                              case "small_acceptance":
-                                return (
-                                  <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400">
-                                    Small Acceptance
-                                  </span>
-                                );
-                              case "maintenance":
-                                return (
-                                  <span className="px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400">
-                                    Maintenance
-                                  </span>
-                                );
-                              case "engineering":
-                                return (
-                                  <span className="px-2 py-1 rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-400">
-                                    Engineering
-                                  </span>
-                                );
-                              case "time_materials":
-                                return (
-                                  <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold">
-                                    T&M
-                                  </span>
-                                );
-                              case "other":
-                                return (
-                                  <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400">
-                                    Other
-                                  </span>
-                                );
-                              default:
-                                return (
-                                  <span className="text-gray-500 dark:text-gray-400">
-                                    -
-                                  </span>
-                                );
-                            }
-                          })()}
-                        </div>
+                      <td
+                        className="px-6 py-4 whitespace-nowrap"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <select
+                          value={getOpportunityTypeValue(opportunity)}
+                          onChange={(e) =>
+                            handleOpportunityTypeChange(
+                              opportunity.id,
+                              e.target.value,
+                            )
+                          }
+                          className={`min-w-[160px] px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer focus:ring-2 focus:ring-[#f26722] focus:ring-offset-0 dark:bg-transparent ${getOpportunityTypeColor(
+                            getOpportunityTypeValue(opportunity),
+                          )}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <option value="large_acceptance">
+                            Large Acceptance
+                          </option>
+                          <option value="small_acceptance">
+                            Small Acceptance
+                          </option>
+                          <option value="maintenance">Maintenance</option>
+                          <option value="engineering">Engineering</option>
+                          <option value="time_materials">
+                            Time & Materials
+                          </option>
+                          <option value="other">Other</option>
+                        </select>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900 dark:text-dark-900">

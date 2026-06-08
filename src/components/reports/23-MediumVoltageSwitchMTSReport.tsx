@@ -363,11 +363,14 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           if (result.data) {
             const newReportId = result.data.id;
             reportIdRef.current = newReportId;
+            creatingRef.current = false;
 
             const assetData = {
-              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
+              name: getAssetName(reportSlug, form.identifier || form.eqptLocation || ''),
               file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
-              user_id: user.id
+              user_id: user.id,
+              template_type: 'MTS',
+              status: 'in_progress'
             };
 
             const { data: assetResult } = await supabase
@@ -469,11 +472,13 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           if (result.data) {
             reportIdRef.current = result.data.id;
             setCurrentReportId(result.data.id);
+            creatingRef.current = false;
             const assetData = {
               name: getAssetName(reportSlug, form.identifier || form.eqptLocation || ''),
               file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
               user_id: user.id,
               template_type: 'MTS',
+              status: 'in_progress'
             };
             const { data: assetResult, error: assetError } = await supabase
               .schema('neta_ops')

@@ -3329,12 +3329,42 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
   }
 
   function buildSovProposalTableHtml(sovItems: any[], includeNotes: boolean): string {
-    const cellStyle = 'border:1px solid #ccc;padding:4px 12px;white-space:normal;overflow-wrap:anywhere;word-break:normal;vertical-align:top;';
-    const quantityCellStyle = `${cellStyle}text-align:center;`;
-    const headerStyle = `${cellStyle}position:relative;background:#f9fafb;font-weight:bold;`;
-    const quantityHeaderStyle = `${headerStyle}text-align:center;`;
-    const sectionCellStyle = `${cellStyle}background:#f9fafb;font-weight:bold;text-align:center;`;
-    const blankCellStyle = 'border-left:1px solid #ccc;border-right:1px solid #ccc;padding:10px 0;height:18px;';
+    const borderColor = '#ccc';
+    const makeCellStyle = (options: {
+      right?: boolean;
+      bottom?: boolean;
+      align?: 'left' | 'center';
+      header?: boolean;
+      section?: boolean;
+      blank?: boolean;
+      relative?: boolean;
+    } = {}) => {
+      const {
+        right = true,
+        bottom = true,
+        align = 'left',
+        header = false,
+        section = false,
+        blank = false,
+        relative = false
+      } = options;
+      return [
+        'box-sizing:border-box',
+        'border:0',
+        right ? `border-right:1px solid ${borderColor}` : '',
+        bottom ? `border-bottom:1px solid ${borderColor}` : '',
+        blank ? 'padding:10px 0' : 'padding:4px 12px',
+        blank ? 'height:18px' : '',
+        'white-space:normal',
+        'overflow-wrap:anywhere',
+        'word-break:normal',
+        'vertical-align:top',
+        `text-align:${align}`,
+        header || section ? 'background:#f9fafb' : '',
+        header || section ? 'font-weight:bold' : '',
+        relative ? 'position:relative' : ''
+      ].filter(Boolean).join(';') + ';';
+    };
     const resizeHandle = '<span class="amp-col-resize print-hidden" contenteditable="false" style="position:absolute;right:-5px;top:0;width:10px;height:100%;cursor:col-resize;z-index:2;border-right:2px solid rgba(242,103,34,0.35);"></span>';
     const rows = sovItems && sovItems.length > 0
       ? sovItems
@@ -3344,27 +3374,28 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
       ? '<colgroup><col style="width:55%;" /><col style="width:15%;" /><col style="width:30%;" /></colgroup>'
       : '<colgroup><col style="width:75%;" /><col style="width:25%;" /></colgroup>';
     const header = includeNotes
-      ? `<tr><th style="${headerStyle}">Item${resizeHandle}</th><th style="${quantityHeaderStyle}">Quantity${resizeHandle}</th><th style="${headerStyle}">Notes</th></tr>`
-      : `<tr><th style="${headerStyle}">Item${resizeHandle}</th><th style="${quantityHeaderStyle}">Quantity</th></tr>`;
-    const bodyRows = rows.map((item: any) => {
+      ? `<tr><th style="${makeCellStyle({ header: true, align: 'center', relative: true })}">Item${resizeHandle}</th><th style="${makeCellStyle({ header: true, align: 'center', relative: true })}">Quantity${resizeHandle}</th><th style="${makeCellStyle({ header: true, align: 'center', right: false })}">Notes</th></tr>`
+      : `<tr><th style="${makeCellStyle({ header: true, align: 'center', relative: true })}">Item${resizeHandle}</th><th style="${makeCellStyle({ header: true, align: 'center', right: false })}">Quantity</th></tr>`;
+    const bodyRows = rows.map((item: any, index: number) => {
+      const bottom = index !== rows.length - 1;
       if (isEstimateBlankRow(item)) {
-        return `<tr class="amp-sov-blank-row"><td colspan="${columnCount}" style="${blankCellStyle}">&nbsp;</td></tr>`;
+        return `<tr class="amp-sov-blank-row"><td colspan="${columnCount}" style="${makeCellStyle({ right: false, bottom, blank: true })}">&nbsp;</td></tr>`;
       }
 
       const name = escapeLetterHtml(item?.item || '');
       if (isEstimateSectionRow(item)) {
-        return `<tr class="amp-sov-section-row"><td colspan="${columnCount}" style="${sectionCellStyle}">${name}</td></tr>`;
+        return `<tr class="amp-sov-section-row"><td colspan="${columnCount}" style="${makeCellStyle({ right: false, bottom, section: true, align: 'center' })}">${name}</td></tr>`;
       }
 
       const qty = escapeLetterHtml(item?.quantity ?? item?.qty ?? 1);
       const notesCell = includeNotes
-        ? `<td style="${cellStyle}">${escapeLetterHtml(item?.notes || '')}</td>`
+        ? `<td style="${makeCellStyle({ right: false, bottom })}">${escapeLetterHtml(item?.notes || '')}</td>`
         : '';
-      return `<tr><td style="${cellStyle}">${name}</td><td style="${quantityCellStyle}">${qty}</td>${notesCell}</tr>`;
+      return `<tr><td style="${makeCellStyle({ bottom })}">${name}</td><td style="${makeCellStyle({ right: includeNotes, bottom, align: 'center' })}">${qty}</td>${notesCell}</tr>`;
     }).join('');
 
     return `
-      <table class="amp-section amp-sov-table" style="width:100%;border-collapse:collapse;margin-bottom:16px;table-layout:fixed;">
+      <table class="amp-section amp-sov-table" style="width:100%;border-collapse:separate;border-spacing:0;margin-bottom:16px;table-layout:fixed;border:1px solid ${borderColor};">
         ${colgroup}
         <thead>${header}</thead>
         <tbody>${bodyRows}</tbody>
@@ -4586,13 +4617,23 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
             list.remove();
           }
         });
+        tempDiv.querySelectorAll('.amp-col-resize, .amp-scope-controls').forEach(el => el.remove());
+        tempDiv.querySelectorAll('.amp-sov-table th').forEach(th => {
+          th.textContent = (th.textContent || '').replace(/\s+/g, ' ').trim();
+        });
         bodyHtml = tempDiv.innerHTML;
       } catch {}
       
       const html = `<!DOCTYPE html><html><head><title>Letter Proposal</title><style>
         @media print {
           @page { size: letter; margin: 0.5in; }
-          body { font-family: Arial, sans-serif; }
+          body {
+            font-family: Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
           #letter-proposal.print-content { padding-bottom: 35mm; }
           .amp-footer {
             position: fixed !important;
@@ -4611,13 +4652,61 @@ export default function EstimateSheet({ opportunityId, mode, openSignal }: Estim
           .amp-scope-controls { display: none !important; }
           .print-hidden,
           .amp-col-resize { display: none !important; }
-          .amp-sov-table { table-layout: fixed !important; }
+          .amp-sov-table {
+            width: 100% !important;
+            table-layout: fixed !important;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            border: 1px solid #bfbfbf !important;
+            background: #fff !important;
+          }
           .amp-sov-table th,
           .amp-sov-table td {
+            box-sizing: border-box !important;
+            border: 0 !important;
+            border-right: 1px solid #bfbfbf !important;
+            border-bottom: 1px solid #bfbfbf !important;
+            padding: 4px 12px !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+            font-size: 11pt !important;
+            font-weight: 400 !important;
+            font-variant-ligatures: none !important;
+            letter-spacing: normal !important;
+            line-height: 1.2 !important;
+            text-rendering: geometricPrecision !important;
+            -webkit-font-smoothing: antialiased !important;
             white-space: normal !important;
             overflow-wrap: anywhere !important;
             word-break: normal !important;
             vertical-align: top !important;
+          }
+          .amp-sov-table th:last-child,
+          .amp-sov-table td:last-child {
+            border-right: 0 !important;
+          }
+          .amp-sov-table tbody tr:last-child > td {
+            border-bottom: 0 !important;
+          }
+          .amp-sov-table th {
+            background: #f9fafb !important;
+            font-weight: 700 !important;
+            text-align: center !important;
+          }
+          .amp-sov-table td:nth-child(2) {
+            text-align: center !important;
+          }
+          .amp-sov-table .amp-sov-section-row td {
+            background: #f9fafb !important;
+            font-weight: 700 !important;
+            text-align: center !important;
+          }
+          .amp-sov-table .amp-sov-blank-row td {
+            height: 18px !important;
+            padding: 10px 0 !important;
+          }
+          .amp-sov-table tr {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
           }
           /* Hide quantity input in print but keep label */
           .scope-qty { display: none !important; }

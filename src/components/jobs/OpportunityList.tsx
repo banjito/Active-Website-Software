@@ -8,7 +8,8 @@ import {
   Calendar,
   Award,
   RefreshCw,
-  ChevronDown,
+  Filter,
+  ArrowDownWideNarrow,
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { format } from "date-fns";
@@ -196,18 +197,46 @@ const DEFAULT_FILTER_SETTINGS = {
   sortField: "quote_number" as const,
   sortDirection: "desc" as const,
   searchTerm: "",
+  divisionFilter: "",
+  opportunityTypeFilter: "",
+  statusFilter: "",
 };
 
+const DIVISION_FILTER_OPTIONS = [
+  { value: "north_alabama", label: "Alabama Division" },
+  { value: "tennessee", label: "Tennessee Division" },
+  { value: "georgia", label: "Georgia Division" },
+  { value: "international", label: "International Division" },
+  { value: "engineering", label: "Engineering" },
+  { value: "scavenger", label: "Scavenger" },
+];
+
+const OPPORTUNITY_TYPE_OPTIONS = [
+  { value: "large_acceptance", label: "Large Acceptance" },
+  { value: "small_acceptance", label: "Small Acceptance" },
+  { value: "maintenance", label: "Maintenance" },
+  { value: "engineering", label: "Engineering" },
+  { value: "time_materials", label: "Time & Materials" },
+  { value: "other", label: "Other" },
+];
+
+const STATUS_FILTER_OPTIONS = [
+  { value: "awareness", label: "Awareness" },
+  { value: "interest", label: "Interest" },
+  { value: "quote", label: "Quote" },
+  { value: "decision", label: "Decision" },
+  { value: "decision - forecasted win", label: "Decision - Forecasted Win" },
+  { value: "decision - forecast lose", label: "Decision - Forecast Lose" },
+  { value: "awarded", label: "Awarded" },
+  { value: "lost", label: "Lost" },
+  { value: "no quote", label: "No Quote" },
+];
+
 function formatDivisionName(division: string): string {
-  const divisionMap: { [key: string]: string } = {
-    north_alabama: "Alabama Division",
-    tennessee: "Tennessee Division",
-    georgia: "Georgia Division",
-    international: "International Division",
-    engineering: "Engineering",
-    scavenger: "Scavenger",
-  };
-  return divisionMap[division] || division;
+  return (
+    DIVISION_FILTER_OPTIONS.find((option) => option.value === division)
+      ?.label || division
+  );
 }
 
 const OPPORTUNITY_MODAL_PANEL_CLASS =
@@ -282,6 +311,10 @@ export default function OpportunityList() {
     "quote_number" | "opportunity_created_date" | "proposal_due_date"
   >("quote_number");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [divisionFilter, setDivisionFilter] = useState<string>("");
+  const [opportunityTypeFilter, setOpportunityTypeFilter] =
+    useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const filtersInitializedRef = useRef<boolean>(false);
   const prefsSyncedRef = useRef<boolean>(false); // Track if we've synced from Supabase
   const loadingStartTimeRef = useRef<number>(Date.now()); // Track when loading started
@@ -350,7 +383,14 @@ export default function OpportunityList() {
     new Set(),
   );
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const sortMenuRef = useRef<HTMLDivElement>(null);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+  const activeFilterCount = [
+    divisionFilter,
+    opportunityTypeFilter,
+    statusFilter,
+  ].filter(Boolean).length;
   const [showTMModal, setShowTMModal] = useState(false);
   const [TMFormData, setTMFormData] = useState<TMFormData>({
     customer_id: "",
@@ -480,6 +520,22 @@ export default function OpportunityList() {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [isSortMenuOpen]);
+
+  useEffect(() => {
+    if (!isFilterMenuOpen) return;
+
+    function handleOutsideClick(event: MouseEvent) {
+      if (
+        filterMenuRef.current &&
+        !filterMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsFilterMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isFilterMenuOpen]);
 
   async function handleOpportunityStatusChange(
     opportunityId: string,
@@ -639,6 +695,9 @@ export default function OpportunityList() {
     debouncedSearch,
     sortField,
     sortDirection,
+    divisionFilter,
+    opportunityTypeFilter,
+    statusFilter,
   ]);
 
   useEffect(() => {
@@ -694,6 +753,27 @@ export default function OpportunityList() {
         setDebouncedSearch(savedFilters.searchTerm);
         hasStateUpdates = true;
       }
+      if (
+        savedFilters.divisionFilter !== undefined &&
+        savedFilters.divisionFilter !== divisionFilter
+      ) {
+        setDivisionFilter(savedFilters.divisionFilter);
+        hasStateUpdates = true;
+      }
+      if (
+        savedFilters.opportunityTypeFilter !== undefined &&
+        savedFilters.opportunityTypeFilter !== opportunityTypeFilter
+      ) {
+        setOpportunityTypeFilter(savedFilters.opportunityTypeFilter);
+        hasStateUpdates = true;
+      }
+      if (
+        savedFilters.statusFilter !== undefined &&
+        savedFilters.statusFilter !== statusFilter
+      ) {
+        setStatusFilter(savedFilters.statusFilter);
+        hasStateUpdates = true;
+      }
     }
 
     // If no state updates occurred, the main effect won't re-run automatically
@@ -722,8 +802,20 @@ export default function OpportunityList() {
       searchTerm,
       sortField,
       sortDirection,
+      divisionFilter,
+      opportunityTypeFilter,
+      statusFilter,
     });
-  }, [user?.id, searchTerm, sortField, sortDirection, updatePreference]);
+  }, [
+    user?.id,
+    searchTerm,
+    sortField,
+    sortDirection,
+    divisionFilter,
+    opportunityTypeFilter,
+    statusFilter,
+    updatePreference,
+  ]);
 
   useEffect(() => {
     if (formData.customer_id) {
@@ -745,6 +837,41 @@ export default function OpportunityList() {
       setFilteredCustomers([]);
     }
   }, [customerSearch, customers]);
+
+  function applyOpportunityFilters(query: any) {
+    let filteredQuery = query;
+
+    if (divisionFilter) {
+      filteredQuery = filteredQuery.eq("amp_division", divisionFilter);
+    }
+
+    if (statusFilter) {
+      filteredQuery = filteredQuery.eq("status", statusFilter);
+    }
+
+    if (opportunityTypeFilter) {
+      if (opportunityTypeFilter === "large_acceptance") {
+        filteredQuery = filteredQuery.or(
+          "opportunity_type.eq.large_acceptance,and(opportunity_type.is.null,quoted_amount.gte.100000)",
+        );
+      } else if (opportunityTypeFilter === "small_acceptance") {
+        filteredQuery = filteredQuery.or(
+          "opportunity_type.eq.small_acceptance,and(opportunity_type.is.null,quoted_amount.gt.0,quoted_amount.lt.100000)",
+        );
+      } else if (opportunityTypeFilter === "other") {
+        filteredQuery = filteredQuery.or(
+          "opportunity_type.eq.other,and(opportunity_type.is.null,quoted_amount.is.null),and(opportunity_type.is.null,quoted_amount.lte.0)",
+        );
+      } else {
+        filteredQuery = filteredQuery.eq(
+          "opportunity_type",
+          opportunityTypeFilter,
+        );
+      }
+    }
+
+    return filteredQuery;
+  }
 
   async function fetchOpportunities() {
     console.log("[OpportunityList] fetchOpportunities START");
@@ -796,6 +923,8 @@ export default function OpportunityList() {
             `quote_number.ilike.${like},title.ilike.${like},description.ilike.${like},sales_person.ilike.${like}`,
           );
 
+        q1 = applyOpportunityFilters(q1);
+
         // Apply ordering with NULLS LAST for date fields
         if (nullsLast) {
           q1 = q1.order(orderColumn, { ascending, nullsFirst: false });
@@ -835,6 +964,8 @@ export default function OpportunityList() {
             .from("opportunities")
             .select("*")
             .in("customer_id", ids);
+
+          q2 = applyOpportunityFilters(q2);
 
           // Apply ordering with NULLS LAST for date fields
           if (nullsLast) {
@@ -876,6 +1007,8 @@ export default function OpportunityList() {
           .schema("business")
           .from("opportunities")
           .select("*");
+
+        query = applyOpportunityFilters(query);
 
         // Apply ordering with NULLS LAST for date fields
         if (nullsLast) {
@@ -1990,7 +2123,7 @@ export default function OpportunityList() {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <Link
               to="/sales-dashboard/opportunities/calendar"
               className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:border-dark-300 dark:bg-dark-150 dark:text-white dark:hover:bg-dark-100"
@@ -2021,16 +2154,110 @@ export default function OpportunityList() {
                 </div>
               )}
             </div>
+            <div className="relative" ref={filterMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsFilterMenuOpen((prev) => !prev)}
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                  activeFilterCount > 0
+                    ? "text-[#f26722]"
+                    : "text-gray-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                }`}
+                aria-expanded={isFilterMenuOpen}
+                aria-label="Filter opportunities"
+                title="Filter"
+              >
+                <Filter className="h-5 w-5" />
+              </button>
+              {isFilterMenuOpen && (
+                <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                      Division
+                    </label>
+                    <select
+                      value={divisionFilter}
+                      onChange={(e) => {
+                        setDivisionFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    >
+                      <option value="">All Divisions</option>
+                      {DIVISION_FILTER_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="mt-3">
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                      Type
+                    </label>
+                    <select
+                      value={opportunityTypeFilter}
+                      onChange={(e) => {
+                        setOpportunityTypeFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    >
+                      <option value="">All Types</option>
+                      {OPPORTUNITY_TYPE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="mt-3">
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                      Status
+                    </label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    >
+                      <option value="">All Statuses</option>
+                      {STATUS_FILTER_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {activeFilterCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDivisionFilter("");
+                        setOpportunityTypeFilter("");
+                        setStatusFilter("");
+                        setPage(1);
+                      }}
+                      className="mt-3 w-full rounded-md border border-gray-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
             <div className="relative" ref={sortMenuRef}>
               <button
                 type="button"
                 onClick={() => setIsSortMenuOpen((prev) => !prev)}
-                className="inline-flex items-center gap-2 rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                aria-expanded={isSortMenuOpen}
+                aria-label="Sort opportunities"
+                title="Sort"
               >
-                Sort
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${isSortMenuOpen ? "rotate-180" : ""}`}
-                />
+                <ArrowDownWideNarrow className="h-5 w-5" />
               </button>
               {isSortMenuOpen && (
                 <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
@@ -2239,8 +2466,9 @@ export default function OpportunityList() {
                       colSpan={14}
                       className="px-6 py-4 text-center text-gray-500 dark:text-dark-400"
                     >
-                      No opportunities found. Click "Add Opportunity" to create
-                      one.
+                      {activeFilterCount > 0 || searchTerm
+                        ? "No opportunities match the current filters."
+                        : 'No opportunities found. Click "Add Opportunity" to create one.'}
                     </td>
                   </tr>
                 ) : (

@@ -31,6 +31,9 @@ export interface UserPreferences {
       sortField?: 'quote_number' | 'opportunity_created_date' | 'proposal_due_date';
       sortDirection?: 'asc' | 'desc';
       searchTerm?: string;
+      divisionFilter?: string;
+      opportunityTypeFilter?: string;
+      statusFilter?: string;
     };
     jobList?: {
       sortField?: string;

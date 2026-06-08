@@ -1637,25 +1637,27 @@ export default function PortalLanding() {
               <div className="space-y-2 shrink-0">
                 <label className="text-sm font-medium">Your signature</label>
                 <div className="border rounded-lg bg-white dark:bg-dark-150 p-2">
-                  <canvas
-                    ref={ackCanvasRef}
-                    width={500}
-                    height={120}
-                    className="border border-gray-300 dark:border-gray-600 rounded w-full cursor-crosshair touch-none"
-                    style={{ maxWidth: "100%", height: "120px" }}
-                    onMouseDown={ackStartDrawing}
-                    onMouseMove={ackDraw}
-                    onMouseUp={ackStopDrawing}
-                    onMouseLeave={ackStopDrawing}
-                    onTouchStart={ackStartDrawing}
-                    onTouchMove={ackDraw}
-                    onTouchEnd={ackStopDrawing}
-                  />
-                  <div className="flex gap-2 mt-2">
+                  <div className="relative">
+                    <canvas
+                      ref={ackCanvasRef}
+                      width={500}
+                      height={120}
+                      className="border border-gray-300 dark:border-gray-600 rounded w-full cursor-crosshair touch-none"
+                      style={{ maxWidth: "100%", height: "120px" }}
+                      onMouseDown={ackStartDrawing}
+                      onMouseMove={ackDraw}
+                      onMouseUp={ackStopDrawing}
+                      onMouseLeave={ackStopDrawing}
+                      onTouchStart={ackStartDrawing}
+                      onTouchMove={ackDraw}
+                      onTouchEnd={ackStopDrawing}
+                    />
                     <Button
                       variant="outline"
                       size="sm"
+                      type="button"
                       onClick={ackClearSignature}
+                      className="absolute bottom-2 left-2 bg-white/95 dark:bg-dark-150/95"
                     >
                       Clear
                     </Button>

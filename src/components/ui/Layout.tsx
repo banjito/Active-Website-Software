@@ -404,7 +404,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const searchParams = new URLSearchParams(location.search);
   const isEmbed = searchParams.get('embed') === 'true';
-  const isEmbedded = searchParams.get('embedded') === 'true';
+  const isEmbedded =
+    searchParams.get('embedded') === 'true' ||
+    searchParams.get('fromApproval') === 'true';
   const isMeetingsPage =
     location.pathname === '/meetings' || location.pathname.startsWith('/meetings/');
   const useHeaderBarLayout = !isMeetingsPage && !isReportPage;

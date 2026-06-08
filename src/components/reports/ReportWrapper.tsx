@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import React, { useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface ReportWrapperProps {
   children: React.ReactNode;
@@ -9,24 +9,210 @@ interface ReportWrapperProps {
    * Use for reports where the iframe preview is not useful or is misbehaving.
    */
   disablePreview?: boolean;
+  /**
+   * When provided, communicates edit state to parent window via postMessage
+   * so review approval modals can show "Save & Approve" vs "Approve".
+   */
+  isEditing?: boolean;
 }
 
-export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintMode = false, disablePreview = false }) => {
+export const ReportWrapper: React.FC<ReportWrapperProps> = ({
+  children,
+  isPrintMode = false,
+  disablePreview = false,
+  isEditing,
+}) => {
+  const saveResolverRef = useRef<(() => void) | null>(null);
+
+  const postEditState = (nextIsEditing: boolean) => {
+    if (typeof window === "undefined" || window.parent === window) return;
+    window.parent.postMessage(
+      { type: "reportEditState", isEditing: nextIsEditing },
+      "*",
+    );
+  };
+
+  const isVisible = (element: HTMLElement) => {
+    const style = window.getComputedStyle(element);
+    return (
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      element.offsetParent !== null
+    );
+  };
+
+  const findSaveButton = () => {
+    const container = document.getElementById("report-container");
+    if (!container) return null;
+
+    const buttons = Array.from(
+      container.querySelectorAll("button"),
+    ) as HTMLButtonElement[];
+    return (
+      buttons.find((button) => {
+        if (button.disabled || !isVisible(button)) return false;
+        const text = (button.textContent || "").trim().toLowerCase();
+        if (!text) return false;
+        if (
+          text.includes("ready") ||
+          text.includes("review") ||
+          text.includes("print") ||
+          text.includes("preview") ||
+          text.includes("approve") ||
+          text.includes("reject")
+        ) {
+          return false;
+        }
+        return (
+          text === "save" ||
+          text.includes("save report") ||
+          text.includes("save new report") ||
+          text.includes("save & close") ||
+          text.includes("update report")
+        );
+      }) || null
+    );
+  };
+
+  const hasEditableFields = () => {
+    const container = document.getElementById("report-container");
+    if (!container) return false;
+
+    const fields = Array.from(
+      container.querySelectorAll("input, textarea, select"),
+    ) as Array<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
+
+    return fields.some((field) => {
+      if (!isVisible(field)) return false;
+      if (field.disabled) return false;
+      if (field.tagName === "SELECT") return true;
+      const input = field as HTMLInputElement | HTMLTextAreaElement;
+      return !input.readOnly;
+    });
+  };
+
+  const deriveIsEditingFromDom = () =>
+    Boolean(findSaveButton()) || hasEditableFields();
+
+  // Communicate edit state to parent window (for approval modal "Save & Approve" button)
+  useEffect(() => {
+    if (isEditing === undefined) return;
+    postEditState(isEditing);
+  }, [isEditing]);
+
+  // Fallback for report types that do not pass isEditing into ReportWrapper yet.
+  useEffect(() => {
+    if (isEditing !== undefined || typeof window === "undefined") return;
+
+    let lastState: boolean | null = null;
+    let observer: MutationObserver | null = null;
+
+    const notifyIfChanged = () => {
+      const nextState = deriveIsEditingFromDom();
+      if (nextState === lastState) return;
+      lastState = nextState;
+      postEditState(nextState);
+    };
+
+    const attachObserver = () => {
+      observer?.disconnect();
+      const container = document.getElementById("report-container");
+      if (!container) return;
+      observer = new MutationObserver(notifyIfChanged);
+      observer.observe(container, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["style", "class", "disabled"],
+      });
+      notifyIfChanged();
+    };
+
+    const timer = window.setTimeout(attachObserver, 0);
+    window.addEventListener("load", attachObserver);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("load", attachObserver);
+      observer?.disconnect();
+    };
+  }, [isEditing]);
+
+  // Listen for save-then-approve requests from parent approval modal
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data?.type === "requestSave") {
+        let settled = false;
+        const complete = (success: boolean, reason?: string) => {
+          if (settled) return;
+          settled = true;
+          saveResolverRef.current = null;
+          window.parent.postMessage(
+            { type: "saveComplete", success, reason },
+            "*",
+          );
+        };
+
+        const event = new CustomEvent("approvalSaveRequest", {
+          detail: {
+            resolve: () => complete(true),
+            reject: (reason?: string) => complete(false, reason),
+          },
+        });
+
+        saveResolverRef.current = () => complete(true);
+        document.dispatchEvent(event);
+
+        window.setTimeout(() => {
+          if (settled) return;
+          const saveButton = findSaveButton();
+          if (!saveButton) {
+            complete(false, "No save button was found.");
+            return;
+          }
+
+          saveButton.click();
+
+          const startedAt = Date.now();
+          const waitForSave = window.setInterval(() => {
+            if (settled) {
+              window.clearInterval(waitForSave);
+              return;
+            }
+            if (!deriveIsEditingFromDom()) {
+              window.clearInterval(waitForSave);
+              complete(true);
+              return;
+            }
+            if (Date.now() - startedAt > 8000) {
+              window.clearInterval(waitForSave);
+              complete(false, "The report did not finish saving.");
+            }
+          }, 250);
+        }, 0);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
   useEffect(() => {
     // Inject print CSS (remove old + re-inject so latest rules always apply)
-    if (typeof document !== 'undefined') {
-      const existing = document.getElementById('vm-standard-print-css');
+    if (typeof document !== "undefined") {
+      const existing = document.getElementById("vm-standard-print-css");
       if (existing) existing.remove();
 
-      const style = document.createElement('style');
-      style.id = 'vm-standard-print-css';
-      
+      const style = document.createElement("style");
+      style.id = "vm-standard-print-css";
+
       // Detect Windows platform and add class to html element
-      const isWindows = navigator.platform.includes('Win') || navigator.userAgent.includes('Windows');
-      if (isWindows && typeof document !== 'undefined') {
-        document.documentElement.classList.add('is-windows');
+      const isWindows =
+        navigator.platform.includes("Win") ||
+        navigator.userAgent.includes("Windows");
+      if (isWindows && typeof document !== "undefined") {
+        document.documentElement.classList.add("is-windows");
       }
-      
+
       style.textContent = `
         /* Screen-only min-height - does NOT apply to print or embedded mode */
         @media screen {
@@ -80,14 +266,14 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           width: 100% !important;
           max-width: 100% !important;
         }
-        
+
         /* Remove min-height for embedded/print preview mode */
         .force-print .screen-min-height,
         .force-print #report-container {
           min-height: 0 !important;
           height: auto !important;
         }
-        
+
         @media print {
           html, body {
             min-height: 0 !important;
@@ -113,19 +299,19 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             /* Slightly larger bottom margin so content doesn't pack into one fewer page (fixes PDF showing 2/5 when report is 2/6) */
             margin-bottom: 0.35in;
           }
-          
+
           /* ============================================ */
           /* CROSS-PLATFORM PRINT STANDARDIZATION        */
           /* macOS appearance preserved, Windows matched */
           /* ============================================ */
-          
+
           /* Preserve colors across platforms */
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
             color-adjust: exact !important;
           }
-          
+
           /* Override container sizing for print - fit within minimum margins */
           /* Never print a surrounding border on the report container (custom or standard) */
           #report-container {
@@ -140,13 +326,13 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             outline: none !important;
             box-shadow: none !important;
           }
-          
+
           /* Force remove any height constraints from the container */
           #report-container[style] {
             min-height: 0 !important;
             height: auto !important;
           }
-          
+
           /* Content directly under header – no blank space: flex so body doesn't stretch */
           #report-container {
             display: flex !important;
@@ -177,7 +363,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             margin-top: 0 !important;
             padding-top: 0 !important;
           }
-          
+
           /* Global: make inputs/selects look like plain text in print */
           #report-container input,
           #report-container select,
@@ -203,30 +389,30 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           #report-container .result-fail { color: #dc2626 !important; }
           #report-container select.result-pass { color: #16a34a !important; }
           #report-container select.result-fail { color: #dc2626 !important; }
-          
+
           /* Hide select dropdown arrow - Windows & IE/Edge */
           #report-container select::-ms-expand { display: none !important; }
-          #report-container select { 
+          #report-container select {
             background-image: none !important;
             padding-right: 0 !important;
           }
-          
+
           /* Remove number input spinners - cross-browser */
           #report-container input[type="number"]::-webkit-outer-spin-button,
-          #report-container input[type="number"]::-webkit-inner-spin-button { 
-            -webkit-appearance: none !important; 
-            margin: 0 !important; 
+          #report-container input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none !important;
+            margin: 0 !important;
             display: none !important;
           }
-          #report-container input[type="number"] { 
-            -moz-appearance: textfield !important; 
+          #report-container input[type="number"] {
+            -moz-appearance: textfield !important;
           }
           #report-container input[type="number"]::-ms-clear { display: none !important; }
 
           /* ============================================ */
           /* TABLE BORDERS - Windows Chrome Enhancement */
           /* ============================================ */
-          
+
           /* Enforce crisp table borders across all reports */
           #report-container table,
           #report-container th,
@@ -240,9 +426,9 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             border-width: 1px !important;
             border-color: #000000 !important;
           }
-          
-          #report-container table { 
-            border-collapse: collapse !important; 
+
+          #report-container table {
+            border-collapse: collapse !important;
             width: 100% !important;
             max-width: 100% !important;
             /* Windows table rendering improvements */
@@ -251,12 +437,12 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             /* Allow tables to span multiple pages */
             overflow: visible !important;
           }
-          
+
           /* ============================================ */
           /* PREVENT TABLE OVERFLOW - ALL REPORTS        */
           /* Force all tables to fit within page width   */
           /* ============================================ */
-          
+
           /* Force overflow containers to show content, not scroll */
           #report-container .overflow-x-auto,
           #report-container .overflow-auto,
@@ -264,7 +450,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             overflow: visible !important;
             max-width: 100% !important;
           }
-          
+
           /* All tables must fit within the printable area */
           #report-container table {
             max-width: 100% !important;
@@ -277,25 +463,25 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             table-layout: fixed !important;
             font-size: 10px !important;
           }
-          
+
           /* All tables at full width - no scaling */
           #report-container table {
             width: 100% !important;
             transform: none !important;
             margin-bottom: 0 !important;
           }
-          
+
           /* Prevent any element from causing horizontal overflow */
           #report-container * {
             max-width: 100% !important;
             box-sizing: border-box !important;
           }
-          
+
           /* ============================================ */
           /* PREVENT BLANK PAGES                         */
           /* Remove excessive margins and page breaks    */
           /* ============================================ */
-          
+
           /* Remove forced page breaks that cause blank pages */
           #report-container section,
           #report-container div,
@@ -306,14 +492,14 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             break-before: auto !important;
             break-after: auto !important;
           }
-          
+
           /* Only break inside large sections if needed */
           #report-container section,
           #report-container .section {
             page-break-inside: auto !important;
             break-inside: auto !important;
           }
-          
+
           /* Keep most table rows together */
           #report-container tr {
             page-break-inside: avoid !important;
@@ -324,13 +510,13 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             page-break-inside: auto !important;
             break-inside: auto !important;
           }
-          
+
           /* Keep headers with content */
           #report-container h1, #report-container h2, #report-container h3 {
             page-break-after: avoid !important;
             break-after: avoid !important;
           }
-          
+
           /* Reduce margins but not so much that print gets one fewer page than screen (keeps PDF page count in sync) */
           #report-container .mb-6 { margin-bottom: 16px !important; }
           #report-container .mb-8 { margin-bottom: 20px !important; }
@@ -338,8 +524,8 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           #report-container .mt-8 { margin-top: 16px !important; }
           #report-container .py-6 { padding-top: 12px !important; padding-bottom: 12px !important; }
           #report-container .py-8 { padding-top: 16px !important; padding-bottom: 16px !important; }
-          
-          #report-container th, #report-container td { 
+
+          #report-container th, #report-container td {
             padding: 2px 3px !important;
             /* Windows text rendering in tables */
             line-height: 1.2 !important;
@@ -349,15 +535,15 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           /* Standardize Visual/Mechanical tables that include a Results column */
           #report-container .vm-standard,
           #report-container .visual-mechanical-table { width: 100% !important; table-layout: fixed !important; }
-          #report-container .vm-standard th, 
+          #report-container .vm-standard th,
           #report-container .vm-standard td,
           #report-container .visual-mechanical-table th,
-          #report-container .visual-mechanical-table td { 
-            white-space: normal !important; 
-            word-break: break-word !important; 
-            font-size: 9px !important; 
-            line-height: 1.15 !important; 
-            padding: 3px 4px !important; 
+          #report-container .visual-mechanical-table td {
+            white-space: normal !important;
+            word-break: break-word !important;
+            font-size: 9px !important;
+            line-height: 1.15 !important;
+            padding: 3px 4px !important;
             vertical-align: top !important;
           }
           /* Column widths: small NETA Section, large Description, Results on right */
@@ -573,21 +759,21 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           #report-container .ir-screen { display: none !important; }
           #report-container .ir-print { display: block !important; }
           #report-container .ir-print table { width: 100% !important; table-layout: fixed !important; }
-          #report-container .ir-print th, 
+          #report-container .ir-print th,
           #report-container .ir-print td { font-size: 9px !important; padding: 2px 3px !important; }
 
           /* ============================================ */
           /* WINDOWS-ONLY PRINT FIXES                   */
           /* Only apply when .is-windows class is present */
           /* ============================================ */
-          
+
           .is-windows #report-container * {
             -webkit-font-smoothing: antialiased !important;
             -moz-osx-font-smoothing: grayscale !important;
             text-rendering: optimizeLegibility !important;
             font-smooth: always !important;
           }
-          
+
           .is-windows #report-container input,
           .is-windows #report-container select,
           .is-windows #report-container textarea {
@@ -605,21 +791,21 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             outline: none !important;
             text-indent: 0 !important;
           }
-          
+
           .is-windows #report-container select::-ms-expand { display: none !important; }
-          .is-windows #report-container select { 
+          .is-windows #report-container select {
             background-image: none !important;
             padding-right: 0 !important;
           }
-          
+
           .is-windows #report-container input[type="number"]::-webkit-outer-spin-button,
-          .is-windows #report-container input[type="number"]::-webkit-inner-spin-button { 
-            -webkit-appearance: none !important; 
-            margin: 0 !important; 
+          .is-windows #report-container input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none !important;
+            margin: 0 !important;
             display: none !important;
           }
-          .is-windows #report-container input[type="number"] { 
-            -moz-appearance: textfield !important; 
+          .is-windows #report-container input[type="number"] {
+            -moz-appearance: textfield !important;
           }
           .is-windows #report-container input[type="number"]::-ms-clear { display: none !important; }
 
@@ -635,16 +821,16 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             border-width: 1px !important;
             border-color: #000000 !important;
           }
-          
-          .is-windows #report-container table { 
-            border-collapse: collapse !important; 
+
+          .is-windows #report-container table {
+            border-collapse: collapse !important;
             width: 100% !important;
             /* Windows table rendering improvements */
             table-layout: auto !important;
             border-spacing: 0 !important;
           }
-          
-          .is-windows #report-container th, .is-windows #report-container td { 
+
+          .is-windows #report-container th, .is-windows #report-container td {
             padding: 2px 3px !important;
             /* Windows text rendering in tables */
             line-height: 1.2 !important;
@@ -655,7 +841,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           /* ELECTRICAL TESTS TABLE - FIT TO PAGE       */
           /* Scale wide tables to fit minimum margins   */
           /* ============================================ */
-          
+
           /* Container for electrical tests section - scale to fit */
           #report-container section[aria-labelledby="electrical-tests-heading"],
           #report-container .electrical-tests-section {
@@ -663,7 +849,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             max-width: 100% !important;
             overflow: visible !important;
           }
-          
+
           /* Electrical tests table - full width, no scaling */
           #report-container .electrical-tests-table,
           #report-container table.electrical-tests-table {
@@ -674,7 +860,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             font-size: 8px !important;
             transform: none !important;
           }
-          
+
           /* Electrical tests table headers */
           #report-container .electrical-tests-table th,
           #report-container table.electrical-tests-table th {
@@ -685,7 +871,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             overflow: visible !important;
             text-overflow: clip !important;
           }
-          
+
           /* Electrical tests table cells */
           #report-container .electrical-tests-table td,
           #report-container table.electrical-tests-table td {
@@ -696,7 +882,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             word-break: break-word !important;
             overflow: visible !important;
           }
-          
+
           /* Electrical tests table inputs/textareas */
           #report-container .electrical-tests-table input,
           #report-container .electrical-tests-table textarea,
@@ -711,7 +897,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             width: 100% !important;
             max-width: 100% !important;
           }
-          
+
           /* Overflow container should not scroll in print */
           #report-container .overflow-x-auto {
             overflow: visible !important;
@@ -773,7 +959,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         /* ============================================ */
         /* LIVE PREVIEW - Mirror print styles         */
         /* ============================================ */
-        
+
         /* Windows-specific font rendering fixes for preview */
         .force-print * {
           -webkit-font-smoothing: antialiased !important;
@@ -781,14 +967,14 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           text-rendering: optimizeLegibility !important;
           font-smooth: always !important;
         }
-        
+
         /* Preserve colors in preview */
         .force-print * {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
           color-adjust: exact !important;
         }
-        
+
         .force-print #report-container {
           min-height: auto !important;
           padding: 10px 20px 20px 20px !important;
@@ -797,7 +983,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           outline: none !important;
           box-shadow: none !important;
         }
-        
+
         /* ============================================ */
         /* CUSTOM FORM PREVIEW - mirror on-screen      */
         /* ============================================ */
@@ -911,7 +1097,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           box-shadow: none !important;
           outline: none !important;
         }
-        
+
         .force-print #report-container input,
         .force-print #report-container select,
         .force-print #report-container textarea {
@@ -928,21 +1114,21 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           outline: none !important;
           text-indent: 0 !important;
         }
-        
+
         .force-print #report-container select::-ms-expand { display: none !important; }
-        .force-print #report-container select { 
+        .force-print #report-container select {
           background-image: none !important;
           padding-right: 0 !important;
         }
-        
+
         .force-print #report-container input[type="number"]::-webkit-outer-spin-button,
-        .force-print #report-container input[type="number"]::-webkit-inner-spin-button { 
-          -webkit-appearance: none !important; 
+        .force-print #report-container input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none !important;
           margin: 0 !important;
           display: none !important;
         }
-        .force-print #report-container input[type="number"] { 
-          -moz-appearance: textfield !important; 
+        .force-print #report-container input[type="number"] {
+          -moz-appearance: textfield !important;
         }
         .force-print #report-container input[type="number"]::-ms-clear { display: none !important; }
 
@@ -957,16 +1143,16 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           border-width: 1px !important;
           border-color: #000000 !important;
         }
-        
-        .force-print #report-container table { 
-          border-collapse: collapse !important; 
+
+        .force-print #report-container table {
+          border-collapse: collapse !important;
           width: 100% !important;
           max-width: 100% !important;
           table-layout: auto !important;
           border-spacing: 0 !important;
           overflow: visible !important; /* Allow tables to span multiple pages */
         }
-        
+
         /* PREVENT TABLE OVERFLOW - force-print mode */
         .force-print #report-container .overflow-x-auto,
         .force-print #report-container .overflow-auto,
@@ -974,7 +1160,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           overflow: visible !important;
           max-width: 100% !important;
         }
-        
+
         .force-print #report-container table {
           max-width: 100% !important;
           width: 100% !important;
@@ -985,20 +1171,20 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           table-layout: fixed !important;
           font-size: 10px !important;
         }
-        
+
         /* All tables at full width - no scaling */
         .force-print #report-container table {
           width: 100% !important;
           transform: none !important;
           margin-bottom: 0 !important;
         }
-        
+
         /* Prevent any element from causing horizontal overflow */
         .force-print #report-container * {
           max-width: 100% !important;
           box-sizing: border-box !important;
         }
-        
+
         /* PREVENT BLANK PAGES - force-print mode */
         .force-print #report-container section,
         .force-print #report-container div,
@@ -1007,12 +1193,12 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           page-break-before: auto !important;
           page-break-after: auto !important;
         }
-        
+
         .force-print #report-container .mb-6 { margin-bottom: 12px !important; }
         .force-print #report-container .mb-8 { margin-bottom: 16px !important; }
-        
-        .force-print #report-container th, 
-        .force-print #report-container td { 
+
+        .force-print #report-container th,
+        .force-print #report-container td {
           padding: 2px 3px !important;
           line-height: 1.2 !important;
           vertical-align: top !important;
@@ -1020,15 +1206,15 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
 
         .force-print #report-container .vm-standard,
         .force-print #report-container .visual-mechanical-table { width: 100% !important; table-layout: fixed !important; }
-        .force-print #report-container .vm-standard th, 
+        .force-print #report-container .vm-standard th,
         .force-print #report-container .vm-standard td,
         .force-print #report-container .visual-mechanical-table th,
-        .force-print #report-container .visual-mechanical-table td { 
-          white-space: normal !important; 
-          word-break: break-word !important; 
-          font-size: 9px !important; 
-          line-height: 1.15 !important; 
-          padding: 3px 4px !important; 
+        .force-print #report-container .visual-mechanical-table td {
+          white-space: normal !important;
+          word-break: break-word !important;
+          font-size: 9px !important;
+          line-height: 1.15 !important;
+          padding: 3px 4px !important;
           vertical-align: top !important;
         }
         .force-print #report-container .vm-standard thead th:first-child,
@@ -1081,21 +1267,21 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         .force-print #report-container .ir-screen { display: none !important; }
         .force-print #report-container .ir-print { display: block !important; }
         .force-print #report-container .ir-print table { width: 100% !important; table-layout: fixed !important; }
-        .force-print #report-container .ir-print th, 
+        .force-print #report-container .ir-print th,
         .force-print #report-container .ir-print td { font-size: 9px !important; padding: 2px 3px !important; }
-        
+
         /* ============================================ */
         /* ELECTRICAL TESTS TABLE - FIT TO PAGE       */
         /* Scale wide tables to fit minimum margins   */
         /* ============================================ */
-        
+
         .force-print #report-container section[aria-labelledby="electrical-tests-heading"],
         .force-print #report-container .electrical-tests-section {
           width: 100% !important;
           max-width: 100% !important;
           overflow: visible !important;
         }
-        
+
         .force-print #report-container .electrical-tests-table,
         .force-print #report-container table.electrical-tests-table {
           width: 100% !important;
@@ -1105,7 +1291,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           font-size: 8px !important;
           transform: none !important;
         }
-        
+
         .force-print #report-container .electrical-tests-table th,
         .force-print #report-container table.electrical-tests-table th {
           font-size: 6px !important;
@@ -1115,7 +1301,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           overflow: visible !important;
           text-overflow: clip !important;
         }
-        
+
         .force-print #report-container .electrical-tests-table td,
         .force-print #report-container table.electrical-tests-table td {
           font-size: 6px !important;
@@ -1125,7 +1311,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           word-break: break-word !important;
           overflow: visible !important;
         }
-        
+
         .force-print #report-container .electrical-tests-table input,
         .force-print #report-container .electrical-tests-table textarea,
         .force-print #report-container .electrical-tests-table select,
@@ -1139,7 +1325,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           width: 100% !important;
           max-width: 100% !important;
         }
-        
+
         .force-print #report-container .overflow-x-auto {
           overflow: visible !important;
           width: 100% !important;
@@ -1194,10 +1380,10 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           max-width: 100% !important;
           overflow: hidden !important;
         }
-        
+
         /* Hide all buttons and controls in force-print mode (for embedded deliverable viewer) */
         .force-print button:not(.print-visible) { display: none !important; }
-        
+
         /* Hide ONLY specific UI elements, NOT .print:hidden which might contain data */
         .force-print nav,
         .force-print aside,
@@ -1206,7 +1392,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         .force-print .sidebar,
         .force-print .navigation,
         .force-print .nav-menu { display: none !important; }
-        
+
         /* Make report container fit within minimum margins (0.25in each side = 8in printable) */
         .force-print #report-container {
           max-width: 7.5in !important;
@@ -1250,20 +1436,20 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           margin-top: 0 !important;
           padding-top: 0 !important;
         }
-        
+
         /* Ensure report content fits within 8.5" width */
         .force-print #report-container > * {
           max-width: 100% !important;
           box-sizing: border-box !important;
         }
-        
+
         /* Tables should scale to fit within page width */
         .force-print #report-container table {
           max-width: 100% !important;
           width: 100% !important;
           table-layout: auto !important;
         }
-        
+
         /* Prevent table cells from expanding beyond container */
         .force-print #report-container th,
         .force-print #report-container td {
@@ -1271,20 +1457,20 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           overflow: visible !important;
           word-wrap: break-word !important;
         }
-        
+
         /* Ensure sections don't overflow but ARE visible (allow multi-page) */
         .force-print #report-container section {
           max-width: 100% !important;
           overflow: visible !important;
         }
-        
+
         /* Scale down content if needed to fit 8.5" width */
         @media screen {
           .force-print #report-container {
             transform-origin: top center;
           }
         }
-        
+
         /* Ensure ALL content sections are visible in embedded mode - comprehensive */
         /* But NOT the onscreen editable versions */
         .force-print #report-container section:not([class*="onscreen"]),
@@ -1302,22 +1488,22 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         .force-print #report-container div[class*="mechanical"]:not([class*="onscreen"]),
         .force-print #report-container div[class*="electrical"]:not([class*="onscreen"]),
         .force-print #report-container div[class*="as-found"]:not([class*="onscreen"]),
-        .force-print #report-container div[class*="as-left"]:not([class*="onscreen"]) { 
-          display: block !important; 
-          visibility: visible !important; 
+        .force-print #report-container div[class*="as-left"]:not([class*="onscreen"]) {
+          display: block !important;
+          visibility: visible !important;
           opacity: 1 !important;
         }
-        
+
         /* Show ALL print variants - catch any class ending in -print or containing print */
         .force-print .print\\:block,
         .force-print .hidden.print\\:block,
         .force-print [class*="-print"],
-        .force-print [class*="print-"] { 
-          display: block !important; 
-          visibility: visible !important; 
+        .force-print [class*="print-"] {
+          display: block !important;
+          visibility: visible !important;
           opacity: 1 !important;
         }
-        
+
         /* Force ALL tables and table elements to be visible */
         .force-print #report-container table { display: table !important; visibility: visible !important; opacity: 1 !important; }
         .force-print #report-container thead { display: table-header-group !important; }
@@ -1326,7 +1512,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         .force-print #report-container tr { display: table-row !important; }
         .force-print #report-container th,
         .force-print #report-container td { display: table-cell !important; visibility: visible !important; }
-        
+
         /* Ensure any data container divs are visible */
         .force-print #report-container [class*="data"],
         .force-print #report-container [class*="content"],
@@ -1335,7 +1521,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           visibility: visible !important;
           opacity: 1 !important;
         }
-        
+
         /* Safety net: ensure all divs inside report container are visible unless specifically hidden */
         .force-print #report-container > div,
         .force-print #report-container section > div,
@@ -1343,7 +1529,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           visibility: visible !important;
           opacity: 1 !important;
         }
-        
+
         /* Hide ALL on-screen form versions - they have editable inputs/selects */
         .force-print .print\\:hidden { display: none !important; }
         .force-print [class*="-onscreen"],
@@ -1351,10 +1537,10 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         .force-print .job-info-onscreen,
         .force-print .nameplate-onscreen,
         .force-print .test-eqpt-onscreen,
-        .force-print .device-onscreen { 
-          display: none !important; 
+        .force-print .device-onscreen {
+          display: none !important;
         }
-        
+
         /* More aggressive: if a section is NOT marked as print version, hide it completely */
         .force-print #report-container .job-information:not(.job-info-print):not(.print\\:block),
         .force-print #report-container .test-equipment:not(.test-eqpt-print):not(.print\\:block),
@@ -1363,7 +1549,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         .force-print #report-container .device-information:not(.device-print):not(.print\\:block) {
           display: none !important;
         }
-        
+
         /* But ensure their print counterparts (clean tables) are visible */
         .force-print .print\\:block,
         .force-print [class*="-print"]:not([class*="no-print"]),
@@ -1380,14 +1566,14 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         /* WINDOWS-ONLY LIVE PREVIEW FIXES              */
         /* Only apply when both .force-print and .is-windows */
         /* ============================================ */
-        
+
         .force-print.is-windows #report-container * {
           -webkit-font-smoothing: antialiased !important;
           -moz-osx-font-smoothing: grayscale !important;
           text-rendering: optimizeLegibility !important;
           font-smooth: always !important;
         }
-        
+
         .force-print.is-windows #report-container input,
         .force-print.is-windows #report-container select,
         .force-print.is-windows #report-container textarea {
@@ -1404,21 +1590,21 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           outline: none !important;
           text-indent: 0 !important;
         }
-        
+
         .force-print.is-windows #report-container select::-ms-expand { display: none !important; }
-        .force-print.is-windows #report-container select { 
+        .force-print.is-windows #report-container select {
           background-image: none !important;
           padding-right: 0 !important;
         }
-        
+
         .force-print.is-windows #report-container input[type="number"]::-webkit-outer-spin-button,
-        .force-print.is-windows #report-container input[type="number"]::-webkit-inner-spin-button { 
-          -webkit-appearance: none !important; 
+        .force-print.is-windows #report-container input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none !important;
           margin: 0 !important;
           display: none !important;
         }
-        .force-print.is-windows #report-container input[type="number"] { 
-          -moz-appearance: textfield !important; 
+        .force-print.is-windows #report-container input[type="number"] {
+          -moz-appearance: textfield !important;
         }
         .force-print.is-windows #report-container input[type="number"]::-ms-clear { display: none !important; }
 
@@ -1433,16 +1619,16 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
           border-width: 1px !important;
           border-color: #000000 !important;
         }
-        
-        .force-print.is-windows #report-container table { 
-          border-collapse: collapse !important; 
+
+        .force-print.is-windows #report-container table {
+          border-collapse: collapse !important;
           width: 100% !important;
           table-layout: auto !important;
           border-spacing: 0 !important;
         }
-        
-        .force-print.is-windows #report-container th, 
-        .force-print.is-windows #report-container td { 
+
+        .force-print.is-windows #report-container th,
+        .force-print.is-windows #report-container td {
           padding: 2px 3px !important;
           line-height: 1.2 !important;
           vertical-align: top !important;
@@ -1508,27 +1694,45 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
     }
 
     const standardizeVMTables = () => {
-      const container = document.getElementById('report-container');
+      const container = document.getElementById("report-container");
       if (!container) return;
-      const tables = Array.from(container.querySelectorAll('table')) as HTMLTableElement[];
+      const tables = Array.from(
+        container.querySelectorAll("table"),
+      ) as HTMLTableElement[];
       tables.forEach((tbl) => {
-        const headerCells = Array.from(tbl.querySelectorAll('thead th')) as HTMLTableCellElement[];
+        const headerCells = Array.from(
+          tbl.querySelectorAll("thead th"),
+        ) as HTMLTableCellElement[];
         if (!headerCells.length) return;
-        const headerTexts = headerCells.map((th) => (th.textContent || '').trim().toLowerCase());
-        const hasNetaSection = headerTexts.some((t) => t.includes('neta') || t.includes('section'));
-        const hasDescription = headerTexts.some((t) => t.includes('description'));
-        const resultsIndex = headerTexts.findIndex((t) => t === 'results' || t === 'result');
+        const headerTexts = headerCells.map((th) =>
+          (th.textContent || "").trim().toLowerCase(),
+        );
+        const hasNetaSection = headerTexts.some(
+          (t) => t.includes("neta") || t.includes("section"),
+        );
+        const hasDescription = headerTexts.some((t) =>
+          t.includes("description"),
+        );
+        const resultsIndex = headerTexts.findIndex(
+          (t) => t === "results" || t === "result",
+        );
         if (hasNetaSection && hasDescription && resultsIndex >= 0) {
           // Tag this table for standardized print layout
-          tbl.classList.add('vm-standard');
+          tbl.classList.add("vm-standard");
           // Hide comments column if present
-          const commentsIndex = headerTexts.findIndex((t) => t.includes('comment'));
+          const commentsIndex = headerTexts.findIndex((t) =>
+            t.includes("comment"),
+          );
           if (commentsIndex >= 0) {
-            const rows = Array.from(tbl.querySelectorAll('tr')) as HTMLTableRowElement[];
+            const rows = Array.from(
+              tbl.querySelectorAll("tr"),
+            ) as HTMLTableRowElement[];
             rows.forEach((row) => {
-              const cells = Array.from(row.querySelectorAll('th,td')) as HTMLElement[];
+              const cells = Array.from(
+                row.querySelectorAll("th,td"),
+              ) as HTMLElement[];
               const cell = cells[commentsIndex];
-              if (cell) cell.style.display = 'none';
+              if (cell) cell.style.display = "none";
             });
           }
         }
@@ -1537,20 +1741,22 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
 
     // Strip numeric prefixes like "3- ", "4.", etc. from report titles only for print
     const stripTitlePrefixesForPrint = () => {
-      const container = document.getElementById('report-container');
+      const container = document.getElementById("report-container");
       if (!container) return;
-      const titleSelectors = ['h1', 'h2', '.section-header'];
+      const titleSelectors = ["h1", "h2", ".section-header"];
       const regex = /^\s*\d+\s*[-.]\s*/i;
       titleSelectors.forEach((sel) => {
-        const nodes = Array.from(container.querySelectorAll(sel)) as HTMLElement[];
+        const nodes = Array.from(
+          container.querySelectorAll(sel),
+        ) as HTMLElement[];
         nodes.forEach((el) => {
-          const current = el.textContent || '';
+          const current = el.textContent || "";
           if (!current) return;
           if (regex.test(current)) {
             if (!el.dataset.originalTitle) {
               el.dataset.originalTitle = current;
             }
-            el.textContent = current.replace(regex, '').trim();
+            el.textContent = current.replace(regex, "").trim();
           }
         });
       });
@@ -1558,9 +1764,11 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
 
     // Restore titles after printing
     const restoreTitlesAfterPrint = () => {
-      const container = document.getElementById('report-container');
+      const container = document.getElementById("report-container");
       if (!container) return;
-      const nodes = Array.from(container.querySelectorAll('[data-original-title]')) as HTMLElement[];
+      const nodes = Array.from(
+        container.querySelectorAll("[data-original-title]"),
+      ) as HTMLElement[];
       nodes.forEach((el) => {
         if (el.dataset.originalTitle) {
           el.textContent = el.dataset.originalTitle;
@@ -1570,15 +1778,20 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
     };
 
     // Run on mount and before print
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       standardizeVMTables();
-      const beforeHandler = () => { standardizeVMTables(); stripTitlePrefixesForPrint(); };
-      const afterHandler = () => { restoreTitlesAfterPrint(); };
-      window.addEventListener('beforeprint', beforeHandler);
-      window.addEventListener('afterprint', afterHandler);
+      const beforeHandler = () => {
+        standardizeVMTables();
+        stripTitlePrefixesForPrint();
+      };
+      const afterHandler = () => {
+        restoreTitlesAfterPrint();
+      };
+      window.addEventListener("beforeprint", beforeHandler);
+      window.addEventListener("afterprint", afterHandler);
       return () => {
-        window.removeEventListener('beforeprint', beforeHandler);
-        window.removeEventListener('afterprint', afterHandler);
+        window.removeEventListener("beforeprint", beforeHandler);
+        window.removeEventListener("afterprint", afterHandler);
       };
     }
   }, []);
@@ -1591,10 +1804,12 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
     let isCancelled = false;
 
     const derivePathParts = () => {
-      if (typeof window === 'undefined') return null;
-      const parts = (window.location?.pathname || '').split('/').filter(Boolean);
+      if (typeof window === "undefined") return null;
+      const parts = (window.location?.pathname || "")
+        .split("/")
+        .filter(Boolean);
       // Expecting /jobs/:jobId/:slug/:reportId
-      const jobsIdx = parts.indexOf('jobs');
+      const jobsIdx = parts.indexOf("jobs");
       if (jobsIdx === -1 || parts.length < jobsIdx + 4) return null;
       const jobId = parts[jobsIdx + 1];
       const slug = parts[jobsIdx + 2];
@@ -1613,10 +1828,10 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         // Look up the asset by its file_url which follows the pattern: report:/jobs/{jobId}/{slug}/{reportId}
         const fileUrl = `report:/jobs/${jobId}/${slug}/${reportId}`;
         const { data: asset } = await supabase
-          .schema('neta_ops')
-          .from('assets')
-          .select('id, status')
-          .eq('file_url', fileUrl)
+          .schema("neta_ops")
+          .from("assets")
+          .select("id, status")
+          .eq("file_url", fileUrl)
           .maybeSingle();
 
         let assetStatus: string | null = (asset as any)?.status || null;
@@ -1624,24 +1839,27 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         // If exact match didn't find it, try broader suffix match
         if (!assetStatus) {
           const { data: assetsBySuffix } = await supabase
-            .schema('neta_ops')
-            .from('assets')
-            .select('id, status, file_url')
-            .ilike('file_url', `%/${reportId}`);
+            .schema("neta_ops")
+            .from("assets")
+            .select("id, status, file_url")
+            .ilike("file_url", `%/${reportId}`);
           if (Array.isArray(assetsBySuffix) && assetsBySuffix.length > 0) {
             // Prefer report:/ URLs that match our job
-            const candidate = assetsBySuffix.find(a =>
-              (a.file_url || '').startsWith(`report:/jobs/${jobId}/`)
-            ) || assetsBySuffix.find(a =>
-              (a.file_url || '').startsWith('report:/jobs/')
-            ) || assetsBySuffix[0];
+            const candidate =
+              assetsBySuffix.find((a) =>
+                (a.file_url || "").startsWith(`report:/jobs/${jobId}/`),
+              ) ||
+              assetsBySuffix.find((a) =>
+                (a.file_url || "").startsWith("report:/jobs/"),
+              ) ||
+              assetsBySuffix[0];
             assetStatus = (candidate as any)?.status || null;
           }
         }
 
         if (!isCancelled) {
-          const s = String(assetStatus || '').toLowerCase();
-          if (s === 'approved' || s === 'sent') {
+          const s = String(assetStatus || "").toLowerCase();
+          if (s === "approved" || s === "sent") {
             setIsReportLocked(true);
           }
         }
@@ -1650,7 +1868,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
       }
     };
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       checkLockStatus();
     }
 
@@ -1665,52 +1883,61 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
     if (!isReportLocked) return;
 
     const lockContainer = () => {
-      const container = document.getElementById('report-container');
+      const container = document.getElementById("report-container");
       if (!container) return;
 
       // Disable all inputs, selects, textareas (only set if not already locked to avoid extra mutations)
-      const formElements = container.querySelectorAll('input, select, textarea');
+      const formElements = container.querySelectorAll(
+        "input, select, textarea",
+      );
       formElements.forEach((el) => {
-        const element = el as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-        if (element.tagName === 'SELECT') {
-          if (!(element as HTMLSelectElement).disabled) (element as HTMLSelectElement).disabled = true;
+        const element = el as
+          | HTMLInputElement
+          | HTMLSelectElement
+          | HTMLTextAreaElement;
+        if (element.tagName === "SELECT") {
+          if (!(element as HTMLSelectElement).disabled)
+            (element as HTMLSelectElement).disabled = true;
         } else {
           const input = element as HTMLInputElement;
           if (!input.readOnly) input.readOnly = true;
           if (!input.disabled) input.disabled = true;
         }
-        if (element.style.pointerEvents !== 'none') element.style.pointerEvents = 'none';
+        if (element.style.pointerEvents !== "none")
+          element.style.pointerEvents = "none";
       });
 
       // Hide Edit Report, Save Report, and similar action buttons
-      const buttons = Array.from(container.querySelectorAll('button')) as HTMLButtonElement[];
+      const buttons = Array.from(
+        container.querySelectorAll("button"),
+      ) as HTMLButtonElement[];
       buttons.forEach((btn) => {
-        const text = (btn.textContent || '').trim().toLowerCase();
+        const text = (btn.textContent || "").trim().toLowerCase();
         if (
-          text === 'edit report' ||
-          text === 'save report' ||
-          text === 'save' ||
-          text === 'save & close' ||
-          text === 'add row' ||
-          text === 'add bus section' ||
-          text === 'add test' ||
-          text === 'add section' ||
-          text === 'remove' ||
-          text === 'delete' ||
-          text === 'mark ready to review' ||
-          text === 'mark as ready to review' ||
-          text === 'submit for review' ||
-          text.startsWith('add ') ||
-          text.startsWith('remove ') ||
-          text.startsWith('delete ')
+          text === "edit report" ||
+          text === "save report" ||
+          text === "save" ||
+          text === "save & close" ||
+          text === "add row" ||
+          text === "add bus section" ||
+          text === "add test" ||
+          text === "add section" ||
+          text === "remove" ||
+          text === "delete" ||
+          text === "mark ready to review" ||
+          text === "mark as ready to review" ||
+          text === "submit for review" ||
+          text.startsWith("add ") ||
+          text.startsWith("remove ") ||
+          text.startsWith("delete ")
         ) {
-          btn.style.display = 'none';
+          btn.style.display = "none";
         }
         // Also disable PASS/FAIL toggle buttons
-        if (text === 'pass' || text === 'fail') {
+        if (text === "pass" || text === "fail") {
           btn.disabled = true;
-          btn.style.pointerEvents = 'none';
-          btn.style.cursor = 'not-allowed';
+          btn.style.pointerEvents = "none";
+          btn.style.cursor = "not-allowed";
         }
       });
     };
@@ -1721,7 +1948,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
     // Use MutationObserver to re-enforce when new nodes are added (e.g. React re-renders).
     // Do NOT observe attributes (disabled/readOnly) — we set those ourselves, which would
     // retrigger the observer and cause an infinite loop that freezes the tab.
-    const container = document.getElementById('report-container');
+    const container = document.getElementById("report-container");
     let observer: MutationObserver | null = null;
     if (container) {
       observer = new MutationObserver(() => {
@@ -1740,83 +1967,102 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
 
   // Global live preview for all reports (except ones that implement their own)
   const [showGlobalPreview, previewUrl] = React.useMemo(() => {
-    if (typeof window === 'undefined') return [false, ''] as const;
-    const parts = (window.location?.pathname || '').split('/').filter(Boolean);
-    const jobsIdx = parts.indexOf('jobs');
+    if (typeof window === "undefined") return [false, ""] as const;
+    const parts = (window.location?.pathname || "").split("/").filter(Boolean);
+    const jobsIdx = parts.indexOf("jobs");
     const hasReportId = jobsIdx !== -1 && parts.length >= jobsIdx + 4; // /jobs/:jobId/:slug/:reportId
-    if (!hasReportId) return [false, ''] as const;
-    if (isPrintMode) return [false, ''] as const; // don't show during print render
+    if (!hasReportId) return [false, ""] as const;
+    if (isPrintMode) return [false, ""] as const; // don't show during print render
     const params = new URLSearchParams(window.location.search);
     // Don't show preview button if embedded (for deliverable viewer)
-    if (params.get('embedded') === 'true') return [false, ''] as const;
-    params.set('print', 'true'); // request print mode
-    params.set('preview', 'true'); // mark as preview tab (forces no nested preview)
-    params.set('pv', String(Date.now())); // cache-buster
+    if (params.get("embedded") === "true") return [false, ""] as const;
+    if (params.get("fromApproval") === "true") return [false, ""] as const;
+    params.set("print", "true"); // request print mode
+    params.set("preview", "true"); // mark as preview tab (forces no nested preview)
+    params.set("pv", String(Date.now())); // cache-buster
     const url = `${window.location.pathname}?${params.toString()}`;
     return [true, url] as const;
   }, [isPrintMode]);
 
   // Global toggle persistence
-  const [showPreviewEnabled, setShowPreviewEnabled] = React.useState<boolean>(() => {
-    if (typeof window === 'undefined') return true;
-    try {
-      const v = window.localStorage.getItem('amp_report_preview_enabled_global');
-      return v !== 'false';
-    } catch {
-      return true;
-    }
-  });
+  const [showPreviewEnabled, setShowPreviewEnabled] = React.useState<boolean>(
+    () => {
+      if (typeof window === "undefined") return true;
+      try {
+        const v = window.localStorage.getItem(
+          "amp_report_preview_enabled_global",
+        );
+        return v !== "false";
+      } catch {
+        return true;
+      }
+    },
+  );
   const toggleGlobalPreview = () => {
-    setShowPreviewEnabled(prev => {
+    setShowPreviewEnabled((prev) => {
       const next = !prev;
-      try { window.localStorage.setItem('amp_report_preview_enabled_global', String(next)); } catch {}
+      try {
+        window.localStorage.setItem(
+          "amp_report_preview_enabled_global",
+          String(next),
+        );
+      } catch {}
       return next;
     });
   };
 
   // If a page is opened directly with ?preview=true or ?embedded=true, render in print-look mode and disable nested preview
   React.useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    const isPreviewQuery = params.get('preview') === 'true';
-    const isEmbeddedQuery = params.get('embedded') === 'true';
+    const isPreviewQuery = params.get("preview") === "true";
+    const isEmbeddedQuery = params.get("embedded") === "true";
     if (isPreviewQuery || isEmbeddedQuery) {
-      document.documentElement.classList.add('force-print');
+      document.documentElement.classList.add("force-print");
     }
   }, []);
 
-  const [previewStatus, setPreviewStatus] = React.useState<string>('idle');
+  const [previewStatus, setPreviewStatus] = React.useState<string>("idle");
   const [reloadNonce, setReloadNonce] = React.useState<number>(0);
 
-  const onPreviewLoad = React.useCallback((e: React.SyntheticEvent<HTMLIFrameElement>) => {
-    try {
-      const iframe = e.currentTarget as HTMLIFrameElement;
-      const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (!doc) { setPreviewStatus('error: no document'); return; }
+  const onPreviewLoad = React.useCallback(
+    (e: React.SyntheticEvent<HTMLIFrameElement>) => {
+      try {
+        const iframe = e.currentTarget as HTMLIFrameElement;
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!doc) {
+          setPreviewStatus("error: no document");
+          return;
+        }
 
-      // Force the preview to render with print rules applied
-      doc.documentElement.classList.add('force-print');
-      // Also add Windows class if on Windows platform
-      if (navigator.platform.includes('Win') || navigator.userAgent.includes('Windows')) {
-        doc.documentElement.classList.add('is-windows');
-      }
+        // Force the preview to render with print rules applied
+        doc.documentElement.classList.add("force-print");
+        // Also add Windows class if on Windows platform
+        if (
+          navigator.platform.includes("Win") ||
+          navigator.userAgent.includes("Windows")
+        ) {
+          doc.documentElement.classList.add("is-windows");
+        }
 
-      // 1) Copy key parent styles into the iframe to ensure parity with PDF
-      const parentStyles = Array.from(document.querySelectorAll('style')) as HTMLStyleElement[];
-      parentStyles.forEach((s, idx) => {
-        try {
-          const cloned = doc.createElement('style');
-          // Copy all rules (includes our @media print and .force-print mirrors)
-          cloned.textContent = s.textContent || '';
-          cloned.setAttribute('data-copied', 'true');
-          cloned.setAttribute('data-source-index', String(idx));
-          doc.head.appendChild(cloned);
-        } catch {}
-      });
+        // 1) Copy key parent styles into the iframe to ensure parity with PDF
+        const parentStyles = Array.from(
+          document.querySelectorAll("style"),
+        ) as HTMLStyleElement[];
+        parentStyles.forEach((s, idx) => {
+          try {
+            const cloned = doc.createElement("style");
+            // Copy all rules (includes our @media print and .force-print mirrors)
+            cloned.textContent = s.textContent || "";
+            cloned.setAttribute("data-copied", "true");
+            cloned.setAttribute("data-source-index", String(idx));
+            doc.head.appendChild(cloned);
+          } catch {}
+        });
 
-      // 2) Baseline helpers (kept minimal) in case a report is missing mirrors
-      const style = doc.createElement('style');
-      style.textContent = `
+        // 2) Baseline helpers (kept minimal) in case a report is missing mirrors
+        const style = doc.createElement("style");
+        style.textContent = `
         .print\\:block { display: block !important; }
         .print\\:flex { display: flex !important; }
         .print\\:hidden { display: none !important; }
@@ -1831,30 +2077,39 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
         /* Small debug marker inside preview */
         #__preview_debug_marker { position: fixed; top: 6px; right: 8px; z-index: 9999; font: 10px/1 monospace; color: #111; background:#fffa; border:1px solid #999; padding:2px 4px; }
       `;
-      doc.head.appendChild(style);
+        doc.head.appendChild(style);
 
-      // 3) Add debug marker so we know the iframe rendered
-      const marker = doc.createElement('div');
-      marker.id = '__preview_debug_marker';
-      marker.textContent = 'preview loaded';
-      doc.body.appendChild(marker);
+        // 3) Add debug marker so we know the iframe rendered
+        const marker = doc.createElement("div");
+        marker.id = "__preview_debug_marker";
+        marker.textContent = "preview loaded";
+        doc.body.appendChild(marker);
 
-      setPreviewStatus(`loaded: readyState=${doc.readyState}; title=${doc.title || ''}`);
-    } catch {}
-  }, []);
+        setPreviewStatus(
+          `loaded: readyState=${doc.readyState}; title=${doc.title || ""}`,
+        );
+      } catch {}
+    },
+    [],
+  );
 
   const onPreviewError = React.useCallback(() => {
-    setPreviewStatus('error: iframe failed to load');
+    setPreviewStatus("error: iframe failed to load");
   }, []);
 
-  const actuallyShowPreview = showGlobalPreview && showPreviewEnabled && !disablePreview;
+  const actuallyShowPreview =
+    showGlobalPreview && showPreviewEnabled && !disablePreview;
 
   return (
-    <div className={actuallyShowPreview ? 'flex flex-col lg:flex-row gap-4 items-start' : ''}>
-      <div 
+    <div
+      className={
+        actuallyShowPreview ? "flex flex-col lg:flex-row gap-4 items-start" : ""
+      }
+    >
+      <div
         id="report-container"
-        data-report-locked={isReportLocked ? 'true' : undefined}
-        className={`w-full ${actuallyShowPreview ? 'lg:flex-1' : 'max-w-4xl'} mx-auto p-6 pb-20 ${isPrintMode ? 'print-mode' : ''} ${isReportLocked ? 'report-locked' : ''} overflow-x-auto screen-min-height`}
+        data-report-locked={isReportLocked ? "true" : undefined}
+        className={`w-full ${actuallyShowPreview ? "lg:flex-1" : "max-w-4xl"} mx-auto p-6 pb-20 ${isPrintMode ? "print-mode" : ""} ${isReportLocked ? "report-locked" : ""} overflow-x-auto screen-min-height`}
       >
         {/* Locked banner is shown once by Layout.tsx for all report pages */}
         {/* Global preview toggle (hidden during actual print, or when disablePreview is set) */}
@@ -1864,7 +2119,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
               onClick={toggleGlobalPreview}
               className="px-3 py-1 text-xs text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none"
             >
-              {showPreviewEnabled ? 'Hide Preview' : 'Show Preview'}
+              {showPreviewEnabled ? "Hide Preview" : "Show Preview"}
             </button>
           </div>
         )}
@@ -1879,15 +2134,34 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({ children, isPrintM
             </div>
             <div className="mt-1 flex items-center gap-3">
               <span>Status: {previewStatus}</span>
-              <a href={previewUrl} target="_blank" rel="noreferrer" className="underline">Open in new tab</a>
-              <button onClick={() => setReloadNonce(n => n + 1)} className="px-2 py-0.5 border rounded">Reload preview</button>
+              <a
+                href={previewUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Open in new tab
+              </a>
+              <button
+                onClick={() => setReloadNonce((n) => n + 1)}
+                className="px-2 py-0.5 border rounded"
+              >
+                Reload preview
+              </button>
             </div>
           </div>
           <div className="h-[60vh] lg:h-full border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-white dark:bg-dark-150 shadow-sm">
-            <iframe key={String(reloadNonce) + previewUrl} src={previewUrl} title="Print Preview" className="w-full h-full" onLoad={onPreviewLoad} onError={onPreviewError} />
+            <iframe
+              key={String(reloadNonce) + previewUrl}
+              src={previewUrl}
+              title="Print Preview"
+              className="w-full h-full"
+              onLoad={onPreviewLoad}
+              onError={onPreviewError}
+            />
           </div>
         </div>
       )}
     </div>
   );
-}; 
+};

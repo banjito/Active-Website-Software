@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Filter,
   ArrowDownWideNarrow,
+  Check,
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { format } from "date-fns";
@@ -197,9 +198,9 @@ const DEFAULT_FILTER_SETTINGS = {
   sortField: "quote_number" as const,
   sortDirection: "desc" as const,
   searchTerm: "",
-  divisionFilter: "",
-  opportunityTypeFilter: "",
-  statusFilter: "",
+  divisionFilter: [] as string[],
+  opportunityTypeFilter: [] as string[],
+  statusFilter: [] as string[],
 };
 
 const DIVISION_FILTER_OPTIONS = [
@@ -231,6 +232,36 @@ const STATUS_FILTER_OPTIONS = [
   { value: "lost", label: "Lost" },
   { value: "no quote", label: "No Quote" },
 ];
+
+const SORT_FIELD_OPTIONS = [
+  { value: "quote_number", label: "Quote #" },
+  { value: "opportunity_created_date", label: "Opportunity Created Date" },
+  { value: "proposal_due_date", label: "Proposal Due Date" },
+];
+
+const SORT_DIRECTION_OPTIONS = [
+  { value: "asc", label: "Ascending" },
+  { value: "desc", label: "Descending" },
+];
+
+function normalizeFilterValue(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter(
+      (item): item is string => typeof item === "string" && item.length > 0,
+    );
+  }
+
+  if (typeof value === "string" && value.length > 0) {
+    return [value];
+  }
+
+  return [];
+}
+
+function areFilterArraysEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((value) => b.includes(value));
+}
 
 function formatDivisionName(division: string): string {
   return (
@@ -311,10 +342,11 @@ export default function OpportunityList() {
     "quote_number" | "opportunity_created_date" | "proposal_due_date"
   >("quote_number");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-  const [divisionFilter, setDivisionFilter] = useState<string>("");
-  const [opportunityTypeFilter, setOpportunityTypeFilter] =
-    useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [divisionFilters, setDivisionFilters] = useState<string[]>([]);
+  const [opportunityTypeFilters, setOpportunityTypeFilters] = useState<
+    string[]
+  >([]);
+  const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const filtersInitializedRef = useRef<boolean>(false);
   const prefsSyncedRef = useRef<boolean>(false); // Track if we've synced from Supabase
   const loadingStartTimeRef = useRef<number>(Date.now()); // Track when loading started
@@ -386,11 +418,10 @@ export default function OpportunityList() {
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const sortMenuRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
-  const activeFilterCount = [
-    divisionFilter,
-    opportunityTypeFilter,
-    statusFilter,
-  ].filter(Boolean).length;
+  const activeFilterCount =
+    divisionFilters.length +
+    opportunityTypeFilters.length +
+    statusFilters.length;
   const [showTMModal, setShowTMModal] = useState(false);
   const [TMFormData, setTMFormData] = useState<TMFormData>({
     customer_id: "",
@@ -400,6 +431,95 @@ export default function OpportunityList() {
     division: "",
   });
   const [isCreatingTM, setIsCreatingTM] = useState(false);
+
+  function toggleFilterValue(
+    currentValues: string[],
+    setValues: (nextValues: string[]) => void,
+    value: string,
+  ) {
+    const nextValues = currentValues.includes(value)
+      ? currentValues.filter((currentValue) => currentValue !== value)
+      : [...currentValues, value];
+
+    setValues(nextValues);
+    setPage(1);
+  }
+
+  function renderFilterOptions(
+    options: { value: string; label: string }[],
+    selectedValues: string[],
+    setValues: (nextValues: string[]) => void,
+  ) {
+    return (
+      <div className="space-y-0.5">
+        {options.map((option) => {
+          const checked = selectedValues.includes(option.value);
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() =>
+                toggleFilterValue(selectedValues, setValues, option.value)
+              }
+              className={`flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                checked
+                  ? "text-[#f26722]"
+                  : "text-gray-700 hover:bg-gray-50 dark:text-white dark:hover:bg-dark-100"
+              }`}
+              aria-pressed={checked}
+            >
+              <span
+                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                  checked
+                    ? "border-[#f26722] bg-[#f26722] text-white"
+                    : "border-gray-300 dark:border-dark-300"
+                }`}
+                aria-hidden
+              >
+                {checked && <Check className="h-3 w-3" />}
+              </span>
+              <span>{option.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function renderSingleChoiceOptions<T extends string>(
+    options: { value: T; label: string }[],
+    selectedValue: T,
+    setValue: (nextValue: T) => void,
+  ) {
+    return (
+      <div className="space-y-0.5">
+        {options.map((option) => {
+          const checked = selectedValue === option.value;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                setValue(option.value);
+                setPage(1);
+              }}
+              className={`flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                checked
+                  ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                  : "text-gray-700 hover:bg-gray-50 dark:text-white dark:hover:bg-dark-100"
+              }`}
+              aria-pressed={checked}
+            >
+              <span>{option.label}</span>
+              {checked && <Check className="h-4 w-4 shrink-0" />}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   // Open detail or merged view if this opportunity is in a merge group
   async function openOpportunity(opportunityId: string) {
@@ -695,9 +815,9 @@ export default function OpportunityList() {
     debouncedSearch,
     sortField,
     sortDirection,
-    divisionFilter,
-    opportunityTypeFilter,
-    statusFilter,
+    divisionFilters,
+    opportunityTypeFilters,
+    statusFilters,
   ]);
 
   useEffect(() => {
@@ -753,25 +873,28 @@ export default function OpportunityList() {
         setDebouncedSearch(savedFilters.searchTerm);
         hasStateUpdates = true;
       }
-      if (
-        savedFilters.divisionFilter !== undefined &&
-        savedFilters.divisionFilter !== divisionFilter
-      ) {
-        setDivisionFilter(savedFilters.divisionFilter);
+      const savedDivisionFilters = normalizeFilterValue(
+        savedFilters.divisionFilter,
+      );
+      if (!areFilterArraysEqual(savedDivisionFilters, divisionFilters)) {
+        setDivisionFilters(savedDivisionFilters);
         hasStateUpdates = true;
       }
+      const savedOpportunityTypeFilters = normalizeFilterValue(
+        savedFilters.opportunityTypeFilter,
+      );
       if (
-        savedFilters.opportunityTypeFilter !== undefined &&
-        savedFilters.opportunityTypeFilter !== opportunityTypeFilter
+        !areFilterArraysEqual(
+          savedOpportunityTypeFilters,
+          opportunityTypeFilters,
+        )
       ) {
-        setOpportunityTypeFilter(savedFilters.opportunityTypeFilter);
+        setOpportunityTypeFilters(savedOpportunityTypeFilters);
         hasStateUpdates = true;
       }
-      if (
-        savedFilters.statusFilter !== undefined &&
-        savedFilters.statusFilter !== statusFilter
-      ) {
-        setStatusFilter(savedFilters.statusFilter);
+      const savedStatusFilters = normalizeFilterValue(savedFilters.statusFilter);
+      if (!areFilterArraysEqual(savedStatusFilters, statusFilters)) {
+        setStatusFilters(savedStatusFilters);
         hasStateUpdates = true;
       }
     }
@@ -802,18 +925,18 @@ export default function OpportunityList() {
       searchTerm,
       sortField,
       sortDirection,
-      divisionFilter,
-      opportunityTypeFilter,
-      statusFilter,
+      divisionFilter: divisionFilters,
+      opportunityTypeFilter: opportunityTypeFilters,
+      statusFilter: statusFilters,
     });
   }, [
     user?.id,
     searchTerm,
     sortField,
     sortDirection,
-    divisionFilter,
-    opportunityTypeFilter,
-    statusFilter,
+    divisionFilters,
+    opportunityTypeFilters,
+    statusFilters,
     updatePreference,
   ]);
 
@@ -841,33 +964,42 @@ export default function OpportunityList() {
   function applyOpportunityFilters(query: any) {
     let filteredQuery = query;
 
-    if (divisionFilter) {
-      filteredQuery = filteredQuery.eq("amp_division", divisionFilter);
+    if (divisionFilters.length > 0) {
+      filteredQuery = filteredQuery.in("amp_division", divisionFilters);
     }
 
-    if (statusFilter) {
-      filteredQuery = filteredQuery.eq("status", statusFilter);
+    if (statusFilters.length > 0) {
+      filteredQuery = filteredQuery.in("status", statusFilters);
     }
 
-    if (opportunityTypeFilter) {
-      if (opportunityTypeFilter === "large_acceptance") {
-        filteredQuery = filteredQuery.or(
-          "opportunity_type.eq.large_acceptance,and(opportunity_type.is.null,quoted_amount.gte.100000)",
-        );
-      } else if (opportunityTypeFilter === "small_acceptance") {
-        filteredQuery = filteredQuery.or(
-          "opportunity_type.eq.small_acceptance,and(opportunity_type.is.null,quoted_amount.gt.0,quoted_amount.lt.100000)",
-        );
-      } else if (opportunityTypeFilter === "other") {
-        filteredQuery = filteredQuery.or(
-          "opportunity_type.eq.other,and(opportunity_type.is.null,quoted_amount.is.null),and(opportunity_type.is.null,quoted_amount.lte.0)",
-        );
-      } else {
-        filteredQuery = filteredQuery.eq(
-          "opportunity_type",
-          opportunityTypeFilter,
-        );
-      }
+    if (opportunityTypeFilters.length > 0) {
+      const typeConditions = opportunityTypeFilters.flatMap((filterValue) => {
+        if (filterValue === "large_acceptance") {
+          return [
+            "opportunity_type.eq.large_acceptance",
+            "and(opportunity_type.is.null,quoted_amount.gte.100000)",
+          ];
+        }
+
+        if (filterValue === "small_acceptance") {
+          return [
+            "opportunity_type.eq.small_acceptance",
+            "and(opportunity_type.is.null,quoted_amount.gt.0,quoted_amount.lt.100000)",
+          ];
+        }
+
+        if (filterValue === "other") {
+          return [
+            "opportunity_type.eq.other",
+            "and(opportunity_type.is.null,quoted_amount.is.null)",
+            "and(opportunity_type.is.null,quoted_amount.lte.0)",
+          ];
+        }
+
+        return [`opportunity_type.eq.${filterValue}`];
+      });
+
+      filteredQuery = filteredQuery.or(typeConditions.join(","));
     }
 
     return filteredQuery;
@@ -2170,74 +2302,44 @@ export default function OpportunityList() {
                 <Filter className="h-5 w-5" />
               </button>
               {isFilterMenuOpen && (
-                <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
                       Division
-                    </label>
-                    <select
-                      value={divisionFilter}
-                      onChange={(e) => {
-                        setDivisionFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="w-full rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
-                    >
-                      <option value="">All Divisions</option>
-                      {DIVISION_FILTER_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    </div>
+                    {renderFilterOptions(
+                      DIVISION_FILTER_OPTIONS,
+                      divisionFilters,
+                      setDivisionFilters,
+                    )}
                   </div>
-                  <div className="mt-3">
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                  <div className="mt-2">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
                       Type
-                    </label>
-                    <select
-                      value={opportunityTypeFilter}
-                      onChange={(e) => {
-                        setOpportunityTypeFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="w-full rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
-                    >
-                      <option value="">All Types</option>
-                      {OPPORTUNITY_TYPE_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    </div>
+                    {renderFilterOptions(
+                      OPPORTUNITY_TYPE_OPTIONS,
+                      opportunityTypeFilters,
+                      setOpportunityTypeFilters,
+                    )}
                   </div>
-                  <div className="mt-3">
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                  <div className="mt-2">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
                       Status
-                    </label>
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="w-full rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
-                    >
-                      <option value="">All Statuses</option>
-                      {STATUS_FILTER_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    </div>
+                    {renderFilterOptions(
+                      STATUS_FILTER_OPTIONS,
+                      statusFilters,
+                      setStatusFilters,
+                    )}
                   </div>
                   {activeFilterCount > 0 && (
                     <button
                       type="button"
                       onClick={() => {
-                        setDivisionFilter("");
-                        setOpportunityTypeFilter("");
-                        setStatusFilter("");
+                        setDivisionFilters([]);
+                        setOpportunityTypeFilters([]);
+                        setStatusFilters([]);
                         setPage(1);
                       }}
                       className="mt-3 w-full rounded-md border border-gray-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
@@ -2262,48 +2364,24 @@ export default function OpportunityList() {
               {isSortMenuOpen && (
                 <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
                       Sort by
-                    </label>
-                    <select
-                      value={sortField}
-                      onChange={(e) =>
-                        setSortField(
-                          e.target.value as
-                            | "quote_number"
-                            | "opportunity_created_date"
-                            | "proposal_due_date",
-                        )
-                      }
-                      className="w-full rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
-                    >
-                      <optgroup label="General">
-                        <option value="quote_number">Quote #</option>
-                      </optgroup>
-                      <optgroup label="Dates">
-                        <option value="opportunity_created_date">
-                          Opportunity Created Date
-                        </option>
-                        <option value="proposal_due_date">
-                          Proposal Due Date
-                        </option>
-                      </optgroup>
-                    </select>
+                    </div>
+                    {renderSingleChoiceOptions(
+                      SORT_FIELD_OPTIONS,
+                      sortField,
+                      setSortField,
+                    )}
                   </div>
-                  <div className="mt-3">
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                  <div className="mt-2">
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
                       Order
-                    </label>
-                    <select
-                      value={sortDirection}
-                      onChange={(e) =>
-                        setSortDirection(e.target.value as "asc" | "desc")
-                      }
-                      className="w-full rounded-md border border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
-                    >
-                      <option value="asc">Ascending</option>
-                      <option value="desc">Descending</option>
-                    </select>
+                    </div>
+                    {renderSingleChoiceOptions(
+                      SORT_DIRECTION_OPTIONS,
+                      sortDirection,
+                      setSortDirection,
+                    )}
                   </div>
                 </div>
               )}

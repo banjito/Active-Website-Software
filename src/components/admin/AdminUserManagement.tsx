@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Role, ROLES } from '@/lib/roles';
+import { Role, ROLES, isSuperUser } from '@/lib/roles';
+import { useAuth } from '@/lib/AuthContext';
 import { Button } from '../ui/Button';
-import { Users, UserPlus, Shield, Edit, Trash2, CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Edit, CheckCircle, XCircle, AlertCircle, RefreshCw, KeyRound } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface UserData {
@@ -18,14 +19,23 @@ interface UserData {
 }
 
 export default function AdminUserManagement() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [passwordUserId, setPasswordUserId] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordLoadingUserId, setPasswordLoadingUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [updateSuccessUserId, setUpdateSuccessUserId] = useState<string | null>(null); 
   const [updateErrorUserId, setUpdateErrorUserId] = useState<string | null>(null); 
+  const [passwordSuccessUserId, setPasswordSuccessUserId] = useState<string | null>(null);
+  const [passwordErrorUserId, setPasswordErrorUserId] = useState<string | null>(null);
+
+  const canChangePasswords = isSuperUser(currentUser?.email);
 
   useEffect(() => {
     fetchUsers();
@@ -138,6 +148,9 @@ export default function AdminUserManagement() {
 
   const handleStartEdit = (userId: string, currentRole: string | Role | undefined) => {
     setEditingUser(userId);
+    setPasswordUserId(null);
+    setNewPassword('');
+    setConfirmPassword('');
     // Ensure we set a valid Role type or null
     const validRole = Object.keys(ROLES).includes(currentRole as string) ? currentRole as Role : null;
     setSelectedRole(validRole);
@@ -148,6 +161,90 @@ export default function AdminUserManagement() {
     setEditingUser(null);
     setSelectedRole(null);
     setUpdateErrorUserId(null); // Clear specific error on cancel
+  };
+
+  const handleStartPasswordEdit = (userId: string) => {
+    setEditingUser(null);
+    setSelectedRole(null);
+    setPasswordUserId(userId);
+    setNewPassword('');
+    setConfirmPassword('');
+    setPasswordErrorUserId(null);
+    setPasswordSuccessUserId(null);
+    setError(null);
+  };
+
+  const handleCancelPasswordEdit = () => {
+    setPasswordUserId(null);
+    setNewPassword('');
+    setConfirmPassword('');
+    setPasswordErrorUserId(null);
+  };
+
+  const handleChangePassword = async (userId: string) => {
+    setError(null);
+    setPasswordSuccessUserId(null);
+    setPasswordErrorUserId(null);
+
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      setPasswordErrorUserId(userId);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      setPasswordErrorUserId(userId);
+      return;
+    }
+
+    try {
+      setPasswordLoadingUserId(userId);
+
+      const { error } = await supabase.functions.invoke('admin-update-user-password', {
+        body: {
+          userId,
+          newPassword,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setPasswordUserId(null);
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordSuccessUserId(userId);
+      setTimeout(() => setPasswordSuccessUserId(null), 3000);
+    } catch (err) {
+      let message = err instanceof Error ? err.message : 'Could not change password';
+
+      if (
+        err &&
+        typeof err === 'object' &&
+        'context' in err &&
+        err.context instanceof Response
+      ) {
+        try {
+          const payload = await err.context.json();
+          if (payload?.error) {
+            message = payload.error;
+          }
+        } catch {
+          // Keep the fallback message above.
+        }
+      }
+
+      if (message.toLowerCase().includes('access denied')) {
+        setError('Only super admins can change passwords.');
+      } else {
+        setError(message);
+      }
+      setPasswordErrorUserId(userId);
+    } finally {
+      setPasswordLoadingUserId(null);
+    }
   };
 
   const handleSaveRole = (userId: string) => {
@@ -233,7 +330,8 @@ export default function AdminUserManagement() {
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-dark-300">
             {filteredUsers.map((user) => (
-              <div key={user.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between bg-white dark:bg-dark-150 hover:bg-gray-50/50 dark:hover:bg-dark-50/50 transition-colors duration-150">
+              <div key={user.id} className="px-6 py-4 flex flex-col gap-4 bg-white dark:bg-dark-150 hover:bg-gray-50/50 dark:hover:bg-dark-50/50 transition-colors duration-150">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center mb-4 sm:mb-0 flex-grow min-w-0 mr-4">
                   {/* Profile Image/Initial */}
                   <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -257,8 +355,11 @@ export default function AdminUserManagement() {
                       {updateSuccessUserId === user.id && (
                         <CheckCircle className="inline-block h-4 w-4 ml-2 text-green-500 flex-shrink-0" />
                       )}
+                      {passwordSuccessUserId === user.id && (
+                        <CheckCircle className="inline-block h-4 w-4 ml-2 text-green-500 flex-shrink-0" />
+                      )}
                       {/* Error Indicator */}
-                      {updateErrorUserId === user.id && (
+                      {(updateErrorUserId === user.id || passwordErrorUserId === user.id) && (
                         <AlertCircle className="inline-block h-4 w-4 ml-2 text-red-500 flex-shrink-0" />
                       )}
                     </p>
@@ -301,7 +402,7 @@ export default function AdminUserManagement() {
                     </Button>
                   </div>
                 ) :
-                  <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0">
+                  <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0 flex-wrap justify-end">
                     <div className="mr-2">
                         {/* Role Display Span */}
                       <span className={`
@@ -324,6 +425,17 @@ export default function AdminUserManagement() {
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
+                    {canChangePasswords && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleStartPasswordEdit(user.id)}
+                        className="px-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-dark-50"
+                      >
+                        <KeyRound className="h-4 w-4" />
+                        <span className="ml-1">Change password</span>
+                      </Button>
+                    )}
                     {/* Placeholder for Delete User */}
                     {/* <Button 
                       size="sm" 
@@ -335,6 +447,47 @@ export default function AdminUserManagement() {
                     </Button> */}
                   </div>
 }
+                </div>
+
+                {canChangePasswords && passwordUserId === user.id && (
+                  <div className="rounded-md border border-gray-200 dark:border-dark-300 bg-gray-50 dark:bg-dark-100 p-4">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="New password"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                      />
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm new password"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                      />
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleChangePassword(user.id)}
+                        disabled={passwordLoadingUserId === user.id}
+                        className="bg-[#f26722] hover:bg-[#d95d1f] text-white"
+                      >
+                        {passwordLoadingUserId === user.id ? 'Saving...' : 'Save password'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleCancelPasswordEdit}
+                        disabled={passwordLoadingUserId === user.id}
+                        className="text-gray-500 hover:bg-gray-200 dark:hover:bg-dark-50"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

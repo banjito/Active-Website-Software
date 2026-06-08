@@ -22,12 +22,12 @@ async function testWeeklyJobsData() {
 
   console.log('📊 Testing Weekly Jobs Status Report Data...\n');
 
-  // Fetch jobs with the specified statuses
+  // Fetch jobs with the specified active statuses
   const { data: jobsData, error: jobsError } = await supabase
     .schema('neta_ops')
     .from('jobs')
     .select('id, job_number, title, status, customer_id, fireteam_lead, created_at, updated_at')
-    .in('status', ['in_progress', 'ready_to_bill', 'billed'])
+    .in('status', ['in_progress', 'ready_to_bill'])
     .order('status', { ascending: true })
     .order('job_number', { ascending: true });
 
@@ -37,7 +37,7 @@ async function testWeeklyJobsData() {
   }
 
   if (!jobsData || jobsData.length === 0) {
-    console.log('ℹ️  No jobs found with status: in_progress, ready_to_bill, or billed');
+    console.log('ℹ️  No jobs found with status: in_progress or ready_to_bill');
     console.log('   This is normal if all jobs are in other statuses');
     console.log('   The email will not be sent if there are no matching jobs\n');
     
@@ -51,7 +51,7 @@ async function testWeeklyJobsData() {
     return;
   }
 
-  console.log(`✅ Found ${jobsData.length} job(s) with specified statuses\n`);
+  console.log(`✅ Found ${jobsData.length} active job(s)\n`);
 
   // Get customer information
   const customerIds = [...new Set(jobsData.map(j => j.customer_id).filter(Boolean))];
@@ -67,8 +67,6 @@ async function testWeeklyJobsData() {
   // Group jobs by status
   const inProgressJobs = jobsData.filter(j => j.status === 'in_progress');
   const readyToBillJobs = jobsData.filter(j => j.status === 'ready_to_bill');
-  const billedJobs = jobsData.filter(j => j.status === 'billed');
-
   const displayJobList = (jobs, statusLabel) => {
     if (jobs.length === 0) {
       console.log(`  (No jobs in this status)\n`);
@@ -95,18 +93,13 @@ async function testWeeklyJobsData() {
   console.log(`💰 READY FOR BILLING (${readyToBillJobs.length}):`);
   displayJobList(readyToBillJobs, 'READY TO BILL');
 
-  console.log(`✅ BILLED (${billedJobs.length}):`);
-  displayJobList(billedJobs, 'BILLED');
-
   console.log('═══════════════════════════════════════════════════════════════');
   console.log(`\n📈 Summary:`);
   console.log(`   Total Active Jobs: ${jobsData.length}`);
   console.log(`   - In Progress: ${inProgressJobs.length}`);
   console.log(`   - Ready to Bill: ${readyToBillJobs.length}`);
-  console.log(`   - Billed: ${billedJobs.length}`);
   console.log('\n✅ This data would be included in the weekly jobs status report email\n');
 }
 
 // Run the test
 testWeeklyJobsData().catch(console.error);
-

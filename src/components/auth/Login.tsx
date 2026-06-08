@@ -34,6 +34,22 @@ const isAllowedEmailDomain = (value: string) =>
     value.trim().toLowerCase().endsWith(domain),
   );
 
+const getFriendlyAuthMessage = (error: unknown, fallback: string) => {
+  if (!(error instanceof Error)) return fallback;
+
+  const message = error.message.toLowerCase();
+
+  if (message.includes("rate limit") || message.includes("rate_limit")) {
+    return "Server rate limit exceeded. Email jack@ampos.io to reset in the meantime.";
+  }
+
+  if (message.includes("email not confirmed")) {
+    return "Check your email for the sign-in link first.";
+  }
+
+  return error.message;
+};
+
 // Helper function to clear only user-specific storage
 const clearAllStorage = () => {
   try {
@@ -193,7 +209,7 @@ export default function Login() {
 
       setError("Password reset email sent. Check your inbox.");
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Could not send reset email");
+      setError(getFriendlyAuthMessage(error, "Could not send reset email"));
     } finally {
       setLoading(false);
     }

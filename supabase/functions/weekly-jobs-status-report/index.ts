@@ -1,5 +1,5 @@
 // Weekly Jobs Status Report Email
-// Sends a report of all jobs that are In-Progress, Ready for Billing, and recently Billed (last 7 days)
+// Sends a report of all jobs that are In-Progress or Ready for Billing
 // Scheduled to run every Monday at 8:00 AM CST
 
 // @ts-ignore deno: remote module types resolved at runtime
@@ -41,11 +41,6 @@ serve(async (req) => {
 
     console.log('Starting weekly jobs status report...')
 
-    // Calculate date threshold for billed jobs (last 7 days for weekly report)
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-    const billedDateThreshold = sevenDaysAgo.toISOString()
-
     // Fetch active jobs (in_progress and ready_to_bill) - no date limit
     const { data: activeJobsData, error: activeJobsError } = await supabase
       .schema('neta_ops')
@@ -56,20 +51,7 @@ serve(async (req) => {
       .order('job_number', { ascending: true })
 
     if (activeJobsError) throw activeJobsError
-
-    // Fetch billed jobs only from the last 7 days (based on updated_at)
-    const { data: billedJobsData, error: billedJobsError } = await supabase
-      .schema('neta_ops')
-      .from('jobs')
-      .select('id, job_number, title, status, customer_id, fireteam_lead, created_at, updated_at')
-      .eq('status', 'billed')
-      .gte('updated_at', billedDateThreshold)
-      .order('job_number', { ascending: true })
-
-    if (billedJobsError) throw billedJobsError
-
-    // Combine the results
-    const jobsData = [...(activeJobsData || []), ...(billedJobsData || [])]
+    const jobsData = activeJobsData || []
 
     if (jobsData.length === 0) {
       return new Response(
@@ -110,9 +92,8 @@ serve(async (req) => {
     // Group jobs by status
     const inProgressJobs = enrichedJobs.filter(j => j.status === 'in_progress')
     const readyToBillJobs = enrichedJobs.filter(j => j.status === 'ready_to_bill')
-    const billedJobs = enrichedJobs.filter(j => j.status === 'billed')
-
-    const emailSubject = `Weekly Jobs Status Report - ${inProgressJobs.length + readyToBillJobs.length} Active Jobs, ${billedJobs.length} Recently Billed`
+    const activeJobCount = inProgressJobs.length + readyToBillJobs.length
+    const emailSubject = `Weekly Jobs Status Report - ${activeJobCount} Active Jobs`
 
     const renderJobList = (jobs: JobData[], statusLabel: string, statusColor: string) => {
       if (jobs.length === 0) {
@@ -174,10 +155,6 @@ serve(async (req) => {
                 <div class="summary-label">Ready to Bill</div>
                 <div class="summary-value" style="color: #FF9800;">${readyToBillJobs.length}</div>
               </div>
-              <div class="summary-stat">
-                <div class="summary-label">Billed (Last 7 Days)</div>
-                <div class="summary-value" style="color: #4CAF50;">${billedJobs.length}</div>
-              </div>
             </div>
 
             <div class="status-section">
@@ -188,11 +165,6 @@ serve(async (req) => {
             <div class="status-section">
               <div class="status-section-title">💰 Ready for Billing (${readyToBillJobs.length})</div>
               ${renderJobList(readyToBillJobs, 'READY TO BILL', '#FF9800')}
-            </div>
-
-            <div class="status-section">
-              <div class="status-section-title">✅ Billed in Last 7 Days (${billedJobs.length})</div>
-              ${renderJobList(billedJobs, 'BILLED', '#4CAF50')}
             </div>
           </div>
           <div class="footer">
@@ -221,19 +193,15 @@ Weekly Jobs Status Report
 Week ending ${new Date().toLocaleDateString()}
 
 Summary:
-- Active Jobs: ${inProgressJobs.length + readyToBillJobs.length}
+- Active Jobs: ${activeJobCount}
 - In Progress: ${inProgressJobs.length}
 - Ready to Bill: ${readyToBillJobs.length}
-- Billed (Last 7 Days): ${billedJobs.length}
 
 IN PROGRESS (${inProgressJobs.length}):
 ${renderJobListText(inProgressJobs, 'IN PROGRESS')}
 
 READY FOR BILLING (${readyToBillJobs.length}):
 ${renderJobListText(readyToBillJobs, 'READY TO BILL')}
-
-BILLED IN LAST 7 DAYS (${billedJobs.length}):
-${renderJobListText(billedJobs, 'BILLED')}
 
 This is an automated weekly report from AMP Quality Energy Services
 Generated on ${new Date().toLocaleString()}
@@ -297,17 +265,15 @@ Generated on ${new Date().toLocaleString()}
     console.log('Weekly jobs status report sent successfully')
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Weekly jobs status report sent successfully',
-        totalJobsInReport: enrichedJobs.length,
-        activeJobCount: inProgressJobs.length + readyToBillJobs.length,
-        inProgressCount: inProgressJobs.length,
-        readyToBillCount: readyToBillJobs.length,
-        billedCount: billedJobs.length,
-        billedDateThreshold: billedDateThreshold,
-        emailSent: true
-      }),
+        JSON.stringify({
+          success: true,
+          message: 'Weekly jobs status report sent successfully',
+          totalJobsInReport: enrichedJobs.length,
+          activeJobCount,
+          inProgressCount: inProgressJobs.length,
+          readyToBillCount: readyToBillJobs.length,
+          emailSent: true
+        }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
 
@@ -320,4 +286,3 @@ Generated on ${new Date().toLocaleString()}
     )
   }
 })
-

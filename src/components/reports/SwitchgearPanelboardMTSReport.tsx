@@ -557,6 +557,79 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
     });
   }, [formData.temperature.celsius, formData.measuredInsulationResistance]);
 
+  const ensureReportAsset = useCallback(async (savedReportId: string) => {
+    if (!jobId || !user?.id) {
+      throw new Error('Missing job or user information.');
+    }
+
+    const assetName = getAssetName(reportSlug, formData.identifier || formData.eqptLocation || '');
+    const fileUrl = `report:/jobs/${jobId}/${reportSlug}/${savedReportId}`;
+
+    const { data: existingAsset, error: existingAssetError } = await supabase
+      .schema('neta_ops')
+      .from('assets')
+      .select('id, name, template_type')
+      .eq('file_url', fileUrl)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingAssetError) throw existingAssetError;
+
+    let assetId = existingAsset?.id;
+
+    if (!assetId) {
+      const { data: assetResult, error: assetError } = await supabase
+        .schema('neta_ops')
+        .from('assets')
+        .insert({
+          name: assetName,
+          file_url: fileUrl,
+          user_id: user.id,
+          template_type: 'MTS'
+        })
+        .select('id')
+        .single();
+
+      if (assetError) throw assetError;
+      assetId = assetResult.id;
+    } else if (existingAsset.name !== assetName || existingAsset.template_type !== 'MTS') {
+      const { error: assetUpdateError } = await supabase
+        .schema('neta_ops')
+        .from('assets')
+        .update({
+          name: assetName,
+          template_type: 'MTS'
+        })
+        .eq('id', assetId);
+
+      if (assetUpdateError) throw assetUpdateError;
+    }
+
+    const { data: existingLink, error: existingLinkError } = await supabase
+      .schema('neta_ops')
+      .from('job_assets')
+      .select('asset_id')
+      .eq('job_id', jobId)
+      .eq('asset_id', assetId)
+      .maybeSingle();
+
+    if (existingLinkError) throw existingLinkError;
+
+    if (!existingLink) {
+      const { error: linkError } = await supabase
+        .schema('neta_ops')
+        .from('job_assets')
+        .insert({
+          job_id: jobId,
+          asset_id: assetId,
+          user_id: user.id
+        });
+
+      if (linkError) throw linkError;
+    }
+  }, [jobId, user?.id, reportSlug, formData.identifier, formData.eqptLocation]);
+
   // Auto-save function
   const autoSave = React.useCallback(async () => {
     if (!jobId || !user?.id) return;
@@ -574,7 +647,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         await supabase
           .schema('neta_ops')
           .from('switchgear_panelboard_mts_reports')
-          .update(payload)
+          .update(reportPayload)
           .eq('id', reportIdRef.current);
       } else if (creatingRef.current) {
         pendingSaveRef.current = true;
@@ -584,30 +657,14 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           const result = await supabase
             .schema('neta_ops')
             .from('switchgear_panelboard_mts_reports')
-            .insert(payload)
+            .insert(reportPayload)
             .select()
             .single();
 
           if (result.data) {
             const newReportId = result.data.id;
             reportIdRef.current = newReportId;
-
-            const assetData = {
-              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || formData.location || ''),
-              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
-              user_id: user.id
-            };
-
-            const { data: assetResult } = await supabase
-              .schema('neta_ops')
-              .from('assets')
-              .insert(assetData)
-              .select()
-              .single();
-
-            if (assetResult) {
-              await supabase.schema('neta_ops').from('job_assets').insert({ job_id: jobId, asset_id: assetResult.id, user_id: user.id });
-            }
+            await ensureReportAsset(newReportId);
 
             setCurrentReportId(newReportId);
             isAutoSaveCreatedRef.current = true;
@@ -629,7 +686,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         setTimeout(() => autoSave(), 0);
       }
     }
-  }, [jobId, user?.id, formData, reportSlug]);
+  }, [jobId, user?.id, formData, reportSlug, ensureReportAsset]);
 
   // Auto-save effect with debounce (placed after autoSave function definition)
   useEffect(() => {
@@ -699,31 +756,6 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           if (result.data) {
             reportIdRef.current = result.data.id;
             setCurrentReportId(result.data.id);
-            const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
-            file_url: `report:/jobs/${jobId}/switchgear-panelboard-mts-report/${result.data.id}`,
-            user_id: user.id,
-            template_type: 'MTS'
-            };
-            
-            const { data: assetResult, error: assetError } = await supabase
-            .schema('neta_ops')
-            .from('assets')
-            .insert(assetData)
-            .select()
-            .single();
-            
-            if (assetError) throw assetError;
-            
-            // Link asset to job
-            await supabase
-            .schema('neta_ops')
-            .from('job_assets')
-            .insert({
-            job_id: jobId,
-            asset_id: assetResult.id,
-            user_id: user.id
-            });
           } else {
             creatingRef.current = false;
           }
@@ -734,6 +766,11 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
       }
 
       if (result.error) throw result.error;
+
+      const savedReportId = result.data?.id || reportIdRef.current;
+      if (savedReportId) {
+        await ensureReportAsset(savedReportId);
+      }
 
       setIsEditing(false);
       navigateAfterSave(navigate, jobId, location);

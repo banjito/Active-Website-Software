@@ -442,17 +442,16 @@ export class PDFExportService {
     // Wait for handlers (e.g., ReportWrapper standardizers) to run
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Use the browser's native print (same as in-report Print to PDF) and set the document title to control filename
-    // Temporarily set top-level document title as well to influence Save As filename in all browsers
+    // Keep browser print headers from showing the asset filename.
     const originalTopTitle = document.title;
     try {
       try {
         if (iframeDocument) {
-          iframeDocument.title = filename;
+          iframeDocument.title = ' ';
         }
       } catch {}
       try {
-        document.title = filename;
+        document.title = ' ';
       } catch {}
 
       await new Promise<void>((resolve) => {

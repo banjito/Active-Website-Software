@@ -112,7 +112,7 @@ serve(async (req) => {
     }
 
     // Always notify admin on new issue/feature submissions
-    const ADMIN_NOTIFY_EMAIL = "john.chambers@ampqes.com";
+    const ADMIN_NOTIFY_EMAIL = "jack.lyons@ampqes.com";
     if (action === "created" && !emailsToSend.includes(ADMIN_NOTIFY_EMAIL)) {
       emailsToSend.push(ADMIN_NOTIFY_EMAIL);
     }

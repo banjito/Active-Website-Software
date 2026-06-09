@@ -1421,7 +1421,7 @@ export default function JobDetail() {
       <html>
       <head>
         <meta charset="utf-8" />
-        <title>AMP Report ${jobNum} - ${type}</title>
+        <title> </title>
         ${sharedStyles}
       </head>
       <body>

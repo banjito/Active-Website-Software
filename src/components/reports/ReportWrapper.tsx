@@ -1561,6 +1561,21 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
           display: block !important;
           visibility: visible !important;
         }
+        .force-print .print\\:flex,
+        .force-print .hidden.print\\:flex {
+          display: flex !important;
+          visibility: visible !important;
+        }
+        .force-print .print\\:grid,
+        .force-print .hidden.print\\:grid {
+          display: grid !important;
+          visibility: visible !important;
+        }
+        .force-print .print\\:table,
+        .force-print .hidden.print\\:table {
+          display: table !important;
+          visibility: visible !important;
+        }
 
         /* ============================================ */
         /* WINDOWS-ONLY LIVE PREVIEW FIXES              */

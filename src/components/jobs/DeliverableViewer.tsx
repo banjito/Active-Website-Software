@@ -815,7 +815,7 @@ export default function DeliverableViewer() {
 <html class="${isWindows ? 'is-windows' : ''}">
 <head>
   <meta charset="UTF-8">
-  <title>${deliverable?.name || 'Deliverable'}</title>
+  <title> </title>
   <style>
     /* Force print color preservation on ALL elements */
     * {

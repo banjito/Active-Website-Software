@@ -451,6 +451,36 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    let originalTitle: string | null = null;
+
+    const clearPrintHeaderTitle = () => {
+      if (originalTitle === null) {
+        originalTitle = document.title;
+      }
+      document.title = ' ';
+    };
+
+    const restorePrintHeaderTitle = () => {
+      if (originalTitle === null) return;
+      const titleToRestore = originalTitle;
+      originalTitle = null;
+      window.setTimeout(() => {
+        if (document.title === ' ') {
+          document.title = titleToRestore;
+        }
+      }, 250);
+    };
+
+    window.addEventListener('beforeprint', clearPrintHeaderTitle);
+    window.addEventListener('afterprint', restorePrintHeaderTitle);
+
+    return () => {
+      window.removeEventListener('beforeprint', clearPrintHeaderTitle);
+      window.removeEventListener('afterprint', restorePrintHeaderTitle);
+    };
+  }, []);
+
   return (
     <AuthProvider>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">

@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { useAuth } from "../../lib/AuthContext";
 import { Link, useLocation } from "react-router-dom";
-import { LogOut } from "lucide-react";
 import { Button } from "./Button";
 import { HeaderBar } from "./HeaderBar";
 
@@ -10,26 +9,12 @@ interface SalesLayoutProps {
 }
 
 export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
-  const [isSigningOut, setIsSigningOut] = useState(false);
   const searchParams = new URLSearchParams(location.search);
   const isEmbed = searchParams.get("embed") === "true";
 
   if (!user) return <div className="min-h-screen">{children}</div>;
-
-  const handleSignOut = async () => {
-    try {
-      setIsSigningOut(true);
-      await signOut();
-      window.location.href = "/login";
-    } catch (error) {
-      console.error("Error signing out:", error);
-      window.location.href = "/login";
-    } finally {
-      setIsSigningOut(false);
-    }
-  };
 
   if (isEmbed) {
     return (
@@ -156,17 +141,6 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
                 </Button>
               </Link>
             </div>
-          </div>
-          <div className="p-4 border-t border-black/10 dark:border-dark-200">
-            <Button
-              variant="ghost"
-              className="w-full justify-start pl-0 text-left font-medium text-red-600 hover:bg-black/5 dark:text-red-400 dark:hover:bg-dark-50 !justify-start"
-              onClick={handleSignOut}
-              disabled={isSigningOut}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              {isSigningOut ? "Signing out..." : "Sign Out"}
-            </Button>
           </div>
         </div>
 

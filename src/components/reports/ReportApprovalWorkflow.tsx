@@ -2176,29 +2176,47 @@ export function ReportApprovalWorkflow({
         value={activeTab}
         onValueChange={setActiveTab}
       >
-        <TabsList>
-          <TabsTrigger value="pending">
+        <TabsList className="inline-flex h-auto flex-wrap bg-gray-100 dark:bg-dark-150 p-1.5 rounded-lg gap-1">
+          <TabsTrigger
+            value="pending"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+          >
             <Clock className="mr-2 h-4 w-4" />
             Pending Approval
           </TabsTrigger>
 
-          <TabsTrigger value="approved">
+          <TabsTrigger
+            value="approved"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+          >
             <CheckCircle className="mr-2 h-4 w-4" />
             Approved
           </TabsTrigger>
-          <TabsTrigger value="sent">
+          <TabsTrigger
+            value="sent"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+          >
             <Send className="mr-2 h-4 w-4" />
             Sent
           </TabsTrigger>
-          <TabsTrigger value="rejected">
+          <TabsTrigger
+            value="rejected"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+          >
             <XCircle className="mr-2 h-4 w-4" />
             Rejected
           </TabsTrigger>
-          <TabsTrigger value="accepted">
+          <TabsTrigger
+            value="accepted"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+          >
             <UserCheck className="mr-2 h-4 w-4" />
             Accepted
           </TabsTrigger>
-          <TabsTrigger value="archived">
+          <TabsTrigger
+            value="archived"
+            className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+          >
             <Trash className="mr-2 h-4 w-4" />
             Archived
           </TabsTrigger>

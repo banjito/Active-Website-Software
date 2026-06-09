@@ -4,7 +4,6 @@ import { supabase } from '../../lib/supabase';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { usePermissions } from '@/hooks/usePermissions';
 import {
-  LogOut,
   FileText,
   Users,
   Briefcase,
@@ -60,7 +59,7 @@ interface MenuSection {
 }
 
 export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
-  const { user, signOut, refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { checkPortalAccess, getUserRole } = usePermissions();
   const userRole = getUserRole();
   const isHrFullAccess = userRole === 'Admin' || userRole === 'Super Admin';
@@ -83,7 +82,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       }).catch(() => {});
     }
   }, [user]);
-  const [isSigningOut, setIsSigningOut] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     recruiting: false,
     offers: false,
@@ -142,19 +140,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
   }
 
   if (!user) return <div className="min-h-screen">{children}</div>;
-
-  const handleSignOut = async () => {
-    try {
-      setIsSigningOut(true);
-      await signOut();
-      window.location.href = '/login';
-    } catch (error) {
-      console.error('Error signing out:', error);
-      window.location.href = '/login';
-    } finally {
-      setIsSigningOut(false);
-    }
-  };
 
   if (isEmbed) {
     return (
@@ -385,15 +370,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                   Manager Portal
                 </Button>
               </Link>
-              <Button
-                onClick={handleSignOut}
-                disabled={isSigningOut}
-                variant="ghost"
-                leftIcon={<LogOut className="h-3.5 w-3.5" />}
-                className="w-full justify-start pl-2 text-left text-xs font-medium text-red-600 hover:bg-black/5 dark:text-red-400 dark:hover:bg-dark-50 !justify-start h-8"
-              >
-                {isSigningOut ? 'Signing out...' : 'Sign Out'}
-              </Button>
             </>
           ) : (
             <div className="flex flex-col gap-1">
@@ -455,20 +431,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
             </div>
           )}
         </div>
-        {/* Bottom Logout Button */}
-        {!isHrFullAccess && (
-        <div className="p-4 text-center">
-          <Button
-            onClick={handleSignOut}
-            disabled={isSigningOut}
-            variant="outline"
-            leftIcon={<LogOut className="h-4 w-4" />}
-            className="border-none w-full justify-start pl-2 text-left text-xs font-medium text-red-600 hover:bg-black/5 dark:text-red-400 dark:hover:bg-dark-50 !justify-start h-8"
-          >
-            {isSigningOut ? 'Signing out...' : 'Sign Out'}
-          </Button>
-        </div>
-        )}
       </div>
 
         <main className="flex-1 min-w-0 overflow-y-auto p-6">

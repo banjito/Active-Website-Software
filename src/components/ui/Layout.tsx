@@ -513,17 +513,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               )}
             </>
           )}
-          {/* Features & Fixes portal - always visible */}
-          <Link to={`/features-fixes`} onClick={() => setIsMobileSidebarOpen(false)}>
-            <Button 
-              variant="ghost" 
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                location.pathname === '/features-fixes' ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
-            >
-              Features & Fixes
-            </Button>
-          </Link>
           {/* Custom Report Builder - Engineering portal only */}
           {division === 'engineering' && (
             <Link to="/custom-forms/templates" onClick={() => setIsMobileSidebarOpen(false)}>
@@ -593,18 +582,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex flex-col gap-1 min-w-0">
             {renderMenuItems()}
           </div>
-        </div>
-        {/* Bottom Logout Button */}
-        <div className="p-3 lg:p-4 border-t border-black/10 dark:border-dark-200">
-          <Button
-            variant="ghost"
-            className="w-full justify-start pl-0 text-left font-medium text-red-600 hover:bg-black/5 dark:text-red-400 dark:hover:bg-dark-50 !justify-start"
-            onClick={handleSignOut}
-            disabled={isSigningOut}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            {isSigningOut ? 'Signing out...' : 'Sign Out'}
-          </Button>
         </div>
       </div>
   ) : null;

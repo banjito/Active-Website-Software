@@ -11,6 +11,7 @@ import {
   Filter,
   ArrowDownWideNarrow,
   Check,
+  ChartGantt,
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { format } from "date-fns";
@@ -23,6 +24,11 @@ import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import {
+  addOpportunitiesToPipelineProjection,
+  loadPipelineProjectionOpportunityIds,
+  removeOpportunityFromPipelineProjection,
+} from "@/services/pipelineCalendarService";
 
 interface Customer {
   id: string;
@@ -237,12 +243,12 @@ const SORT_FIELD_OPTIONS = [
   { value: "quote_number", label: "Quote #" },
   { value: "opportunity_created_date", label: "Opportunity Created Date" },
   { value: "proposal_due_date", label: "Proposal Due Date" },
-];
+] as const;
 
 const SORT_DIRECTION_OPTIONS = [
   { value: "asc", label: "Ascending" },
   { value: "desc", label: "Descending" },
-];
+] as const;
 
 function normalizeFilterValue(value: unknown): string[] {
   if (Array.isArray(value)) {
@@ -414,6 +420,12 @@ export default function OpportunityList() {
   const [selectedForMerge, setSelectedForMerge] = useState<Set<string>>(
     new Set(),
   );
+  const [projectionOpportunityIds, setProjectionOpportunityIds] = useState<
+    Set<string>
+  >(() => loadPipelineProjectionOpportunityIds());
+  const [openProjectionMenuId, setOpenProjectionMenuId] = useState<
+    string | null
+  >(null);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const sortMenuRef = useRef<HTMLDivElement>(null);
@@ -488,7 +500,7 @@ export default function OpportunityList() {
   }
 
   function renderSingleChoiceOptions<T extends string>(
-    options: { value: T; label: string }[],
+    options: ReadonlyArray<{ value: T; label: string }>,
     selectedValue: T,
     setValue: (nextValue: T) => void,
   ) {
@@ -505,15 +517,17 @@ export default function OpportunityList() {
                 setValue(option.value);
                 setPage(1);
               }}
-              className={`flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
                 checked
                   ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
                   : "text-gray-700 hover:bg-gray-50 dark:text-white dark:hover:bg-dark-100"
               }`}
               aria-pressed={checked}
             >
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                {checked && <Check className="h-4 w-4" />}
+              </span>
               <span>{option.label}</span>
-              {checked && <Check className="h-4 w-4 shrink-0" />}
             </button>
           );
         })}
@@ -623,6 +637,21 @@ export default function OpportunityList() {
       console.error("Failed to create merge group:", e);
       alert("Failed to merge opportunities. Please try again.");
     }
+  }
+
+  function handleMoveSelectedToProjection() {
+    const ids = Array.from(selectedForMerge);
+    if (ids.length === 0) return;
+
+    const nextIds = addOpportunitiesToPipelineProjection(ids);
+    setProjectionOpportunityIds(new Set(nextIds));
+    setSelectedForMerge(new Set());
+  }
+
+  function handleRemoveFromProjection(opportunityId: string) {
+    const nextIds = removeOpportunityFromPipelineProjection(opportunityId);
+    setProjectionOpportunityIds(new Set(nextIds));
+    setOpenProjectionMenuId(null);
   }
 
   useEffect(() => {
@@ -2237,6 +2266,13 @@ export default function OpportunityList() {
                 </span>
                 <button
                   type="button"
+                  onClick={handleMoveSelectedToProjection}
+                  className="rounded-md bg-[#f26722] px-3 py-1.5 font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                >
+                  Move to Projection
+                </button>
+                <button
+                  type="button"
                   disabled={selectedForMerge.size < 2}
                   onClick={handleMergeSelected}
                   className={`rounded-md px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
@@ -2573,7 +2609,7 @@ export default function OpportunityList() {
                               return copy;
                             });
                           }}
-                          aria-label={`Select quote ${opportunity.quote_number ?? ""} for merge`}
+                          aria-label={`Select quote ${opportunity.quote_number ?? ""}`}
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -2781,6 +2817,42 @@ export default function OpportunityList() {
                           className="flex justify-end space-x-2"
                           onClick={(e) => e.stopPropagation()}
                         >
+                          {projectionOpportunityIds.has(opportunity.id) && (
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenProjectionMenuId((currentId) =>
+                                    currentId === opportunity.id
+                                      ? null
+                                      : opportunity.id,
+                                  );
+                                }}
+                                className="text-gray-600 hover:text-[#f26722] dark:text-gray-300 dark:hover:text-[#f26722]"
+                                title="In Pipeline Projection"
+                                aria-label="In Pipeline Projection"
+                              >
+                                <ChartGantt className="h-5 w-5" />
+                              </button>
+                              {openProjectionMenuId === opportunity.id && (
+                                <div className="absolute right-0 z-20 mt-2 w-64 rounded-md border border-gray-200 bg-white p-2 text-left shadow-lg dark:border-dark-300 dark:bg-dark-150">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRemoveFromProjection(
+                                        opportunity.id,
+                                      );
+                                    }}
+                                    className="w-full rounded px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                                  >
+                                    Remove from Pipeline Projection?
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           {!opportunity.job_id && (
                             <button
                               onClick={(e) => {

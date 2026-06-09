@@ -1,4 +1,4 @@
-import React, { FormEvent, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   CalendarRange,
@@ -23,8 +23,10 @@ import {
 } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 import {
   loadPipelineJobs,
+  loadPipelineProjectionOpportunityIds,
   makePipelineJobId,
   PipelineJob,
   PipelineRegion,
@@ -309,9 +311,68 @@ function DetailRow({
   );
 }
 
+function getRegionFromOpportunity(opportunity: any): PipelineRegion {
+  const division = String(opportunity?.amp_division || "").toLowerCase();
+
+  if (division.includes("tennessee")) return "TN";
+  if (division.includes("georgia")) return "GA";
+  if (division.includes("international")) return "International";
+  return "AL";
+}
+
+function getStatusFromOpportunity(opportunity: any): PipelineStatus {
+  const status = String(opportunity?.status || "").toLowerCase();
+
+  if (
+    status === "awarded" ||
+    status === "decision - forecasted win" ||
+    status === "won"
+  ) {
+    return "confirmed";
+  }
+
+  if (
+    status === "lost" ||
+    status === "no quote" ||
+    status === "decision - forecast lose"
+  ) {
+    return "dropped";
+  }
+
+  return "expected";
+}
+
+function mapOpportunityToPipelineJob(
+  opportunity: any,
+  customerMap: Record<string, any>,
+): PipelineJob {
+  const customer = opportunity?.customer_id
+    ? customerMap[opportunity.customer_id]
+    : null;
+  const customerName =
+    customer?.company_name || customer?.name || "Unknown Customer";
+  const amountDollars = Number(opportunity?.quoted_amount || 0);
+  const startDate =
+    opportunity?.proposal_due_date ||
+    opportunity?.opportunity_created_date ||
+    opportunity?.created_at?.slice(0, 10) ||
+    toDateInputValue(new Date());
+
+  return {
+    id: String(opportunity.id),
+    customer: customerName,
+    dataCenterId: opportunity?.title || opportunity?.quote_number || "",
+    location: opportunity?.jobsite_location || customer?.address || "Not set",
+    region: getRegionFromOpportunity(opportunity),
+    amount: Number.isFinite(amountDollars) ? amountDollars / 1000000 : 0,
+    startDate,
+    status: getStatusFromOpportunity(opportunity),
+  };
+}
+
 export default function PipelineCalendarPage() {
-  const [jobs, setJobs] = useState<PipelineJob[]>(() => loadPipelineJobs());
-  const [viewMode, setViewMode] = useState<ViewMode>("calendar");
+  const [jobs, setJobs] = useState<PipelineJob[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [rangeMode, setRangeMode] = useState<RangeMode>("quarter");
   const [anchorDate, setAnchorDate] = useState<Date>(() => new Date());
   const [regionFilter, setRegionFilter] =
@@ -324,8 +385,92 @@ export default function PipelineCalendarPage() {
   const [formState, setFormState] = useState<PipelineJobForm>(getEmptyForm);
   const [formError, setFormError] = useState("");
   const [storageError, setStorageError] = useState("");
+  const [isLoadingProjection, setIsLoadingProjection] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("startDate");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProjectionOpportunities() {
+      setIsLoadingProjection(true);
+      setStorageError("");
+
+      try {
+        const projectionIds = Array.from(loadPipelineProjectionOpportunityIds());
+        if (projectionIds.length === 0) {
+          if (isMounted) setJobs([]);
+          return;
+        }
+
+        const { data: opportunityData, error: opportunityError } =
+          await supabase
+            .schema("business")
+            .from("opportunities")
+            .select("*")
+            .in("id", projectionIds);
+
+        if (opportunityError) throw opportunityError;
+
+        const customerIds = [
+          ...new Set(
+            (opportunityData || [])
+              .map((opportunity: any) => opportunity.customer_id)
+              .filter(Boolean),
+          ),
+        ];
+        const customerMap: Record<string, any> = {};
+
+        if (customerIds.length > 0) {
+          const { data: customerData, error: customerError } = await supabase
+            .schema("common")
+            .from("customers")
+            .select("id, name, company_name, address")
+            .in("id", customerIds);
+
+          if (customerError) throw customerError;
+
+          (customerData || []).forEach((customer: any) => {
+            customerMap[customer.id] = customer;
+          });
+        }
+
+        const nextJobs = (opportunityData || [])
+          .map((opportunity: any) =>
+            mapOpportunityToPipelineJob(opportunity, customerMap),
+          )
+          .sort(
+            (jobA, jobB) =>
+              parseDate(jobA.startDate).getTime() -
+              parseDate(jobB.startDate).getTime(),
+          );
+
+        if (isMounted) setJobs(nextJobs);
+      } catch (error) {
+        console.error("Error loading pipeline projection opportunities:", error);
+        if (isMounted) {
+          setJobs([]);
+          setStorageError("Could not load Pipeline Projection opportunities.");
+        }
+      } finally {
+        if (isMounted) setIsLoadingProjection(false);
+      }
+    }
+
+    loadProjectionOpportunities();
+    window.addEventListener(
+      "pipelineProjectionChanged",
+      loadProjectionOpportunities,
+    );
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener(
+        "pipelineProjectionChanged",
+        loadProjectionOpportunities,
+      );
+    };
+  }, []);
 
   const viewStart = useMemo(
     () =>
@@ -478,7 +623,7 @@ export default function PipelineCalendarPage() {
       setSelectedJobId(nextJob.id);
       setIsFormOpen(false);
     } catch (error) {
-      console.error("Error saving pipeline calendar job:", error);
+      console.error("Error saving pipeline projection job:", error);
       setFormError("Could not save job.");
     }
   };
@@ -498,7 +643,7 @@ export default function PipelineCalendarPage() {
       if (selectedJobId === jobId) setSelectedJobId(null);
       if (editingJobId === jobId) setIsFormOpen(false);
     } catch (error) {
-      console.error("Error deleting pipeline calendar job:", error);
+      console.error("Error deleting pipeline projection job:", error);
       setStorageError("Could not delete job.");
     }
   };
@@ -526,13 +671,10 @@ export default function PipelineCalendarPage() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
-            Pipeline Calendar
+            Pipeline Projection
           </h1>
         </div>
 
-        <Button leftIcon={<Plus className="h-4 w-4" />} onClick={openAddForm}>
-          Add job
-        </Button>
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
@@ -683,42 +825,28 @@ export default function PipelineCalendarPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              {statuses.map((status) => (
-                <button
-                  key={status}
-                  type="button"
-                  onClick={() =>
-                    setStatusFilter((current) => ({
-                      ...current,
-                      [status]: !current[status],
-                    }))
-                  }
-                  className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium",
-                    statusFilter[status]
-                      ? "border-gray-300 bg-white text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50"
-                      : "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500",
-                  )}
-                >
-                  <StatusIcon status={status} />
-                  {statusLabels[status]}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
-              {regions.map((region) => (
-                <span key={region} className="inline-flex items-center gap-1.5">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: regionPalette[region].bg }}
-                  />
-                  {region}
-                </span>
-              ))}
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {statuses.map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() =>
+                  setStatusFilter((current) => ({
+                    ...current,
+                    [status]: !current[status],
+                  }))
+                }
+                className={cn(
+                  "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium",
+                  statusFilter[status]
+                    ? "border-gray-300 bg-white text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50"
+                    : "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500",
+                )}
+              >
+                <StatusIcon status={status} />
+                {statusLabels[status]}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -748,7 +876,9 @@ export default function PipelineCalendarPage() {
 
                 {visibleCalendarJobs.length === 0 ? (
                   <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                    No jobs in this view.
+                    {isLoadingProjection
+                      ? "Loading Pipeline Projection..."
+                      : "No opportunities in this Projection view."}
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -879,25 +1009,6 @@ export default function PipelineCalendarPage() {
                       value={formatDate(selectedJob.endDate)}
                     />
                   </dl>
-
-                  <div className="mt-auto flex gap-2">
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      leftIcon={<Pencil className="h-4 w-4" />}
-                      onClick={() => openEditForm(selectedJob)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="flex-1"
-                      leftIcon={<Trash2 className="h-4 w-4" />}
-                      onClick={() => handleDeleteJob(selectedJob.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
                 </div>
               ) : (
                 <div className="flex h-52 items-center justify-center text-sm text-gray-500 dark:text-gray-400">
@@ -933,9 +1044,6 @@ export default function PipelineCalendarPage() {
                   <th className="px-3 py-3 font-semibold">Data center</th>
                   <th className="px-3 py-3 font-semibold">Location</th>
                   <th className="px-3 py-3 font-semibold">Status</th>
-                  <th className="px-3 py-3 font-semibold text-right">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -983,26 +1091,6 @@ export default function PipelineCalendarPage() {
                         {statusLabels[job.status]}
                       </span>
                     </td>
-                    <td className="px-3 py-3">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          aria-label={`Edit ${job.customer}`}
-                          onClick={() => openEditForm(job)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-950 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-50"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={`Delete ${job.customer}`}
-                          onClick={() => handleDeleteJob(job.id)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1010,137 +1098,14 @@ export default function PipelineCalendarPage() {
 
             {sortedListJobs.length === 0 && (
               <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                No jobs match these filters.
+                {isLoadingProjection
+                  ? "Loading Pipeline Projection..."
+                  : "No opportunities match these filters."}
               </div>
             )}
           </div>
         )}
       </section>
-
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="w-full max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{editingJobId ? "Edit job" : "Add job"}</DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-2">
-            {formError && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
-                {formError}
-              </div>
-            )}
-
-            <div className="grid gap-x-4 md:grid-cols-2">
-              <Input
-                label="Customer"
-                value={formState.customer}
-                onChange={(event) =>
-                  updateFormField("customer", event.target.value)
-                }
-                required
-              />
-              <Input
-                label="Data center ID"
-                value={formState.dataCenterId}
-                onChange={(event) =>
-                  updateFormField("dataCenterId", event.target.value)
-                }
-              />
-              <Input
-                label="Location"
-                value={formState.location}
-                onChange={(event) =>
-                  updateFormField("location", event.target.value)
-                }
-                required
-              />
-              <Input
-                label="Amount (millions)"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formState.amount}
-                onChange={(event) =>
-                  updateFormField("amount", event.target.value)
-                }
-                required
-              />
-              <Input
-                label="Start date"
-                type="date"
-                value={formState.startDate}
-                onChange={(event) =>
-                  updateFormField("startDate", event.target.value)
-                }
-                required
-              />
-              <Input
-                label="End date"
-                type="date"
-                value={formState.endDate}
-                onChange={(event) =>
-                  updateFormField("endDate", event.target.value)
-                }
-              />
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="block text-sm font-medium text-dark-primary dark:text-dark-secondary">
-                <span className="mb-1.5 block">Region</span>
-                <select
-                  value={formState.region}
-                  onChange={(event) =>
-                    updateFormField(
-                      "region",
-                      event.target.value as PipelineRegion,
-                    )
-                  }
-                  className="w-full rounded-lg border-2 border-dark-accent/30 bg-white px-4 py-2.5 text-dark-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-accent dark:border-dark-300 dark:bg-dark-150 dark:text-dark-secondary"
-                >
-                  {regions.map((region) => (
-                    <option key={region} value={region}>
-                      {region}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block text-sm font-medium text-dark-primary dark:text-dark-secondary">
-                <span className="mb-1.5 block">Status</span>
-                <select
-                  value={formState.status}
-                  onChange={(event) =>
-                    updateFormField(
-                      "status",
-                      event.target.value as PipelineStatus,
-                    )
-                  }
-                  className="w-full rounded-lg border-2 border-dark-accent/30 bg-white px-4 py-2.5 text-dark-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-accent dark:border-dark-300 dark:bg-dark-150 dark:text-dark-secondary"
-                >
-                  {statuses.map((status) => (
-                    <option key={status} value={status}>
-                      {statusLabels[status]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <DialogFooter className="pt-4">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => setIsFormOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">
-                {editingJobId ? "Save changes" : "Add job"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

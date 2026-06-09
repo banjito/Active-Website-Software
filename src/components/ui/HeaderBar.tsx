@@ -219,7 +219,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
     if (!canAccessReportApprovals(user)) return;
     const handleAssetStatusChange = (event: CustomEvent) => {
       const { newStatus } = event.detail;
-      if (newStatus === 'ready_for_review' || newStatus === 'in_progress') {
+      if (['ready_for_review', 'in_progress', 'approved', 'issue', 'rejected', 'sent', 'archived'].includes(newStatus)) {
         void loadReviewJobCount();
       }
     };
@@ -489,7 +489,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onEnterEditMode, className
     if (!user || !canAccessReportApprovals(user)) return;
     const handleAssetStatusChange = (event: CustomEvent) => {
       const { newStatus } = event.detail;
-      if (newStatus === 'ready_for_review' || newStatus === 'in_progress') {
+      if (['ready_for_review', 'in_progress', 'approved', 'issue', 'rejected', 'sent', 'archived'].includes(newStatus)) {
         void loadNotificationSummary();
       }
     };

@@ -164,8 +164,18 @@ export function ReportApprovalWorkflow({
   useEffect(() => {
     const handleAssetStatusChange = (event: CustomEvent) => {
       const { newStatus } = event.detail;
-      // Only refresh if the status change affects ready_for_review
-      if (newStatus === "ready_for_review" || newStatus === "in_progress") {
+      // Refresh when a report enters or leaves any approval tab.
+      if (
+        [
+          "ready_for_review",
+          "in_progress",
+          "approved",
+          "issue",
+          "rejected",
+          "sent",
+          "archived",
+        ].includes(newStatus)
+      ) {
         console.log("Asset status changed, refreshing ReportApprovalWorkflow");
         fetchReports();
         fetchMetrics();

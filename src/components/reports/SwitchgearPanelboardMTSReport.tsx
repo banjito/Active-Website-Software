@@ -422,6 +422,29 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
         
         /* Section styling */
         section { break-inside: avoid !important; margin-bottom: 20px !important; }
+
+        .switchgear-panelboard-mts-report-body {
+          display: block !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+
+        .switchgear-panelboard-mts-report-content {
+          display: block !important;
+          max-width: none !important;
+          width: 100% !important;
+          margin: 0 !important;
+        }
+
+        .switchgear-panelboard-mts-titlebar {
+          break-after: avoid !important;
+          page-break-after: avoid !important;
+        }
+
+        .switchgear-panelboard-mts-report-body {
+          break-before: avoid !important;
+          page-break-before: avoid !important;
+        }
         
         /* Ensure all text is black for maximum readability */
         * { color: black !important; }
@@ -899,7 +922,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
+      <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative switchgear-panelboard-mts-titlebar">
         <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
         <div className="flex-1 text-center flex flex-col items-center justify-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
@@ -932,8 +955,8 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
       </div>
       {/* End Print Header */}
       
-      <div className="p-6 flex justify-center">
-      <div className="max-w-7xl w-full space-y-6">
+      <div className="p-6 flex justify-center report-body switchgear-panelboard-mts-report-body">
+      <div className="max-w-7xl w-full space-y-6 switchgear-panelboard-mts-report-content">
         {/* Header */}
         <div className="print:hidden flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>

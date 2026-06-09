@@ -1524,6 +1524,30 @@ const MediumVoltageCableVLFTest = () => {
           .nameplate-section .grid * { display: none !important; }
           .insulation-resistance-section table { table-layout: fixed !important; width: 100% !important; }
           .insulation-resistance-section th, .insulation-resistance-section td { white-space: normal !important; word-break: break-word !important; vertical-align: middle !important; }
+
+          .cable-termination-print-table {
+            table-layout: fixed !important;
+            width: 100% !important;
+          }
+
+          .cable-termination-print-table tr {
+            height: auto !important;
+          }
+
+          .cable-termination-print-table td {
+            padding: 3px 4px !important;
+            line-height: 1.15 !important;
+            text-align: center !important;
+            vertical-align: middle !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere !important;
+            word-break: normal !important;
+          }
+
+          .cable-termination-print-table .font-semibold {
+            display: block !important;
+            margin-bottom: 1px !important;
+          }
           
           /* Hide on-screen elements in print */
           .cable-termination-onscreen, .cable-termination-onscreen * { display: none !important; }
@@ -2249,7 +2273,7 @@ const MediumVoltageCableVLFTest = () => {
         
         {/* Print-only table */}
         <div className="hidden print:block">
-          <table className="w-full border border-gray-300 print:border-black">
+          <table className="w-full border border-gray-300 print:border-black cable-termination-print-table">
             <colgroup>
               <col style={{width: '20%'}} />
               <col style={{width: '20%'}} />
@@ -2300,10 +2324,6 @@ const MediumVoltageCableVLFTest = () => {
                 <td className="p-2 border border-gray-300 print:border-black">
                   <div className="font-semibold">Conductor Material</div>
                   <div>{formData.cableInfo?.conductorMaterial || ''}</div>
-                </td>
-                <td className="p-2 border border-gray-300 print:border-black">
-                  <div className="font-semibold">To</div>
-                  <div>{formData.cableInfo?.to || ''}</div>
                 </td>
               </tr>
               <tr>

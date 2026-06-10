@@ -2921,19 +2921,18 @@ export default function OpportunityList() {
                                       top: projectionPopupPos.y - 4,
                                     }}
                                   >
-                                    <button
-                                      type="button"
+                                    <Link
+                                      to="/sales/pipeline-calendar"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         setOpenProjectionMenuId(null);
                                         setProjectionPopupPos(null);
-                                        navigate("/sales/pipeline-calendar");
                                       }}
                                       className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
                                     >
                                       <ExternalLink className="h-4 w-4 shrink-0 text-gray-400" />
                                       Go to pipeline
-                                    </button>
+                                    </Link>
                                     <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
                                     <button
                                       type="button"

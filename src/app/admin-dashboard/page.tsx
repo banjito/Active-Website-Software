@@ -307,8 +307,11 @@ export const AdminDashboard: React.FC = () => {
         <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
           {currentView !== "dashboard" && (
             <div className="flex items-center gap-4">
-              <Button variant="outline" onClick={handleBackClick}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
+              <Button
+                variant="outline"
+                onClick={handleBackClick}
+                leftIcon={<ArrowLeft className="h-4 w-4" />}
+              >
                 Back to Dashboard
               </Button>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">

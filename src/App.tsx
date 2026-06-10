@@ -517,8 +517,8 @@ function App() {
                   {/* === Custom Forms === */}
                   <Route path="/custom-forms/templates" element={<RequireAuth><Layout><CustomFormTemplates /></Layout></RequireAuth>} />
                   <Route path="/custom-forms/preview/:templateId" element={<RequireAuth><CustomFormPreview /></RequireAuth>} />
-                  <Route path="/custom-forms/builder" element={<RequireAuth><FormBuilder /></RequireAuth>} />
-                  <Route path="/custom-forms/builder/:templateId" element={<RequireAuth><FormBuilder /></RequireAuth>} />
+                  <Route path="/custom-forms/builder" element={<RequireAuth><Layout><FormBuilder /></Layout></RequireAuth>} />
+                  <Route path="/custom-forms/builder/:templateId" element={<RequireAuth><Layout><FormBuilder /></Layout></RequireAuth>} />
                   <Route path="/jobs/:jobId/custom-form/:templateId/new" element={<RequireAuth><CustomFormFiller /></RequireAuth>} />
                   <Route path="/jobs/:jobId/custom-form/:templateId/:instanceId" element={<RequireAuth><CustomFormFiller /></RequireAuth>} />
 

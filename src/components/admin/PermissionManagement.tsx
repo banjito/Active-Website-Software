@@ -392,16 +392,9 @@ const PermissionManagement: React.FC = () => {
                     variant={isAdding ? "destructive" : "outline"}
                     size="sm"
                     onClick={() => setIsAdding(!isAdding)}
+                    leftIcon={isAdding ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                   >
-                    {isAdding ? (
-                      <>
-                        <X className="h-4 w-4 mr-1" /> Cancel
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-4 w-4 mr-1" /> Add Permission
-                      </>
-                    )}
+                    {isAdding ? 'Cancel' : 'Add Permission'}
                   </Button>
                 </div>
                 
@@ -508,8 +501,9 @@ const PermissionManagement: React.FC = () => {
                       <Button
                         onClick={handleGrantPermission}
                         disabled={!newResource || !newAction || loading}
+                        leftIcon={<Shield className="h-4 w-4" />}
                       >
-                        <Shield className="h-4 w-4 mr-1" /> Grant Permission
+                        Grant Permission
                       </Button>
                     </div>
                   </div>

@@ -1,13 +1,13 @@
 /**
  * Component Library Sidebar
- * 
+ *
  * Shows all available components that can be dragged onto the form.
  * Organized by category with search/filter functionality.
  */
 
-import React, { useState } from 'react';
-import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
+import React, { useState } from "react";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Search,
   FileText,
@@ -27,12 +27,17 @@ import {
   FlaskConical,
   Clock,
   Settings,
-} from 'lucide-react';
+  PanelLeftClose,
+} from "lucide-react";
 
-import { Input } from '@/components/ui/Input';
-import { COMPONENT_LIBRARY, getAllCategories } from '@/lib/customForms/componentLibrary';
-import type { SavedComponent } from '@/lib/customForms/savedComponents';
-import { ComponentDefinition } from '@/lib/types/customForms';
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import {
+  COMPONENT_LIBRARY,
+  getAllCategories,
+} from "@/lib/customForms/componentLibrary";
+import type { SavedComponent } from "@/lib/customForms/savedComponents";
+import { ComponentDefinition } from "@/lib/types/customForms";
 
 const iconMap: Record<string, any> = {
   FileText,
@@ -58,14 +63,17 @@ interface DraggableComponentProps {
   component: ComponentDefinition;
 }
 
-const DraggableComponent: React.FC<DraggableComponentProps> = ({ component }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: component.id,
-    data: {
-      type: 'library-component',
-      component,
-    },
-  });
+const DraggableComponent: React.FC<DraggableComponentProps> = ({
+  component,
+}) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: component.id,
+      data: {
+        type: "library-component",
+        component,
+      },
+    });
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -104,16 +112,20 @@ interface DraggableSavedComponentProps {
   onView?: (saved: SavedComponent) => void;
 }
 
-const DraggableSavedComponent: React.FC<DraggableSavedComponentProps> = ({ saved, onView }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: `saved-${saved.id}`,
-    data: {
-      type: 'saved-component',
-      sectionConfig: saved.section_config,
-      name: saved.name,
-      savedComponentId: saved.id,
-    },
-  });
+const DraggableSavedComponent: React.FC<DraggableSavedComponentProps> = ({
+  saved,
+  onView,
+}) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: `saved-${saved.id}`,
+      data: {
+        type: "saved-component",
+        sectionConfig: saved.section_config,
+        name: saved.name,
+        savedComponentId: saved.id,
+      },
+    });
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -139,7 +151,9 @@ const DraggableSavedComponent: React.FC<DraggableSavedComponentProps> = ({ saved
             {saved.name}
           </h4>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
-            {saved.description || (saved.section_config?.title as string) || 'Custom table or section'}
+            {saved.description ||
+              (saved.section_config?.title as string) ||
+              "Custom table or section"}
           </p>
           {onView && (
             <button
@@ -163,40 +177,59 @@ const DraggableSavedComponent: React.FC<DraggableSavedComponentProps> = ({ saved
 export const ComponentLibrarySidebar: React.FC<{
   savedComponents?: SavedComponent[];
   onViewSavedComponent?: (saved: SavedComponent) => void;
-}> = ({ savedComponents = [], onViewSavedComponent }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  onHide?: () => void;
+}> = ({ savedComponents = [], onViewSavedComponent, onHide }) => {
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const categories = getAllCategories();
 
-  const filteredComponents = COMPONENT_LIBRARY.filter(component => {
+  const filteredComponents = COMPONENT_LIBRARY.filter((component) => {
     // Filter by search query
-    const matchesSearch = searchQuery === '' ||
+    const matchesSearch =
+      searchQuery === "" ||
       component.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       component.description.toLowerCase().includes(searchQuery.toLowerCase());
 
     // Filter by category
-    const matchesCategory = selectedCategory === null || component.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === null || component.category === selectedCategory;
 
     return matchesSearch && matchesCategory;
   });
 
   // Group components by category for display
-  const groupedComponents = filteredComponents.reduce((acc, component) => {
-    if (!acc[component.category]) {
-      acc[component.category] = [];
-    }
-    acc[component.category].push(component);
-    return acc;
-  }, {} as Record<string, ComponentDefinition[]>);
+  const groupedComponents = filteredComponents.reduce(
+    (acc, component) => {
+      if (!acc[component.category]) {
+        acc[component.category] = [];
+      }
+      acc[component.category].push(component);
+      return acc;
+    },
+    {} as Record<string, ComponentDefinition[]>,
+  );
 
   return (
     <div className="w-80 min-w-[280px] shrink-0 bg-white dark:bg-dark-150 border-r dark:border-gray-700 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          Components
-        </h2>
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Components
+          </h2>
+          {onHide && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onHide}
+              title="Hide component library"
+              aria-label="Hide component library"
+              className="h-9 w-9 shrink-0 rounded-full p-0 border-0 bg-transparent hover:bg-transparent hover:text-[#f26722] [&>span:first-child]:mr-0"
+              leftIcon={<PanelLeftClose className="w-4 h-4" />}
+            />
+          )}
+        </div>
 
         {/* Search */}
         <div className="relative">
@@ -205,6 +238,7 @@ export const ComponentLibrarySidebar: React.FC<{
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search components..."
+            leftIcon={<Search className="w-4 h-4 text-gray-400" />}
             className="pl-10"
           />
         </div>
@@ -215,20 +249,20 @@ export const ComponentLibrarySidebar: React.FC<{
             onClick={() => setSelectedCategory(null)}
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
               selectedCategory === null
-                ? 'bg-[#f26722] text-white'
-                : 'bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-200'
+                ? "bg-[#f26722] text-white"
+                : "bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-200"
             }`}
           >
             All
           </button>
-          {categories.map(category => (
+          {categories.map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
               className={`px-3 py-1 text-xs font-medium rounded-full capitalize transition-colors ${
                 selectedCategory === category
-                  ? 'bg-[#f26722] text-white'
-                  : 'bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-200'
+                  ? "bg-[#f26722] text-white"
+                  : "bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-200"
               }`}
             >
               {category}
@@ -245,7 +279,7 @@ export const ComponentLibrarySidebar: React.FC<{
               Saved components
             </h3>
             <div className="space-y-2">
-              {savedComponents.map(saved => (
+              {savedComponents.map((saved) => (
                 <DraggableSavedComponent
                   key={saved.id}
                   saved={saved}
@@ -255,7 +289,8 @@ export const ComponentLibrarySidebar: React.FC<{
             </div>
           </div>
         )}
-        {Object.entries(groupedComponents).length === 0 && savedComponents.length === 0 ? (
+        {Object.entries(groupedComponents).length === 0 &&
+        savedComponents.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500 dark:text-gray-400 text-sm">
               No components found
@@ -268,8 +303,11 @@ export const ComponentLibrarySidebar: React.FC<{
                 {category}
               </h3>
               <div className="space-y-2">
-                {components.map(component => (
-                  <DraggableComponent key={component.id} component={component} />
+                {components.map((component) => (
+                  <DraggableComponent
+                    key={component.id}
+                    component={component}
+                  />
                 ))}
               </div>
             </div>
@@ -280,11 +318,10 @@ export const ComponentLibrarySidebar: React.FC<{
       {/* Help Text */}
       <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
         <p className="text-xs text-gray-600 dark:text-gray-400">
-          💡 <strong>Tip:</strong> Drag components to the canvas to add them to your form. You can reorder and customize them after adding.
+          💡 <strong>Tip:</strong> Drag components to the canvas to add them to
+          your form. You can reorder and customize them after adding.
         </p>
       </div>
     </div>
   );
 };
-
-

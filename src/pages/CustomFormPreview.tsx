@@ -1,29 +1,35 @@
 /**
  * Custom Form Preview
- * 
+ *
  * Test/preview a custom form template as if filling it out.
  * This does NOT save to jobs or create assets - it's just for testing.
  */
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
-import { toast } from 'react-hot-toast';
-import { ArrowLeft, Eye, Printer, Plus, Minus } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { ReportWrapper } from '@/components/reports/ReportWrapper';
-import { CustomFormTemplate, SectionConfig, TablePrintLayout, type ConditionalRowConfig, type ColumnConfig } from '@/lib/types/customForms';
-import { fahrenheitToCelsius, getTCF } from '@/lib/utils/temperatureCorrection';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { getCellValue } from '@/lib/customForms/formCellResolution';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { toast } from "react-hot-toast";
+import { ArrowLeft, Eye, Printer, Plus, Minus } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { ReportWrapper } from "@/components/reports/ReportWrapper";
+import {
+  CustomFormTemplate,
+  SectionConfig,
+  TablePrintLayout,
+  type ConditionalRowConfig,
+  type ColumnConfig,
+} from "@/lib/types/customForms";
+import { fahrenheitToCelsius, getTCF } from "@/lib/utils/temperatureCorrection";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { getCellValue } from "@/lib/customForms/formCellResolution";
 
 function isVisibleWhen(
   visibleWhen: Record<string, string | string[]> | undefined,
-  settings: Record<string, string>
+  settings: Record<string, string>,
 ): boolean {
   if (!visibleWhen || Object.keys(visibleWhen).length === 0) return true;
   for (const [settingId, allowed] of Object.entries(visibleWhen)) {
-    const current = settings[settingId] ?? '';
+    const current = settings[settingId] ?? "";
     const allowedList = Array.isArray(allowed) ? allowed : [allowed];
     if (!allowedList.includes(current)) return false;
   }
@@ -37,7 +43,7 @@ export const CustomFormPreview: React.FC = () => {
   const [template, setTemplate] = useState<CustomFormTemplate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<Record<string, any>>({});
-  const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
+  const [status, setStatus] = useState<"PASS" | "FAIL">("PASS");
 
   useEffect(() => {
     if (templateId) {
@@ -48,23 +54,43 @@ export const CustomFormPreview: React.FC = () => {
   // Initialize temperature/humidity when template loads (job info)
   useEffect(() => {
     if (!template) return;
-    const jobInfoSection = template.structure.sections.find(s => s.componentType === 'job-info' || (s as any).componentType === 'job_info');
+    const jobInfoSection = template.structure.sections.find(
+      (s) =>
+        s.componentType === "job-info" ||
+        (s as any).componentType === "job_info",
+    );
     if (!jobInfoSection) return;
     let fahrenheit: number | null = null;
     let humidityDefault = 50;
-    const tempField = jobInfoSection.fields?.find(f => f.id === 'temperature');
-    const tempHumidityField = jobInfoSection.fields?.find(f => f.id === 'temperatureHumidity');
-    if (tempField && tempField.defaultValue !== undefined && tempField.defaultValue !== '') {
+    const tempField = jobInfoSection.fields?.find(
+      (f) => f.id === "temperature",
+    );
+    const tempHumidityField = jobInfoSection.fields?.find(
+      (f) => f.id === "temperatureHumidity",
+    );
+    if (
+      tempField &&
+      tempField.defaultValue !== undefined &&
+      tempField.defaultValue !== ""
+    ) {
       fahrenheit = parseFloat(tempField.defaultValue.toString());
-    } else if (tempHumidityField && (tempHumidityField as any).defaultTemperature != null) {
+    } else if (
+      tempHumidityField &&
+      (tempHumidityField as any).defaultTemperature != null
+    ) {
       fahrenheit = Number((tempHumidityField as any).defaultTemperature) || 68;
-      humidityDefault = Number((tempHumidityField as any).defaultHumidity) || 50;
+      humidityDefault =
+        Number((tempHumidityField as any).defaultHumidity) || 50;
     }
     if (fahrenheit == null || isNaN(fahrenheit)) return;
     const celsius = fahrenheitToCelsius(fahrenheit);
     const tcf = getTCF(celsius);
-    setFormData(prev => {
-      if (prev[jobInfoSection.id]?.temperature !== undefined && prev[jobInfoSection.id]?.temperature !== '') return prev;
+    setFormData((prev) => {
+      if (
+        prev[jobInfoSection.id]?.temperature !== undefined &&
+        prev[jobInfoSection.id]?.temperature !== ""
+      )
+        return prev;
       return {
         ...prev,
         [jobInfoSection.id]: {
@@ -72,7 +98,11 @@ export const CustomFormPreview: React.FC = () => {
           temperature: fahrenheit!.toString(),
           temperatureCelsius: celsius.toFixed(2),
           tcf: tcf.toFixed(3),
-          humidity: (prev[jobInfoSection.id]?.humidity !== undefined && prev[jobInfoSection.id]?.humidity !== '') ? prev[jobInfoSection.id].humidity : String(humidityDefault),
+          humidity:
+            prev[jobInfoSection.id]?.humidity !== undefined &&
+            prev[jobInfoSection.id]?.humidity !== ""
+              ? prev[jobInfoSection.id].humidity
+              : String(humidityDefault),
         },
       };
     });
@@ -82,10 +112,10 @@ export const CustomFormPreview: React.FC = () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('custom_form_templates')
-        .select('*')
-        .eq('id', templateId)
+        .schema("neta_ops")
+        .from("custom_form_templates")
+        .select("*")
+        .eq("id", templateId)
         .single();
 
       if (error) throw error;
@@ -100,29 +130,33 @@ export const CustomFormPreview: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Error loading template:', error);
-      toast.error('Failed to load template');
+      console.error("Error loading template:", error);
+      toast.error("Failed to load template");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleFieldChange = (sectionId: string, fieldId: string, value: any) => {
-    setFormData(prev => {
+  const handleFieldChange = (
+    sectionId: string,
+    fieldId: string,
+    value: any,
+  ) => {
+    setFormData((prev) => {
       const updatedSection = {
         ...(prev[sectionId] || {}),
         [fieldId]: value,
       };
-      if (fieldId === 'temperature') {
-        if (value === '' || value === null || value === undefined) {
-          updatedSection['temperatureCelsius'] = '';
-          updatedSection['tcf'] = '';
+      if (fieldId === "temperature") {
+        if (value === "" || value === null || value === undefined) {
+          updatedSection["temperatureCelsius"] = "";
+          updatedSection["tcf"] = "";
         } else if (!isNaN(parseFloat(value))) {
           const fahrenheit = parseFloat(value);
           const celsius = fahrenheitToCelsius(fahrenheit);
           const tcf = getTCF(celsius);
-          updatedSection['temperatureCelsius'] = celsius.toFixed(2);
-          updatedSection['tcf'] = tcf.toFixed(3);
+          updatedSection["temperatureCelsius"] = celsius.toFixed(2);
+          updatedSection["tcf"] = tcf.toFixed(3);
         }
       }
       return {
@@ -139,7 +173,8 @@ export const CustomFormPreview: React.FC = () => {
       if (!section) return prev;
       const groupId = section.rowCountLinkGroupId;
       const isInGroup = (s: SectionConfig) =>
-        s.id === sectionId || (groupId != null && s.rowCountLinkGroupId === groupId);
+        s.id === sectionId ||
+        (groupId != null && s.rowCountLinkGroupId === groupId);
 
       return {
         ...prev,
@@ -196,7 +231,11 @@ export const CustomFormPreview: React.FC = () => {
             };
             if (s.settingFields?.length) {
               const sf = s.settingFields[0];
-              const currentVal = formData[sectionId]?.[sf.id] ?? sf.defaultValue ?? sf.options[0]?.value ?? '';
+              const currentVal =
+                formData[sectionId]?.[sf.id] ??
+                sf.defaultValue ??
+                sf.options[0]?.value ??
+                "";
               newRow.visibleWhen = { [sf.id]: currentVal };
             }
             return { ...s, conditionalRows: [...s.conditionalRows, newRow] };
@@ -215,7 +254,10 @@ export const CustomFormPreview: React.FC = () => {
           ...prev.structure,
           sections: prev.structure.sections.map((s) => {
             if (s.id !== sectionId || !s.conditionalRows) return s;
-            return { ...s, conditionalRows: s.conditionalRows.filter((r) => r.id !== rowId) };
+            return {
+              ...s,
+              conditionalRows: s.conditionalRows.filter((r) => r.id !== rowId),
+            };
           }),
         },
       };
@@ -225,14 +267,24 @@ export const CustomFormPreview: React.FC = () => {
   const renderField = (
     sectionId: string,
     field: any,
-    cellContext?: { baseSectionId: string; rowIndex: number; cellFormulas?: Record<string, string>; colId?: string }
+    cellContext?: {
+      baseSectionId: string;
+      rowIndex: number;
+      cellFormulas?: Record<string, string>;
+      colId?: string;
+    },
   ) => {
-    const hasCellFormula = cellContext?.cellFormulas && cellContext?.colId
-      ? !!(cellContext.cellFormulas[`row${cellContext.rowIndex}_${cellContext.colId}`]?.trim())
-      : false;
+    const hasCellFormula =
+      cellContext?.cellFormulas && cellContext?.colId
+        ? !!cellContext.cellFormulas[
+            `row${cellContext.rowIndex}_${cellContext.colId}`
+          ]?.trim()
+        : false;
     const useCellResolution =
       cellContext &&
-      (hasCellFormula || field.cellBehavior === 'populate' || field.cellBehavior === 'calculate');
+      (hasCellFormula ||
+        field.cellBehavior === "populate" ||
+        field.cellBehavior === "calculate");
     const value = useCellResolution
       ? getCellValue(
           formData,
@@ -242,106 +294,147 @@ export const CustomFormPreview: React.FC = () => {
           cellContext.rowIndex,
           template?.structure?.sections ?? [],
           cellContext.cellFormulas,
-          cellContext.colId
+          cellContext.colId,
         )
       : formData[sectionId]?.[field.id] !== undefined
         ? formData[sectionId][field.id]
-        : (field.defaultValue || '');
-    const readOnly = field.readOnly || hasCellFormula || (useCellResolution && (field.cellBehavior === 'populate' || field.cellBehavior === 'calculate'));
+        : field.defaultValue || "";
+    const readOnly =
+      field.readOnly ||
+      hasCellFormula ||
+      (useCellResolution &&
+        (field.cellBehavior === "populate" ||
+          field.cellBehavior === "calculate"));
 
-    const commonClasses = "w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-dark-100 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]";
-    const readOnlyClasses = "w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded bg-gray-50 dark:bg-dark-200 text-gray-700 dark:text-gray-300";
+    const commonClasses =
+      "w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-dark-100 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]";
+    const readOnlyClasses =
+      "w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded bg-gray-50 dark:bg-dark-200 text-gray-700 dark:text-gray-300";
 
     switch (field.type) {
-      case 'textarea':
+      case "textarea":
         return (
           <textarea
             value={value}
-            onChange={(e) => handleFieldChange(sectionId, field.id, e.target.value)}
+            onChange={(e) =>
+              handleFieldChange(sectionId, field.id, e.target.value)
+            }
             placeholder={field.placeholder}
             rows={3}
             readOnly={readOnly}
             className={readOnly ? readOnlyClasses : commonClasses}
           />
         );
-      
-      case 'select':
+
+      case "select":
         return (
           <select
             value={value}
-            onChange={(e) => handleFieldChange(sectionId, field.id, e.target.value)}
+            onChange={(e) =>
+              handleFieldChange(sectionId, field.id, e.target.value)
+            }
             disabled={readOnly}
             className={readOnly ? readOnlyClasses : commonClasses}
           >
             <option value="">Select...</option>
             {field.options?.map((opt: any) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         );
-      
-      case 'checkbox':
+
+      case "checkbox":
         return (
           <input
             type="checkbox"
             checked={!!value}
-            onChange={(e) => handleFieldChange(sectionId, field.id, e.target.checked)}
+            onChange={(e) =>
+              handleFieldChange(sectionId, field.id, e.target.checked)
+            }
             disabled={readOnly}
             className="w-4 h-4 text-[#f26722] border-gray-300 rounded focus:ring-[#f26722]"
           />
         );
-      
-      case 'date':
+
+      case "date":
         return (
           <input
             type="date"
             value={value}
-            onChange={(e) => handleFieldChange(sectionId, field.id, e.target.value)}
+            onChange={(e) =>
+              handleFieldChange(sectionId, field.id, e.target.value)
+            }
             readOnly={readOnly}
             className={readOnly ? readOnlyClasses : commonClasses}
           />
         );
-      
-      case 'number':
+
+      case "number":
         return (
           <input
             type="text"
             inputMode="numeric"
             value={value}
-            onChange={(e) => handleFieldChange(sectionId, field.id, e.target.value)}
+            onChange={(e) =>
+              handleFieldChange(sectionId, field.id, e.target.value)
+            }
             placeholder={field.placeholder}
             readOnly={readOnly}
             className={readOnly ? readOnlyClasses : commonClasses}
           />
         );
 
-      case 'temperature-humidity': {
-        const tempF = formData[sectionId]?.temperature ?? '';
-        const tempC = formData[sectionId]?.temperatureCelsius ?? '';
-        const tcfVal = formData[sectionId]?.tcf ?? '';
-        const hum = formData[sectionId]?.humidity ?? '';
+      case "temperature-humidity": {
+        const tempF = formData[sectionId]?.temperature ?? "";
+        const tempC = formData[sectionId]?.temperatureCelsius ?? "";
+        const tcfVal = formData[sectionId]?.tcf ?? "";
+        const hum = formData[sectionId]?.humidity ?? "";
         return (
           <div className="temp-humidity-one-line flex flex-wrap items-center gap-x-2 gap-y-1 text-xs border border-gray-200 dark:border-gray-600 rounded px-2 py-1.5 bg-white dark:bg-dark-100 w-full max-w-full min-w-0">
-            <span className="shrink-0 font-medium text-gray-600 dark:text-gray-400">°F</span>
+            <span className="shrink-0 font-medium text-gray-600 dark:text-gray-400">
+              °F
+            </span>
             <input
               type="text"
               inputMode="numeric"
               value={tempF}
-              onChange={(e) => handleFieldChange(sectionId, 'temperature', e.target.value)}
+              onChange={(e) =>
+                handleFieldChange(sectionId, "temperature", e.target.value)
+              }
               placeholder="68"
               title="Temperature (°F) — type here"
               className="temp-humidity-f temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] text-xs"
             />
-            <span className="text-gray-400 dark:text-gray-500 shrink-0">°C</span>
-            <span className="temp-humidity-c min-w-[2.5rem] text-gray-600 dark:text-gray-400 shrink-0 tabular-nums" title="Calculated">{tempC}</span>
-            <span className="text-gray-400 dark:text-gray-500 shrink-0">TCF</span>
-            <span className="temp-humidity-tcf min-w-[2rem] text-gray-600 dark:text-gray-400 shrink-0 tabular-nums" title="Calculated">{tcfVal}</span>
-            <span className="shrink-0 text-gray-600 dark:text-gray-400">Humidity %</span>
+            <span className="text-gray-400 dark:text-gray-500 shrink-0">
+              °C
+            </span>
+            <span
+              className="temp-humidity-c min-w-[2.5rem] text-gray-600 dark:text-gray-400 shrink-0 tabular-nums"
+              title="Calculated"
+            >
+              {tempC}
+            </span>
+            <span className="text-gray-400 dark:text-gray-500 shrink-0">
+              TCF
+            </span>
+            <span
+              className="temp-humidity-tcf min-w-[2rem] text-gray-600 dark:text-gray-400 shrink-0 tabular-nums"
+              title="Calculated"
+            >
+              {tcfVal}
+            </span>
+            <span className="shrink-0 text-gray-600 dark:text-gray-400">
+              Humidity %
+            </span>
             <input
               type="text"
               inputMode="numeric"
               value={hum}
-              onChange={(e) => handleFieldChange(sectionId, 'humidity', e.target.value)}
+              onChange={(e) =>
+                handleFieldChange(sectionId, "humidity", e.target.value)
+              }
               placeholder="50"
               title="Humidity (%) — type here"
               className="temp-humidity-hum temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] text-xs"
@@ -349,13 +442,15 @@ export const CustomFormPreview: React.FC = () => {
           </div>
         );
       }
-      
+
       default:
         return (
           <input
             type="text"
             value={value}
-            onChange={(e) => handleFieldChange(sectionId, field.id, e.target.value)}
+            onChange={(e) =>
+              handleFieldChange(sectionId, field.id, e.target.value)
+            }
             placeholder={field.placeholder}
             readOnly={readOnly}
             className={readOnly ? readOnlyClasses : commonClasses}
@@ -365,23 +460,49 @@ export const CustomFormPreview: React.FC = () => {
   };
 
   const getTablePrintLayoutStyles = (layout?: TablePrintLayout) => {
-    if (!layout) return { wrapperStyle: undefined as React.CSSProperties | undefined, rowStyle: undefined as React.CSSProperties | undefined };
+    if (!layout)
+      return {
+        wrapperStyle: undefined as React.CSSProperties | undefined,
+        rowStyle: undefined as React.CSSProperties | undefined,
+      };
     const wrapperStyle: React.CSSProperties = {};
-    if (layout.marginTop != null && layout.marginTop !== '') wrapperStyle.marginTop = layout.marginTop;
-    if (layout.marginRight != null && layout.marginRight !== '') wrapperStyle.marginRight = layout.marginRight;
-    if (layout.marginBottom != null && layout.marginBottom !== '') wrapperStyle.marginBottom = layout.marginBottom;
-    if (layout.marginLeft != null && layout.marginLeft !== '') wrapperStyle.marginLeft = layout.marginLeft;
-    const rowStyle: React.CSSProperties | undefined = layout.rowHeight ? { minHeight: layout.rowHeight } : undefined;
-    return { wrapperStyle: Object.keys(wrapperStyle).length ? wrapperStyle : undefined, rowStyle };
+    if (layout.marginTop != null && layout.marginTop !== "")
+      wrapperStyle.marginTop = layout.marginTop;
+    if (layout.marginRight != null && layout.marginRight !== "")
+      wrapperStyle.marginRight = layout.marginRight;
+    if (layout.marginBottom != null && layout.marginBottom !== "")
+      wrapperStyle.marginBottom = layout.marginBottom;
+    if (layout.marginLeft != null && layout.marginLeft !== "")
+      wrapperStyle.marginLeft = layout.marginLeft;
+    const rowStyle: React.CSSProperties | undefined = layout.rowHeight
+      ? { minHeight: layout.rowHeight }
+      : undefined;
+    return {
+      wrapperStyle: Object.keys(wrapperStyle).length ? wrapperStyle : undefined,
+      rowStyle,
+    };
   };
 
   const renderSection = (section: SectionConfig) => {
-    const { wrapperStyle, rowStyle } = getTablePrintLayoutStyles(section.printLayout);
+    const { wrapperStyle, rowStyle } = getTablePrintLayoutStyles(
+      section.printLayout,
+    );
 
     // Grouped fields: label + input stacked in each cell (e.g. Job Details)
     if (section.fields && section.fields.length > 0) {
-      const columns = section.componentType === 'job-info' ? 5 : section.layout === 'five-column' ? 5 : section.layout === 'four-column' ? 4 : section.layout === 'three-column' ? 3 : section.layout === 'two-column' ? 2 : 1;
-      const fieldRows: typeof section.fields[] = [];
+      const columns =
+        section.componentType === "job-info"
+          ? 5
+          : section.layout === "five-column"
+            ? 5
+            : section.layout === "four-column"
+              ? 4
+              : section.layout === "three-column"
+                ? 3
+                : section.layout === "two-column"
+                  ? 2
+                  : 1;
+      const fieldRows: (typeof section.fields)[] = [];
       for (let i = 0; i < section.fields.length; i += columns) {
         fieldRows.push(section.fields.slice(i, i + columns));
       }
@@ -390,7 +511,7 @@ export const CustomFormPreview: React.FC = () => {
         <div className="overflow-x-auto" style={wrapperStyle}>
           <table
             className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 job-details-table"
-            style={{ tableLayout: 'fixed', width: '100%' }}
+            style={{ tableLayout: "fixed", width: "100%" }}
           >
             <colgroup>
               {Array.from({ length: columns }).map((_, i) => (
@@ -400,22 +521,32 @@ export const CustomFormPreview: React.FC = () => {
             <tbody>
               {fieldRows.map((row, rowIdx) => (
                 <tr key={rowIdx} style={rowStyle ?? {}}>
-                  {row.map(field => (
+                  {row.map((field) => (
                     <td
                       key={field.id}
                       className="border border-gray-300 dark:border-gray-600 px-3 py-2 align-top"
                     >
                       <div className="text-xs font-medium text-gray-500 dark:text-white uppercase mb-1">
                         {field.label}
-                        {field.unit && <span className="text-gray-400 ml-1 normal-case">({field.unit})</span>}
-                        {field.required && <span className="text-red-500 ml-1">*</span>}
+                        {field.unit && (
+                          <span className="text-gray-400 ml-1 normal-case">
+                            ({field.unit})
+                          </span>
+                        )}
+                        {field.required && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
                       </div>
                       {renderField(section.id, field)}
                     </td>
                   ))}
-                  {row.length < columns && Array.from({ length: columns - row.length }).map((_, i) => (
-                    <td key={`empty-${i}`} className="border border-gray-300 dark:border-gray-600 px-3 py-2"></td>
-                  ))}
+                  {row.length < columns &&
+                    Array.from({ length: columns - row.length }).map((_, i) => (
+                      <td
+                        key={`empty-${i}`}
+                        className="border border-gray-300 dark:border-gray-600 px-3 py-2"
+                      ></td>
+                    ))}
                 </tr>
               ))}
             </tbody>
@@ -437,18 +568,18 @@ export const CustomFormPreview: React.FC = () => {
       section.settingFields.forEach((sf) => {
         const current = formData[section.id]?.[sf.id];
         settings[sf.id] =
-          current !== undefined && current !== null && current !== ''
+          current !== undefined && current !== null && current !== ""
             ? String(current)
-            : (sf.defaultValue ?? sf.options[0]?.value ?? '');
+            : (sf.defaultValue ?? sf.options[0]?.value ?? "");
       });
       const visibleRows = section.conditionalRows.filter((row) =>
-        isVisibleWhen(row.visibleWhen, settings)
+        isVisibleWhen(row.visibleWhen, settings),
       );
       const visibleColumns = section.columns.filter((col: ColumnConfig) =>
-        isVisibleWhen(col.visibleWhen, settings)
+        isVisibleWhen(col.visibleWhen, settings),
       );
       const rowIndices = new Map(
-        section.conditionalRows.map((row, i) => [row.id, i])
+        section.conditionalRows.map((row, i) => [row.id, i]),
       );
 
       return (
@@ -461,7 +592,9 @@ export const CustomFormPreview: React.FC = () => {
                 </label>
                 <select
                   value={settings[sf.id]}
-                  onChange={(e) => handleFieldChange(section.id, sf.id, e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange(section.id, sf.id, e.target.value)
+                  }
                   className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]"
                 >
                   {sf.options.map((opt) => (
@@ -477,7 +610,10 @@ export const CustomFormPreview: React.FC = () => {
             <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
               <colgroup>
                 {visibleColumns.map((col) => (
-                  <col key={col.id} style={col.width ? { width: col.width } : undefined} />
+                  <col
+                    key={col.id}
+                    style={col.width ? { width: col.width } : undefined}
+                  />
                 ))}
               </colgroup>
               <thead>
@@ -528,25 +664,36 @@ export const CustomFormPreview: React.FC = () => {
           {(section.allowAddRows || section.allowRemoveRows) && (
             <div className="flex items-center gap-2 mt-2 print:hidden">
               {section.allowAddRows && (
-                <button
+                <Button
                   type="button"
                   onClick={() => addConditionalRow(section.id)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#f26722] border border-[#f26722] rounded hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-[#f26722] border-[#f26722] hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                  leftIcon={<Plus className="w-3 h-3" />}
                 >
-                  <Plus className="w-3 h-3" /> Add Row
-                </button>
+                  Add Row
+                </Button>
               )}
               {section.allowRemoveRows && visibleRows.length > 1 && (
-                <button
+                <Button
                   type="button"
-                  onClick={() => removeConditionalRow(section.id, visibleRows[visibleRows.length - 1].id)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-300 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                  onClick={() =>
+                    removeConditionalRow(
+                      section.id,
+                      visibleRows[visibleRows.length - 1].id,
+                    )
+                  }
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  leftIcon={<Minus className="w-3 h-3" />}
                 >
-                  <Minus className="w-3 h-3" /> Remove Row
-                </button>
+                  Remove Row
+                </Button>
               )}
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                {visibleRows.length} row{visibleRows.length !== 1 ? 's' : ''}
+                {visibleRows.length} row{visibleRows.length !== 1 ? "s" : ""}
               </span>
             </div>
           )}
@@ -557,15 +704,19 @@ export const CustomFormPreview: React.FC = () => {
     // Table-based components with column width support
     if (section.columns && section.columns.length > 0) {
       const rowCount = section.rows || 1;
-      const canAdd = section.allowAddRows && rowCount < (section.maxRows ?? 100);
-      const canRemove = section.allowRemoveRows && rowCount > (section.minRows ?? 1);
+      const canAdd =
+        section.allowAddRows && rowCount < (section.maxRows ?? 100);
+      const canRemove =
+        section.allowRemoveRows && rowCount > (section.minRows ?? 1);
       return (
         <div style={wrapperStyle}>
           {section.aboveTableFields && section.aboveTableFields.length > 0 && (
             <div className="flex flex-wrap items-end gap-4 gap-y-2 mb-3 pb-2 border-b border-gray-200 dark:border-gray-600">
               {section.aboveTableFields.map((f: any) => (
                 <div key={f.id} className="flex flex-col gap-1 min-w-[120px]">
-                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{f.label}</label>
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    {f.label}
+                  </label>
                   {renderField(section.id, f, undefined)}
                 </div>
               ))}
@@ -574,13 +725,16 @@ export const CustomFormPreview: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
               <colgroup>
-                {section.columns.map(col => (
-                  <col key={col.id} style={col.width ? { width: col.width } : undefined} />
+                {section.columns.map((col) => (
+                  <col
+                    key={col.id}
+                    style={col.width ? { width: col.width } : undefined}
+                  />
                 ))}
               </colgroup>
               <thead>
                 <tr>
-                  {section.columns.map(col => (
+                  {section.columns.map((col) => (
                     <th
                       key={col.id}
                       className="border border-gray-300 dark:border-gray-600 px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-sm font-medium text-gray-900 dark:text-white"
@@ -594,18 +748,22 @@ export const CustomFormPreview: React.FC = () => {
               <tbody>
                 {Array.from({ length: rowCount }).map((_, rowIndex) => (
                   <tr key={rowIndex} style={rowStyle ?? {}}>
-                    {section.columns!.map(col => (
+                    {section.columns!.map((col) => (
                       <td
                         key={col.id}
                         className="border border-gray-300 dark:border-gray-600 px-2 py-1"
                         style={col.width ? { width: col.width } : undefined}
                       >
-                        {renderField(`${section.id}_row${rowIndex}`, col.field, {
-                          baseSectionId: section.id,
-                          rowIndex,
-                          cellFormulas: section.cellFormulas,
-                          colId: col.id,
-                        })}
+                        {renderField(
+                          `${section.id}_row${rowIndex}`,
+                          col.field,
+                          {
+                            baseSectionId: section.id,
+                            rowIndex,
+                            cellFormulas: section.cellFormulas,
+                            colId: col.id,
+                          },
+                        )}
                       </td>
                     ))}
                   </tr>
@@ -616,25 +774,31 @@ export const CustomFormPreview: React.FC = () => {
           {(canAdd || canRemove) && (
             <div className="flex items-center gap-2 mt-2 print:hidden">
               {canAdd && (
-                <button
+                <Button
                   type="button"
                   onClick={() => updateSectionRowCount(section.id, 1)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#f26722] border border-[#f26722] rounded hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-[#f26722] border-[#f26722] hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                  leftIcon={<Plus className="w-3 h-3" />}
                 >
-                  <Plus className="w-3 h-3" /> Add Row
-                </button>
+                  Add Row
+                </Button>
               )}
               {canRemove && (
-                <button
+                <Button
                   type="button"
                   onClick={() => updateSectionRowCount(section.id, -1)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-300 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  leftIcon={<Minus className="w-3 h-3" />}
                 >
-                  <Minus className="w-3 h-3" /> Remove Row
-                </button>
+                  Remove Row
+                </Button>
               )}
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                {rowCount} row{rowCount !== 1 ? 's' : ''}
+                {rowCount} row{rowCount !== 1 ? "s" : ""}
               </span>
             </div>
           )}
@@ -652,8 +816,14 @@ export const CustomFormPreview: React.FC = () => {
                 <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
                   <div className="text-xs font-medium text-gray-500 dark:text-white uppercase mb-1">
                     {section.field.label}
-                    {section.field.unit && <span className="text-gray-400 ml-1 normal-case">({section.field.unit})</span>}
-                    {section.field.required && <span className="text-red-500 ml-1">*</span>}
+                    {section.field.unit && (
+                      <span className="text-gray-400 ml-1 normal-case">
+                        ({section.field.unit})
+                      </span>
+                    )}
+                    {section.field.required && (
+                      <span className="text-red-500 ml-1">*</span>
+                    )}
                   </div>
                   {renderField(section.id, section.field)}
                 </td>
@@ -683,23 +853,27 @@ export const CustomFormPreview: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {section.checklistItems.map(item => (
+              {section.checklistItems.map((item) => (
                 <tr key={item.id} style={rowStyle ?? {}}>
                   <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm">
-                    {item.netaSection || '-'}
+                    {item.netaSection || "-"}
                   </td>
                   <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm">
                     {item.description}
                   </td>
                   <td className="border border-gray-300 dark:border-gray-600 px-2 py-1">
                     <select
-                      value={formData[section.id]?.[item.id] || ''}
-                      onChange={(e) => handleFieldChange(section.id, item.id, e.target.value)}
+                      value={formData[section.id]?.[item.id] || ""}
+                      onChange={(e) =>
+                        handleFieldChange(section.id, item.id, e.target.value)
+                      }
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-dark-100 text-sm"
                     >
                       <option value="">Select...</option>
                       {item.resultOptions?.map((opt: string) => (
-                        <option key={opt} value={opt}>{opt}</option>
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
                       ))}
                     </select>
                   </td>
@@ -719,7 +893,9 @@ export const CustomFormPreview: React.FC = () => {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <div className="spinner mb-4"></div>
-          <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
+          <div className="flex justify-center py-6">
+            <LoadingSpinner size="md" />
+          </div>
         </div>
       </div>
     );
@@ -730,7 +906,10 @@ export const CustomFormPreview: React.FC = () => {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <p className="text-red-600">Template not found</p>
-          <Button onClick={() => navigate('/custom-forms/templates')} className="mt-4">
+          <Button
+            onClick={() => navigate("/custom-forms/templates")}
+            className="mt-4"
+          >
             Back to Templates
           </Button>
         </div>
@@ -738,38 +917,58 @@ export const CustomFormPreview: React.FC = () => {
     );
   }
 
-  const sortedSections = [...template.structure.sections].sort((a, b) => a.order - b.order);
+  const sortedSections = [...template.structure.sections].sort(
+    (a, b) => a.order - b.order,
+  );
 
   return (
     <ReportWrapper>
       {/* Print Header - matches standard reports: AMP logo left, title center, NETA + PASS/FAIL right */}
       <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
-        <div style={{ width: '120px', display: 'flex', justifyContent: 'flex-start' }}>
-          <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 35, marginLeft: '5px', marginTop: '2px' }} />
+        <div
+          style={{
+            width: "120px",
+            display: "flex",
+            justifyContent: "flex-start",
+          }}
+        >
+          <img
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
+            alt="AMP Logo"
+            className="h-10 w-auto"
+            style={{ maxHeight: 35, marginLeft: "5px", marginTop: "2px" }}
+          />
         </div>
         <div className="flex-1 text-center">
-          <h1 className="text-2xl font-bold text-black mb-1">{template.name}</h1>
+          <h1 className="text-2xl font-bold text-black mb-1">
+            {template.name}
+          </h1>
         </div>
-        <div className="text-right font-extrabold text-xl flex flex-col items-end gap-0.5 print:gap-0.5" style={{ color: '#1a4e7c', width: '120px' }}>
-          {template.netaSection && <span className="text-base">NETA - {template.netaSection}</span>}
+        <div
+          className="text-right font-extrabold text-xl flex flex-col items-end gap-0.5 print:gap-0.5"
+          style={{ color: "#1a4e7c", width: "120px" }}
+        >
+          {template.netaSection && (
+            <span className="text-base">NETA - {template.netaSection}</span>
+          )}
           <div className="hidden print:block">
             <div
-              className={`pass-fail-status-box ${status.toLowerCase() === 'fail' ? 'fail' : 'pass'}`}
+              className={`pass-fail-status-box ${status.toLowerCase() === "fail" ? "fail" : "pass"}`}
               style={{
-                display: 'inline-block',
-                padding: '4px 10px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                textAlign: 'center',
-                width: 'fit-content',
-                borderRadius: '6px',
-                border: `2px solid ${status === 'PASS' ? '#16a34a' : '#dc2626'}`,
-                backgroundColor: status === 'PASS' ? '#22c55e' : '#ef4444',
-                color: 'white',
-                WebkitPrintColorAdjust: 'exact',
-                printColorAdjust: 'exact' as any,
-                boxSizing: 'border-box',
-                minWidth: '50px',
+                display: "inline-block",
+                padding: "4px 10px",
+                fontSize: "12px",
+                fontWeight: "bold",
+                textAlign: "center",
+                width: "fit-content",
+                borderRadius: "6px",
+                border: `2px solid ${status === "PASS" ? "#16a34a" : "#dc2626"}`,
+                backgroundColor: status === "PASS" ? "#22c55e" : "#ef4444",
+                color: "white",
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact" as any,
+                boxSizing: "border-box",
+                minWidth: "50px",
               }}
             >
               {status}
@@ -786,9 +985,9 @@ export const CustomFormPreview: React.FC = () => {
               <div className="flex items-center gap-4">
                 <Button
                   variant="ghost"
-                  onClick={() => navigate('/custom-forms/templates')}
+                  onClick={() => navigate("/custom-forms/templates")}
+                  leftIcon={<ArrowLeft className="w-4 h-4" />}
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
                 </Button>
                 <div>
@@ -808,17 +1007,19 @@ export const CustomFormPreview: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   onClick={() => window.print()}
-                  className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md flex items-center gap-2"
+                  className="text-sm text-white bg-gray-600 hover:bg-gray-700"
+                  leftIcon={<Printer className="w-4 h-4" />}
                 >
-                  <Printer className="w-4 h-4" />
                   Print Report
-                </button>
+                </Button>
                 <button
-                  onClick={() => setStatus(status === 'PASS' ? 'FAIL' : 'PASS')}
+                  onClick={() => setStatus(status === "PASS" ? "FAIL" : "PASS")}
                   className={`px-4 py-2 rounded-md text-white font-medium ${
-                    status === 'PASS' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+                    status === "PASS"
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-red-600 hover:bg-red-700"
                   }`}
                 >
                   {status}
@@ -828,7 +1029,10 @@ export const CustomFormPreview: React.FC = () => {
 
             {/* Form Sections */}
             {sortedSections.map((section, idx) => (
-              <div key={section.id} className={idx > 0 ? 'mt-6 print:mt-4' : ''}>
+              <div
+                key={section.id}
+                className={idx > 0 ? "mt-6 print:mt-4" : ""}
+              >
                 <div className="w-full h-1 bg-[#f26722] mb-3 print:mb-1"></div>
                 <h2 className="text-lg font-semibold mb-3 print:mb-1 print:text-sm text-gray-900 dark:text-white print:text-black">
                   {section.title}
@@ -852,4 +1056,3 @@ export const CustomFormPreview: React.FC = () => {
 };
 
 export default CustomFormPreview;
-

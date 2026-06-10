@@ -7,26 +7,6 @@ CREATE SCHEMA IF NOT EXISTS common;
 
 GRANT USAGE ON SCHEMA common TO authenticated;
 
-CREATE OR REPLACE FUNCTION common.can_manage_permissions()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = common, public
-AS $permissions_access$
-  SELECT
-    auth.role() = 'authenticated'
-    AND (
-      COALESCE(auth.jwt() -> 'user_metadata' ->> 'role', '') IN ('Admin', 'Super Admin')
-      OR lower(COALESCE(auth.jwt() ->> 'email', '')) IN (
-        'john.chambers@ampqes.com',
-        'jack.lyons@ampqes.com'
-      )
-    );
-$permissions_access$;
-
-GRANT EXECUTE ON FUNCTION common.can_manage_permissions() TO authenticated;
-
 CREATE TABLE IF NOT EXISTS common.user_permissions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -41,6 +21,15 @@ CREATE TABLE IF NOT EXISTS common.user_permissions (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE common.user_permissions
+  ADD COLUMN IF NOT EXISTS conditions jsonb,
+  ADD COLUMN IF NOT EXISTS granted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS valid_until timestamptz,
+  ADD COLUMN IF NOT EXISTS valid_from timestamptz DEFAULT now(),
+  ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
 CREATE TABLE IF NOT EXISTS common.permission_access_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -58,6 +47,17 @@ CREATE TABLE IF NOT EXISTS common.permission_access_logs (
   created_at timestamptz DEFAULT now()
 );
 
+ALTER TABLE common.permission_access_logs
+  ADD COLUMN IF NOT EXISTS context jsonb,
+  ADD COLUMN IF NOT EXISTS granted boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS reason text,
+  ADD COLUMN IF NOT EXISTS source text,
+  ADD COLUMN IF NOT EXISTS ip_address text,
+  ADD COLUMN IF NOT EXISTS user_agent text,
+  ADD COLUMN IF NOT EXISTS component text,
+  ADD COLUMN IF NOT EXISTS timestamp timestamptz DEFAULT now(),
+  ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+
 CREATE TABLE IF NOT EXISTS common.permission_change_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id text NOT NULL,
@@ -73,6 +73,15 @@ CREATE TABLE IF NOT EXISTS common.permission_change_logs (
   timestamp timestamptz DEFAULT now(),
   created_at timestamptz DEFAULT now()
 );
+
+ALTER TABLE common.permission_change_logs
+  ADD COLUMN IF NOT EXISTS details jsonb,
+  ADD COLUMN IF NOT EXISTS reason text,
+  ADD COLUMN IF NOT EXISTS ip_address text,
+  ADD COLUMN IF NOT EXISTS user_agent text,
+  ADD COLUMN IF NOT EXISTS component text,
+  ADD COLUMN IF NOT EXISTS timestamp timestamptz DEFAULT now(),
+  ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_user_permissions_unique_active
   ON common.user_permissions (user_id, resource, action, scope)
@@ -110,32 +119,51 @@ CREATE POLICY "user_permissions_select_admins_or_own"
   ON common.user_permissions
   FOR SELECT
   TO authenticated
-  USING (common.can_manage_permissions() OR user_id = auth.uid());
+  USING (
+    user_id = auth.uid()
+    OR COALESCE(auth.jwt() -> 'user_metadata' ->> 'role', '') IN ('Admin', 'Super Admin')
+    OR lower(COALESCE(auth.jwt() ->> 'email', '')) IN ('john.chambers@ampqes.com', 'jack.lyons@ampqes.com')
+  );
 
 CREATE POLICY "user_permissions_insert_admins"
   ON common.user_permissions
   FOR INSERT
   TO authenticated
-  WITH CHECK (common.can_manage_permissions());
+  WITH CHECK (
+    COALESCE(auth.jwt() -> 'user_metadata' ->> 'role', '') IN ('Admin', 'Super Admin')
+    OR lower(COALESCE(auth.jwt() ->> 'email', '')) IN ('john.chambers@ampqes.com', 'jack.lyons@ampqes.com')
+  );
 
 CREATE POLICY "user_permissions_update_admins"
   ON common.user_permissions
   FOR UPDATE
   TO authenticated
-  USING (common.can_manage_permissions())
-  WITH CHECK (common.can_manage_permissions());
+  USING (
+    COALESCE(auth.jwt() -> 'user_metadata' ->> 'role', '') IN ('Admin', 'Super Admin')
+    OR lower(COALESCE(auth.jwt() ->> 'email', '')) IN ('john.chambers@ampqes.com', 'jack.lyons@ampqes.com')
+  )
+  WITH CHECK (
+    COALESCE(auth.jwt() -> 'user_metadata' ->> 'role', '') IN ('Admin', 'Super Admin')
+    OR lower(COALESCE(auth.jwt() ->> 'email', '')) IN ('john.chambers@ampqes.com', 'jack.lyons@ampqes.com')
+  );
 
 CREATE POLICY "user_permissions_delete_admins"
   ON common.user_permissions
   FOR DELETE
   TO authenticated
-  USING (common.can_manage_permissions());
+  USING (
+    COALESCE(auth.jwt() -> 'user_metadata' ->> 'role', '') IN ('Admin', 'Super Admin')
+    OR lower(COALESCE(auth.jwt() ->> 'email', '')) IN ('john.chambers@ampqes.com', 'jack.lyons@ampqes.com')
+  );
 
 CREATE POLICY "permission_access_logs_select_admins"
   ON common.permission_access_logs
   FOR SELECT
   TO authenticated
-  USING (common.can_manage_permissions());
+  USING (
+    COALESCE(auth.jwt() -> 'user_metadata' ->> 'role', '') IN ('Admin', 'Super Admin')
+    OR lower(COALESCE(auth.jwt() ->> 'email', '')) IN ('john.chambers@ampqes.com', 'jack.lyons@ampqes.com')
+  );
 
 CREATE POLICY "permission_access_logs_insert_authenticated"
   ON common.permission_access_logs
@@ -147,7 +175,10 @@ CREATE POLICY "permission_change_logs_select_admins"
   ON common.permission_change_logs
   FOR SELECT
   TO authenticated
-  USING (common.can_manage_permissions());
+  USING (
+    COALESCE(auth.jwt() -> 'user_metadata' ->> 'role', '') IN ('Admin', 'Super Admin')
+    OR lower(COALESCE(auth.jwt() ->> 'email', '')) IN ('john.chambers@ampqes.com', 'jack.lyons@ampqes.com')
+  );
 
 CREATE POLICY "permission_change_logs_insert_authenticated"
   ON common.permission_change_logs

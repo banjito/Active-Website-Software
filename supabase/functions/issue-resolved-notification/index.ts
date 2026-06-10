@@ -117,9 +117,14 @@ serve(async (req) => {
       emailsToSend.push(ADMIN_NOTIFY_EMAIL);
     }
 
-    console.log("Emails to notify:", emailsToSend);
+    const LEGACY_NOTIFY_EMAIL = "john.chambers@ampqes.com";
+    const filteredEmailsToSend = emailsToSend.filter(
+      (email) => email.trim().toLowerCase() !== LEGACY_NOTIFY_EMAIL,
+    );
 
-    if (emailsToSend.length === 0) {
+    console.log("Emails to notify:", filteredEmailsToSend);
+
+    if (filteredEmailsToSend.length === 0) {
       return new Response(
         JSON.stringify({ emailSent: false, message: "no emails found" }),
         { headers },
@@ -137,7 +142,7 @@ serve(async (req) => {
     const label =
       issue.type === "feature_request" ? "Feature request" : "Issue";
     const from = (
-      Deno.env.get("POSTMARK_FROM") ?? "john.chambers@ampqes.com"
+      Deno.env.get("POSTMARK_FROM") ?? "jack.lyons@ampqes.com"
     ).trim();
     const fromHeader = from.includes("<") ? from : `AMP System <${from}>`;
     const appUrl = (
@@ -210,7 +215,7 @@ serve(async (req) => {
 
     // 5. Send email to each recipient
     const sentTo: string[] = [];
-    for (const email of emailsToSend) {
+    for (const email of filteredEmailsToSend) {
       try {
         console.log("Sending to:", email);
         const pmRes = await fetch("https://api.postmarkapp.com/email", {

@@ -22,6 +22,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
     
     try {
       const { error } = await supabase
+      .schema('common')
       .from('admin_notifications')
       .insert({
         type: 'new_user',

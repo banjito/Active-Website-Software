@@ -88,7 +88,7 @@ const PermissionManagement: React.FC = () => {
   // Load user permissions when a user is selected
   useEffect(() => {
     if (selectedUser) {
-      loadUserPermissions(selectedUser.id);
+      loadUserPermissions(selectedUser);
     } else {
       setUserPermissions([]);
       setDirectPermissions([]);
@@ -101,39 +101,48 @@ const PermissionManagement: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const { data: { users }, error } = await supabase.auth.admin.listUsers();
+      const { data: adminData, error } = await supabase
+        .schema('common')
+        .rpc('admin_get_users');
       
       if (error) {
         throw error;
       }
       
-      setUsers(users.map(u => ({
+      setUsers((adminData || []).map((u: any) => ({
         id: u.id,
         email: u.email || '',
-        user_metadata: u.user_metadata
+        user_metadata: u.raw_user_meta_data || {}
       })));
     } catch (err: any) {
-      setError(`Error loading users: ${err.message}`);
+      if (err.message?.includes('Access denied') || err.message?.includes('Admin role required')) {
+        setError('Error loading users: Admin role required.');
+      } else if (err.message?.includes('function common.admin_get_users() does not exist')) {
+        setError('Error loading users: admin_get_users SQL function is missing.');
+      } else {
+        setError(`Error loading users: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
   };
   
   // Load permissions for a specific user
-  const loadUserPermissions = async (userId: string) => {
+  const loadUserPermissions = async (targetUser: UserData) => {
     try {
       setLoading(true);
       setError(null);
       
       // Load all permissions (role-based + direct)
-      const permissions = await getUserPermissions(userId);
+      const permissions = await getUserPermissions(targetUser.id, targetUser.user_metadata?.role);
       setUserPermissions(permissions as Permission[]);
       
       // Load direct permissions from the database
       const { data, error } = await supabase
-        .from('common.user_permissions')
+        .schema('common')
+        .from('user_permissions')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', targetUser.id)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       
@@ -193,7 +202,7 @@ const PermissionManagement: React.FC = () => {
       }
       
       // Reload permissions
-      await loadUserPermissions(selectedUser.id);
+      await loadUserPermissions(selectedUser);
       
       // Show success message
       setSuccess(`Permission granted: ${newAction} ${newResource}`);
@@ -228,7 +237,7 @@ const PermissionManagement: React.FC = () => {
       }
       
       // Reload permissions
-      await loadUserPermissions(selectedUser.id);
+      await loadUserPermissions(selectedUser);
       
       // Show success message
       setSuccess(`Permission revoked: ${permission.action} ${permission.resource}`);

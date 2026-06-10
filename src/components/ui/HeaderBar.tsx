@@ -34,6 +34,7 @@ import type { AmpContact } from "@/services/ampContactsService";
 import { CommunityBoardPopover } from "@/components/community/CommunityBoardPopover";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { navigateFromShortcut } from "@/lib/shortcutNavigation";
+import { cn } from "@/lib/utils";
 
 type ReviewNotification = {
   jobId: string;
@@ -79,6 +80,12 @@ type CalibrationEquipmentItem = {
   serial_number: string | null;
   amp_id: string | null;
 };
+
+const headerIconButtonClass =
+  "rounded-full w-10 h-10 p-0 flex items-center justify-center text-gray-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
+
+const headerIconButtonActiveClass =
+  "text-[#f26722] bg-[#f26722]/10 ring-2 ring-[#f26722]/30";
 
 export interface HeaderBarProps {
   onEnterEditMode?: () => void;
@@ -742,10 +749,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </div>
 
           <div
-            className="grid shrink-0 ml-4 gap-x-3 sm:gap-x-4 place-items-center"
-            style={{
-              gridTemplateColumns: `repeat(${canSeeAdminPortal ? 7 : 6}, 2.5rem)`,
-            }}
+            className="flex shrink-0 ml-4 items-center justify-center gap-3 sm:gap-4"
             role="toolbar"
             aria-label="Portal shortcuts and account"
           >
@@ -762,7 +766,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                     setIsProfileMenuOpen(false);
                     navigate("/admin-dashboard");
                   }}
-                  className="rounded-full w-10 h-10 p-0 flex items-center justify-center text-gray-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                  className={headerIconButtonClass}
                   title="Admin Portal"
                 >
                   <ShieldCogCorner className="h-5 w-5" />
@@ -788,7 +792,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                     setIsProfileMenuOpen(false);
                   }
                 }}
-                className="rounded-full w-10 h-10 p-0 flex items-center justify-center text-gray-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className={cn(
+                  headerIconButtonClass,
+                  isShortcutMenuOpen && headerIconButtonActiveClass,
+                )}
                 title="Shortcuts"
               >
                 <Bookmark className="h-5 w-5" />
@@ -826,7 +833,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                       setIsProfileMenuOpen(false);
                     }
                   }}
-                  className="rounded-full w-10 h-10 p-0 flex items-center justify-center text-gray-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 relative"
+                  className={cn(
+                    headerIconButtonClass,
+                    "relative",
+                    isReviewMenuOpen && headerIconButtonActiveClass,
+                  )}
                 >
                   <ClipboardCheck className="h-5 w-5" />
                   {reviewJobCount > 0 && (
@@ -857,7 +868,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             >
               <button
                 aria-label="AMP contacts"
-                className="rounded-full w-10 h-10 p-0 flex items-center justify-center bg-transparent hover:bg-transparent focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className={cn(
+                  headerIconButtonClass,
+                  isContactsOpen && headerIconButtonActiveClass,
+                )}
                 onClick={() => {
                   const next = !isContactsOpen;
                   setIsContactsOpen(next);
@@ -872,7 +886,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   }
                 }}
               >
-                <Phone className="h-5 w-5 text-gray-600 dark:text-white" />
+                <Phone className="h-5 w-5" />
               </button>
               {isContactsOpen && (
                 <div className="absolute top-full right-0 mt-2 w-[420px] max-w-[calc(100vw-2rem)] origin-top-right rounded-md bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
@@ -954,7 +968,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               >
                 <button
                   aria-label="Notifications"
-                  className="rounded-full w-10 h-10 p-0 flex items-center justify-center bg-transparent hover:bg-transparent focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 relative"
+                  className={cn(
+                    headerIconButtonClass,
+                    "relative",
+                    isNotificationsOpen && headerIconButtonActiveClass,
+                  )}
                   onClick={() => {
                     const next = !isNotificationsOpen;
                     setIsNotificationsOpen(next);
@@ -967,7 +985,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                     }
                   }}
                 >
-                  <Bell className="h-5 w-5 text-gray-600 dark:text-white" />
+                  <Bell className="h-5 w-5" />
                   {(canApproveReports ? reportUnseenCount : 0) +
                     calibrationNotificationCount >
                     0 && (

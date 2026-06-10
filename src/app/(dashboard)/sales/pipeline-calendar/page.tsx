@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   CalendarRange,
   Check,
@@ -20,6 +21,7 @@ type ViewMode = "calendar" | "list";
 type RangeMode = "month" | "quarter";
 type SortKey = "startDate" | "customer" | "amount" | "region";
 type SortDirection = "asc" | "desc";
+type PopoverPosition = { top: number; left: number };
 
 const regions: PipelineRegion[] = ["AL", "TN", "GA", "International"];
 const statuses: PipelineStatus[] = ["confirmed", "expected", "dropped"];
@@ -239,23 +241,6 @@ function StatusIcon({ status }: { status: PipelineStatus }) {
   return <span className="h-2 w-2 rounded-full bg-current" />;
 }
 
-function DetailRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-4 border-b border-gray-100 py-2 text-sm last:border-b-0 dark:border-gray-800">
-      <dt className="text-gray-500 dark:text-gray-400">{label}</dt>
-      <dd className="text-right font-medium text-gray-900 dark:text-gray-100">
-        {value}
-      </dd>
-    </div>
-  );
-}
-
 function getRegionFromOpportunity(opportunity: any): PipelineRegion {
   const division = String(opportunity?.amp_division || "").toLowerCase();
 
@@ -330,6 +315,8 @@ export default function PipelineCalendarPage() {
   const [statusFilter, setStatusFilter] =
     useState<Record<PipelineStatus, boolean>>(defaultStatusFilter);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [popoverPosition, setPopoverPosition] =
+    useState<PopoverPosition | null>(null);
   const [storageError, setStorageError] = useState("");
   const [isLoadingProjection, setIsLoadingProjection] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("startDate");
@@ -415,6 +402,23 @@ export default function PipelineCalendarPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!selectedJobId) return;
+
+    function closePopover() {
+      setSelectedJobId(null);
+      setPopoverPosition(null);
+    }
+
+    window.addEventListener("resize", closePopover);
+    window.addEventListener("scroll", closePopover, true);
+
+    return () => {
+      window.removeEventListener("resize", closePopover);
+      window.removeEventListener("scroll", closePopover, true);
+    };
+  }, [selectedJobId]);
+
   const viewStart = useMemo(
     () =>
       rangeMode === "month"
@@ -452,11 +456,8 @@ export default function PipelineCalendarPage() {
   );
 
   const selectedJob = useMemo(
-    () =>
-      jobs.find((job) => job.id === selectedJobId) ||
-      visibleCalendarJobs[0] ||
-      null,
-    [jobs, selectedJobId, visibleCalendarJobs],
+    () => jobs.find((job) => job.id === selectedJobId) || null,
+    [jobs, selectedJobId],
   );
 
   const totals = useMemo(() => {
@@ -503,6 +504,37 @@ export default function PipelineCalendarPage() {
 
     setSortKey(nextSortKey);
     setSortDirection("asc");
+  };
+
+  const closeJobPopover = () => {
+    setSelectedJobId(null);
+    setPopoverPosition(null);
+  };
+
+  const toggleJobPopover = (
+    jobId: string,
+    point: { x: number; y: number },
+  ) => {
+    if (selectedJobId === jobId) {
+      closeJobPopover();
+      return;
+    }
+
+    const width = 288;
+    const estimatedHeight = 220;
+    const gap = 8;
+    const margin = 12;
+    const maxLeft = Math.max(margin, window.innerWidth - width - margin);
+    const left = Math.min(Math.max(margin, point.x + gap), maxLeft);
+    const belowTop = point.y + gap;
+    const aboveTop = point.y - estimatedHeight - gap;
+    const top =
+      belowTop + estimatedHeight > window.innerHeight && aboveTop > margin
+        ? aboveTop
+        : belowTop;
+
+    setSelectedJobId(jobId);
+    setPopoverPosition({ top, left });
   };
 
   return (
@@ -687,9 +719,9 @@ export default function PipelineCalendarPage() {
         </div>
 
         {viewMode === "calendar" ? (
-          <div className="grid gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="p-4">
             <div className="min-w-0 overflow-x-auto">
-              <div className="min-w-[900px] overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
+              <div className="min-w-[900px] rounded-lg border border-gray-200 dark:border-gray-800">
                 <div className="grid grid-cols-[230px_1fr] border-b border-gray-200 bg-gray-50 text-xs font-semibold uppercase text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
                   <div className="border-r border-gray-200 px-3 py-3 dark:border-gray-800">
                     Job
@@ -718,140 +750,99 @@ export default function PipelineCalendarPage() {
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-200 dark:divide-gray-800">
-                    {visibleCalendarJobs.map((job) => (
-                      <div
-                        key={job.id}
-                        className={cn(
-                          "grid min-h-14 grid-cols-[230px_1fr] bg-white dark:bg-dark-150",
-                          job.status === "dropped" &&
-                            "bg-gray-50 text-gray-500 dark:bg-gray-900/60 dark:text-gray-500",
-                        )}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setSelectedJobId(job.id)}
+                    {visibleCalendarJobs.map((job) => {
+                      const isSelected = selectedJobId === job.id;
+                      const barStyle = getBarStyle(job, viewStart, viewEnd);
+
+                      return (
+                        <div
+                          key={job.id}
                           className={cn(
-                            "min-w-0 border-r border-gray-200 px-3 py-2 text-left hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900",
-                            selectedJob?.id === job.id &&
-                              "bg-orange-50 dark:bg-orange-950/20",
+                            "grid min-h-14 grid-cols-[230px_1fr] bg-white dark:bg-dark-150",
+                            job.status === "dropped" &&
+                              "bg-gray-50 text-gray-500 dark:bg-gray-900/60 dark:text-gray-500",
                           )}
                         >
-                          <div
-                            className={cn(
-                              "truncate text-sm font-semibold text-gray-950 dark:text-gray-50",
-                              job.status === "dropped" &&
-                                "text-gray-500 line-through dark:text-gray-500",
-                            )}
-                          >
-                            {job.customer}
-                          </div>
-                          <div className="truncate text-xs text-gray-500 dark:text-gray-400">
-                            {job.dataCenterId || "No DC ID"} · {job.location}
-                          </div>
-                        </button>
-
-                        <div className="relative h-14 bg-white dark:bg-dark-150">
-                          {dateTicks.map((tick) => (
-                            <div
-                              key={`${job.id}-${tick.label}-${tick.left}`}
-                              className="absolute top-0 h-full border-l border-gray-100 dark:border-gray-800"
-                              style={{ left: `${tick.left}%` }}
-                            />
-                          ))}
                           <button
                             type="button"
-                            onClick={() => setSelectedJobId(job.id)}
+                            onClick={(event) =>
+                              toggleJobPopover(job.id, {
+                                x: event.clientX,
+                                y: event.clientY,
+                              })
+                            }
                             className={cn(
-                              "absolute top-2 flex h-9 min-w-7 items-center gap-1.5 overflow-hidden rounded-md px-2 text-left text-xs font-semibold text-white shadow-sm ring-1 ring-black/10",
-                              selectedJob?.id === job.id &&
-                                "ring-2 ring-gray-950 dark:ring-white",
-                              job.status === "dropped" &&
-                                "text-gray-100 line-through opacity-70",
+                              "min-w-0 border-r border-gray-200 px-3 py-2 text-left hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900",
+                              isSelected && "bg-orange-50 dark:bg-orange-950/20",
                             )}
-                            style={getBarStyle(job, viewStart, viewEnd)}
-                            title={`${job.customer} ${job.dataCenterId || ""} ${formatMillions(job.amount)}`}
                           >
-                            <StatusIcon status={job.status} />
-                            <span className="min-w-0 truncate">
-                              {job.customer} · {formatMillions(job.amount)}
-                            </span>
-                            {!job.endDate && (
-                              <span
-                                className="pointer-events-none absolute inset-y-0 right-0 w-10 rounded-r-md"
-                                style={{
-                                  backgroundImage:
-                                    "repeating-linear-gradient(135deg, rgba(255,255,255,.72) 0 4px, rgba(255,255,255,.08) 4px 8px)",
-                                }}
-                              />
-                            )}
+                            <div
+                              className={cn(
+                                "truncate text-sm font-semibold text-gray-950 dark:text-gray-50",
+                                job.status === "dropped" &&
+                                  "text-gray-500 line-through dark:text-gray-500",
+                              )}
+                            >
+                              {job.customer}
+                            </div>
+                            <div className="truncate text-xs text-gray-500 dark:text-gray-400">
+                              {job.dataCenterId || "No DC ID"} · {job.location}
+                            </div>
                           </button>
+
+                          <div
+                            className={cn(
+                              "relative h-14 bg-white dark:bg-dark-150",
+                            )}
+                          >
+                            {dateTicks.map((tick) => (
+                              <div
+                                key={`${job.id}-${tick.label}-${tick.left}`}
+                                className="absolute top-0 h-full border-l border-gray-100 dark:border-gray-800"
+                                style={{ left: `${tick.left}%` }}
+                              />
+                            ))}
+                            <button
+                              type="button"
+                              aria-expanded={isSelected}
+                              onClick={(event) =>
+                                toggleJobPopover(job.id, {
+                                  x: event.clientX,
+                                  y: event.clientY,
+                                })
+                              }
+                              className={cn(
+                                "absolute top-2 z-10 flex h-9 min-w-7 items-center gap-1.5 overflow-hidden rounded-md px-2 text-left text-xs font-semibold text-white shadow-sm ring-1 ring-black/10",
+                                isSelected &&
+                                  "z-30 ring-2 ring-gray-950 dark:ring-white",
+                                job.status === "dropped" &&
+                                  "text-gray-100 line-through opacity-70",
+                              )}
+                              style={barStyle}
+                              title={`${job.customer} ${job.dataCenterId || ""} ${formatMillions(job.amount)}`}
+                            >
+                              <StatusIcon status={job.status} />
+                              <span className="min-w-0 truncate">
+                                {job.customer} · {formatMillions(job.amount)}
+                              </span>
+                              {!job.endDate && (
+                                <span
+                                  className="pointer-events-none absolute inset-y-0 right-0 w-10 rounded-r-md"
+                                  style={{
+                                    backgroundImage:
+                                      "repeating-linear-gradient(135deg, rgba(255,255,255,.72) 0 4px, rgba(255,255,255,.08) 4px 8px)",
+                                  }}
+                                />
+                              )}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
             </div>
-
-            <aside className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
-              {selectedJob ? (
-                <div className="flex h-full flex-col gap-4">
-                  <div>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h2
-                          className={cn(
-                            "truncate text-lg font-semibold text-gray-950 dark:text-gray-50",
-                            selectedJob.status === "dropped" &&
-                              "text-gray-500 line-through dark:text-gray-500",
-                          )}
-                        >
-                          {selectedJob.customer}
-                        </h2>
-                        <p className="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">
-                          {selectedJob.dataCenterId || "No DC ID"}
-                        </p>
-                      </div>
-                      <span
-                        className={cn(
-                          "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
-                          selectedJob.status === "confirmed" &&
-                            "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
-                          selectedJob.status === "expected" &&
-                            "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
-                          selectedJob.status === "dropped" &&
-                            "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-                        )}
-                      >
-                        <StatusIcon status={selectedJob.status} />
-                        {statusLabels[selectedJob.status]}
-                      </span>
-                    </div>
-                  </div>
-
-                  <dl className="rounded-lg border border-gray-200 bg-white px-3 dark:border-gray-800 dark:bg-dark-150">
-                    <DetailRow label="Location" value={selectedJob.location} />
-                    <DetailRow label="Region" value={selectedJob.region} />
-                    <DetailRow
-                      label="Amount"
-                      value={formatMillions(selectedJob.amount)}
-                    />
-                    <DetailRow
-                      label="Start"
-                      value={formatDate(selectedJob.startDate)}
-                    />
-                    <DetailRow
-                      label="End"
-                      value={formatDate(selectedJob.endDate)}
-                    />
-                  </dl>
-                </div>
-              ) : (
-                <div className="flex h-52 items-center justify-center text-sm text-gray-500 dark:text-gray-400">
-                  Select a job.
-                </div>
-              )}
-            </aside>
           </div>
         ) : (
           <div className="overflow-x-auto p-4">
@@ -886,8 +877,26 @@ export default function PipelineCalendarPage() {
                 {sortedListJobs.map((job) => (
                   <tr
                     key={job.id}
+                    tabIndex={0}
+                    onClick={(event) =>
+                      toggleJobPopover(job.id, {
+                        x: event.clientX,
+                        y: event.clientY,
+                      })
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter" && event.key !== " ") return;
+                      event.preventDefault();
+                      const rect = event.currentTarget.getBoundingClientRect();
+                      toggleJobPopover(job.id, {
+                        x: rect.left + rect.width / 2,
+                        y: rect.top + rect.height / 2,
+                      });
+                    }}
                     className={cn(
-                      "hover:bg-gray-50 dark:hover:bg-gray-900",
+                      "cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 dark:hover:bg-gray-900 dark:focus:ring-white",
+                      selectedJobId === job.id &&
+                        "bg-orange-50 dark:bg-orange-950/20",
                       job.status === "dropped" &&
                         "bg-gray-50 text-gray-500 dark:bg-gray-900/60 dark:text-gray-500",
                     )}
@@ -950,6 +959,100 @@ export default function PipelineCalendarPage() {
           </div>
         )}
       </section>
+
+      {selectedJob &&
+        popoverPosition &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed z-[1000] w-72 rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-900 shadow-xl ring-1 ring-black/5 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+            style={{
+              top: popoverPosition.top,
+              left: popoverPosition.left,
+            }}
+          >
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div
+                  className={cn(
+                    "truncate font-semibold text-gray-950 dark:text-gray-50",
+                    selectedJob.status === "dropped" &&
+                      "text-gray-500 line-through dark:text-gray-500",
+                  )}
+                >
+                  {selectedJob.customer}
+                </div>
+                <div className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
+                  {selectedJob.dataCenterId || "No DC ID"}
+                </div>
+              </div>
+              <button
+                type="button"
+                aria-label="Close job details"
+                onClick={closeJobPopover}
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+              <div>
+                <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
+                  Amount
+                </div>
+                <div className="mt-0.5 font-semibold">
+                  {formatMillions(selectedJob.amount)}
+                </div>
+              </div>
+              <div>
+                <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
+                  Status
+                </div>
+                <div className="mt-0.5 inline-flex items-center gap-1 font-semibold">
+                  <StatusIcon status={selectedJob.status} />
+                  {selectedJob.isAwarded
+                    ? "Awarded"
+                    : statusLabels[selectedJob.status]}
+                </div>
+              </div>
+              <div>
+                <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
+                  Region
+                </div>
+                <div className="mt-0.5 flex items-center gap-1.5 font-semibold">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{
+                      backgroundColor: regionPalette[selectedJob.region].bg,
+                    }}
+                  />
+                  {selectedJob.region}
+                </div>
+              </div>
+              <div>
+                <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
+                  Dates
+                </div>
+                <div className="mt-0.5 font-semibold">
+                  {formatDate(selectedJob.startDate)} -{" "}
+                  {selectedJob.endDate
+                    ? formatDate(selectedJob.endDate)
+                    : "Open"}
+                </div>
+              </div>
+              <div className="col-span-2">
+                <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
+                  Location
+                </div>
+                <div className="mt-0.5 font-semibold">
+                  {selectedJob.location}
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

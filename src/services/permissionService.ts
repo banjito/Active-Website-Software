@@ -683,7 +683,8 @@ export const checkPermission = async (
     
     // Check direct user permissions (these override role permissions)
     const { data: userPermissions, error: permissionError } = await supabase
-      .from('common.user_permissions')
+      .schema('common')
+      .from('user_permissions')
       .select('*')
       .eq('user_id', userId)
       .eq('resource', resource)
@@ -762,7 +763,8 @@ export const grantUserPermission = async (
     
     // Check if this permission already exists
     const { data: existingPermission } = await supabase
-      .from('common.user_permissions')
+      .schema('common')
+      .from('user_permissions')
       .select('id')
       .eq('user_id', userId)
       .eq('resource', resource)
@@ -773,7 +775,8 @@ export const grantUserPermission = async (
     if (existingPermission) {
       // Update existing permission
       const { data: updatedPermission, error: updateError } = await supabase
-        .from('common.user_permissions')
+        .schema('common')
+        .from('user_permissions')
         .update({
           conditions,
           valid_until: validUntil?.toISOString(),
@@ -794,7 +797,8 @@ export const grantUserPermission = async (
     } else {
       // Create new permission
       const { data: newPermission, error: insertError } = await supabase
-        .from('common.user_permissions')
+        .schema('common')
+        .from('user_permissions')
         .insert({
           user_id: userId,
           resource,
@@ -832,7 +836,8 @@ export const revokeUserPermission = async (
 ): Promise<boolean> => {
   try {
     const { error } = await supabase
-      .from('common.user_permissions')
+      .schema('common')
+      .from('user_permissions')
       .update({ is_active: false })
       .eq('user_id', userId)
       .eq('resource', resource)
@@ -854,24 +859,17 @@ export const revokeUserPermission = async (
 /**
  * Get all permissions for a user, combining role permissions and direct permissions
  */
-export const getUserPermissions = async (userId: string): Promise<Permission[]> => {
+export const getUserPermissions = async (userId: string, knownRole?: string): Promise<Permission[]> => {
   try {
-    // Get user's role
-    const { data: userData, error: userError } = await supabase.auth.getUser(userId);
-    
-    if (userError || !userData.user) {
-      console.error('Error getting user:', userError);
-      return [];
-    }
-    
-    const userRole = userData.user.user_metadata?.role as Role;
+    const userRole = knownRole as Role | undefined;
     
     // Get role-based permissions
     const rolePermissions = userRole ? getAllRolePermissions(userRole).map(convertRolePermission) : [];
     
     // Get direct user permissions
     const { data: userPermissions, error: permissionError } = await supabase
-      .from('common.user_permissions')
+      .schema('common')
+      .from('user_permissions')
       .select('*')
       .eq('user_id', userId)
       .eq('is_active', true);

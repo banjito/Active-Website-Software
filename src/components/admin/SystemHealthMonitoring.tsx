@@ -83,7 +83,7 @@ const appTables = [
   { label: 'customers', schema: 'common', table: 'customers', sampleSelect: 'id' },
   { label: 'jobs', schema: 'neta_ops', table: 'jobs', sampleSelect: 'id' },
   { label: 'assets', schema: 'neta_ops', table: 'assets', sampleSelect: 'id' },
-  { label: 'admin_notifications', schema: 'public', table: 'admin_notifications', sampleSelect: 'id' },
+  { label: 'admin_notifications', schema: 'common', table: 'admin_notifications', sampleSelect: 'id' },
 ];
 
 const timeoutMs = 5000;

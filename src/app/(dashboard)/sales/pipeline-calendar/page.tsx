@@ -1,54 +1,25 @@
-import React, { FormEvent, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  CalendarDays,
   CalendarRange,
   Check,
   ChevronLeft,
   ChevronRight,
-  Pencil,
-  Plus,
   Table2,
-  Trash2,
   X,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/Button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/Dialog";
-import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import {
-  loadPipelineJobs,
-  loadPipelineProjectionOpportunityIds,
-  makePipelineJobId,
   PipelineJob,
   PipelineRegion,
   PipelineStatus,
-  savePipelineJobs,
 } from "@/services/pipelineCalendarService";
 
 type ViewMode = "calendar" | "list";
 type RangeMode = "month" | "quarter";
 type SortKey = "startDate" | "customer" | "amount" | "region";
 type SortDirection = "asc" | "desc";
-
-interface PipelineJobForm {
-  customer: string;
-  dataCenterId: string;
-  location: string;
-  region: PipelineRegion;
-  amount: string;
-  startDate: string;
-  endDate: string;
-  status: PipelineStatus;
-}
 
 const regions: PipelineRegion[] = ["AL", "TN", "GA", "International"];
 const statuses: PipelineStatus[] = ["confirmed", "expected", "dropped"];
@@ -64,7 +35,7 @@ const regionPalette: Record<
 };
 
 const statusLabels: Record<PipelineStatus, string> = {
-  confirmed: "Confirmed",
+  confirmed: "Awarded",
   expected: "Expected",
   dropped: "Dropped",
 };
@@ -156,32 +127,6 @@ function getRangeLabel(date: Date, rangeMode: RangeMode): string {
 
   const quarter = Math.floor(date.getMonth() / 3) + 1;
   return `Q${quarter} ${date.getFullYear()}`;
-}
-
-function getEmptyForm(): PipelineJobForm {
-  return {
-    customer: "",
-    dataCenterId: "",
-    location: "",
-    region: "GA",
-    amount: "",
-    startDate: toDateInputValue(new Date()),
-    endDate: "",
-    status: "expected",
-  };
-}
-
-function getFormFromJob(job: PipelineJob): PipelineJobForm {
-  return {
-    customer: job.customer,
-    dataCenterId: job.dataCenterId || "",
-    location: job.location,
-    region: job.region,
-    amount: String(job.amount),
-    startDate: job.startDate,
-    endDate: job.endDate || "",
-    status: job.status,
-  };
 }
 
 function jobOverlapsRange(
@@ -342,6 +287,10 @@ function getStatusFromOpportunity(opportunity: any): PipelineStatus {
   return "expected";
 }
 
+function isAwardedOpportunity(opportunity: any): boolean {
+  return String(opportunity?.status || "").toLowerCase() === "awarded";
+}
+
 function mapOpportunityToPipelineJob(
   opportunity: any,
   customerMap: Record<string, any>,
@@ -367,6 +316,7 @@ function mapOpportunityToPipelineJob(
     amount: Number.isFinite(amountDollars) ? amountDollars / 1000000 : 0,
     startDate,
     status: getStatusFromOpportunity(opportunity),
+    isAwarded: isAwardedOpportunity(opportunity),
   };
 }
 
@@ -380,10 +330,6 @@ export default function PipelineCalendarPage() {
   const [statusFilter, setStatusFilter] =
     useState<Record<PipelineStatus, boolean>>(defaultStatusFilter);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingJobId, setEditingJobId] = useState<string | null>(null);
-  const [formState, setFormState] = useState<PipelineJobForm>(getEmptyForm);
-  const [formError, setFormError] = useState("");
   const [storageError, setStorageError] = useState("");
   const [isLoadingProjection, setIsLoadingProjection] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("startDate");
@@ -397,18 +343,12 @@ export default function PipelineCalendarPage() {
       setStorageError("");
 
       try {
-        const projectionIds = Array.from(loadPipelineProjectionOpportunityIds());
-        if (projectionIds.length === 0) {
-          if (isMounted) setJobs([]);
-          return;
-        }
-
         const { data: opportunityData, error: opportunityError } =
           await supabase
             .schema("business")
             .from("opportunities")
             .select("*")
-            .in("id", projectionIds);
+            .eq("in_pipeline_projection", true);
 
         if (opportunityError) throw opportunityError;
 
@@ -447,7 +387,10 @@ export default function PipelineCalendarPage() {
 
         if (isMounted) setJobs(nextJobs);
       } catch (error) {
-        console.error("Error loading pipeline projection opportunities:", error);
+        console.error(
+          "Error loading pipeline projection opportunities:",
+          error,
+        );
         if (isMounted) {
           setJobs([]);
           setStorageError("Could not load Pipeline Projection opportunities.");
@@ -517,7 +460,7 @@ export default function PipelineCalendarPage() {
   );
 
   const totals = useMemo(() => {
-    const confirmed = filteredJobs
+    const awarded = filteredJobs
       .filter((job) => job.status === "confirmed")
       .reduce((sum, job) => sum + job.amount, 0);
     const expected = filteredJobs
@@ -528,10 +471,10 @@ export default function PipelineCalendarPage() {
       .reduce((sum, job) => sum + job.amount, 0);
 
     return {
-      confirmed,
+      awarded,
       expected,
       dropped,
-      active: confirmed + expected,
+      active: awarded + expected,
     };
   }, [filteredJobs]);
 
@@ -543,110 +486,6 @@ export default function PipelineCalendarPage() {
     () => getDateTicks(viewStart, viewEnd, rangeMode),
     [rangeMode, viewEnd, viewStart],
   );
-
-  const commitJobs = (nextJobs: PipelineJob[]) => {
-    setJobs(nextJobs);
-    const saved = savePipelineJobs(nextJobs);
-    setStorageError(
-      saved ? "" : "Saved on this screen only. Browser storage failed.",
-    );
-  };
-
-  const openAddForm = () => {
-    setEditingJobId(null);
-    setFormState(getEmptyForm());
-    setFormError("");
-    setIsFormOpen(true);
-  };
-
-  const openEditForm = (job: PipelineJob) => {
-    setEditingJobId(job.id);
-    setFormState(getFormFromJob(job));
-    setFormError("");
-    setIsFormOpen(true);
-  };
-
-  const updateFormField = <Key extends keyof PipelineJobForm>(
-    field: Key,
-    value: PipelineJobForm[Key],
-  ) => {
-    setFormState((currentForm) => ({ ...currentForm, [field]: value }));
-  };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setFormError("");
-
-    try {
-      const amount = Number(formState.amount);
-      const customer = formState.customer.trim();
-      const location = formState.location.trim();
-      const dataCenterId = formState.dataCenterId.trim();
-
-      if (!customer || !location || !formState.startDate || !formState.amount) {
-        setFormError(
-          "Customer, location, amount, and start date are required.",
-        );
-        return;
-      }
-
-      if (!Number.isFinite(amount) || amount <= 0) {
-        setFormError("Amount must be greater than zero.");
-        return;
-      }
-
-      if (
-        formState.endDate &&
-        parseDate(formState.endDate) < parseDate(formState.startDate)
-      ) {
-        setFormError("End date must be after start date.");
-        return;
-      }
-
-      const nextJob: PipelineJob = {
-        id: editingJobId || makePipelineJobId(),
-        customer,
-        dataCenterId: dataCenterId || undefined,
-        location,
-        region: formState.region,
-        amount,
-        startDate: formState.startDate,
-        endDate: formState.endDate || undefined,
-        status: formState.status,
-      };
-
-      const nextJobs = editingJobId
-        ? jobs.map((job) => (job.id === editingJobId ? nextJob : job))
-        : [nextJob, ...jobs];
-
-      commitJobs(nextJobs);
-      setSelectedJobId(nextJob.id);
-      setIsFormOpen(false);
-    } catch (error) {
-      console.error("Error saving pipeline projection job:", error);
-      setFormError("Could not save job.");
-    }
-  };
-
-  const handleDeleteJob = (jobId: string) => {
-    const job = jobs.find((currentJob) => currentJob.id === jobId);
-    if (!job) return;
-
-    const shouldDelete = window.confirm(
-      `Delete ${job.customer} ${job.dataCenterId || "job"}?`,
-    );
-    if (!shouldDelete) return;
-
-    try {
-      const nextJobs = jobs.filter((currentJob) => currentJob.id !== jobId);
-      commitJobs(nextJobs);
-      if (selectedJobId === jobId) setSelectedJobId(null);
-      if (editingJobId === jobId) setIsFormOpen(false);
-    } catch (error) {
-      console.error("Error deleting pipeline projection job:", error);
-      setStorageError("Could not delete job.");
-    }
-  };
 
   const moveRange = (direction: -1 | 1) => {
     setAnchorDate((currentDate) =>
@@ -674,7 +513,6 @@ export default function PipelineCalendarPage() {
             Pipeline Projection
           </h1>
         </div>
-
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
@@ -683,15 +521,15 @@ export default function PipelineCalendarPage() {
             Pipeline
           </div>
           <div className="mt-2 text-2xl font-semibold text-gray-950 dark:text-gray-50">
-            {formatMillions(totals.confirmed)} / {formatMillions(totals.active)}
+            {formatMillions(totals.awarded)} / {formatMillions(totals.active)}
           </div>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-dark-150">
           <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
-            Confirmed
+            Awarded
           </div>
           <div className="mt-2 text-2xl font-semibold text-gray-950 dark:text-gray-50">
-            {formatMillions(totals.confirmed)}
+            {formatMillions(totals.awarded)}
           </div>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-dark-150">
@@ -798,6 +636,28 @@ export default function PipelineCalendarPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {statuses.map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() =>
+                    setStatusFilter((current) => ({
+                      ...current,
+                      [status]: !current[status],
+                    }))
+                  }
+                  className={cn(
+                    "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium",
+                    statusFilter[status]
+                      ? "border-gray-300 bg-white text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50"
+                      : "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500",
+                  )}
+                >
+                  <StatusIcon status={status} />
+                  {statusLabels[status]}
+                </button>
+              ))}
+
               {regions.map((region) => (
                 <button
                   key={region}
@@ -823,30 +683,6 @@ export default function PipelineCalendarPage() {
                 </button>
               ))}
             </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {statuses.map((status) => (
-              <button
-                key={status}
-                type="button"
-                onClick={() =>
-                  setStatusFilter((current) => ({
-                    ...current,
-                    [status]: !current[status],
-                  }))
-                }
-                className={cn(
-                  "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium",
-                  statusFilter[status]
-                    ? "border-gray-300 bg-white text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50"
-                    : "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500",
-                )}
-              >
-                <StatusIcon status={status} />
-                {statusLabels[status]}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -1086,10 +922,18 @@ export default function PipelineCalendarPage() {
                     <td className="px-3 py-3">{job.dataCenterId || "-"}</td>
                     <td className="px-3 py-3">{job.location}</td>
                     <td className="px-3 py-3">
-                      <span className="inline-flex items-center gap-1">
-                        <StatusIcon status={job.status} />
-                        {statusLabels[job.status]}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {job.isAwarded ? (
+                          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+                            Awarded
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1">
+                            <StatusIcon status={job.status} />
+                            {statusLabels[job.status]}
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -137,6 +137,7 @@ export interface Opportunity {
   total_man_hours?: number;
   opportunity_type?: OpportunityType;
   documents_stage?: string;
+  in_pipeline_projection?: boolean;
   subcontractor_agreements?: SubcontractorAgreement[];
 }
 

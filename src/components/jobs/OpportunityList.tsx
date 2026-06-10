@@ -24,11 +24,6 @@ import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import {
-  addOpportunitiesToPipelineProjection,
-  loadPipelineProjectionOpportunityIds,
-  removeOpportunityFromPipelineProjection,
-} from "@/services/pipelineCalendarService";
 
 interface Customer {
   id: string;
@@ -422,7 +417,7 @@ export default function OpportunityList() {
   );
   const [projectionOpportunityIds, setProjectionOpportunityIds] = useState<
     Set<string>
-  >(() => loadPipelineProjectionOpportunityIds());
+  >(new Set());
   const [openProjectionMenuId, setOpenProjectionMenuId] = useState<
     string | null
   >(null);
@@ -639,19 +634,67 @@ export default function OpportunityList() {
     }
   }
 
-  function handleMoveSelectedToProjection() {
+  async function handleMoveSelectedToProjection() {
     const ids = Array.from(selectedForMerge);
     if (ids.length === 0) return;
 
-    const nextIds = addOpportunitiesToPipelineProjection(ids);
-    setProjectionOpportunityIds(new Set(nextIds));
-    setSelectedForMerge(new Set());
+    try {
+      const { error } = await supabase
+        .schema("business")
+        .from("opportunities")
+        .update({ in_pipeline_projection: true })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      setProjectionOpportunityIds((currentIds) => {
+        const nextIds = new Set(currentIds);
+        ids.forEach((id) => nextIds.add(id));
+        return nextIds;
+      });
+      setOpportunities((currentOpportunities) =>
+        currentOpportunities.map((opportunity) =>
+          ids.includes(opportunity.id)
+            ? { ...opportunity, in_pipeline_projection: true }
+            : opportunity,
+        ),
+      );
+      setSelectedForMerge(new Set());
+      window.dispatchEvent(new Event("pipelineProjectionChanged"));
+    } catch (error) {
+      console.error("Error moving opportunities to Pipeline Projection:", error);
+      alert("Failed to move opportunities to Pipeline Projection.");
+    }
   }
 
-  function handleRemoveFromProjection(opportunityId: string) {
-    const nextIds = removeOpportunityFromPipelineProjection(opportunityId);
-    setProjectionOpportunityIds(new Set(nextIds));
-    setOpenProjectionMenuId(null);
+  async function handleRemoveFromProjection(opportunityId: string) {
+    try {
+      const { error } = await supabase
+        .schema("business")
+        .from("opportunities")
+        .update({ in_pipeline_projection: false })
+        .eq("id", opportunityId);
+
+      if (error) throw error;
+
+      setProjectionOpportunityIds((currentIds) => {
+        const nextIds = new Set(currentIds);
+        nextIds.delete(opportunityId);
+        return nextIds;
+      });
+      setOpportunities((currentOpportunities) =>
+        currentOpportunities.map((opportunity) =>
+          opportunity.id === opportunityId
+            ? { ...opportunity, in_pipeline_projection: false }
+            : opportunity,
+        ),
+      );
+      setOpenProjectionMenuId(null);
+      window.dispatchEvent(new Event("pipelineProjectionChanged"));
+    } catch (error) {
+      console.error("Error removing opportunity from Pipeline Projection:", error);
+      alert("Failed to remove opportunity from Pipeline Projection.");
+    }
   }
 
   useEffect(() => {
@@ -1470,6 +1513,13 @@ export default function OpportunityList() {
         count: finalList?.length || 0,
       });
       setOpportunities(finalList);
+      setProjectionOpportunityIds(
+        new Set(
+          finalList
+            .filter((opportunity: any) => !!opportunity.in_pipeline_projection)
+            .map((opportunity: any) => opportunity.id),
+        ),
+      );
 
       // Reset recovery flag on successful fetch
       hasAttemptedRecovery.current = false;

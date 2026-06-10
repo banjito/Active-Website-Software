@@ -1,13 +1,7 @@
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import { CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../components/ui/Tabs";
 import { Badge } from "../../components/ui";
 import {
   ChevronRight,
@@ -73,10 +67,8 @@ export default function PortalLanding() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [searchParams] = useSearchParams();
   const [showPopup, setShowPopup] = useState(false);
   const [popupContent, setPopupContent] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -779,24 +771,6 @@ export default function PortalLanding() {
     }
   };
 
-  useEffect(() => {
-    const division = searchParams.get("division");
-    if (division) {
-      // Set the active tab based on the division
-      if (
-        ["north_alabama", "tennessee", "georgia", "international"].includes(
-          division,
-        )
-      ) {
-        setActiveTab("tech");
-      } else if (["calibration", "armadillo", "scavenger"].includes(division)) {
-        setActiveTab("tech");
-      } else if (["office_admin", "sales", "engineering"].includes(division)) {
-        setActiveTab("admin");
-      }
-    }
-  }, [searchParams]);
-
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
@@ -1073,7 +1047,6 @@ export default function PortalLanding() {
       "Office Admins Portal",
       "Sales Portal",
       "Engineering Portal",
-      "Admin Portal",
       "Runway Meeting Portal",
     ];
     setPortalPreferences((prev) => ({
@@ -1960,7 +1933,6 @@ export default function PortalLanding() {
                 "Sales Portal",
                 "Engineering Portal",
                 "HR Portal",
-                "Admin Portal",
                 "Runway Meeting Portal",
               ].map((portalName) => (
                 <div
@@ -1992,36 +1964,11 @@ export default function PortalLanding() {
           </div>
         )}
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex justify-center mb-12">
-            <TabsList className="inline-flex bg-gray-100 dark:bg-dark-150 p-1.5 rounded-lg gap-1">
-              <TabsTrigger
-                value="all"
-                className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
-              >
-                All Portals
-              </TabsTrigger>
-              <TabsTrigger
-                value="tech"
-                className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
-              >
-                Technician
-              </TabsTrigger>
-              <TabsTrigger
-                value="admin"
-                className="px-6 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
-              >
-                Administrative
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="all">
-            <div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              onClick={handlePortalCardGridClick}
-              onKeyDown={handlePortalCardGridKeyDown}
-            >
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          onClick={handlePortalCardGridClick}
+          onKeyDown={handlePortalCardGridKeyDown}
+        >
               {/* NETA Technician Group */}
               {/* North Alabama Division */}
               <PortalCardWrapper portalName="North Alabama Division">
@@ -2506,378 +2453,7 @@ export default function PortalLanding() {
                   <CardContent className="px-6" />
                 </Card>
               </PortalCardWrapper>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="tech">
-            <div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              onClick={handlePortalCardGridClick}
-              onKeyDown={handlePortalCardGridKeyDown}
-            >
-              {/* NETA Technician Group */}
-              {/* North Alabama Division */}
-              <Card
-                tabIndex={0}
-                role="button"
-                className="portal-click-card portal-neta border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-              >
-                <CardHeader className="flex flex-row items-start justify-between p-6">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="portal-icon-bg p-2.5 rounded-full"
-                      style={{ color: "#f26722" }}
-                    >
-                      <MapPin
-                        className="h-5 w-5 text-rose-500 dark:text-white"
-                        style={{ color: "#f26722" }}
-                      />
-                    </div>
-                    <div>
-                      <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                        Alabama Division
-                      </CardTitle>
-                    </div>
-                  </div>
-                  <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                    NETA Technicians
-                  </Badge>
-                </CardHeader>
-                <CardContent className="px-6" />
-              </Card>
-
-              {/* Tennessee Division */}
-              <Card
-                tabIndex={0}
-                role="button"
-                className="portal-click-card portal-neta border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-              >
-                <CardHeader className="flex flex-row items-start justify-between p-6">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="portal-icon-bg p-2.5 rounded-full"
-                      style={{ color: "#f26722" }}
-                    >
-                      <MapPin
-                        className="h-5 w-5 text-emerald-500 dark:text-white"
-                        style={{ color: "#f26722" }}
-                      />
-                    </div>
-                    <div>
-                      <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                        Tennessee Division
-                      </CardTitle>
-                    </div>
-                  </div>
-                  <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                    NETA Technicians
-                  </Badge>
-                </CardHeader>
-                <CardContent className="px-6" />
-              </Card>
-
-              {/* Georgia Division */}
-              <PortalCardWrapper portalName="Georgia Division">
-                <Card
-                  tabIndex={0}
-                  role="button"
-                  className="portal-click-card portal-neta border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-                >
-                  <CardHeader className="flex flex-row items-start justify-between p-6">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="portal-icon-bg p-2.5 rounded-full"
-                        style={{ color: "#f26722" }}
-                      >
-                        <MapPin
-                          className="h-5 w-5 text-blue-500 dark:text-white"
-                          style={{ color: "#f26722" }}
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                          Georgia Division
-                        </CardTitle>
-                      </div>
-                    </div>
-                    <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                      NETA Technicians
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className="px-6" />
-                </Card>
-              </PortalCardWrapper>
-
-              {/* International Portal */}
-              <PortalCardWrapper portalName="International Division">
-                <Card
-                  tabIndex={0}
-                  role="button"
-                  className="portal-click-card portal-neta border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-                >
-                  <CardHeader className="flex flex-row items-start justify-between p-6">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="portal-icon-bg p-2.5 rounded-full"
-                        style={{ color: "#f26722" }}
-                      >
-                        <Building
-                          className="h-5 w-5 text-sky-500 dark:text-white"
-                          style={{ color: "#f26722" }}
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                          International Division
-                        </CardTitle>
-                      </div>
-                    </div>
-                    <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                      NETA Technicians
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className="px-6" />
-                </Card>
-              </PortalCardWrapper>
-
-              {/* Armadillo Division */}
-              <PortalCardWrapper portalName="Armadillo Lab">
-                <Card
-                  tabIndex={0}
-                  role="button"
-                  className="portal-click-card portal-armadillo border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-                >
-                  <CardHeader className="flex flex-row items-start justify-between p-6">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="portal-icon-bg p-2.5 rounded-full"
-                        style={{ color: "#181818" }}
-                      >
-                        <MapPin
-                          className="h-5 w-5 text-[#181818] dark:text-white"
-                          style={{ color: "#181818" }}
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                          Armadillo Division
-                        </CardTitle>
-                      </div>
-                    </div>
-                    <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                      Lab Technicians
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className="px-6" />
-                </Card>
-              </PortalCardWrapper>
-
-              {/* Scavenger Portal */}
-              <PortalCardWrapper portalName="Scavenger Portal">
-                <Card
-                  tabIndex={0}
-                  role="button"
-                  className="portal-click-card portal-scavenger border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-                >
-                  <CardHeader className="flex flex-row items-start justify-between p-6">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="portal-icon-bg p-2.5 rounded-full"
-                        style={{ color: "#993809" }}
-                      >
-                        <MapPin
-                          className="h-5 w-5 text-[#993809] dark:text-white"
-                          style={{ color: "#993809" }}
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                          Scavenger Portal
-                        </CardTitle>
-                      </div>
-                    </div>
-                    <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                      Scavs
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className="px-6" />
-                </Card>
-              </PortalCardWrapper>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="admin">
-            <div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              onClick={handlePortalCardGridClick}
-              onKeyDown={handlePortalCardGridKeyDown}
-            >
-              {/* Admin Portal - Only visible to admins */}
-              {isAdmin && (
-                <PortalCardWrapper portalName="Admin Portal">
-                  <Card
-                    tabIndex={0}
-                    role="button"
-                    className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-                  >
-                    <CardHeader className="flex flex-row items-start justify-between p-6">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="portal-icon-bg p-2.5 rounded-full"
-                          style={{ color: "#3b0764" }}
-                        >
-                          <Shield
-                            className="h-5 w-5 text-purple-500 dark:text-white"
-                            style={{ color: "#3b0764" }}
-                          />
-                        </div>
-                        <div>
-                          <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                            Admin Portal
-                          </CardTitle>
-                        </div>
-                      </div>
-                      <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                        Admin Only
-                      </Badge>
-                    </CardHeader>
-                    <CardContent className="px-6" />
-                  </Card>
-                </PortalCardWrapper>
-              )}
-
-              {/* Office Admins Portal */}
-              <PortalCardWrapper portalName="Office Admins Portal">
-                <Card
-                  tabIndex={0}
-                  role="button"
-                  className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-                >
-                  <CardHeader className="flex flex-row items-start justify-between p-6">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="portal-icon-bg p-2.5 rounded-full"
-                        style={{ color: "#3730a3" }}
-                      >
-                        <Building
-                          className="h-5 w-5 text-violet-500 dark:text-white"
-                          style={{ color: "#3730a3" }}
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                          Office Admins Portal
-                        </CardTitle>
-                      </div>
-                    </div>
-                    <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                      Office Admins
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className="px-6" />
-                </Card>
-              </PortalCardWrapper>
-
-              {/* Other Roles Group */}
-              {/* Sales Portal */}
-              <PortalCardWrapper portalName="Sales Portal">
-                <Card
-                  tabIndex={0}
-                  role="button"
-                  className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-                >
-                  <CardHeader className="flex flex-row items-start justify-between p-6">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="portal-icon-bg p-2.5 rounded-full"
-                        style={{ color: "#14532d" }}
-                      >
-                        <Building
-                          className="h-5 w-5 text-emerald-500 dark:text-white"
-                          style={{ color: "#14532d" }}
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                          Sales Portal
-                        </CardTitle>
-                      </div>
-                    </div>
-                    <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                      Sales Reps
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className="px-6" />
-                </Card>
-              </PortalCardWrapper>
-
-              {/* Engineering Portal */}
-              <PortalCardWrapper portalName="Engineering Portal">
-                <Card
-                  tabIndex={0}
-                  role="button"
-                  className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-                >
-                  <CardHeader className="flex flex-row items-start justify-between p-6">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="portal-icon-bg p-2.5 rounded-full"
-                        style={{ color: "#155e75" }}
-                      >
-                        <Omega
-                          className="h-5 w-5 text-cyan-500 dark:text-white"
-                          style={{ color: "#155e75" }}
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                          Engineering Portal
-                        </CardTitle>
-                      </div>
-                    </div>
-                    <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                      Engineering
-                    </Badge>
-                  </CardHeader>
-
-                  <CardContent className="px-6" />
-                </Card>
-              </PortalCardWrapper>
-
-              {/* HR Portal */}
-              <PortalCardWrapper portalName="HR Portal">
-                <Card
-                  tabIndex={0}
-                  role="button"
-                  className="portal-click-card border border-gray-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
-                >
-                  <CardHeader className="flex flex-row items-start justify-between p-6">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="portal-icon-bg p-2.5 rounded-full"
-                        style={{ color: "#831843" }}
-                      >
-                        <CircleUserRound
-                          className="h-5 w-5 text-pink-500 dark:text-white"
-                          style={{ color: "#831843" }}
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                          HR Portal
-                        </CardTitle>
-                      </div>
-                    </div>
-                    <Badge className="portal-card-badge !text-white px-2.5 py-1 text-xs font-medium">
-                      HR
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className="px-6" />
-                </Card>
-              </PortalCardWrapper>
-            </div>
-          </TabsContent>
-        </Tabs>
+        </div>
       </main>
 
       {/* Logout Section */}

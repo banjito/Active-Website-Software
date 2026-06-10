@@ -125,7 +125,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "globals": "^13.24.0",
-    "lucide-react": "^0.481.0",
+    "lucide-react": "^1.17.0",
     "postcss": "^8.5.10",
     "supabase": "^2.98.2",
     "tailwind-merge": "^2.6.0",

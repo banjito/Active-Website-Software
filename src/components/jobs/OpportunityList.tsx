@@ -12,6 +12,8 @@ import {
   ArrowDownWideNarrow,
   Check,
   ChartGantt,
+  ExternalLink,
+  MinusCircle,
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { format } from "date-fns";
@@ -94,8 +96,7 @@ function getOpportunityTypeValue(opportunity: any) {
   if (!type) {
     const quotedAmount = Number(opportunity?.quoted_amount);
     if (Number.isFinite(quotedAmount) && quotedAmount > 0) {
-      type =
-        quotedAmount >= 100000 ? "large_acceptance" : "small_acceptance";
+      type = quotedAmount >= 100000 ? "large_acceptance" : "small_acceptance";
     }
   }
 
@@ -421,6 +422,22 @@ export default function OpportunityList() {
   const [openProjectionMenuId, setOpenProjectionMenuId] = useState<
     string | null
   >(null);
+  const [projectionPopupPos, setProjectionPopupPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  // Close the projection popup on outside click
+  useEffect(() => {
+    if (!openProjectionMenuId) return;
+    function handleClick(e: MouseEvent) {
+      setOpenProjectionMenuId(null);
+      setProjectionPopupPos(null);
+    }
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
+  }, [openProjectionMenuId]);
+
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const sortMenuRef = useRef<HTMLDivElement>(null);
@@ -662,7 +679,10 @@ export default function OpportunityList() {
       setSelectedForMerge(new Set());
       window.dispatchEvent(new Event("pipelineProjectionChanged"));
     } catch (error) {
-      console.error("Error moving opportunities to Pipeline Projection:", error);
+      console.error(
+        "Error moving opportunities to Pipeline Projection:",
+        error,
+      );
       alert("Failed to move opportunities to Pipeline Projection.");
     }
   }
@@ -692,7 +712,10 @@ export default function OpportunityList() {
       setOpenProjectionMenuId(null);
       window.dispatchEvent(new Event("pipelineProjectionChanged"));
     } catch (error) {
-      console.error("Error removing opportunity from Pipeline Projection:", error);
+      console.error(
+        "Error removing opportunity from Pipeline Projection:",
+        error,
+      );
       alert("Failed to remove opportunity from Pipeline Projection.");
     }
   }
@@ -845,9 +868,7 @@ export default function OpportunityList() {
       console.error("Error updating opportunity type:", err);
       setOpportunities((prev) =>
         prev.map((o) =>
-          o.id === opportunityId
-            ? { ...o, opportunity_type: previousType }
-            : o,
+          o.id === opportunityId ? { ...o, opportunity_type: previousType } : o,
         ),
       );
       alert("Failed to update opportunity type. Please try again.");
@@ -964,7 +985,9 @@ export default function OpportunityList() {
         setOpportunityTypeFilters(savedOpportunityTypeFilters);
         hasStateUpdates = true;
       }
-      const savedStatusFilters = normalizeFilterValue(savedFilters.statusFilter);
+      const savedStatusFilters = normalizeFilterValue(
+        savedFilters.statusFilter,
+      );
       if (!areFilterArraysEqual(savedStatusFilters, statusFilters)) {
         setStatusFilters(savedStatusFilters);
         hasStateUpdates = true;
@@ -2873,6 +2896,10 @@ export default function OpportunityList() {
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  setProjectionPopupPos({
+                                    x: e.clientX,
+                                    y: e.clientY,
+                                  });
                                   setOpenProjectionMenuId((currentId) =>
                                     currentId === opportunity.id
                                       ? null
@@ -2885,22 +2912,45 @@ export default function OpportunityList() {
                               >
                                 <ChartGantt className="h-5 w-5" />
                               </button>
-                              {openProjectionMenuId === opportunity.id && (
-                                <div className="absolute right-0 z-20 mt-2 w-64 rounded-md border border-gray-200 bg-white p-2 text-left shadow-lg dark:border-dark-300 dark:bg-dark-150">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleRemoveFromProjection(
-                                        opportunity.id,
-                                      );
+                              {openProjectionMenuId === opportunity.id &&
+                                projectionPopupPos && (
+                                  <div
+                                    className="fixed z-50 w-48 rounded-lg border border-gray-200 bg-white py-1 text-left shadow-lg ring-1 ring-black/5 dark:border-gray-700 dark:bg-gray-900 dark:ring-white/10"
+                                    style={{
+                                      left: projectionPopupPos.x - 200,
+                                      top: projectionPopupPos.y - 4,
                                     }}
-                                    className="w-full rounded px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
                                   >
-                                    Remove from Pipeline Projection?
-                                  </button>
-                                </div>
-                              )}
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenProjectionMenuId(null);
+                                        setProjectionPopupPos(null);
+                                        navigate("/sales/pipeline-calendar");
+                                      }}
+                                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                                    >
+                                      <ExternalLink className="h-4 w-4 shrink-0 text-gray-400" />
+                                      Go to pipeline
+                                    </button>
+                                    <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveFromProjection(
+                                          opportunity.id,
+                                        );
+                                        setProjectionPopupPos(null);
+                                      }}
+                                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                                    >
+                                      <MinusCircle className="h-4 w-4 shrink-0" />
+                                      Remove from Pipeline
+                                    </button>
+                                  </div>
+                                )}
                             </div>
                           )}
                           {!opportunity.job_id && (

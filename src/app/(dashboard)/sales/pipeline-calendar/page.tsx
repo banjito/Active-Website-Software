@@ -451,8 +451,13 @@ export default function PipelineCalendarPage() {
   );
 
   const sortedListJobs = useMemo(
-    () => sortJobs(filteredJobs, sortKey, sortDirection),
-    [filteredJobs, sortDirection, sortKey],
+    () =>
+      sortJobs(
+        filteredJobs.filter((job) => jobOverlapsRange(job, viewStart, viewEnd)),
+        sortKey,
+        sortDirection,
+      ),
+    [filteredJobs, sortDirection, sortKey, viewStart, viewEnd],
   );
 
   const selectedJob = useMemo(
@@ -511,10 +516,7 @@ export default function PipelineCalendarPage() {
     setPopoverPosition(null);
   };
 
-  const toggleJobPopover = (
-    jobId: string,
-    point: { x: number; y: number },
-  ) => {
+  const toggleJobPopover = (jobId: string, point: { x: number; y: number }) => {
     if (selectedJobId === jobId) {
       closeJobPopover();
       return;
@@ -773,7 +775,8 @@ export default function PipelineCalendarPage() {
                             }
                             className={cn(
                               "min-w-0 border-r border-gray-200 px-3 py-2 text-left hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900",
-                              isSelected && "bg-orange-50 dark:bg-orange-950/20",
+                              isSelected &&
+                                "bg-orange-50 dark:bg-orange-950/20",
                             )}
                           >
                             <div

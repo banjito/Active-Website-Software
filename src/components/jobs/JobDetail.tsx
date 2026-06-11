@@ -3051,12 +3051,32 @@ export default function JobDetail() {
       // Set progress to show activity
       setUploadProgress(10);
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("assets")
+      let uploadBucket = "job-documents";
+      let uploadError: any = null;
+
+      const { error: jobDocumentsError } = await supabase.storage
+        .from(uploadBucket)
         .upload(filePath, selectedFile, {
           cacheControl: "3600",
           upsert: false,
         });
+
+      uploadError = jobDocumentsError;
+
+      if (uploadError) {
+        console.warn(
+          "job-documents bucket failed, trying documents bucket:",
+          uploadError,
+        );
+        uploadBucket = "documents";
+        const { error: documentsError } = await supabase.storage
+          .from(uploadBucket)
+          .upload(filePath, selectedFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+        uploadError = documentsError;
+      }
 
       if (uploadError) throw uploadError;
 
@@ -3065,7 +3085,7 @@ export default function JobDetail() {
 
       // 2. Get public URL for the file
       const { data: publicUrlData } = supabase.storage
-        .from("assets")
+        .from(uploadBucket)
         .getPublicUrl(filePath);
 
       const publicUrl = publicUrlData.publicUrl;
@@ -3712,16 +3732,23 @@ export default function JobDetail() {
 
       // 2. If this is a document (not a report), delete the asset record and file
       if (!assetToDelete.file_url.startsWith("report:")) {
-        // Get the storage file path from the URL
+        // Get the storage bucket and file path from the public URL
         const url = new URL(assetToDelete.file_url);
-        const filePath = url.pathname.substring(
-          url.pathname.indexOf("assets/") + 7,
-        );
+        const publicStoragePrefix = "/storage/v1/object/public/";
+        const publicStorageIndex = url.pathname.indexOf(publicStoragePrefix);
+        const storagePath =
+          publicStorageIndex >= 0
+            ? url.pathname.substring(
+                publicStorageIndex + publicStoragePrefix.length,
+              )
+            : "";
+        const [bucket, ...filePathParts] = storagePath.split("/");
+        const filePath = decodeURIComponent(filePathParts.join("/"));
 
-        if (filePath) {
+        if (bucket && filePath) {
           // Delete from storage
           const { error: storageError } = await supabase.storage
-            .from("assets")
+            .from(bucket)
             .remove([filePath]);
 
           if (storageError) {

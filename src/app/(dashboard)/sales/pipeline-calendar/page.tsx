@@ -19,7 +19,7 @@ import {
 } from "@/services/pipelineCalendarService";
 
 type ViewMode = "calendar" | "list";
-type RangeMode = "month" | "quarter";
+type RangeMode = "month" | "quarter" | "year";
 type SortKey = "startDate" | "customer" | "amount" | "region";
 type SortDirection = "asc" | "desc";
 type PopoverPosition = { top: number; left: number };
@@ -100,6 +100,14 @@ function endOfQuarter(date: Date): Date {
   return new Date(date.getFullYear(), quarterMonth + 3, 0);
 }
 
+function startOfYear(date: Date): Date {
+  return new Date(date.getFullYear(), 0, 1);
+}
+
+function endOfYear(date: Date): Date {
+  return new Date(date.getFullYear(), 11, 31);
+}
+
 function clampDate(date: Date, minDate: Date, maxDate: Date): Date {
   if (date < minDate) return minDate;
   if (date > maxDate) return maxDate;
@@ -126,6 +134,10 @@ function formatDate(value?: string): string {
 function getRangeLabel(date: Date, rangeMode: RangeMode): string {
   if (rangeMode === "month") {
     return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  }
+
+  if (rangeMode === "year") {
+    return String(date.getFullYear());
   }
 
   const quarter = Math.floor(date.getMonth() / 3) + 1;
@@ -448,15 +460,19 @@ export default function PipelineCalendarPage() {
   }, [selectedJobId]);
 
   const viewStart = useMemo(
-    () =>
-      rangeMode === "month"
-        ? startOfMonth(anchorDate)
-        : startOfQuarter(anchorDate),
+    () => {
+      if (rangeMode === "month") return startOfMonth(anchorDate);
+      if (rangeMode === "year") return startOfYear(anchorDate);
+      return startOfQuarter(anchorDate);
+    },
     [anchorDate, rangeMode],
   );
   const viewEnd = useMemo(
-    () =>
-      rangeMode === "month" ? endOfMonth(anchorDate) : endOfQuarter(anchorDate),
+    () => {
+      if (rangeMode === "month") return endOfMonth(anchorDate);
+      if (rangeMode === "year") return endOfYear(anchorDate);
+      return endOfQuarter(anchorDate);
+    },
     [anchorDate, rangeMode],
   );
 
@@ -523,7 +539,14 @@ export default function PipelineCalendarPage() {
 
   const moveRange = (direction: -1 | 1) => {
     setAnchorDate((currentDate) =>
-      addMonths(currentDate, rangeMode === "month" ? direction : direction * 3),
+      addMonths(
+        currentDate,
+        rangeMode === "month"
+          ? direction
+          : rangeMode === "quarter"
+            ? direction * 3
+            : direction * 12,
+      ),
     );
   };
 
@@ -734,6 +757,17 @@ export default function PipelineCalendarPage() {
                 >
                   Quarter
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setRangeMode("year")}
+                  className={cn(
+                    "h-9 rounded-md px-3 text-sm font-medium text-gray-600 dark:text-gray-300",
+                    rangeMode === "year" &&
+                      "bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-gray-50",
+                  )}
+                >
+                  Year
+                </button>
               </div>
 
               <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-900">
@@ -829,7 +863,12 @@ export default function PipelineCalendarPage() {
         {viewMode === "calendar" ? (
           <div className="p-4">
             <div className="min-w-0 overflow-x-auto">
-              <div className="min-w-[900px] rounded-lg border border-gray-200 dark:border-gray-800">
+              <div
+                className={cn(
+                  "rounded-lg border border-gray-200 dark:border-gray-800",
+                  rangeMode === "year" ? "min-w-[1320px]" : "min-w-[900px]",
+                )}
+              >
                 <div className="grid grid-cols-[230px_1fr] border-b border-gray-200 bg-gray-50 text-xs font-semibold uppercase text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
                   <div className="border-r border-gray-200 px-3 py-3 dark:border-gray-800">
                     Job
@@ -1101,15 +1140,16 @@ export default function PipelineCalendarPage() {
           >
             <div className="mb-3 flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div
+                <a
+                  href={`/sales-dashboard/opportunities/${selectedJob.id}`}
                   className={cn(
-                    "truncate font-semibold text-gray-950 dark:text-gray-50",
+                    "block truncate font-semibold text-gray-950 hover:text-[#f26722] hover:underline dark:text-gray-50 dark:hover:text-[#f26722]",
                     selectedJob.status === "dropped" &&
                       "text-gray-500 line-through dark:text-gray-500",
                   )}
                 >
                   {selectedJob.customer}
-                </div>
+                </a>
                 <div className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
                   {selectedJob.dataCenterId || "No DC ID"}
                 </div>

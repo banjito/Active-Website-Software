@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   Edit,
   Award,
   X,
@@ -47,7 +49,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { PDFEditor } from "../pdf/PDFEditor";
 import OpportunityNotes from "./OpportunityNotes";
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface Customer {
   id: string;
@@ -73,6 +75,11 @@ interface OpportunityWithCustomer extends Opportunity {
   customers: CustomerInfo | null;
   proposal_due_date?: string | null;
   quoted_amount?: number | null;
+}
+
+interface AdjacentOpportunityIds {
+  previous: string | null;
+  next: string | null;
 }
 
 function formatOpportunityCreator(
@@ -610,6 +617,8 @@ export default function OpportunityDetail() {
   const { user, softRefresh } = useAuth();
   const [opportunity, setOpportunity] =
     useState<OpportunityWithCustomer | null>(null);
+  const [adjacentOpportunityIds, setAdjacentOpportunityIds] =
+    useState<AdjacentOpportunityIds>({ previous: null, next: null });
   const [opportunityCreator, setOpportunityCreator] = useState<string | null>(
     null,
   );
@@ -903,6 +912,7 @@ export default function OpportunityDetail() {
     if (userId && id) {
       // Reset state when navigating to a different opportunity to prevent stale data
       setOpportunity(null);
+      setAdjacentOpportunityIds({ previous: null, next: null });
       setOpportunityCreator(null);
       setQuotePreparedBy(null);
       setLoadError(null);
@@ -923,6 +933,14 @@ export default function OpportunityDetail() {
       fetchCustomers();
     }
   }, [userId, id, mergedIdsParam, primaryIdParam]);
+
+  useEffect(() => {
+    if (opportunity?.id) {
+      fetchAdjacentOpportunityIds(opportunity.id);
+    } else {
+      setAdjacentOpportunityIds({ previous: null, next: null });
+    }
+  }, [opportunity?.id]);
 
   // Listen for estimate mode reset events
   useEffect(() => {
@@ -1330,6 +1348,55 @@ export default function OpportunityDetail() {
     } catch (error) {
       console.error("Error fetching contacts:", error);
       setAvailableContacts([]);
+    }
+  }
+
+  async function fetchAdjacentOpportunityIds(currentOpportunityId: string) {
+    try {
+      const { data, error } = await withPgTimeoutRetry(() =>
+        supabase
+          .schema("business")
+          .from("opportunities")
+          .select("id, quote_number, created_at")
+          .range(0, 9999),
+      );
+      if (error) throw error;
+
+      const sorted = (data || []).slice().sort((a: any, b: any) => {
+        const an = parseInt(
+          String(a.quote_number ?? "").replace(/\D/g, ""),
+          10,
+        );
+        const bn = parseInt(
+          String(b.quote_number ?? "").replace(/\D/g, ""),
+          10,
+        );
+        const aNum = Number.isNaN(an) ? Number.MAX_SAFE_INTEGER : an;
+        const bNum = Number.isNaN(bn) ? Number.MAX_SAFE_INTEGER : bn;
+
+        if (aNum !== bNum) return bNum - aNum;
+
+        const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+        if (aTime !== bTime) return bTime - aTime;
+
+        return String(b.id).localeCompare(String(a.id));
+      });
+
+      const currentIndex = sorted.findIndex(
+        (row: any) => String(row.id) === currentOpportunityId,
+      );
+
+      setAdjacentOpportunityIds({
+        previous: currentIndex > 0 ? String(sorted[currentIndex - 1].id) : null,
+        next:
+          currentIndex >= 0 && currentIndex < sorted.length - 1
+            ? String(sorted[currentIndex + 1].id)
+            : null,
+      });
+    } catch (error) {
+      console.error("Error fetching adjacent opportunities:", error);
+      setAdjacentOpportunityIds({ previous: null, next: null });
     }
   }
 
@@ -3013,7 +3080,11 @@ export default function OpportunityDetail() {
   }
 
   if (loading) {
-    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <LoadingSpinner size="md" />
+      </div>
+    );
   }
 
   if (!opportunity) {
@@ -3028,13 +3099,47 @@ export default function OpportunityDetail() {
     <div className="min-h-screen bg-gray-50 dark:bg-dark-background">
       {!isEmbed && (
         <div className="bg-white shadow-sm p-4 mb-6 dark:bg-dark-150 dark:border-b dark:border-dark-200">
-          <Link
-            to="/sales-dashboard/opportunities"
-            className="text-gray-600 hover:text-gray-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Back to Opportunities
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/sales-dashboard/opportunities"
+              className="text-gray-600 hover:text-gray-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
+            >
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Back to Opportunities
+            </Link>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  adjacentOpportunityIds.previous &&
+                  navigate(
+                    `/sales-dashboard/opportunities/${adjacentOpportunityIds.previous}`,
+                  )
+                }
+                disabled={!adjacentOpportunityIds.previous}
+                aria-label="Previous Opportunity"
+                title="Previous Opportunity"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  adjacentOpportunityIds.next &&
+                  navigate(
+                    `/sales-dashboard/opportunities/${adjacentOpportunityIds.next}`,
+                  )
+                }
+                disabled={!adjacentOpportunityIds.next}
+                aria-label="Next Opportunity"
+                title="Next Opportunity"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

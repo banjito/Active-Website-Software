@@ -2,6 +2,8 @@ import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   Users,
   ChevronDown,
   Plus,
@@ -173,6 +175,11 @@ interface Job {
     company_name?: string | null;
     address?: string | null;
   };
+}
+
+interface AdjacentJobIds {
+  previous: string | null;
+  next: string | null;
 }
 
 interface Contact {
@@ -440,6 +447,10 @@ export default function JobDetail() {
     isSuperUser(user?.email);
 
   const [job, setJob] = useState<Job | null>(null);
+  const [adjacentJobIds, setAdjacentJobIds] = useState<AdjacentJobIds>({
+    previous: null,
+    next: null,
+  });
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -2348,6 +2359,8 @@ export default function JobDetail() {
 
   useEffect(() => {
     if (user && id) {
+      setAdjacentJobIds({ previous: null, next: null });
+
       // If the hook is still loading, wait
       if (jobDetailsLoading) {
         setLoading(true);
@@ -2431,6 +2444,14 @@ export default function JobDetail() {
       fetchRelatedOpportunity();
     }
   }, [user, id, jobDetails, jobDetailsLoading, jobDetailsError]); // Depend on jobDetails and loading/error states from the hook
+
+  useEffect(() => {
+    if (job?.id) {
+      fetchAdjacentJobIds(job.id);
+    } else {
+      setAdjacentJobIds({ previous: null, next: null });
+    }
+  }, [job?.id, job?.division, location.pathname]);
 
   // Detect if this job is already in shortcuts
   useEffect(() => {
@@ -2688,6 +2709,55 @@ export default function JobDetail() {
           : "Not Started";
     }
   };
+
+  async function fetchAdjacentJobIds(currentJobId: string) {
+    try {
+      const pathParts = location.pathname.split("/").filter(Boolean);
+      const jobsIndex = pathParts.indexOf("jobs");
+      const routeDivision = jobsIndex > 0 ? pathParts[jobsIndex - 1] : null;
+      const activeDivision = routeDivision || job?.division || null;
+
+      let query = supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .select("id, created_at")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
+
+      if (activeDivision) {
+        if (activeDivision === "field_tech" || activeDivision === "field-tech") {
+          query = query.in("division", [
+            "north_alabama",
+            "tennessee",
+            "georgia",
+            "international",
+          ]);
+        } else {
+          query = query.eq("division", activeDivision);
+        }
+      }
+
+      const { data, error } = await query.range(0, 9999);
+
+      if (error) throw error;
+
+      const jobs = data || [];
+      const currentIndex = jobs.findIndex(
+        (row: any) => String(row.id) === currentJobId,
+      );
+
+      setAdjacentJobIds({
+        previous: currentIndex > 0 ? String(jobs[currentIndex - 1].id) : null,
+        next:
+          currentIndex >= 0 && currentIndex < jobs.length - 1
+            ? String(jobs[currentIndex + 1].id)
+            : null,
+      });
+    } catch (error) {
+      console.error("Error fetching adjacent jobs:", error);
+      setAdjacentJobIds({ previous: null, next: null });
+    }
+  }
 
   async function fetchAssets() {
     try {
@@ -7307,6 +7377,35 @@ ${newBodyHtml}
   }
 
   const isEmbed = new URLSearchParams(location.search).get("embed") === "true";
+  const getJobsListPath = () => {
+    const pathParts = location.pathname.split("/").filter(Boolean);
+    const jobsIndex = pathParts.indexOf("jobs");
+
+    if (jobsIndex > 0) {
+      return `/${pathParts.slice(0, jobsIndex + 1).join("/")}`;
+    }
+
+    if (job?.division) {
+      return `/${job.division}/jobs`;
+    }
+
+    return "/jobs";
+  };
+
+  const getJobDetailPath = (jobId: string) => {
+    const pathParts = location.pathname.split("/").filter(Boolean);
+    const jobsIndex = pathParts.indexOf("jobs");
+
+    if (jobsIndex > 0) {
+      return `/${pathParts.slice(0, jobsIndex + 1).join("/")}/${jobId}`;
+    }
+
+    if (job?.division) {
+      return `/${job.division}/jobs/${jobId}`;
+    }
+
+    return `/jobs/${jobId}`;
+  };
 
   return (
     <div className="p-8">
@@ -7604,20 +7703,44 @@ ${newBodyHtml}
       </Dialog>
       <div className="mb-6 flex items-center justify-between">
         {!isEmbed && (
-          <Button
-            variant="ghost"
-            onClick={() => {
-              if (window.history.length > 1) {
-                navigate(-1);
-              } else {
-                navigate("/jobs");
-              }
-            }}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-            Back to Jobs
-          </Button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(getJobsListPath())}
+              className="text-gray-600 hover:text-gray-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
+            >
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Back to Jobs
+            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  adjacentJobIds.previous &&
+                  navigate(getJobDetailPath(adjacentJobIds.previous))
+                }
+                disabled={!adjacentJobIds.previous}
+                aria-label="Previous Job"
+                title="Previous Job"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  adjacentJobIds.next &&
+                  navigate(getJobDetailPath(adjacentJobIds.next))
+                }
+                disabled={!adjacentJobIds.next}
+                aria-label="Next Job"
+                title="Next Job"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-dark-300 dark:text-dark-500 dark:hover:bg-dark-200 dark:hover:text-dark-900"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
         )}
         <div className="flex gap-2 items-center">
           {/* Job notifications (bell icon) */}

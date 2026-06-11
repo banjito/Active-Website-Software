@@ -2359,8 +2359,6 @@ export default function JobDetail() {
 
   useEffect(() => {
     if (user && id) {
-      setAdjacentJobIds({ previous: null, next: null });
-
       // If the hook is still loading, wait
       if (jobDetailsLoading) {
         setLoading(true);
@@ -2446,10 +2444,12 @@ export default function JobDetail() {
   }, [user, id, jobDetails, jobDetailsLoading, jobDetailsError]); // Depend on jobDetails and loading/error states from the hook
 
   useEffect(() => {
+    setAdjacentJobIds({ previous: null, next: null });
+  }, [id]);
+
+  useEffect(() => {
     if (job?.id) {
       fetchAdjacentJobIds(job.id);
-    } else {
-      setAdjacentJobIds({ previous: null, next: null });
     }
   }, [job?.id, job?.division, location.pathname]);
 
@@ -2717,45 +2717,62 @@ export default function JobDetail() {
       const routeDivision = jobsIndex > 0 ? pathParts[jobsIndex - 1] : null;
       const activeDivision = routeDivision || job?.division || null;
 
-      let query = supabase
-        .schema("neta_ops")
-        .from("jobs")
-        .select("id, created_at")
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
+      const fetchJobsForNavigation = async (divisionFilter?: string | null) => {
+        let query = supabase
+          .schema("neta_ops")
+          .from("jobs")
+          .select("id, created_at")
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false });
 
-      if (activeDivision) {
-        if (activeDivision === "field_tech" || activeDivision === "field-tech") {
-          query = query.in("division", [
-            "north_alabama",
-            "tennessee",
-            "georgia",
-            "international",
-          ]);
-        } else {
-          query = query.eq("division", activeDivision);
+        if (divisionFilter) {
+          if (
+            divisionFilter === "field_tech" ||
+            divisionFilter === "field-tech"
+          ) {
+            query = query.in("division", [
+              "north_alabama",
+              "tennessee",
+              "georgia",
+              "international",
+            ]);
+          } else {
+            query = query.eq("division", divisionFilter);
+          }
         }
-      }
 
-      const { data, error } = await query.range(0, 9999);
+        const { data, error } = await query.range(0, 9999);
+        if (error) throw error;
+        return data || [];
+      };
 
-      if (error) throw error;
-
-      const jobs = data || [];
+      let jobs = await fetchJobsForNavigation(activeDivision);
       const currentIndex = jobs.findIndex(
         (row: any) => String(row.id) === currentJobId,
       );
+      const fallbackToAllJobs = currentIndex === -1 || jobs.length < 2;
+      if (fallbackToAllJobs && activeDivision) {
+        jobs = await fetchJobsForNavigation(null);
+      }
+
+      const navigationIndex = jobs.findIndex(
+        (row: any) => String(row.id) === currentJobId,
+      );
+
+      if (navigationIndex === -1) {
+        return;
+      }
 
       setAdjacentJobIds({
-        previous: currentIndex > 0 ? String(jobs[currentIndex - 1].id) : null,
+        previous:
+          navigationIndex > 0 ? String(jobs[navigationIndex - 1].id) : null,
         next:
-          currentIndex >= 0 && currentIndex < jobs.length - 1
-            ? String(jobs[currentIndex + 1].id)
+          navigationIndex >= 0 && navigationIndex < jobs.length - 1
+            ? String(jobs[navigationIndex + 1].id)
             : null,
       });
     } catch (error) {
       console.error("Error fetching adjacent jobs:", error);
-      setAdjacentJobIds({ previous: null, next: null });
     }
   }
 

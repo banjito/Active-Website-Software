@@ -324,10 +324,12 @@ function mapOpportunityToPipelineJob(
     customer?.company_name || customer?.name || "Unknown Customer";
   const amountDollars = Number(opportunity?.quoted_amount || 0);
   const startDate =
+    opportunity?.estimated_start_date ||
     opportunity?.proposal_due_date ||
     opportunity?.opportunity_created_date ||
     opportunity?.created_at?.slice(0, 10) ||
     toDateInputValue(new Date());
+  const endDate = opportunity?.estimated_end_date || undefined;
 
   return {
     id: String(opportunity.id),
@@ -337,6 +339,7 @@ function mapOpportunityToPipelineJob(
     region: getRegionFromOpportunity(opportunity),
     amount: Number.isFinite(amountDollars) ? amountDollars / 1000000 : 0,
     startDate,
+    endDate,
     status: getStatusFromOpportunity(opportunity),
     isAwarded: isAwardedOpportunity(opportunity),
   };
@@ -459,22 +462,16 @@ export default function PipelineCalendarPage() {
     };
   }, [selectedJobId]);
 
-  const viewStart = useMemo(
-    () => {
-      if (rangeMode === "month") return startOfMonth(anchorDate);
-      if (rangeMode === "year") return startOfYear(anchorDate);
-      return startOfQuarter(anchorDate);
-    },
-    [anchorDate, rangeMode],
-  );
-  const viewEnd = useMemo(
-    () => {
-      if (rangeMode === "month") return endOfMonth(anchorDate);
-      if (rangeMode === "year") return endOfYear(anchorDate);
-      return endOfQuarter(anchorDate);
-    },
-    [anchorDate, rangeMode],
-  );
+  const viewStart = useMemo(() => {
+    if (rangeMode === "month") return startOfMonth(anchorDate);
+    if (rangeMode === "year") return startOfYear(anchorDate);
+    return startOfQuarter(anchorDate);
+  }, [anchorDate, rangeMode]);
+  const viewEnd = useMemo(() => {
+    if (rangeMode === "month") return endOfMonth(anchorDate);
+    if (rangeMode === "year") return endOfYear(anchorDate);
+    return endOfQuarter(anchorDate);
+  }, [anchorDate, rangeMode]);
 
   const filteredJobs = useMemo(
     () =>

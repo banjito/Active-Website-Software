@@ -807,7 +807,7 @@ export default function PortalLanding() {
       "Engineering Portal": "/engineering", // Updated to use the new engineering page
       "Field Technician Portal": "/field-tech/dashboard",
       "Global Portal": "/all-jobs",
-      Runway: "/meetings",
+      Meetings: "/meetings",
       "Scavenger Portal": "/scavenger",
       "HR Portal": "/hr/dashboard",
     };
@@ -1009,8 +1009,8 @@ export default function PortalLanding() {
       case "HR Portal":
         handlePortalClick("HR Portal", "/hr/dashboard");
         break;
-      case "Runway":
-        navigate("/meetings");
+      case "Meetings":
+        window.open("https://www.ninety.io/", "_blank", "noopener,noreferrer");
         break;
       case "Features & Fixes":
         navigate("/features-fixes");
@@ -1047,7 +1047,7 @@ export default function PortalLanding() {
       "Office Admins Portal",
       "Sales Portal",
       "Engineering Portal",
-      "Runway Meeting Portal",
+      "Meetings Portal",
     ];
     setPortalPreferences((prev) => ({
       ...prev,
@@ -1933,7 +1933,7 @@ export default function PortalLanding() {
                 "Sales Portal",
                 "Engineering Portal",
                 "HR Portal",
-                "Runway Meeting Portal",
+                "Meetings Portal",
               ].map((portalName) => (
                 <div
                   key={portalName}
@@ -2358,8 +2358,8 @@ export default function PortalLanding() {
                 </Card>
               </PortalCardWrapper>
 
-              {/* Runway */}
-              <PortalCardWrapper portalName="Runway Meeting Portal">
+              {/* Meetings */}
+              <PortalCardWrapper portalName="Meetings Portal">
                 <Card
                   tabIndex={0}
                   role="button"
@@ -2378,7 +2378,7 @@ export default function PortalLanding() {
                       </div>
                       <div>
                         <CardTitle className="text-2xl font-medium text-gray-900 dark:text-white">
-                          Runway
+                          Meetings
                         </CardTitle>
                       </div>
                     </div>

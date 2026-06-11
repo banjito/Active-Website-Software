@@ -74,6 +74,7 @@ interface Contact {
 interface OpportunityWithCustomer extends Opportunity {
   customers: CustomerInfo | null;
   proposal_due_date?: string | null;
+  estimated_end_date?: string | null;
   quoted_amount?: number | null;
 }
 
@@ -115,6 +116,7 @@ const initialFormData: OpportunityFormData = {
   prepared_by: "",
   jobsite_location: "",
   estimated_start_date: "",
+  estimated_end_date: "",
   period_of_performance: "",
   total_man_hours: "0",
   opportunity_type: "other",
@@ -509,6 +511,7 @@ async function createJobManually(
     start_date:
       (opportunity as any).estimated_start_date ||
       new Date().toISOString().substring(0, 10),
+    due_date: (opportunity as any).estimated_end_date || null,
     site_address: (opportunity as any).jobsite_location || "",
     budget: quotedAmount,
     notes:
@@ -663,6 +666,7 @@ export default function OpportunityDetail() {
     prepared_by: "",
     jobsite_location: "",
     estimated_start_date: "",
+    estimated_end_date: "",
     period_of_performance: "",
     total_man_hours: "0",
     opportunity_type: "other",
@@ -1018,6 +1022,9 @@ export default function OpportunityDetail() {
         jobsite_location: (opportunity as any).jobsite_location || "",
         estimated_start_date: (opportunity as any).estimated_start_date
           ? (opportunity as any).estimated_start_date.substring(0, 10)
+          : "",
+        estimated_end_date: (opportunity as any).estimated_end_date
+          ? (opportunity as any).estimated_end_date.substring(0, 10)
           : "",
         period_of_performance: (opportunity as any).period_of_performance || "",
         total_man_hours:
@@ -1966,6 +1973,7 @@ export default function OpportunityDetail() {
         prepared_by: editFormData.prepared_by || null,
         jobsite_location: editFormData.jobsite_location || null,
         estimated_start_date: editFormData.estimated_start_date || null,
+        estimated_end_date: editFormData.estimated_end_date || null,
         period_of_performance: editFormData.period_of_performance || null,
         total_man_hours: editFormData.total_man_hours
           ? parseFloat(editFormData.total_man_hours)
@@ -2001,19 +2009,49 @@ export default function OpportunityDetail() {
         );
       };
 
-      // Start with payload without opportunity_type if we suspect the column might not exist
-      // We'll add it back in if it succeeds, or handle the error gracefully
+      // Start with payload without opportunity_type if we suspect the column might not exist.
+      // We'll add it back in if it succeeds, or handle the error gracefully.
       const { opportunity_type: oppType, ...basePayload } = updatePayload;
+      const mainPayload = { ...basePayload };
+      const optionalDateColumns = [
+        "proposal_due_date",
+        "estimated_start_date",
+        "estimated_end_date",
+      ];
 
-      // Try update without opportunity_type first (safer approach)
       let updateError = null as any;
-      let res = await supabase
-        .schema("business")
-        .from("opportunities")
-        .update({ ...basePayload, proposal_due_date: proposalDueDate })
-        .eq("id", opportunity.id)
-        .select();
-      updateError = res.error;
+      for (
+        let attempt = 0;
+        attempt < optionalDateColumns.length + 1;
+        attempt++
+      ) {
+        const res = await supabase
+          .schema("business")
+          .from("opportunities")
+          .update(mainPayload)
+          .eq("id", opportunity.id)
+          .select();
+        updateError = res.error;
+
+        if (!updateError) break;
+
+        if (isColumnMissingError(updateError)) {
+          const missingOptionalColumn = optionalDateColumns.find(
+            (column) =>
+              column in mainPayload && errorMentionsColumn(updateError, column),
+          );
+
+          if (missingOptionalColumn) {
+            console.log(
+              `${missingOptionalColumn} column missing, retrying without it...`,
+            );
+            delete (mainPayload as any)[missingOptionalColumn];
+            continue;
+          }
+        }
+
+        break;
+      }
 
       // If that succeeded, try to update opportunity_type separately (if column exists)
       if (!updateError && oppType) {
@@ -2031,22 +2069,6 @@ export default function OpportunityDetail() {
         } else if (typeRes.error) {
           console.warn("Could not update opportunity_type:", typeRes.error);
         }
-      }
-
-      // If column missing (42703 or schema cache error), retry without proposal_due_date
-      if (
-        updateError &&
-        isColumnMissingError(updateError) &&
-        errorMentionsColumn(updateError, "proposal_due_date")
-      ) {
-        console.log("proposal_due_date column missing, retrying without it...");
-        res = await supabase
-          .schema("business")
-          .from("opportunities")
-          .update(basePayload)
-          .eq("id", opportunity.id)
-          .select();
-        updateError = res.error;
       }
 
       const error = updateError;
@@ -2188,6 +2210,15 @@ export default function OpportunityDetail() {
           updated.opportunity_type =
             amount >= 100000 ? "large_acceptance" : "small_acceptance";
         }
+      }
+
+      if (
+        name === "estimated_start_date" &&
+        value &&
+        updated.estimated_end_date &&
+        updated.estimated_end_date < value
+      ) {
+        updated.estimated_end_date = "";
       }
 
       return updated;
@@ -2955,6 +2986,7 @@ export default function OpportunityDetail() {
         prepared_by: (opportunity as any).prepared_by || null,
         jobsite_location: (opportunity as any).jobsite_location || null,
         estimated_start_date: (opportunity as any).estimated_start_date || null,
+        estimated_end_date: (opportunity as any).estimated_end_date || null,
         period_of_performance:
           (opportunity as any).period_of_performance || null,
         total_man_hours: (opportunity as any).total_man_hours || null,
@@ -2974,9 +3006,23 @@ export default function OpportunityDetail() {
           .single());
 
         if (!error) break;
-        if (error?.code === "42703" && "proposal_due_date" in duplicateData) {
-          delete duplicateData.proposal_due_date;
-          continue;
+        if (error?.code === "42703") {
+          const optionalDateColumns = [
+            "proposal_due_date",
+            "estimated_start_date",
+            "estimated_end_date",
+          ];
+          const missingOptionalColumn =
+            optionalDateColumns.find(
+              (column) =>
+                column in duplicateData &&
+                (error?.message?.includes(`'${column}'`) ||
+                  error?.message?.includes(`"${column}"`)),
+            ) || optionalDateColumns.find((column) => column in duplicateData);
+          if (missingOptionalColumn) {
+            delete duplicateData[missingOptionalColumn];
+            continue;
+          }
         }
         if (error?.code === "23505") {
           nextQuoteNumber += 1;
@@ -3267,6 +3313,12 @@ export default function OpportunityDetail() {
                               ? (
                                   opportunity as any
                                 ).estimated_start_date.substring(0, 10)
+                              : "",
+                            estimated_end_date: (opportunity as any)
+                              .estimated_end_date
+                              ? (
+                                  opportunity as any
+                                ).estimated_end_date.substring(0, 10)
                               : "",
                             period_of_performance:
                               (opportunity as any).period_of_performance || "",
@@ -4137,21 +4189,41 @@ export default function OpportunityDetail() {
                       </p>
                     </div>
 
-                    <div>
-                      <label
-                        htmlFor="estimated_start_date"
-                        className="block text-sm font-medium text-gray-700 dark:text-white"
-                      >
-                        Estimated Start Date
-                      </label>
-                      <input
-                        type="date"
-                        id="estimated_start_date"
-                        name="estimated_start_date"
-                        value={editFormData.estimated_start_date}
-                        onChange={handleInputChange}
-                        className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="estimated_start_date"
+                          className="block text-sm font-medium text-gray-700 dark:text-white"
+                        >
+                          Start Date
+                        </label>
+                        <input
+                          type="date"
+                          id="estimated_start_date"
+                          name="estimated_start_date"
+                          value={editFormData.estimated_start_date}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="estimated_end_date"
+                          className="block text-sm font-medium text-gray-700 dark:text-white"
+                        >
+                          End Date
+                        </label>
+                        <input
+                          type="date"
+                          id="estimated_end_date"
+                          name="estimated_end_date"
+                          value={editFormData.estimated_end_date}
+                          onChange={handleInputChange}
+                          min={editFormData.estimated_start_date || undefined}
+                          className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                        />
+                      </div>
                     </div>
 
                     <div>
@@ -4805,6 +4877,33 @@ export default function OpportunityDetail() {
                         </p>
                       </div>
                     )}
+                    <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-dark-400">
+                          Start Date
+                        </p>
+                        <p className="text-gray-900 dark:text-dark-900">
+                          {(opportunity as any).estimated_start_date
+                            ? formatDateSafe(
+                                (opportunity as any).estimated_start_date,
+                              )
+                            : "Not specified"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-dark-400">
+                          End Date
+                        </p>
+                        <p className="text-gray-900 dark:text-dark-900">
+                          {(opportunity as any).estimated_end_date
+                            ? formatDateSafe(
+                                (opportunity as any).estimated_end_date,
+                              )
+                            : "Not specified"}
+                        </p>
+                      </div>
+                    </div>
                     {/* Removed duplicate Proposal Due Date block (already shown above) */}
                     <div className="mb-4">
                       <p className="text-sm text-gray-500 dark:text-dark-400">
@@ -4833,18 +4932,6 @@ export default function OpportunityDetail() {
                       <p className="text-gray-900 dark:text-dark-900">
                         {(opportunity as any).jobsite_location ||
                           "Not specified"}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-500 dark:text-dark-400">
-                        Estimated Start Date
-                      </p>
-                      <p className="text-gray-900 dark:text-dark-900">
-                        {(opportunity as any).estimated_start_date
-                          ? formatDateSafe(
-                              (opportunity as any).estimated_start_date,
-                            )
-                          : "Not specified"}
                       </p>
                     </div>
                     <div className="mb-4">

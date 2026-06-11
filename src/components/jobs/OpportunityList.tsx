@@ -49,6 +49,8 @@ interface FormData {
   expected_value: string;
   probability: string;
   proposal_due_date: string;
+  estimated_start_date: string;
+  estimated_end_date: string;
   notes: string;
   amp_division: string;
   sales_person: string;
@@ -168,6 +170,8 @@ const initialFormData: FormData = {
   expected_value: "0",
   probability: "0",
   proposal_due_date: "",
+  estimated_start_date: "",
+  estimated_end_date: "",
   notes: "",
   amp_division: "",
   sales_person: "",
@@ -1851,7 +1855,18 @@ export default function OpportunityList() {
     >,
   ) {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (
+        name === "estimated_start_date" &&
+        value &&
+        updated.estimated_end_date &&
+        updated.estimated_end_date < value
+      ) {
+        updated.estimated_end_date = "";
+      }
+      return updated;
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -1977,6 +1992,8 @@ export default function OpportunityList() {
         user_id: user.id,
         quote_number: String(nextQuoteNumber),
         proposal_due_date: formData.proposal_due_date || null,
+        estimated_start_date: formData.estimated_start_date || null,
+        estimated_end_date: formData.estimated_end_date || null,
         reviewed_by: formData.reviewed_by || null,
         prepared_by: formData.prepared_by || null,
         documents_stage: formData.documents_stage || null,
@@ -2000,13 +2017,25 @@ export default function OpportunityList() {
           .single());
 
         if (!error) break;
-        // If proposal_due_date column doesn't exist, drop it and retry once
-        if (
-          error?.code === "42703" &&
-          "proposal_due_date" in opportunityDataBase
-        ) {
-          delete opportunityDataBase.proposal_due_date;
-          continue;
+        // If optional date columns don't exist in this environment yet, drop and retry once
+        if (error?.code === "42703") {
+          const optionalDateColumns = [
+            "proposal_due_date",
+            "estimated_start_date",
+            "estimated_end_date",
+          ];
+          const missingOptionalColumn =
+            optionalDateColumns.find(
+              (column) =>
+                column in opportunityDataBase &&
+                (error?.message?.includes(`'${column}'`) ||
+                  error?.message?.includes(`"${column}"`)),
+            ) ||
+            optionalDateColumns.find((column) => column in opportunityDataBase);
+          if (missingOptionalColumn) {
+            delete opportunityDataBase[missingOptionalColumn];
+            continue;
+          }
         }
         if (error?.code === "23505") {
           // Unique violation on quote_number: increment and retry
@@ -3515,6 +3544,35 @@ export default function OpportunityList() {
                   onChange={handleChange}
                   className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    name="estimated_start_date"
+                    value={formData.estimated_start_date}
+                    onChange={handleChange}
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    name="estimated_end_date"
+                    value={formData.estimated_end_date}
+                    onChange={handleChange}
+                    min={formData.estimated_start_date || undefined}
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  />
+                </div>
               </div>
 
               <div>

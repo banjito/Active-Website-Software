@@ -53,7 +53,7 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
   {
     key: "meetings",
     label: "Meetings",
-    options: [{ label: "Runway", path: "/meetings" }],
+    options: [{ label: "Meetings", path: "/meetings" }],
   },
   {
     key: "field_tech",

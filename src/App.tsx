@@ -12,7 +12,6 @@ import Dashboard from './app/dashboard/page';
 import PortalLanding from './app/portal/page';
 import UnifiedJobsPage from './app/all-jobs/page';
 import SalesDashboard from './app/sales-dashboard/page';
-import MeetingsPage from './app/meetings/page';
 
 import Login from './components/auth/Login';
 import ResetPassword from './components/auth/ResetPassword';
@@ -333,6 +332,26 @@ function ArmadilloRedirect() {
   return (
     <div className="min-h-screen flex items-center justify-center text-gray-600 dark:text-gray-400">
       Redirecting to Armadillo Base…
+    </div>
+  );
+}
+
+// Redirect Meetings to Ninety until the internal page is ready
+function NinetyRedirect() {
+  useEffect(() => {
+    window.open('https://www.ninety.io/', '_blank', 'noopener,noreferrer');
+  }, []);
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-gray-600 dark:text-gray-400">
+      <p>Opening Ninety in a new tab…</p>
+      <a
+        href="https://www.ninety.io/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#f26722] underline"
+      >
+        Open Ninety
+      </a>
     </div>
   );
 }
@@ -659,9 +678,9 @@ function App() {
                   <Route path="/hr/self-service/manager-portal" element={<RequireAuth><HrLayout><ManagerPortal /></HrLayout></RequireAuth>} />
                   <Route path="/hr/self-service/task-workflows" element={<RequireAuth><HrLayout><TaskWorkflows /></HrLayout></RequireAuth>} />
 
-                  {/* === Meetings (Runway) — coming soon === */}
-                  <Route path="/meetings" element={<RequireAuth><MeetingsPage /></RequireAuth>} />
-                  <Route path="/meetings/*" element={<Navigate to="/meetings" replace />} />
+                  {/* === Meetings — external redirect until internal page is ready === */}
+                  <Route path="/meetings" element={<NinetyRedirect />} />
+                  <Route path="/meetings/*" element={<NinetyRedirect />} />
 
                   {/* === Division-Specific Dashboard Routes === */}
                   {/* These specific routes should come before the generic /:division/dashboard route */}

@@ -30,7 +30,7 @@ export interface SubcontractorAgreement {
   name: string;
   file_url: string;
   upload_date: string;
-  status: 'pending' | 'signed' | 'expired' | 'cancelled';
+  status: "pending" | "signed" | "expired" | "cancelled";
   value?: number;
   start_date?: string;
   end_date?: string;
@@ -92,22 +92,32 @@ export interface OneLineDrawingUpload {
 }
 
 // Storage bucket types
-export type StorageBucket = 'job-documents' | 'one-line-drawings' | 'documents' | 'user-uploads';
+export type StorageBucket =
+  | "job-documents"
+  | "one-line-drawings"
+  | "documents"
+  | "user-uploads";
 
 // Document categories
-export type DocumentCategory = 
-  | 'general'
-  | 'reports'
-  | 'manuals'
-  | 'forms'
-  | 'contracts'
-  | 'agreements'
-  | 'drawings'
-  | 'schematics'
-  | 'specifications';
+export type DocumentCategory =
+  | "general"
+  | "reports"
+  | "manuals"
+  | "forms"
+  | "contracts"
+  | "agreements"
+  | "drawings"
+  | "schematics"
+  | "specifications";
 
 // Opportunity type classification
-export type OpportunityType = 'large_acceptance' | 'small_acceptance' | 'maintenance' | 'other' | 'time_materials' | 'engineering';
+export type OpportunityType =
+  | "large_acceptance"
+  | "small_acceptance"
+  | "maintenance"
+  | "other"
+  | "time_materials"
+  | "engineering";
 
 export interface Opportunity {
   id: string;
@@ -118,21 +128,31 @@ export interface Opportunity {
   contact_id?: string | null;
   title?: string;
   description?: string;
-  status: 'awareness' | 'interest' | 'quote' | 'decision' | 'decision - forecasted win' | 'decision - forecast lose' | 'awarded' | 'lost' | 'no quote';
+  status:
+    | "awareness"
+    | "interest"
+    | "quote"
+    | "decision"
+    | "decision - forecasted win"
+    | "decision - forecast lose"
+    | "awarded"
+    | "lost"
+    | "no quote";
   expected_value?: number;
   probability?: number;
   opportunity_created_date?: string;
   letter_proposal_date?: string;
   quote_number: string;
   notes?: string;
-  job_id?: string;
+  job_id?: string | null;
   awarded_date?: string;
   sales_person?: string;
   amp_division?: string;
   reviewed_by?: string;
   prepared_by?: string;
   jobsite_location?: string;
-  estimated_start_date?: string;
+  estimated_start_date?: string | null;
+  estimated_end_date?: string | null;
   period_of_performance?: string;
   total_man_hours?: number;
   opportunity_type?: OpportunityType;
@@ -146,7 +166,16 @@ export interface OpportunityFormData {
   contact_id?: string | null;
   title?: string;
   description: string;
-  status: 'awareness' | 'interest' | 'quote' | 'decision' | 'decision - forecasted win' | 'decision - forecast lose' | 'awarded' | 'lost' | 'no quote';
+  status:
+    | "awareness"
+    | "interest"
+    | "quote"
+    | "decision"
+    | "decision - forecasted win"
+    | "decision - forecast lose"
+    | "awarded"
+    | "lost"
+    | "no quote";
   expected_value: string;
   probability: string;
   opportunity_created_date?: string;
@@ -161,8 +190,9 @@ export interface OpportunityFormData {
   prepared_by: string;
   jobsite_location: string;
   estimated_start_date: string;
+  estimated_end_date: string;
   period_of_performance: string;
   total_man_hours: string;
   opportunity_type: OpportunityType;
   documents_stage?: string;
-} 
+}

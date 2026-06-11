@@ -375,6 +375,31 @@ function parseReportIdFromAssetUrl(fileUrl: string): string | null {
   }
 }
 
+const JOB_ASSET_UPLOAD_CONTENT_TYPES: Record<string, string> = {
+  csv: "text/csv",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  gif: "image/gif",
+  hex: "text/plain",
+  jpeg: "image/jpeg",
+  jpg: "image/jpeg",
+  log: "text/plain",
+  pdf: "application/pdf",
+  png: "image/png",
+  txt: "text/plain",
+  xls: "application/vnd.ms-excel",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+};
+
+function getJobAssetUploadContentType(file: File): string {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "";
+  return (
+    JOB_ASSET_UPLOAD_CONTENT_TYPES[ext] ||
+    file.type ||
+    "application/octet-stream"
+  );
+}
+
 // Signature sections types for executive summary
 export interface SignaturePerson {
   name: string;
@@ -3047,6 +3072,7 @@ export default function JobDetail() {
       const fileExt = selectedFile.name.split(".").pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `job-assets/${id}/${fileName}`;
+      const contentType = getJobAssetUploadContentType(selectedFile);
 
       // Set progress to show activity
       setUploadProgress(10);
@@ -3058,6 +3084,7 @@ export default function JobDetail() {
         .from(uploadBucket)
         .upload(filePath, selectedFile, {
           cacheControl: "3600",
+          contentType,
           upsert: false,
         });
 
@@ -3073,6 +3100,7 @@ export default function JobDetail() {
           .from(uploadBucket)
           .upload(filePath, selectedFile, {
             cacheControl: "3600",
+            contentType,
             upsert: false,
           });
         uploadError = documentsError;

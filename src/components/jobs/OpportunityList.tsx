@@ -426,11 +426,18 @@ export default function OpportunityList() {
     x: number;
     y: number;
   } | null>(null);
+  const projectionMenuRef = useRef<HTMLDivElement>(null);
 
   // Close the projection popup on outside click
   useEffect(() => {
     if (!openProjectionMenuId) return;
     function handleClick(e: MouseEvent) {
+      if (
+        projectionMenuRef.current &&
+        projectionMenuRef.current.contains(e.target as Node)
+      ) {
+        return;
+      }
       setOpenProjectionMenuId(null);
       setProjectionPopupPos(null);
     }
@@ -2915,6 +2922,7 @@ export default function OpportunityList() {
                               {openProjectionMenuId === opportunity.id &&
                                 projectionPopupPos && (
                                   <div
+                                    ref={projectionMenuRef}
                                     className="fixed z-50 w-48 rounded-lg border border-gray-200 bg-white py-1 text-left shadow-lg ring-1 ring-black/5 dark:border-gray-700 dark:bg-gray-900 dark:ring-white/10"
                                     style={{
                                       left: projectionPopupPos.x - 200,

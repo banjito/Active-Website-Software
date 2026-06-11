@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Table2,
+  Trash2,
   X,
 } from "lucide-react";
 
@@ -241,6 +242,30 @@ function StatusIcon({ status }: { status: PipelineStatus }) {
   return <span className="h-2 w-2 rounded-full bg-current" />;
 }
 
+function getStatusBadgeClasses(status: PipelineStatus): string {
+  if (status === "confirmed") {
+    return "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200";
+  }
+  if (status === "expected") {
+    return "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-200";
+  }
+  return "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200";
+}
+
+function StatusBadge({ status }: { status: PipelineStatus }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
+        getStatusBadgeClasses(status),
+      )}
+    >
+      <StatusIcon status={status} />
+      {statusLabels[status]}
+    </span>
+  );
+}
+
 function getRegionFromOpportunity(opportunity: any): PipelineRegion {
   const division = String(opportunity?.amp_division || "").toLowerCase();
 
@@ -317,6 +342,9 @@ export default function PipelineCalendarPage() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [popoverPosition, setPopoverPosition] =
     useState<PopoverPosition | null>(null);
+  const [selectedProjectionIds, setSelectedProjectionIds] = useState<
+    Set<string>
+  >(new Set());
   const [storageError, setStorageError] = useState("");
   const [isLoadingProjection, setIsLoadingProjection] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("startDate");
@@ -516,6 +544,68 @@ export default function PipelineCalendarPage() {
     setPopoverPosition(null);
   };
 
+  const toggleProjectionSelection = (jobId: string) => {
+    setSelectedProjectionIds((currentIds) => {
+      const nextIds = new Set(currentIds);
+      if (nextIds.has(jobId)) {
+        nextIds.delete(jobId);
+      } else {
+        nextIds.add(jobId);
+      }
+      return nextIds;
+    });
+  };
+
+  const toggleAllVisibleProjectionSelection = () => {
+    setSelectedProjectionIds((currentIds) => {
+      const visibleIds = sortedListJobs.map((job) => job.id);
+      const allSelected =
+        visibleIds.length > 0 && visibleIds.every((id) => currentIds.has(id));
+      const nextIds = new Set(currentIds);
+
+      visibleIds.forEach((id) => {
+        if (allSelected) {
+          nextIds.delete(id);
+        } else {
+          nextIds.add(id);
+        }
+      });
+
+      return nextIds;
+    });
+  };
+
+  const handleRemoveSelectedFromProjection = async () => {
+    const ids = Array.from(selectedProjectionIds);
+    if (ids.length === 0) return;
+
+    try {
+      const { error } = await supabase
+        .schema("business")
+        .from("opportunities")
+        .update({ in_pipeline_projection: false })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      setJobs((currentJobs) =>
+        currentJobs.filter((job) => !selectedProjectionIds.has(job.id)),
+      );
+      if (selectedJobId && selectedProjectionIds.has(selectedJobId)) {
+        closeJobPopover();
+      }
+      setSelectedProjectionIds(new Set());
+      setStorageError("");
+      window.dispatchEvent(new Event("pipelineProjectionChanged"));
+    } catch (error) {
+      console.error(
+        "Error removing opportunities from Pipeline Projection:",
+        error,
+      );
+      setStorageError("Could not remove selected opportunities from Pipeline.");
+    }
+  };
+
   const toggleJobPopover = (jobId: string, point: { x: number; y: number }) => {
     if (selectedJobId === jobId) {
       closeJobPopover();
@@ -681,10 +771,10 @@ export default function PipelineCalendarPage() {
                     }))
                   }
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium",
+                    "inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-semibold",
                     statusFilter[status]
-                      ? "border-gray-300 bg-white text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50"
-                      : "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500",
+                      ? cn("border-transparent", getStatusBadgeClasses(status))
+                      : "border-gray-200 bg-gray-50 text-gray-400 opacity-70 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500",
                   )}
                 >
                   <StatusIcon status={status} />
@@ -719,6 +809,22 @@ export default function PipelineCalendarPage() {
             </div>
           </div>
         </div>
+
+        {selectedProjectionIds.size > 0 && (
+          <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-red-50 px-4 py-2 dark:border-gray-800 dark:bg-red-950/20">
+            <div className="text-sm font-medium text-red-800 dark:text-red-200">
+              {selectedProjectionIds.size} selected
+            </div>
+            <button
+              type="button"
+              onClick={handleRemoveSelectedFromProjection}
+              className="inline-flex h-9 items-center gap-2 rounded-md border border-red-200 bg-white px-3 text-sm font-semibold text-red-700 hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/60"
+            >
+              <Trash2 className="h-4 w-4" />
+              Remove from Pipeline
+            </button>
+          </div>
+        )}
 
         {viewMode === "calendar" ? (
           <div className="p-4">
@@ -852,6 +958,20 @@ export default function PipelineCalendarPage() {
             <table className="min-w-[900px] w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-left text-xs uppercase text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                  <th className="w-10 px-3 py-3">
+                    <input
+                      type="checkbox"
+                      aria-label="Select all visible pipeline rows"
+                      checked={
+                        sortedListJobs.length > 0 &&
+                        sortedListJobs.every((job) =>
+                          selectedProjectionIds.has(job.id),
+                        )
+                      }
+                      onChange={toggleAllVisibleProjectionSelection}
+                      className="h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722] dark:border-gray-700 dark:bg-gray-900"
+                    />
+                  </th>
                   {[
                     ["startDate", "Date"],
                     ["customer", "Customer"],
@@ -900,10 +1020,24 @@ export default function PipelineCalendarPage() {
                       "cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 dark:hover:bg-gray-900 dark:focus:ring-white",
                       selectedJobId === job.id &&
                         "bg-orange-50 dark:bg-orange-950/20",
+                      selectedProjectionIds.has(job.id) &&
+                        "bg-orange-50 dark:bg-orange-950/20",
                       job.status === "dropped" &&
                         "bg-gray-50 text-gray-500 dark:bg-gray-900/60 dark:text-gray-500",
                     )}
                   >
+                    <td
+                      className="px-3 py-3"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${job.customer}`}
+                        checked={selectedProjectionIds.has(job.id)}
+                        onChange={() => toggleProjectionSelection(job.id)}
+                        className="h-4 w-4 rounded border-gray-300 text-[#f26722] focus:ring-[#f26722] dark:border-gray-700 dark:bg-gray-900"
+                      />
+                    </td>
                     <td className="whitespace-nowrap px-3 py-3">
                       {formatDate(job.startDate)} –{" "}
                       {job.endDate ? formatDate(job.endDate) : ""}
@@ -935,16 +1069,7 @@ export default function PipelineCalendarPage() {
                     <td className="px-3 py-3">{job.location}</td>
                     <td className="px-3 py-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        {job.isAwarded ? (
-                          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
-                            Awarded
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1">
-                            <StatusIcon status={job.status} />
-                            {statusLabels[job.status]}
-                          </span>
-                        )}
+                        <StatusBadge status={job.status} />
                       </div>
                     </td>
                   </tr>
@@ -1012,11 +1137,8 @@ export default function PipelineCalendarPage() {
                 <div className="font-medium uppercase text-gray-500 dark:text-gray-400">
                   Status
                 </div>
-                <div className="mt-0.5 inline-flex items-center gap-1 font-semibold">
-                  <StatusIcon status={selectedJob.status} />
-                  {selectedJob.isAwarded
-                    ? "Awarded"
-                    : statusLabels[selectedJob.status]}
+                <div className="mt-0.5">
+                  <StatusBadge status={selectedJob.status} />
                 </div>
               </div>
               <div>

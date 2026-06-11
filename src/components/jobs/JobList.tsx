@@ -1,17 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Pencil, X, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
-import { Dialog } from '@headlessui/react';
-import { format } from 'date-fns';
-import { supabase, isConnectionError } from '@/lib/supabase';
-import { useAuth } from '../../lib/AuthContext';
-import { useDemoMode } from '../../lib/DemoModeContext';
-import { useNavigate, useSearchParams, useParams, useLocation } from 'react-router-dom';
-import { useDivision } from '../../App';
-import { JobNotifications } from './JobNotifications';
-import { Database } from '@/types/supabase'; // Assuming this is the correct path to your generated types
-import { addDefaultFilesToJob } from '../../lib/services/defaultJobFiles';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { withPgTimeoutRetry } from '../../lib/retryPgTimeout';
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Plus,
+  Pencil,
+  X,
+  MapPin,
+  ChevronDown,
+  ChevronUp,
+  ArrowDownWideNarrow,
+  Check,
+} from "lucide-react";
+import { Dialog } from "@headlessui/react";
+import { format } from "date-fns";
+import { supabase, isConnectionError } from "@/lib/supabase";
+import { useAuth } from "../../lib/AuthContext";
+import { useDemoMode } from "../../lib/DemoModeContext";
+import {
+  useNavigate,
+  useSearchParams,
+  useParams,
+  useLocation,
+} from "react-router-dom";
+import { useDivision } from "../../App";
+import { JobNotifications } from "./JobNotifications";
+import { Database } from "@/types/supabase"; // Assuming this is the correct path to your generated types
+import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
 
 interface Contact {
   id: string;
@@ -32,20 +46,20 @@ interface TMFormData {
 const isLabDivision = (div: string | null | undefined): boolean => {
   if (!div) return false;
   const lowerDiv = div.toLowerCase();
-  return ['calibration', 'armadillo', 'lab'].includes(lowerDiv);
+  return ["calibration", "armadillo", "lab"].includes(lowerDiv);
 };
 
 interface Job {
   id: string;
-  customer_id: string | null; 
+  customer_id: string | null;
   title: string;
   status: string;
-  start_date: string | null; 
-  due_date: string | null; 
-  budget: number | null; 
-  amount_paid?: number | null; 
+  start_date: string | null;
+  due_date: string | null;
+  budget: number | null;
+  amount_paid?: number | null;
   priority: string;
-  job_number: string | null; 
+  job_number: string | null;
   division?: string | null;
   description?: string | null;
   user_id?: string | null;
@@ -55,10 +69,10 @@ interface Job {
   created_at?: string;
   updated_at?: string;
   deleted_at?: string | null; // Soft delete timestamp
-  submittal_job_type?: 'standard' | 'data_center' | null;
+  submittal_job_type?: "standard" | "data_center" | null;
   submittal_window_hours?: number | null;
   opportunity_id?: string | null;
-  customers?: { 
+  customers?: {
     id: string;
     name: string;
     company_name: string;
@@ -77,31 +91,46 @@ interface Customer {
 }
 
 interface JobFormData {
-  customer_id: string; 
+  customer_id: string;
   title: string;
   description: string;
   status: string;
   start_date: string;
   due_date: string;
-  budget: string; 
+  budget: string;
   priority: string;
   notes?: string;
-  job_number?: string; 
+  job_number?: string;
 }
 
-type StatusFilter = 'all' | 'in_progress' | 'pending' | 'completed' | 'billed';
+type StatusFilter = "all" | "in_progress" | "pending" | "completed" | "billed";
+type JobSortField = "status" | "budget" | "priority" | "job_number" | "title";
+type SortDirection = "asc" | "desc";
+
+const SORT_FIELD_OPTIONS: Array<{ value: JobSortField; label: string }> = [
+  { value: "status", label: "Status" },
+  { value: "budget", label: "Quoted Amount" },
+  { value: "priority", label: "Priority" },
+  { value: "job_number", label: "Job Number" },
+  { value: "title", label: "Title" },
+];
+
+const SORT_DIRECTION_OPTIONS: Array<{ value: SortDirection; label: string }> = [
+  { value: "asc", label: "Ascending" },
+  { value: "desc", label: "Descending" },
+];
 
 const initialFormData: JobFormData = {
-  customer_id: '',
-  title: '',
-  description: '',
-  status: 'pending',
-  start_date: '',
-  due_date: '',
-  budget: '',
-  priority: 'medium',
-  notes: '',
-  job_number: '',
+  customer_id: "",
+  title: "",
+  description: "",
+  status: "pending",
+  start_date: "",
+  due_date: "",
+  budget: "",
+  priority: "medium",
+  notes: "",
+  job_number: "",
 };
 
 export default function JobList() {
@@ -112,8 +141,9 @@ export default function JobList() {
   const { division: contextDivision } = useDivision();
   const { division: urlDivision } = useParams();
   const [searchParams] = useSearchParams();
-  
-  const division = urlDivision || contextDivision || searchParams.get('division');
+
+  const division =
+    urlDivision || contextDivision || searchParams.get("division");
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -121,65 +151,79 @@ export default function JobList() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<JobFormData>(initialFormData);
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [filterByContractValue, setFilterByContractValue] = useState<boolean>(false);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sortField, setSortField] = useState<JobSortField>("job_number");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
   const [showTMModal, setShowTMModal] = useState(false);
   const [TMFormData, setTMFormData] = useState<TMFormData>({
-    customer_id: '',
-    contact_id: '',
-    title: '',
-    description: '',
-    division: ''
+    customer_id: "",
+    contact_id: "",
+    title: "",
+    description: "",
+    division: "",
   });
   const [isCreatingTM, setIsCreatingTM] = useState(false);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
-  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerSearch, setCustomerSearch] = useState("");
   const [contacts, setContacts] = useState<Contact[]>([]);
-  
+
   // New customer/contact creation state
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [creatingCustomer, setCreatingCustomer] = useState(false);
-  const [newCustomer, setNewCustomer] = useState<{ company_name: string; name: string; email: string; phone: string; address: string }>({
-    company_name: '',
-    name: '',
-    email: '',
-    phone: '',
-    address: ''
+  const [newCustomer, setNewCustomer] = useState<{
+    company_name: string;
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+  }>({
+    company_name: "",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
   });
   const [showNewContact, setShowNewContact] = useState(false);
   const [creatingContact, setCreatingContact] = useState(false);
-  const [newContact, setNewContact] = useState<{ first_name: string; last_name: string; email: string; phone: string }>({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: ''
+  const [newContact, setNewContact] = useState<{
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+  }>({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
   });
-  
+
   // Date range filter - load from localStorage or default to one week
   const [dateRangeStart, setDateRangeStart] = useState<string>(() => {
     try {
-      const saved = localStorage.getItem('jobList-dateRangeStart');
+      const saved = localStorage.getItem("jobList-dateRangeStart");
       if (saved) return saved;
     } catch {}
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    return oneWeekAgo.toISOString().split('T')[0];
+    return oneWeekAgo.toISOString().split("T")[0];
   });
   const [dateRangeEnd, setDateRangeEnd] = useState<string>(() => {
     try {
-      const saved = localStorage.getItem('jobList-dateRangeEnd');
+      const saved = localStorage.getItem("jobList-dateRangeEnd");
       if (saved) return saved;
     } catch {}
-    return new Date().toISOString().split('T')[0];
+    return new Date().toISOString().split("T")[0];
   });
-  
+
   // Show/hide totals section - default to hidden
   const [showTotals, setShowTotals] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('jobList-showTotals');
-      return saved === 'true';
+      const saved = localStorage.getItem("jobList-showTotals");
+      return saved === "true";
     } catch {
       return false;
     }
@@ -188,34 +232,162 @@ export default function JobList() {
   // All Time filter - load from localStorage or default to false
   const [allTime, setAllTime] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('jobList-allTime');
-      return saved === 'true';
+      const saved = localStorage.getItem("jobList-allTime");
+      return saved === "true";
     } catch {
       return false;
     }
   });
-  
+
   // Save date range to localStorage when it changes
   useEffect(() => {
     try {
-      localStorage.setItem('jobList-dateRangeStart', dateRangeStart);
-      localStorage.setItem('jobList-dateRangeEnd', dateRangeEnd);
+      localStorage.setItem("jobList-dateRangeStart", dateRangeStart);
+      localStorage.setItem("jobList-dateRangeEnd", dateRangeEnd);
     } catch {}
   }, [dateRangeStart, dateRangeEnd]);
-  
+
   // Save showTotals to localStorage when it changes
   useEffect(() => {
     try {
-      localStorage.setItem('jobList-showTotals', showTotals.toString());
+      localStorage.setItem("jobList-showTotals", showTotals.toString());
     } catch {}
   }, [showTotals]);
 
   // Save allTime to localStorage when it changes
   useEffect(() => {
     try {
-      localStorage.setItem('jobList-allTime', allTime.toString());
+      localStorage.setItem("jobList-allTime", allTime.toString());
     } catch {}
   }, [allTime]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    try {
+      const saved = localStorage.getItem(`jobList-sort-${user.id}`);
+      if (!saved) return;
+
+      const parsed = JSON.parse(saved) as {
+        sortField?: JobSortField;
+        sortDirection?: SortDirection;
+      };
+      if (
+        parsed.sortField &&
+        SORT_FIELD_OPTIONS.some((option) => option.value === parsed.sortField)
+      ) {
+        setSortField(parsed.sortField);
+      }
+      if (
+        parsed.sortDirection &&
+        SORT_DIRECTION_OPTIONS.some(
+          (option) => option.value === parsed.sortDirection,
+        )
+      ) {
+        setSortDirection(parsed.sortDirection);
+      }
+    } catch {}
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    try {
+      localStorage.setItem(
+        `jobList-sort-${user.id}`,
+        JSON.stringify({ sortField, sortDirection }),
+      );
+    } catch {}
+  }, [user?.id, sortField, sortDirection]);
+
+  useEffect(() => {
+    if (!isSortMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sortMenuRef.current &&
+        !sortMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsSortMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isSortMenuOpen]);
+
+  function sortJobsForDisplay(list: Job[]) {
+    const priorityRank: Record<string, number> = {
+      low: 1,
+      medium: 2,
+      high: 3,
+    };
+    const direction = sortDirection === "asc" ? 1 : -1;
+
+    return [...list].sort((a, b) => {
+      if (sortField === "budget") {
+        return ((a.budget ?? 0) - (b.budget ?? 0)) * direction;
+      }
+
+      if (sortField === "priority") {
+        const aRank = priorityRank[(a.priority || "").toLowerCase()] ?? 0;
+        const bRank = priorityRank[(b.priority || "").toLowerCase()] ?? 0;
+        return (aRank - bRank) * direction;
+      }
+
+      if (sortField === "job_number") {
+        const aNum = parseInt(
+          String(a.job_number ?? "").replace(/\D/g, ""),
+          10,
+        );
+        const bNum = parseInt(
+          String(b.job_number ?? "").replace(/\D/g, ""),
+          10,
+        );
+        const aValue = Number.isNaN(aNum) ? Number.MAX_SAFE_INTEGER : aNum;
+        const bValue = Number.isNaN(bNum) ? Number.MAX_SAFE_INTEGER : bNum;
+
+        return (aValue - bValue) * direction;
+      }
+
+      const aValue = String(a[sortField] || "").toLowerCase();
+      const bValue = String(b[sortField] || "").toLowerCase();
+      return aValue.localeCompare(bValue) * direction;
+    });
+  }
+
+  function renderSortOptions<T extends string>(
+    options: Array<{ value: T; label: string }>,
+    selectedValue: T,
+    setValue: (nextValue: T) => void,
+  ) {
+    return (
+      <div className="space-y-0.5">
+        {options.map((option) => {
+          const checked = selectedValue === option.value;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setValue(option.value)}
+              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                checked
+                  ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                  : "text-gray-700 hover:bg-gray-50 dark:text-white dark:hover:bg-dark-100"
+              }`}
+              aria-pressed={checked}
+            >
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                {checked && <Check className="h-4 w-4" />}
+              </span>
+              <span>{option.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (user) {
@@ -229,122 +401,132 @@ export default function JobList() {
 
   useEffect(() => {
     let base = jobs;
-    
+
     // Apply date range filter only if totals section is visible and allTime is not selected
     if (showTotals && !allTime) {
       const startDate = new Date(dateRangeStart);
       const endDate = new Date(dateRangeEnd);
       endDate.setHours(23, 59, 59, 999); // Include the entire end date
-      
-      base = base.filter(job => {
+
+      base = base.filter((job) => {
         if (!job.start_date) return false;
         const jobDate = new Date(job.start_date);
         return jobDate >= startDate && jobDate <= endDate;
       });
     }
-    
-    if (statusFilter !== 'all') {
-      if (statusFilter === 'completed') {
-        base = base.filter(j => {
-          const s = (j.status || '').toLowerCase();
-          return s === 'completed' || s === 'ready_to_bill' || s === 'ready to bill';
+
+    if (statusFilter !== "all") {
+      if (statusFilter === "completed") {
+        base = base.filter((j) => {
+          const s = (j.status || "").toLowerCase();
+          return (
+            s === "completed" || s === "ready_to_bill" || s === "ready to bill"
+          );
         });
-      } else if (statusFilter === 'billed') {
-        base = base.filter(j => (j.status || '').toLowerCase() === 'billed');
+      } else if (statusFilter === "billed") {
+        base = base.filter((j) => (j.status || "").toLowerCase() === "billed");
       } else {
-        base = base.filter(j => (j.status || '').toLowerCase() === statusFilter);
+        base = base.filter(
+          (j) => (j.status || "").toLowerCase() === statusFilter,
+        );
       }
     }
 
-    // Apply contract value filter - show only jobs with non-zero contract value
-    if (filterByContractValue) {
-      base = base.filter(j => {
-        const contractValue = j.contractValue ?? 0;
-        return contractValue !== 0;
-      });
-    }
-
-    if (searchTerm.trim() === '') {
-      setFilteredJobs(base);
+    if (searchTerm.trim() === "") {
+      setFilteredJobs(sortJobsForDisplay(base));
       return;
     }
 
     const searchLower = searchTerm.toLowerCase();
-    const filtered = base.filter(job => {
+    const filtered = base.filter((job) => {
       return (
         maskJobTitle(job.title)?.toLowerCase().includes(searchLower) ||
         job.customers?.company_name?.toLowerCase().includes(searchLower) ||
         job.customers?.name?.toLowerCase().includes(searchLower) ||
         job.job_number?.toLowerCase().includes(searchLower) ||
-        (job.status || '').toLowerCase().includes(searchLower) ||
+        (job.status || "").toLowerCase().includes(searchLower) ||
         job.description?.toLowerCase().includes(searchLower)
       );
     });
-    setFilteredJobs(filtered);
-  }, [searchTerm, statusFilter, filterByContractValue, jobs, dateRangeStart, dateRangeEnd, showTotals, allTime]);
-  
+    setFilteredJobs(sortJobsForDisplay(filtered));
+  }, [
+    searchTerm,
+    statusFilter,
+    sortField,
+    sortDirection,
+    jobs,
+    dateRangeStart,
+    dateRangeEnd,
+    showTotals,
+    allTime,
+  ]);
+
   // Calculate totals for each status
   const calculateStatusTotals = () => {
     // Only filter by date range if totals section is visible and allTime is not selected
     let jobsInRange = jobs;
-    
+
     if (showTotals && !allTime) {
       const startDate = new Date(dateRangeStart);
       const endDate = new Date(dateRangeEnd);
       endDate.setHours(23, 59, 59, 999);
-      
-      jobsInRange = jobs.filter(job => {
+
+      jobsInRange = jobs.filter((job) => {
         if (!job.start_date) return false;
         const jobDate = new Date(job.start_date);
         return jobDate >= startDate && jobDate <= endDate;
       });
     }
-    
+
     const totals: Record<string, { count: number; total: number }> = {
       all: { count: 0, total: 0 },
       pending: { count: 0, total: 0 },
       in_progress: { count: 0, total: 0 },
       completed: { count: 0, total: 0 },
-      billed: { count: 0, total: 0 }
+      billed: { count: 0, total: 0 },
     };
-    
+
     // Calculate total contract value from ALL jobs - just sum all contract values
     let contractValueLeftToBill = 0;
-    jobs.forEach(job => {
+    jobs.forEach((job) => {
       const contractValue = job.contractValue ?? 0;
       contractValueLeftToBill += contractValue;
     });
-    
-    jobsInRange.forEach(job => {
+
+    jobsInRange.forEach((job) => {
       const budget = job.budget || 0;
-      const status = (job.status || '').toLowerCase();
-      
+      const status = (job.status || "").toLowerCase();
+
       // All jobs
       totals.all.count++;
       totals.all.total += budget;
-      
+
       // By status
-      if (status === 'pending') {
+      if (status === "pending") {
         totals.pending.count++;
         totals.pending.total += budget;
-      } else if (status === 'in_progress' || status === 'in-progress') {
+      } else if (status === "in_progress" || status === "in-progress") {
         totals.in_progress.count++;
         totals.in_progress.total += budget;
-      } else if (status === 'completed' || status === 'ready_to_bill' || status === 'ready to bill') {
+      } else if (
+        status === "completed" ||
+        status === "ready_to_bill" ||
+        status === "ready to bill"
+      ) {
         totals.completed.count++;
         totals.completed.total += budget;
-      } else if (status === 'billed') {
+      } else if (status === "billed") {
         totals.billed.count++;
         totals.billed.total += budget;
       }
     });
-    
+
     return {
       ...totals,
-      contractValueLeftToBill
+      contractValueLeftToBill,
     } as typeof totals & { contractValueLeftToBill: number };
   };
-  
+
   const statusTotals = calculateStatusTotals();
 
   async function fetchJobs() {
@@ -353,164 +535,214 @@ export default function JobList() {
 
     // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
-      console.error('JobList: fetchJobs timed out after 30 seconds');
-      setLoadError('This is taking longer than expected. Please try again.');
+      console.error("JobList: fetchJobs timed out after 30 seconds");
+      setLoadError("This is taking longer than expected. Please try again.");
       setLoading(false);
     }, 30000);
 
     try {
-      const currentSchema = isLabDivision(division) ? 'lab_ops' : 'neta_ops';
-      const currentTable = isLabDivision(division) ? 'lab_jobs' : 'jobs';
+      const currentSchema = isLabDivision(division) ? "lab_ops" : "neta_ops";
+      const currentTable = isLabDivision(division) ? "lab_jobs" : "jobs";
 
       let jobQuery = supabase
         .schema(currentSchema)
         .from(currentTable)
-        .select('*') 
-        .is('deleted_at', null) // Only fetch non-deleted jobs
-        .order('created_at', { ascending: false });
+        .select("*")
+        .is("deleted_at", null) // Only fetch non-deleted jobs
+        .order("created_at", { ascending: false });
 
       if (division) {
-        if (division === 'field_tech' || division === 'field-tech') {
-          jobQuery = jobQuery.in('division', ['north_alabama', 'tennessee', 'georgia', 'international']);
+        if (division === "field_tech" || division === "field-tech") {
+          jobQuery = jobQuery.in("division", [
+            "north_alabama",
+            "tennessee",
+            "georgia",
+            "international",
+          ]);
         } else {
-          jobQuery = jobQuery.eq('division', division);
+          jobQuery = jobQuery.eq("division", division);
         }
       }
 
       const { data: jobData, error: jobError } = await jobQuery;
 
       if (jobError) {
-        console.error('Error fetching base job data:', jobError);
+        console.error("Error fetching base job data:", jobError);
         if (isConnectionError(jobError)) {
-          throw new Error('Unable to connect to the database. Please check your connection.');
+          throw new Error(
+            "Unable to connect to the database. Please check your connection.",
+          );
         }
         throw jobError;
       }
 
       if (!jobData) {
         setJobs([]);
-        return; 
+        return;
       }
 
       // Fetch opportunities for jobs that have opportunity_id
-      const opportunityIds = [...new Set(jobData.filter((j: any) => j.opportunity_id).map((j: any) => j.opportunity_id))];
+      const opportunityIds = [
+        ...new Set(
+          jobData
+            .filter((j: any) => j.opportunity_id)
+            .map((j: any) => j.opportunity_id),
+        ),
+      ];
       let opportunityMap: Record<string, any> = {};
       if (opportunityIds.length > 0) {
         try {
           const { data: opportunitiesData } = await supabase
-            .schema('business')
-            .from('opportunities')
-            .select('id, opportunity_type')
-            .in('id', opportunityIds);
-          
+            .schema("business")
+            .from("opportunities")
+            .select("id, opportunity_type")
+            .in("id", opportunityIds);
+
           if (opportunitiesData) {
             opportunitiesData.forEach((opp: any) => {
               opportunityMap[opp.id] = opp;
             });
           }
         } catch (err) {
-          console.warn('Error fetching opportunities:', err);
+          console.warn("Error fetching opportunities:", err);
         }
       }
 
       // Batch-fetch all customers in one query (avoids N+1)
-      const customerIds = [...new Set(jobData.filter((j: any) => j.customer_id).map((j: any) => j.customer_id))];
+      const customerIds = [
+        ...new Set(
+          jobData
+            .filter((j: any) => j.customer_id)
+            .map((j: any) => j.customer_id),
+        ),
+      ];
       let customerMap: Record<string, any> = {};
       if (customerIds.length > 0) {
         try {
           const { data: customersData } = await supabase
-            .schema('common')
-            .from('customers')
-            .select('id, name, company_name')
-            .in('id', customerIds);
+            .schema("common")
+            .from("customers")
+            .select("id, name, company_name")
+            .in("id", customerIds);
           if (customersData) {
-            customersData.forEach((c: any) => { customerMap[c.id] = c; });
+            customersData.forEach((c: any) => {
+              customerMap[c.id] = c;
+            });
           }
         } catch (err) {
-          console.warn('Error batch-fetching customers:', err);
+          console.warn("Error batch-fetching customers:", err);
         }
       }
 
       const jobsWithCustomers = jobData.map((job) => ({
         ...job,
-        customers: job.customer_id ? (customerMap[job.customer_id] || null) : null,
-        opportunity: job.opportunity_id ? (opportunityMap[job.opportunity_id] || null) : null,
+        customers: job.customer_id
+          ? customerMap[job.customer_id] || null
+          : null,
+        opportunity: job.opportunity_id
+          ? opportunityMap[job.opportunity_id] || null
+          : null,
       }));
 
       // Fetch contract values for all jobs
-      const jobIds = jobsWithCustomers.map(job => job.id);
+      const jobIds = jobsWithCustomers.map((job) => job.id);
       let contractValueMap: Record<string, number> = {};
-      
+
       if (jobIds.length > 0) {
         try {
           const { data: contractsData, error: contractsError } = await supabase
-            .schema('neta_ops')
-            .from('job_contracts')
-            .select('job_id, value, value_operation')
-            .in('job_id', jobIds);
-          
+            .schema("neta_ops")
+            .from("job_contracts")
+            .select("job_id, value, value_operation")
+            .in("job_id", jobIds);
+
           if (contractsError) {
-            console.error('Error fetching contract values:', contractsError);
+            console.error("Error fetching contract values:", contractsError);
           }
-          
+
           if (contractsData && contractsData.length > 0) {
             // Remaining balance per job (same logic as JobDetail remainingBalance)
-            const getValueOp = (row: { value_operation?: string | null; value?: number | null }) => {
+            const getValueOp = (row: {
+              value_operation?: string | null;
+              value?: number | null;
+            }) => {
               const raw = row.value ?? 0;
-              let op = row.value_operation ?? (raw >= 0 ? 'add_to_total' : 'subtract_from_remaining');
-              if (op === 'add_to_total' && raw < 0) op = 'subtract_from_remaining';
+              let op =
+                row.value_operation ??
+                (raw >= 0 ? "add_to_total" : "subtract_from_remaining");
+              if (op === "add_to_total" && raw < 0)
+                op = "subtract_from_remaining";
               return op;
             };
             contractsData.forEach((row: any) => {
               const jobId = row.job_id;
               const raw = row.value;
               if (raw === null || raw === undefined) return;
-              const amount = Math.abs(typeof raw === 'number' ? raw : parseFloat(raw));
+              const amount = Math.abs(
+                typeof raw === "number" ? raw : parseFloat(raw),
+              );
               if (isNaN(amount)) return;
               const op = getValueOp(row);
               if (!contractValueMap[jobId]) contractValueMap[jobId] = 0;
-              if (op === 'add_to_total' || op === 'add_to_remaining') contractValueMap[jobId] += amount;
-              else if (op === 'subtract_from_remaining' || op === 'subtract_from_total') contractValueMap[jobId] -= amount;
+              if (op === "add_to_total" || op === "add_to_remaining")
+                contractValueMap[jobId] += amount;
+              else if (
+                op === "subtract_from_remaining" ||
+                op === "subtract_from_total"
+              )
+                contractValueMap[jobId] -= amount;
             });
-            
+
             // Log the contract value map
-            const jobsWithPositiveValues = Object.entries(contractValueMap).filter(([_, val]) => val > 0);
+            const jobsWithPositiveValues = Object.entries(
+              contractValueMap,
+            ).filter(([_, val]) => val > 0);
             if (jobsWithPositiveValues.length > 0) {
-              console.log('Jobs with positive contract values:', jobsWithPositiveValues);
+              console.log(
+                "Jobs with positive contract values:",
+                jobsWithPositiveValues,
+              );
             } else {
-              console.log('No jobs with positive contract values found. Contract value map:', contractValueMap);
+              console.log(
+                "No jobs with positive contract values found. Contract value map:",
+                contractValueMap,
+              );
             }
           } else {
-            console.log('No contracts found for jobs');
+            console.log("No contracts found for jobs");
           }
         } catch (err) {
-          console.error('Error fetching contract values:', err);
+          console.error("Error fetching contract values:", err);
         }
       }
 
       // Add contract values to jobs
-      const jobsWithContractValues = jobsWithCustomers.map(job => ({
+      const jobsWithContractValues = jobsWithCustomers.map((job) => ({
         ...job,
-        contractValue: contractValueMap[job.id] ?? 0
+        contractValue: contractValueMap[job.id] ?? 0,
       }));
-      
+
       // Debug: log jobs with contract values
-      const jobsWithContracts = jobsWithContractValues.filter(j => (j.contractValue ?? 0) !== 0);
+      const jobsWithContracts = jobsWithContractValues.filter(
+        (j) => (j.contractValue ?? 0) !== 0,
+      );
       if (jobsWithContracts.length > 0) {
-        console.log('Jobs with contract values attached:', jobsWithContracts.map(j => ({
-          id: j.id,
-          title: j.title?.substring(0, 30),
-          contractValue: j.contractValue,
-          status: j.status
-        })));
+        console.log(
+          "Jobs with contract values attached:",
+          jobsWithContracts.map((j) => ({
+            id: j.id,
+            title: j.title?.substring(0, 30),
+            contractValue: j.contractValue,
+            status: j.status,
+          })),
+        );
       }
 
       setJobs(jobsWithContractValues as Job[]); // Cast to Job[]
       setFilteredJobs(jobsWithContractValues as Job[]); // Initialize filtered jobs
-
     } catch (error) {
-      console.error('Error in fetchJobs function:', error);
-      setLoadError('Failed to load jobs. Please try again.');
+      console.error("Error in fetchJobs function:", error);
+      setLoadError("Failed to load jobs. Please try again.");
     } finally {
       clearTimeout(timeoutId);
       // Always clear loading state - ensures loading is cleared in all scenarios
@@ -520,47 +752,49 @@ export default function JobList() {
 
   async function fetchCustomers() {
     try {
-      console.log('Fetching customers');
+      console.log("Fetching customers");
       const { data, error } = await supabase
-        .schema('common')
-        .from('customers')
-        .select('id, name, company_name')
-        .order('name', { ascending: true });
+        .schema("common")
+        .from("customers")
+        .select("id, name, company_name")
+        .order("name", { ascending: true });
 
       if (error) {
-        console.error('Error fetching customers:', error);
+        console.error("Error fetching customers:", error);
         if (isConnectionError(error)) {
-          throw new Error('Unable to connect to the database. Please check your connection.');
+          throw new Error(
+            "Unable to connect to the database. Please check your connection.",
+          );
         }
         throw error;
       }
 
       setCustomers(data || []);
     } catch (error) {
-      console.error('Error fetching customers:', error);
+      console.error("Error fetching customers:", error);
     }
   }
 
   async function fetchContacts(customerId: string) {
     try {
       const { data, error } = await supabase
-        .schema('common')
-        .from('contacts')
-        .select('id, first_name, last_name, customer_id')
-        .eq('customer_id', customerId)
-        .order('first_name');
+        .schema("common")
+        .from("contacts")
+        .select("id, first_name, last_name, customer_id")
+        .eq("customer_id", customerId)
+        .order("first_name");
 
       if (error) throw error;
       setContacts(data || []);
-      setTMFormData(prev => ({ ...prev, contact_id: '' }));
+      setTMFormData((prev) => ({ ...prev, contact_id: "" }));
     } catch (error) {
-      console.error('Error fetching contacts:', error);
+      console.error("Error fetching contacts:", error);
     }
   }
 
   useEffect(() => {
     if (customers.length > 0) {
-      const filtered = customers.filter(customer => {
+      const filtered = customers.filter((customer) => {
         const searchTerm = customerSearch.toLowerCase();
         return (
           customer.name.toLowerCase().includes(searchTerm) ||
@@ -579,15 +813,19 @@ export default function JobList() {
     }
   }, [TMFormData.customer_id]);
 
-  function handleTMChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+  function handleTMChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) {
     const { name, value } = e.target;
-    setTMFormData(prev => ({ ...prev, [name]: value }));
+    setTMFormData((prev) => ({ ...prev, [name]: value }));
   }
 
   async function handleCreateCustomer() {
     if (!user) return;
     if (!newCustomer.company_name && !newCustomer.name) {
-      alert('Please enter a Company name or Customer name');
+      alert("Please enter a Company name or Customer name");
       return;
     }
     setCreatingCustomer(true);
@@ -598,24 +836,30 @@ export default function JobList() {
         email: newCustomer.email || null,
         phone: newCustomer.phone || null,
         address: newCustomer.address || null,
-        status: 'active',
-        user_id: user.id
+        status: "active",
+        user_id: user.id,
       };
       const { data, error } = await supabase
-        .schema('common')
-        .from('customers')
+        .schema("common")
+        .from("customers")
         .insert([payload])
-        .select('id, name, company_name')
+        .select("id, name, company_name")
         .single();
       if (error) throw error;
       // Refresh customers and set selected
       await fetchCustomers();
-      setTMFormData(prev => ({ ...prev, customer_id: data.id }));
+      setTMFormData((prev) => ({ ...prev, customer_id: data.id }));
       setShowNewCustomer(false);
-      setNewCustomer({ company_name: '', name: '', email: '', phone: '', address: '' });
+      setNewCustomer({
+        company_name: "",
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+      });
     } catch (err: any) {
-      console.error('Error creating customer:', err);
-      alert(err.message || 'Failed to create customer');
+      console.error("Error creating customer:", err);
+      alert(err.message || "Failed to create customer");
     } finally {
       setCreatingCustomer(false);
     }
@@ -624,11 +868,11 @@ export default function JobList() {
   async function handleCreateContact() {
     if (!user) return;
     if (!TMFormData.customer_id) {
-      alert('Please select or create a customer first');
+      alert("Please select or create a customer first");
       return;
     }
     if (!newContact.first_name || !newContact.last_name) {
-      alert('Please enter first and last name');
+      alert("Please enter first and last name");
       return;
     }
     setCreatingContact(true);
@@ -640,20 +884,20 @@ export default function JobList() {
         phone: newContact.phone || null,
         customer_id: TMFormData.customer_id,
         user_id: user.id,
-        is_primary: false
+        is_primary: false,
       };
       const { error } = await supabase
-        .schema('common')
-        .from('contacts')
+        .schema("common")
+        .from("contacts")
         .insert([contactPayload]);
       if (error) throw error;
       // Refresh contacts for selected customer and close form
       await fetchContacts(TMFormData.customer_id);
       setShowNewContact(false);
-      setNewContact({ first_name: '', last_name: '', email: '', phone: '' });
+      setNewContact({ first_name: "", last_name: "", email: "", phone: "" });
     } catch (err: any) {
-      console.error('Error creating contact:', err);
-      alert(err.message || 'Failed to create contact');
+      console.error("Error creating contact:", err);
+      alert(err.message || "Failed to create contact");
     } finally {
       setCreatingContact(false);
     }
@@ -661,17 +905,24 @@ export default function JobList() {
 
   async function handleTMSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
+
     if (!user?.id) {
-      alert('User not authenticated');
+      alert("User not authenticated");
       return;
     }
 
-    const fieldTechDivisions = ['north_alabama', 'tennessee', 'georgia', 'international'];
-    const activeDivision = fieldTechDivisions.includes(division || '') ? division : TMFormData.division;
+    const fieldTechDivisions = [
+      "north_alabama",
+      "tennessee",
+      "georgia",
+      "international",
+    ];
+    const activeDivision = fieldTechDivisions.includes(division || "")
+      ? division
+      : TMFormData.division;
 
     if (!TMFormData.customer_id || !TMFormData.title || !activeDivision) {
-      alert('Please fill in all required fields (Customer, Title, Division)');
+      alert("Please fill in all required fields (Customer, Title, Division)");
       return;
     }
 
@@ -680,17 +931,17 @@ export default function JobList() {
     try {
       // Get the next quote number for the opportunity
       const { data: recent } = await supabase
-        .schema('business')
-        .from('opportunities')
-        .select('quote_number')
-        .order('created_at', { ascending: false })
+        .schema("business")
+        .from("opportunities")
+        .select("quote_number")
+        .order("created_at", { ascending: false })
         .limit(500);
 
       const nums: number[] = (recent || [])
-        .map(r => (r as any)?.quote_number)
-        .filter((q: any) => typeof q === 'string' && /^[0-9]+$/.test(q))
+        .map((r) => (r as any)?.quote_number)
+        .filter((q: any) => typeof q === "string" && /^[0-9]+$/.test(q))
         .map((q: string) => parseInt(q, 10))
-        .filter(n => Number.isFinite(n));
+        .filter((n) => Number.isFinite(n));
 
       const maxNumeric = nums.length ? Math.max(...nums) : 0;
       const base = 3802;
@@ -700,14 +951,16 @@ export default function JobList() {
       let nextJobNumberNumeric = 26001;
       let gotFromRpc = false;
       try {
-        const { data: fnResult } = await withPgTimeoutRetry(() => supabase.rpc('get_max_job_number'));
+        const { data: fnResult } = await withPgTimeoutRetry(() =>
+          supabase.rpc("get_max_job_number"),
+        );
         const raw = Array.isArray(fnResult) ? (fnResult[0] as any) : fnResult;
         const value =
-          typeof raw === 'number' && Number.isFinite(raw)
+          typeof raw === "number" && Number.isFinite(raw)
             ? raw
-            : typeof raw === 'string' && /^\d+$/.test(raw)
+            : typeof raw === "string" && /^\d+$/.test(raw)
               ? parseInt(raw, 10)
-              : typeof (raw as any)?.get_max_job_number === 'number'
+              : typeof (raw as any)?.get_max_job_number === "number"
                 ? (raw as any).get_max_job_number
                 : null;
         if (value != null && Number.isFinite(value)) {
@@ -718,17 +971,17 @@ export default function JobList() {
       if (!gotFromRpc) {
         try {
           const { data: jobsScan } = await supabase
-            .schema('neta_ops')
-            .from('jobs')
-            .select('job_number')
+            .schema("neta_ops")
+            .from("jobs")
+            .select("job_number")
             .limit(2000);
           const jobNums = (jobsScan || [])
             .map((j: any) => j?.job_number)
-            .filter((s: any) => s != null && s !== '')
+            .filter((s: any) => s != null && s !== "")
             .map((s: any) => {
-              const str = typeof s === 'string' ? s : String(s);
+              const str = typeof s === "string" ? s : String(s);
               if (/^[0-9]+$/.test(str)) return parseInt(str, 10);
-              const digits = str.replace(/\D/g, '');
+              const digits = str.replace(/\D/g, "");
               return digits ? parseInt(digits, 10) : 0;
             })
             .filter((n: number) => Number.isFinite(n));
@@ -743,96 +996,111 @@ export default function JobList() {
         customer_id: TMFormData.customer_id,
         contact_id: TMFormData.contact_id || null,
         title: TMFormData.title,
-        description: TMFormData.description || '',
-        status: 'awarded',
+        description: TMFormData.description || "",
+        status: "awarded",
         expected_value: 0,
         probability: 100,
-        notes: 'Created from T&M form',
+        notes: "Created from T&M form",
         amp_division: activeDivision,
         sales_person: user.email,
         user_id: user.id,
         quote_number: String(nextQuoteNumber),
         reviewed_by: null,
         prepared_by: null,
-        opportunity_type: 'time_materials' // Mark as T&M opportunity
+        opportunity_type: "time_materials", // Mark as T&M opportunity
       };
 
-      const { data: newOpportunity, error: opportunityError } = await withPgTimeoutRetry(() =>
-        supabase
-          .schema('business')
-          .from('opportunities')
-          .insert(opportunityData)
-          .select('id')
-          .single()
-      );
+      const { data: newOpportunity, error: opportunityError } =
+        await withPgTimeoutRetry(() =>
+          supabase
+            .schema("business")
+            .from("opportunities")
+            .insert(opportunityData)
+            .select("id")
+            .single(),
+        );
 
       if (opportunityError || !newOpportunity) {
-        throw opportunityError || new Error('Opportunity insert returned no row');
+        throw (
+          opportunityError || new Error("Opportunity insert returned no row")
+        );
       }
 
       const jobPayload = {
         user_id: user.id,
         customer_id: TMFormData.customer_id,
         title: TMFormData.title,
-        description: TMFormData.description || '',
-        status: 'pending',
+        description: TMFormData.description || "",
+        status: "pending",
         start_date: new Date().toISOString().substring(0, 10),
         budget: null,
-        notes: 'Created from T&M opportunity',
-        priority: 'medium',
+        notes: "Created from T&M opportunity",
+        priority: "medium",
         division: activeDivision,
         job_number: nextJobNumberStr,
-        opportunity_id: newOpportunity.id
+        opportunity_id: newOpportunity.id,
       };
 
       const { data: newJob, error: jobError } = await withPgTimeoutRetry(() =>
-        supabase.schema('neta_ops').from('jobs').insert(jobPayload).select('id').single()
+        supabase
+          .schema("neta_ops")
+          .from("jobs")
+          .insert(jobPayload)
+          .select("id")
+          .single(),
       );
 
       if (jobError || !newJob) {
-        throw jobError || new Error('Job insert returned no row');
+        throw jobError || new Error("Job insert returned no row");
       }
 
       // Link the opportunity to the job
       try {
         await supabase
-          .schema('business')
-          .from('opportunities')
+          .schema("business")
+          .from("opportunities")
           .update({ job_id: newJob.id })
-          .eq('id', newOpportunity.id);
+          .eq("id", newOpportunity.id);
       } catch (linkError) {
-        console.warn('Could not link opportunity to job:', linkError);
+        console.warn("Could not link opportunity to job:", linkError);
       }
 
       // Add default files to the newly created job
       try {
         await addDefaultFilesToJob(newJob.id, user.id, activeDivision);
-        console.log('Default files added successfully to job:', newJob.id);
+        console.log("Default files added successfully to job:", newJob.id);
       } catch (fileError) {
-        console.error('Error adding default files to job:', fileError);
+        console.error("Error adding default files to job:", fileError);
       }
 
-      alert('T&M opportunity and job created successfully!');
+      alert("T&M opportunity and job created successfully!");
       setShowTMModal(false);
       setTMFormData({
-        customer_id: '',
-        contact_id: '',
-        title: '',
-        description: '',
-        division: ''
+        customer_id: "",
+        contact_id: "",
+        title: "",
+        description: "",
+        division: "",
       });
       setShowNewCustomer(false);
       setShowNewContact(false);
-      setNewCustomer({ company_name: '', name: '', email: '', phone: '', address: '' });
-      setNewContact({ first_name: '', last_name: '', email: '', phone: '' });
+      setNewCustomer({
+        company_name: "",
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+      });
+      setNewContact({ first_name: "", last_name: "", email: "", phone: "" });
 
       // Refresh jobs list and navigate to the new job
       fetchJobs();
       navigate(`/jobs/${newJob.id}`);
-
     } catch (error: any) {
-      console.error('Error creating T&M opportunity and job:', error);
-      alert(`Error creating T&M opportunity and job: ${error?.message || 'Unknown error'}`);
+      console.error("Error creating T&M opportunity and job:", error);
+      alert(
+        `Error creating T&M opportunity and job: ${error?.message || "Unknown error"}`,
+      );
     } finally {
       setIsCreatingTM(false);
     }
@@ -845,11 +1113,13 @@ export default function JobList() {
     let payloadToLog: any = null; // For logging
 
     try {
-      const currentSchema = isLabDivision(division) ? 'lab_ops' : 'neta_ops';
-      const currentTable = isLabDivision(division) ? 'lab_jobs' : 'jobs';
+      const currentSchema = isLabDivision(division) ? "lab_ops" : "neta_ops";
+      const currentTable = isLabDivision(division) ? "lab_jobs" : "jobs";
       const activeDivision = division;
 
-      console.log(`Saving job to schema: ${currentSchema}, table: ${currentTable} for division: ${activeDivision}`);
+      console.log(
+        `Saving job to schema: ${currentSchema}, table: ${currentTable} for division: ${activeDivision}`,
+      );
 
       let finalBudget: number | undefined;
       if (formData.budget) {
@@ -858,138 +1128,153 @@ export default function JobList() {
           finalBudget = parsedBudget;
         }
       }
-      
-      if (activeDivision?.toLowerCase() === 'calibration' || activeDivision?.toLowerCase() === 'armadillo') {
-        finalBudget = undefined; 
+
+      if (
+        activeDivision?.toLowerCase() === "calibration" ||
+        activeDivision?.toLowerCase() === "armadillo"
+      ) {
+        finalBudget = undefined;
       }
 
       let result;
-      
-      if (currentSchema === 'lab_ops') {
-        const labJobData: Database['lab_ops']['Tables']['lab_jobs']['Insert'] = {
-          title: formData.title,
-          customer_id: formData.customer_id || null, 
-          description: formData.description || undefined,
-          status: formData.status || 'pending',
-          priority: formData.priority || 'medium',
-          start_date: formData.start_date || null, 
-          due_date: formData.due_date || null,     
-          notes: formData.notes || undefined,
-          job_number: formData.job_number || null, 
-          user_id: user.id,
-          division: activeDivision,                
-          budget: finalBudget === undefined ? null : finalBudget, 
-          portal_type: 'lab',
-        };
+
+      if (currentSchema === "lab_ops") {
+        const labJobData: Database["lab_ops"]["Tables"]["lab_jobs"]["Insert"] =
+          {
+            title: formData.title,
+            customer_id: formData.customer_id || null,
+            description: formData.description || undefined,
+            status: formData.status || "pending",
+            priority: formData.priority || "medium",
+            start_date: formData.start_date || null,
+            due_date: formData.due_date || null,
+            notes: formData.notes || undefined,
+            job_number: formData.job_number || null,
+            user_id: user.id,
+            division: activeDivision,
+            budget: finalBudget === undefined ? null : finalBudget,
+            portal_type: "lab",
+          };
         payloadToLog = labJobData;
 
         result = await supabase
-          .schema('lab_ops')
-          .from('lab_jobs')
+          .schema("lab_ops")
+          .from("lab_jobs")
           .insert(labJobData)
-          .select('id')
+          .select("id")
           .single();
-
-      } else { // neta_ops
+      } else {
+        // neta_ops
         if (!formData.customer_id) {
-            console.error('Customer ID is required for neta_ops jobs.');
-            alert('Customer ID is required.');
-            return; 
+          console.error("Customer ID is required for neta_ops jobs.");
+          alert("Customer ID is required.");
+          return;
         }
 
-        const netaJobData: Database['neta_ops']['Tables']['jobs']['Insert'] = {
+        const netaJobData: Database["neta_ops"]["Tables"]["jobs"]["Insert"] = {
           title: formData.title,
           customer_id: formData.customer_id, // Must be string
           description: formData.description || undefined,
-          status: formData.status || 'pending',
-          priority: formData.priority || 'medium',
+          status: formData.status || "pending",
+          priority: formData.priority || "medium",
           start_date: formData.start_date || undefined,
           due_date: formData.due_date || undefined,
           notes: formData.notes || undefined,
           job_number: formData.job_number || undefined,
           user_id: user.id,
           division: activeDivision || undefined,
-          budget: finalBudget, 
+          budget: finalBudget,
           // amount_paid is intentionally removed as it's not in the Insert type
         };
         payloadToLog = netaJobData;
-        
+
         result = await supabase
-          .schema('neta_ops')
-          .from('jobs')
+          .schema("neta_ops")
+          .from("jobs")
           .insert(netaJobData)
-          .select('id')
+          .select("id")
           .single();
       }
 
       if (result.error) {
-        console.error(`Error creating job in ${currentSchema}.${currentTable}:`, result.error);
-        console.error('Payload sent for ' + currentSchema + ':', payloadToLog);
+        console.error(
+          `Error creating job in ${currentSchema}.${currentTable}:`,
+          result.error,
+        );
+        console.error("Payload sent for " + currentSchema + ":", payloadToLog);
         throw result.error;
       }
-      
-      console.log(`Job created successfully in ${currentSchema}.${currentTable}:`, result.data);
+
+      console.log(
+        `Job created successfully in ${currentSchema}.${currentTable}:`,
+        result.data,
+      );
 
       // Add default files to the newly created job
       try {
-        await addDefaultFilesToJob(result.data.id, user.id, activeDivision || undefined);
-        console.log('Default files added successfully to job:', result.data.id);
+        await addDefaultFilesToJob(
+          result.data.id,
+          user.id,
+          activeDivision || undefined,
+        );
+        console.log("Default files added successfully to job:", result.data.id);
       } catch (fileError) {
-        console.error('Error adding default files to job:', fileError);
+        console.error("Error adding default files to job:", fileError);
         // Don't fail the job creation if default files fail
-        alert('Job created but some default files could not be added');
+        alert("Job created but some default files could not be added");
       }
 
       setIsOpen(false);
       setFormData(initialFormData);
-      setSearchTerm(''); // Clear search when adding new job
+      setSearchTerm(""); // Clear search when adding new job
       fetchJobs();
     } catch (error) {
-      console.error('Caught error in handleSubmit:', error);
+      console.error("Caught error in handleSubmit:", error);
       // Log payloadToLog here as well if an error is caught after payload construction but before/during Supabase call
       if (payloadToLog) {
-        console.error('Payload at time of error:', payloadToLog);
+        console.error("Payload at time of error:", payloadToLog);
       }
     }
   }
 
   function handleInputChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
   function getStatusColor(status: string) {
     switch (status.toLowerCase()) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in_progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "in_progress":
+        return "bg-blue-100 text-blue-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   }
 
-
   function formatDivisionName(divisionValue: string | null): string {
-    if (!divisionValue) return '';
-    
+    if (!divisionValue) return "";
+
     const divisionMap: { [key: string]: string } = {
-      'north_alabama': 'Alabama Division',
-      'tennessee': 'Tennessee Division',
-      'georgia': 'Georgia Division',
-      'international': 'International Division',
-      'engineering': 'Engineering',
-      'scavenger': 'Scavenger',
-      'Decatur': 'Alabama Division (Decatur)',
-      'calibration': 'Calibration Lab',
-      'armadillo': 'Armadillo Lab',
-      'lab': 'Lab Portal'
+      north_alabama: "Alabama Division",
+      tennessee: "Tennessee Division",
+      georgia: "Georgia Division",
+      international: "International Division",
+      engineering: "Engineering",
+      scavenger: "Scavenger",
+      Decatur: "Alabama Division (Decatur)",
+      calibration: "Calibration Lab",
+      armadillo: "Armadillo Lab",
+      lab: "Lab Portal",
     };
-    
+
     return divisionMap[divisionValue.toLowerCase()] || divisionValue;
   }
 
@@ -997,8 +1282,18 @@ export default function JobList() {
     return (
       <div className="p-6 flex flex-col items-center justify-center min-h-[400px]">
         <div className="text-red-600 dark:text-red-400 mb-4">
-          <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <svg
+            className="w-12 h-12"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
           </svg>
         </div>
         <div className="text-gray-900 dark:text-gray-100 mb-4">{loadError}</div>
@@ -1017,7 +1312,11 @@ export default function JobList() {
   }
 
   if (loading) {
-    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <LoadingSpinner size="md" />
+      </div>
+    );
   }
 
   return (
@@ -1025,42 +1324,68 @@ export default function JobList() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            {division === 'field_tech' ? 'Field Tech Jobs' : `Jobs ${formatDivisionName(division)}`}
+            {division === "field_tech"
+              ? "Field Tech Jobs"
+              : `Jobs ${formatDivisionName(division)}`}
           </h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-white">
-            A list of all the jobs in the selected division.
-          </p>
         </div>
         <div className="flex items-center gap-3">
           <JobNotifications />
-          
+
           {/* T&M button for Field Tech divisions - only visible to authorized users */}
-          {(division === 'field_tech' || division === 'field-tech' || division === 'north_alabama' || division === 'tennessee' || division === 'georgia' || division === 'international') &&
-           (user?.email === 'william.sasser@ampqes.com' || user?.email === 'john.chambers@ampqes.com' || user?.email === 'anthony.masters@ampqes.com' || user?.email === 'caleb.hipp@ampqes.com' || user?.email === 'zach.freeborn@ampqes.com' || user?.email === 'zecahriah.freeborn@ampqes.com' || user?.email === 'ethan.thoenes@ampqes.com' || user?.email === 'greg.pellerito@ampqes.com' || user?.email === 'michael.bland@ampqes.com' || user?.email === 'kelly.lawton@ampqes.com') && (
-            <button
-              type="button"
-              onClick={() => {
-                setShowTMModal(true);
-                setTMFormData({
-                  customer_id: '',
-                  contact_id: '',
-                  title: '',
-                  description: '',
-                  division: ''
-                });
-                setShowNewCustomer(false);
-                setShowNewContact(false);
-                setNewCustomer({ company_name: '', name: '', email: '', phone: '', address: '' });
-                setNewContact({ first_name: '', last_name: '', email: '', phone: '' });
-              }}
-              className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add T&M or Emergency Job
-            </button>
-          )}
-          
-          {(division?.toLowerCase() === 'calibration' || division?.toLowerCase() === 'armadillo' || division?.toLowerCase() === 'scavenger') && (
+          {(division === "field_tech" ||
+            division === "field-tech" ||
+            division === "north_alabama" ||
+            division === "tennessee" ||
+            division === "georgia" ||
+            division === "international") &&
+            (user?.email === "william.sasser@ampqes.com" ||
+              user?.email === "john.chambers@ampqes.com" ||
+              user?.email === "anthony.masters@ampqes.com" ||
+              user?.email === "caleb.hipp@ampqes.com" ||
+              user?.email === "zach.freeborn@ampqes.com" ||
+              user?.email === "zecahriah.freeborn@ampqes.com" ||
+              user?.email === "ethan.thoenes@ampqes.com" ||
+              user?.email === "greg.pellerito@ampqes.com" ||
+              user?.email === "michael.bland@ampqes.com" ||
+              user?.email === "kelly.lawton@ampqes.com") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowTMModal(true);
+                  setTMFormData({
+                    customer_id: "",
+                    contact_id: "",
+                    title: "",
+                    description: "",
+                    division: "",
+                  });
+                  setShowNewCustomer(false);
+                  setShowNewContact(false);
+                  setNewCustomer({
+                    company_name: "",
+                    name: "",
+                    email: "",
+                    phone: "",
+                    address: "",
+                  });
+                  setNewContact({
+                    first_name: "",
+                    last_name: "",
+                    email: "",
+                    phone: "",
+                  });
+                }}
+                className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add T&M or Emergency Job
+              </button>
+            )}
+
+          {(division?.toLowerCase() === "calibration" ||
+            division?.toLowerCase() === "armadillo" ||
+            division?.toLowerCase() === "scavenger") && (
             <button
               type="button"
               onClick={() => setIsOpen(true)}
@@ -1078,22 +1403,28 @@ export default function JobList() {
           onClick={() => setShowTotals(!showTotals)}
           className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
         >
-          {showTotals ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          {showTotals ? 'Hide' : 'Show'} Totals & Date Range
+          {showTotals ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+          {showTotals ? "Hide" : "Show"} Totals & Date Range
         </button>
-        
+
         {showTotals && (
-          <div className="mt-4 bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <div className="mt-4 bg-white dark:bg-dark-150">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
               <div className="flex items-center gap-4">
-                <label className="text-sm font-medium text-gray-700 dark:text-white">Date Range:</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-white">
+                  Date Range:
+                </label>
                 <button
                   type="button"
                   onClick={() => setAllTime(!allTime)}
                   className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
                     allTime
-                      ? 'bg-[#f26722] text-white'
-                      : 'bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-200'
+                      ? "bg-[#f26722] text-white"
+                      : "bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-200"
                   }`}
                 >
                   All Time
@@ -1117,62 +1448,107 @@ export default function JobList() {
                 )}
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
               <div className="bg-gray-50 dark:bg-dark-100 rounded-md p-3">
-                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">All Jobs</div>
-                <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                  ${statusTotals.all.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  All Jobs
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">{statusTotals.all.count} jobs</div>
+                <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                  $
+                  {statusTotals.all.total.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {statusTotals.all.count} jobs
+                </div>
               </div>
-              
+
               <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-md p-3">
-                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pending</div>
-                <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                  ${statusTotals.pending.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  Pending
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">{statusTotals.pending.count} jobs</div>
+                <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                  $
+                  {statusTotals.pending.total.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {statusTotals.pending.count} jobs
+                </div>
               </div>
-              
+
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-md p-3">
-                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">In Progress</div>
-                <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                  ${statusTotals.in_progress.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  In Progress
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">{statusTotals.in_progress.count} jobs</div>
+                <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                  $
+                  {statusTotals.in_progress.total.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {statusTotals.in_progress.count} jobs
+                </div>
               </div>
-              
+
               <div className="bg-green-50 dark:bg-green-900/20 rounded-md p-3">
-                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Completed</div>
-                <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                  ${statusTotals.completed.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  Completed
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">{statusTotals.completed.count} jobs</div>
+                <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                  $
+                  {statusTotals.completed.total.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {statusTotals.completed.count} jobs
+                </div>
               </div>
-              
+
               <div className="bg-purple-50 dark:bg-purple-900/20 rounded-md p-3">
-                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Billed</div>
-                <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                  ${statusTotals.billed.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  Billed
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">{statusTotals.billed.count} jobs</div>
+                <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                  $
+                  {statusTotals.billed.total.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {statusTotals.billed.count} jobs
+                </div>
               </div>
             </div>
-            
+
             {/* Remaining Balance Left to Bill */}
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="bg-orange-50 dark:bg-orange-900/20 rounded-md p-3">
-                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Remaining Balance Left to Bill</div>
-                <div className={`mt-1 text-2xl font-semibold ${
-                  (statusTotals.contractValueLeftToBill || 0) > 0 
-                    ? 'text-green-600 dark:text-green-400' 
-                    : 'text-gray-900 dark:text-white'
-                }`}>
-                  ${(statusTotals.contractValueLeftToBill || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  Remaining Balance Left to Bill
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Sum of remaining balance from non-billed jobs
+                <div
+                  className={`mt-1 text-2xl font-semibold ${
+                    (statusTotals.contractValueLeftToBill || 0) > 0
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-gray-900 dark:text-white"
+                  }`}
+                >
+                  $
+                  {(statusTotals.contractValueLeftToBill || 0).toLocaleString(
+                    "en-US",
+                    { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+                  )}
                 </div>
               </div>
             </div>
@@ -1182,14 +1558,20 @@ export default function JobList() {
 
       {/* Status Tabs */}
       <div className="mt-6">
-        <div className="inline-flex rounded-md shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden" role="tablist" aria-label="Job status filter">
-          {([
-            { key: 'all', label: 'All Jobs' },
-            { key: 'pending', label: 'Pending' },
-            { key: 'in_progress', label: 'In Progress' },
-            { key: 'completed', label: 'Completed / Ready to Bill' },
-            { key: 'billed', label: 'Billed' }
-          ] as { key: StatusFilter; label: string }[]).map(t => {
+        <div
+          className="inline-flex rounded-md shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+          role="tablist"
+          aria-label="Job status filter"
+        >
+          {(
+            [
+              { key: "all", label: "All Jobs" },
+              { key: "pending", label: "Pending" },
+              { key: "in_progress", label: "In Progress" },
+              { key: "completed", label: "Completed / Ready to Bill" },
+              { key: "billed", label: "Billed" },
+            ] as { key: StatusFilter; label: string }[]
+          ).map((t) => {
             const active = statusFilter === t.key;
             return (
               <button
@@ -1200,9 +1582,12 @@ export default function JobList() {
                 className={
                   `px-4 py-2 text-sm font-medium focus:outline-none transition-colors ${
                     active
-                      ? 'bg-[#f26722] text-white'
-                      : 'bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-100'
-                  }` + (t.key !== 'billed' ? ' border-r border-gray-200 dark:border-gray-700' : '')
+                      ? "bg-[#f26722] text-white"
+                      : "bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-100"
+                  }` +
+                  (t.key !== "billed"
+                    ? " border-r border-gray-200 dark:border-gray-700"
+                    : "")
                 }
                 onClick={() => setStatusFilter(t.key)}
               >
@@ -1213,82 +1598,143 @@ export default function JobList() {
         </div>
       </div>
 
-      {/* Remaining Balance Filter Toggle */}
-      <div className="mt-4">
-        <button
-          type="button"
-          onClick={() => setFilterByContractValue(!filterByContractValue)}
-          className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            filterByContractValue
-              ? 'bg-[#f26722] text-white'
-              : 'bg-white dark:bg-dark-150 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-dark-100'
-          }`}
-        >
-          By Remaining Balance
-        </button>
-      </div>
-
       {/* Search Section */}
       <div className="mt-6">
-        <div className="relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search jobs by title, customer, job number, status, or description..."
-            className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
-          />
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          {searchTerm && (
+        <div className="flex items-center gap-2">
+          <div className="relative shrink-0" ref={sortMenuRef}>
             <button
-              onClick={() => setSearchTerm('')}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              type="button"
+              onClick={() => setIsSortMenuOpen((prev) => !prev)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-700 hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+              aria-expanded={isSortMenuOpen}
+              aria-label="Sort jobs"
+              title="Sort"
             >
-              <X className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+              <ArrowDownWideNarrow className="h-5 w-5" />
             </button>
-          )}
+            {isSortMenuOpen && (
+              <div className="absolute left-0 z-20 mt-2 w-72 rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                <div>
+                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    Sort by
+                  </div>
+                  {renderSortOptions(
+                    SORT_FIELD_OPTIONS,
+                    sortField,
+                    setSortField,
+                  )}
+                </div>
+                <div className="mt-2">
+                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    Order
+                  </div>
+                  {renderSortOptions(
+                    SORT_DIRECTION_OPTIONS,
+                    sortDirection,
+                    setSortDirection,
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search jobs by title, customer, job number, status, or description..."
+              className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="h-5 w-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              >
+                <X className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+              </button>
+            )}
+          </div>
         </div>
         {searchTerm && (
           <div className="mt-2 text-sm text-gray-600 dark:text-white">
-            Found {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} matching "{searchTerm}"
+            Found {filteredJobs.length} job
+            {filteredJobs.length !== 1 ? "s" : ""} matching "{searchTerm}"
           </div>
         )}
       </div>
 
       <div className="mt-8">
-        <div className="-mx-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-300">
+        <div className="-mx-4 overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
+          <table className="min-w-[1180px] divide-y divide-gray-300">
             <thead className="bg-gray-50 dark:bg-dark-150">
               <tr>
-                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 sm:pl-6">
+                <th
+                  scope="col"
+                  className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 sm:pl-6"
+                >
                   Job #
                 </th>
-                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                <th
+                  scope="col"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                >
                   Title
                 </th>
-                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                <th
+                  scope="col"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                >
                   Customer
                 </th>
-                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                <th
+                  scope="col"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                >
                   Status
                 </th>
-                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                <th
+                  scope="col"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                >
                   Remaining Balance
                 </th>
-                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                <th
+                  scope="col"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                >
                   Quoted Amount
                 </th>
-                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                <th
+                  scope="col"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                >
                   Division
                 </th>
-                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                <th
+                  scope="col"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                >
                   Priority
                 </th>
-                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                <th
+                  scope="col"
+                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                >
                   Source
                 </th>
               </tr>
@@ -1296,51 +1742,71 @@ export default function JobList() {
             <tbody className="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-dark-150">
               {filteredJobs.map((job) => {
                 // Check if job is from T&M or from opportunity
-                const isTM = job.opportunity?.opportunity_type === 'time_materials' || 
-                            (job.notes && /T&M|time.*material/i.test(job.notes));
+                const isTM =
+                  job.opportunity?.opportunity_type === "time_materials" ||
+                  (job.notes && /T&M|time.*material/i.test(job.notes));
                 const isFromOpportunity = !!job.opportunity_id;
-                
+
                 return (
-                  <tr 
-                    key={job.id} 
+                  <tr
+                    key={job.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out cursor-pointer"
                     onClick={() => navigate(`/jobs/${job.id}`)}
                   >
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-200 sm:pl-6">
-                      {job.job_number || 'Pending'}
+                      {job.job_number || "Pending"}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-600 dark:text-white">
                       {maskJobTitle(job.title)}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-600 dark:text-white">
-                      {maskCustomerName(job.customers?.company_name || job.customers?.name) || 'No customer'}
+                      {maskCustomerName(
+                        job.customers?.company_name || job.customers?.name,
+                      ) || "No customer"}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white">
-                      <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(job.status)}`}>
+                      <span
+                        className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(job.status)}`}
+                      >
                         {job.status}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white">
-                      {job.contractValue !== undefined && job.contractValue !== 0 ? (
-                        <span className={job.contractValue < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}>
-                          {job.contractValue < 0 ? '-' : ''}${Math.abs(job.contractValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {job.contractValue !== undefined &&
+                      job.contractValue !== 0 ? (
+                        <span
+                          className={
+                            job.contractValue < 0
+                              ? "text-red-600 dark:text-red-400"
+                              : "text-green-600 dark:text-green-400"
+                          }
+                        >
+                          {job.contractValue < 0 ? "-" : ""}$
+                          {Math.abs(job.contractValue).toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </span>
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white">
-                      ${job.budget?.toLocaleString() ?? 'N/A'}
+                      ${job.budget?.toLocaleString() ?? "N/A"}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white">
                       {formatDivisionName(job.division || null)}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white">
-                      <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                        job.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400' :
-                        job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400' :
-                        'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400'
-                      }`}>
+                      <span
+                        className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                          job.priority === "high"
+                            ? "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400"
+                            : job.priority === "medium"
+                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400"
+                              : "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400"
+                        }`}
+                      >
                         {job.priority}
                       </span>
                     </td>
@@ -1354,7 +1820,9 @@ export default function JobList() {
                           From Opportunity
                         </span>
                       ) : (
-                        <span className="text-gray-400 dark:text-gray-500 text-xs">Direct Entry</span>
+                        <span className="text-gray-400 dark:text-gray-500 text-xs">
+                          Direct Entry
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -1364,7 +1832,6 @@ export default function JobList() {
           </table>
         </div>
       </div>
-
 
       {/* Job Creation Form Dialog */}
       <Dialog
@@ -1386,15 +1853,18 @@ export default function JobList() {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
+
             <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-4">
               Create New Job
             </Dialog.Title>
-            
+
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label htmlFor="customer_id" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="customer_id"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Customer *
                   </label>
                   <div className="mt-1">
@@ -1407,7 +1877,7 @@ export default function JobList() {
                       className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-dark-150 dark:text-white rounded-md"
                     >
                       <option value="">Select a customer</option>
-                      {customers.map(customer => (
+                      {customers.map((customer) => (
                         <option key={customer.id} value={customer.id}>
                           {customer.company_name || customer.name}
                         </option>
@@ -1417,7 +1887,10 @@ export default function JobList() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="title"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Job Title *
                   </label>
                   <div className="mt-1">
@@ -1434,7 +1907,10 @@ export default function JobList() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Description
                   </label>
                   <div className="mt-1">
@@ -1450,7 +1926,10 @@ export default function JobList() {
                 </div>
 
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="status"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Status
                   </label>
                   <div className="mt-1">
@@ -1470,7 +1949,10 @@ export default function JobList() {
                 </div>
 
                 <div>
-                  <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="priority"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Priority
                   </label>
                   <div className="mt-1">
@@ -1489,7 +1971,10 @@ export default function JobList() {
                 </div>
 
                 <div>
-                  <label htmlFor="start_date" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="start_date"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Start Date
                   </label>
                   <div className="mt-1">
@@ -1505,7 +1990,10 @@ export default function JobList() {
                 </div>
 
                 <div>
-                  <label htmlFor="due_date" className="block text-sm font-medium text-gray-700 dark:text-white">
+                  <label
+                    htmlFor="due_date"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Due Date
                   </label>
                   <div className="mt-1">
@@ -1521,9 +2009,15 @@ export default function JobList() {
                 </div>
 
                 {/* Quoted Amount field visibility: always hidden if division is calibration or armadillo */}
-                {!(division?.toLowerCase() === 'calibration' || division?.toLowerCase() === 'armadillo') && (
+                {!(
+                  division?.toLowerCase() === "calibration" ||
+                  division?.toLowerCase() === "armadillo"
+                ) && (
                   <div className="sm:col-span-1">
-                    <label htmlFor="budget" className="block text-sm font-medium text-gray-700 dark:text-white">
+                    <label
+                      htmlFor="budget"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
                       Quoted Amount
                     </label>
                     <div className="mt-1">
@@ -1541,8 +2035,11 @@ export default function JobList() {
                 )}
 
                 {/* Optional notes field */}
-                 <div className="sm:col-span-2">
-                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-white">
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="notes"
+                    className="block text-sm font-medium text-gray-700 dark:text-white"
+                  >
                     Notes
                   </label>
                   <div className="mt-1">
@@ -1556,7 +2053,7 @@ export default function JobList() {
                     />
                   </div>
                 </div>
-                
+
                 {/* Optional Job Number field - if it can be manually entered */}
                 {/* <div className="sm:col-span-1">
                   <label htmlFor="job_number" className="block text-sm font-medium text-gray-700 dark:text-white">
@@ -1573,7 +2070,6 @@ export default function JobList() {
                     />
                   </div>
                 </div> */}
-
               </div>
 
               <div className="mt-5 flex justify-end space-x-3">
@@ -1603,8 +2099,19 @@ export default function JobList() {
           setShowTMModal(false);
           setShowNewCustomer(false);
           setShowNewContact(false);
-          setNewCustomer({ company_name: '', name: '', email: '', phone: '', address: '' });
-          setNewContact({ first_name: '', last_name: '', email: '', phone: '' });
+          setNewCustomer({
+            company_name: "",
+            name: "",
+            email: "",
+            phone: "",
+            address: "",
+          });
+          setNewContact({
+            first_name: "",
+            last_name: "",
+            email: "",
+            phone: "",
+          });
         }}
         className="fixed inset-0 z-50 overflow-y-auto"
       >
@@ -1631,19 +2138,82 @@ export default function JobList() {
               {showNewCustomer && (
                 <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-medium text-gray-800 dark:text-white">New Customer</div>
-                    <button type="button" className="text-xs text-gray-600 dark:text-gray-400" onClick={() => setShowNewCustomer(false)}>Cancel</button>
+                    <div className="text-sm font-medium text-gray-800 dark:text-white">
+                      New Customer
+                    </div>
+                    <button
+                      type="button"
+                      className="text-xs text-gray-600 dark:text-gray-400"
+                      onClick={() => setShowNewCustomer(false)}
+                    >
+                      Cancel
+                    </button>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <input placeholder="Company name" className="border rounded px-2 py-1 text-sm dark:bg-dark-150 dark:text-white" value={newCustomer.company_name} onChange={e => setNewCustomer(prev => ({ ...prev, company_name: e.target.value }))} />
-                    <input placeholder="Customer name" className="border rounded px-2 py-1 text-sm dark:bg-dark-150 dark:text-white" value={newCustomer.name} onChange={e => setNewCustomer(prev => ({ ...prev, name: e.target.value }))} />
-                    <input placeholder="Email" className="border rounded px-2 py-1 text-sm dark:bg-dark-150 dark:text-white" value={newCustomer.email} onChange={e => setNewCustomer(prev => ({ ...prev, email: e.target.value }))} />
-                    <input placeholder="Phone" className="border rounded px-2 py-1 text-sm dark:bg-dark-150 dark:text-white" value={newCustomer.phone} onChange={e => setNewCustomer(prev => ({ ...prev, phone: e.target.value }))} />
-                    <input placeholder="Address" className="border rounded px-2 py-1 text-sm dark:bg-dark-150 dark:text-white" value={newCustomer.address} onChange={e => setNewCustomer(prev => ({ ...prev, address: e.target.value }))} />
+                    <input
+                      placeholder="Company name"
+                      className="border rounded px-2 py-1 text-sm dark:bg-dark-150 dark:text-white"
+                      value={newCustomer.company_name}
+                      onChange={(e) =>
+                        setNewCustomer((prev) => ({
+                          ...prev,
+                          company_name: e.target.value,
+                        }))
+                      }
+                    />
+                    <input
+                      placeholder="Customer name"
+                      className="border rounded px-2 py-1 text-sm dark:bg-dark-150 dark:text-white"
+                      value={newCustomer.name}
+                      onChange={(e) =>
+                        setNewCustomer((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
+                    />
+                    <input
+                      placeholder="Email"
+                      className="border rounded px-2 py-1 text-sm dark:bg-dark-150 dark:text-white"
+                      value={newCustomer.email}
+                      onChange={(e) =>
+                        setNewCustomer((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
+                    />
+                    <input
+                      placeholder="Phone"
+                      className="border rounded px-2 py-1 text-sm dark:bg-dark-150 dark:text-white"
+                      value={newCustomer.phone}
+                      onChange={(e) =>
+                        setNewCustomer((prev) => ({
+                          ...prev,
+                          phone: e.target.value,
+                        }))
+                      }
+                    />
+                    <input
+                      placeholder="Address"
+                      className="border rounded px-2 py-1 text-sm dark:bg-dark-150 dark:text-white"
+                      value={newCustomer.address}
+                      onChange={(e) =>
+                        setNewCustomer((prev) => ({
+                          ...prev,
+                          address: e.target.value,
+                        }))
+                      }
+                    />
                   </div>
                   <div className="mt-2 flex justify-end">
-                    <button type="button" onClick={handleCreateCustomer} disabled={creatingCustomer} className="px-3 py-1 text-sm rounded bg-[#f26722] text-white hover:bg-[#f26722]/90">
-                      {creatingCustomer ? 'Creating...' : 'Create customer'}
+                    <button
+                      type="button"
+                      onClick={handleCreateCustomer}
+                      disabled={creatingCustomer}
+                      className="px-3 py-1 text-sm rounded bg-[#f26722] text-white hover:bg-[#f26722]/90"
+                    >
+                      {creatingCustomer ? "Creating..." : "Create customer"}
                     </button>
                   </div>
                 </div>
@@ -1652,18 +2222,71 @@ export default function JobList() {
               {showNewContact && (
                 <div className="border rounded-md p-3 bg-orange-50/60 dark:bg-orange-900/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-medium text-gray-800 dark:text-white">New Contact</div>
-                    <button type="button" className="text-xs text-gray-600 dark:text-gray-400" onClick={() => setShowNewContact(false)}>Cancel</button>
+                    <div className="text-sm font-medium text-gray-800 dark:text-white">
+                      New Contact
+                    </div>
+                    <button
+                      type="button"
+                      className="text-xs text-gray-600 dark:text-gray-400"
+                      onClick={() => setShowNewContact(false)}
+                    >
+                      Cancel
+                    </button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <input placeholder="First name" className="border rounded px-2 py-1 text-sm col-span-1 dark:bg-dark-150 dark:text-white" value={newContact.first_name} onChange={e => setNewContact(prev => ({ ...prev, first_name: e.target.value }))} />
-                    <input placeholder="Last name" className="border rounded px-2 py-1 text-sm col-span-1 dark:bg-dark-150 dark:text-white" value={newContact.last_name} onChange={e => setNewContact(prev => ({ ...prev, last_name: e.target.value }))} />
-                    <input placeholder="Email" className="border rounded px-2 py-1 text-sm col-span-2 dark:bg-dark-150 dark:text-white" value={newContact.email} onChange={e => setNewContact(prev => ({ ...prev, email: e.target.value }))} />
-                    <input placeholder="Phone" className="border rounded px-2 py-1 text-sm col-span-2 dark:bg-dark-150 dark:text-white" value={newContact.phone} onChange={e => setNewContact(prev => ({ ...prev, phone: e.target.value }))} />
+                    <input
+                      placeholder="First name"
+                      className="border rounded px-2 py-1 text-sm col-span-1 dark:bg-dark-150 dark:text-white"
+                      value={newContact.first_name}
+                      onChange={(e) =>
+                        setNewContact((prev) => ({
+                          ...prev,
+                          first_name: e.target.value,
+                        }))
+                      }
+                    />
+                    <input
+                      placeholder="Last name"
+                      className="border rounded px-2 py-1 text-sm col-span-1 dark:bg-dark-150 dark:text-white"
+                      value={newContact.last_name}
+                      onChange={(e) =>
+                        setNewContact((prev) => ({
+                          ...prev,
+                          last_name: e.target.value,
+                        }))
+                      }
+                    />
+                    <input
+                      placeholder="Email"
+                      className="border rounded px-2 py-1 text-sm col-span-2 dark:bg-dark-150 dark:text-white"
+                      value={newContact.email}
+                      onChange={(e) =>
+                        setNewContact((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
+                    />
+                    <input
+                      placeholder="Phone"
+                      className="border rounded px-2 py-1 text-sm col-span-2 dark:bg-dark-150 dark:text-white"
+                      value={newContact.phone}
+                      onChange={(e) =>
+                        setNewContact((prev) => ({
+                          ...prev,
+                          phone: e.target.value,
+                        }))
+                      }
+                    />
                   </div>
                   <div className="mt-2 flex justify-end">
-                    <button type="button" onClick={handleCreateContact} disabled={creatingContact} className="px-3 py-1 text-sm rounded bg-[#f26722] text-white hover:bg-[#f26722]/90">
-                      {creatingContact ? 'Creating...' : 'Create contact'}
+                    <button
+                      type="button"
+                      onClick={handleCreateContact}
+                      disabled={creatingContact}
+                      className="px-3 py-1 text-sm rounded bg-[#f26722] text-white hover:bg-[#f26722]/90"
+                    >
+                      {creatingContact ? "Creating..." : "Create contact"}
                     </button>
                   </div>
                 </div>
@@ -1682,11 +2305,18 @@ export default function JobList() {
                 />
                 {TMFormData.customer_id && (
                   <div className="text-xs text-gray-600 dark:text-white mb-1">
-                    Selected: {(customers.find(c => c.id === TMFormData.customer_id)?.company_name) || (customers.find(c => c.id === TMFormData.customer_id)?.name) || 'Unknown'}
+                    Selected:{" "}
+                    {customers.find((c) => c.id === TMFormData.customer_id)
+                      ?.company_name ||
+                      customers.find((c) => c.id === TMFormData.customer_id)
+                        ?.name ||
+                      "Unknown"}
                     <button
                       type="button"
                       className="ml-2 underline text-[#f26722] hover:text-[#f26722]/90"
-                      onClick={() => setTMFormData(prev => ({ ...prev, customer_id: '' }))}
+                      onClick={() =>
+                        setTMFormData((prev) => ({ ...prev, customer_id: "" }))
+                      }
                     >
                       Clear
                     </button>
@@ -1700,13 +2330,16 @@ export default function JobList() {
                         type="button"
                         key={customer.id}
                         onClick={() => {
-                          setTMFormData(prev => ({ ...prev, customer_id: customer.id }));
+                          setTMFormData((prev) => ({
+                            ...prev,
+                            customer_id: customer.id,
+                          }));
                           fetchContacts(customer.id);
                         }}
                         className={`w-full text-left px-3 py-2 text-sm ${
                           isSelected
-                            ? 'bg-orange-50 text-gray-900 dark:bg-orange-900/20 dark:text-white'
-                            : 'hover:bg-gray-50 dark:hover:bg-dark-200 text-gray-700 dark:text-gray-200'
+                            ? "bg-orange-50 text-gray-900 dark:bg-orange-900/20 dark:text-white"
+                            : "hover:bg-gray-50 dark:hover:bg-dark-200 text-gray-700 dark:text-gray-200"
                         }`}
                       >
                         {customer.company_name || customer.name}
@@ -1714,17 +2347,20 @@ export default function JobList() {
                     );
                   })}
                   {filteredCustomers.length === 0 && (
-                    <div className="px-3 py-2 text-sm text-gray-500 dark:text-white">No matches</div>
+                    <div className="px-3 py-2 text-sm text-gray-500 dark:text-white">
+                      No matches
+                    </div>
                   )}
                 </div>
                 <div className="mt-2">
                   <button
                     type="button"
                     onClick={() => {
-                      setNewCustomer(prev => ({
+                      setNewCustomer((prev) => ({
                         ...prev,
-                        company_name: customerSearch.trim() || prev.company_name,
-                        name: customerSearch.trim() || prev.name
+                        company_name:
+                          customerSearch.trim() || prev.company_name,
+                        name: customerSearch.trim() || prev.name,
                       }));
                       setShowNewCustomer(true);
                     }}
@@ -1746,9 +2382,15 @@ export default function JobList() {
                   className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   disabled={!TMFormData.customer_id}
                 >
-                  <option value="" className="dark:bg-dark-150 dark:text-white">No Contact</option>
+                  <option value="" className="dark:bg-dark-150 dark:text-white">
+                    No Contact
+                  </option>
                   {contacts.map((contact) => (
-                    <option key={contact.id} value={contact.id} className="dark:bg-dark-150 dark:text-white">
+                    <option
+                      key={contact.id}
+                      value={contact.id}
+                      className="dark:bg-dark-150 dark:text-white"
+                    >
                       {contact.first_name} {contact.last_name}
                     </option>
                   ))}
@@ -1790,12 +2432,39 @@ export default function JobList() {
                   className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                   required
                 >
-                  <option value="" className="dark:bg-dark-150 dark:text-white">Select a division</option>
-                  <option value="north_alabama" className="dark:bg-dark-150 dark:text-white">Alabama Division</option>
-                  <option value="tennessee" className="dark:bg-dark-150 dark:text-white">Tennessee Division</option>
-                  <option value="georgia" className="dark:bg-dark-150 dark:text-white">Georgia Division</option>
-                  <option value="international" className="dark:bg-dark-150 dark:text-white">International Division</option>
-                  <option value="engineering" className="dark:bg-dark-150 dark:text-white">Engineering</option>
+                  <option value="" className="dark:bg-dark-150 dark:text-white">
+                    Select a division
+                  </option>
+                  <option
+                    value="north_alabama"
+                    className="dark:bg-dark-150 dark:text-white"
+                  >
+                    Alabama Division
+                  </option>
+                  <option
+                    value="tennessee"
+                    className="dark:bg-dark-150 dark:text-white"
+                  >
+                    Tennessee Division
+                  </option>
+                  <option
+                    value="georgia"
+                    className="dark:bg-dark-150 dark:text-white"
+                  >
+                    Georgia Division
+                  </option>
+                  <option
+                    value="international"
+                    className="dark:bg-dark-150 dark:text-white"
+                  >
+                    International Division
+                  </option>
+                  <option
+                    value="engineering"
+                    className="dark:bg-dark-150 dark:text-white"
+                  >
+                    Engineering
+                  </option>
                 </select>
               </div>
 
@@ -1826,7 +2495,7 @@ export default function JobList() {
                   disabled={isCreatingTM}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none disabled:opacity-50"
                 >
-                  {isCreatingTM ? 'Creating...' : 'Create T&M or Emergency Job'}
+                  {isCreatingTM ? "Creating..." : "Create T&M or Emergency Job"}
                 </button>
               </div>
             </form>

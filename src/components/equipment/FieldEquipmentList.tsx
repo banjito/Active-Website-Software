@@ -1,16 +1,48 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Plus, Pencil, Trash2, X, Search, User, Briefcase, Truck as TruckIcon, FileText, Upload, Eye, Download, ZoomIn, ZoomOut, Maximize2, ExternalLink, Calendar, CheckCircle, XCircle, AlertTriangle, Tag, MapPin, Layers, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown, Wrench } from 'lucide-react';
-import { Dialog } from '@headlessui/react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../lib/AuthContext';
-import { toast } from '../ui/toast';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
-import { PageLayout } from '../ui/PageLayout';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/Tabs';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { Switch } from '../ui/Switch';
+import React, { useEffect, useState, useRef } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Search,
+  User,
+  Briefcase,
+  TriangleAlert,
+  Truck as TruckIcon,
+  FileText,
+  Upload,
+  Eye,
+  Download,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  ExternalLink,
+  Calendar,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  ThumbsUp,
+  Tag,
+  MapPin,
+  Layers,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Wrench,
+} from "lucide-react";
+import { Dialog } from "@headlessui/react";
+import { supabase } from "../../lib/supabase";
+import { useAuth } from "../../lib/AuthContext";
+import { toast } from "../ui/toast";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
+import { PageLayout } from "../ui/PageLayout";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/Tabs";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Switch } from "../ui/Switch";
 
 interface SubComponent {
   qty: number;
@@ -20,7 +52,7 @@ interface SubComponent {
   amp_id: string;
 }
 
-type AssignedType = 'user' | 'job_site' | 'truck';
+type AssignedType = "user" | "job_site" | "truck";
 
 interface FieldEquipment {
   id: string;
@@ -66,37 +98,53 @@ interface EquipmentFormData {
 }
 
 const initialFormData: EquipmentFormData = {
-  equipment_name: '',
-  amp_id: '',
-  serial_number: '',
-  calibration_date: '',
-  calibration_due_date: '',
-  category: '',
-  location: '',
+  equipment_name: "",
+  amp_id: "",
+  serial_number: "",
+  calibration_date: "",
+  calibration_due_date: "",
+  category: "",
+  location: "",
   assigned_to: null,
   assigned_type: null,
-  notes: '',
-  tracking_url: '',
+  notes: "",
+  tracking_url: "",
   in_service: true,
 };
 
-const emptySubComponent: SubComponent = { qty: 1, item: '', serial_number: '', cal_date: '', amp_id: '' };
+const emptySubComponent: SubComponent = {
+  qty: 1,
+  item: "",
+  serial_number: "",
+  cal_date: "",
+  amp_id: "",
+};
 
 /** Normalize sub_components from API (may be array, JSON string, null, or missing). */
 function normalizeSubComponents(raw: unknown): SubComponent[] {
   if (raw == null) return [];
   if (Array.isArray(raw)) {
     return raw
-      .filter((sc): sc is SubComponent => sc && typeof sc === 'object' && 'item' in sc)
-      .map(sc => ({
-        qty: typeof sc.qty === 'number' ? sc.qty : 1,
-        item: typeof sc.item === 'string' ? sc.item : '',
-        serial_number: typeof sc.serial_number === 'string' ? sc.serial_number : '',
-        cal_date: typeof (sc as SubComponent).cal_date === 'string' ? (sc as SubComponent).cal_date : '',
-        amp_id: typeof (sc as SubComponent).amp_id === 'string' ? (sc as SubComponent).amp_id : '',
+      .filter(
+        (sc): sc is SubComponent =>
+          sc && typeof sc === "object" && "item" in sc,
+      )
+      .map((sc) => ({
+        qty: typeof sc.qty === "number" ? sc.qty : 1,
+        item: typeof sc.item === "string" ? sc.item : "",
+        serial_number:
+          typeof sc.serial_number === "string" ? sc.serial_number : "",
+        cal_date:
+          typeof (sc as SubComponent).cal_date === "string"
+            ? (sc as SubComponent).cal_date
+            : "",
+        amp_id:
+          typeof (sc as SubComponent).amp_id === "string"
+            ? (sc as SubComponent).amp_id
+            : "",
       }));
   }
-  if (typeof raw === 'string') {
+  if (typeof raw === "string") {
     try {
       const parsed = JSON.parse(raw);
       return normalizeSubComponents(parsed);
@@ -109,63 +157,103 @@ function normalizeSubComponents(raw: unknown): SubComponent[] {
 
 export default function FieldEquipmentList() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const openId = searchParams.get('open');
+  const openId = searchParams.get("open");
   const [equipment, setEquipment] = useState<FieldEquipment[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingEquipmentId, setEditingEquipmentId] = useState<string | null>(null);
+  const [editingEquipmentId, setEditingEquipmentId] = useState<string | null>(
+    null,
+  );
   const [formData, setFormData] = useState<EquipmentFormData>(initialFormData);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [equipmentToDelete, setEquipmentToDelete] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [equipmentToDelete, setEquipmentToDelete] = useState<string | null>(
+    null,
+  );
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [users, setUsers] = useState<UserData[]>([]);
   const [jobSites, setJobSites] = useState<string[]>([]);
   const [trucks, setTrucks] = useState<string[]>([]);
-  const [openUserSelectors, setOpenUserSelectors] = useState<{ [key: string]: boolean }>({});
-  const [userSearchQueries, setUserSearchQueries] = useState<{ [key: string]: string }>({});
-  const [assignTabByEquipment, setAssignTabByEquipment] = useState<{ [key: string]: AssignedType }>({});
-  const [openActionMenus, setOpenActionMenus] = useState<{ [key: string]: boolean }>({});
+  const [openUserSelectors, setOpenUserSelectors] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [userSearchQueries, setUserSearchQueries] = useState<{
+    [key: string]: string;
+  }>({});
+  const [assignTabByEquipment, setAssignTabByEquipment] = useState<{
+    [key: string]: AssignedType;
+  }>({});
+  const [openActionMenus, setOpenActionMenus] = useState<{
+    [key: string]: boolean;
+  }>({});
   const userSelectorRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const actionMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
-  const [viewingCertificate, setViewingCertificate] = useState<string | null>(null);
-  const [editingEquipmentCertificate, setEditingEquipmentCertificate] = useState<string | null>(null);
+  const [viewingCertificate, setViewingCertificate] = useState<string | null>(
+    null,
+  );
+  const [editingEquipmentCertificate, setEditingEquipmentCertificate] =
+    useState<string | null>(null);
   const [pdfZoom, setPdfZoom] = useState<number>(100);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [viewingTrackingUrl, setViewingTrackingUrl] = useState<string | null>(null);
-  const [viewingEquipment, setViewingEquipment] = useState<FieldEquipment | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('all');
-  const [allTabShowExtraColumns, setAllTabShowExtraColumns] = useState<boolean>(false);
+  const [viewingTrackingUrl, setViewingTrackingUrl] = useState<string | null>(
+    null,
+  );
+  const [viewingEquipment, setViewingEquipment] =
+    useState<FieldEquipment | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [allTabShowExtraColumns, setAllTabShowExtraColumns] =
+    useState<boolean>(false);
   const [categories, setCategories] = useState<string[]>([]);
-  const [categoryInput, setCategoryInput] = useState<string>('');
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState<boolean>(false);
+  const [categoryInput, setCategoryInput] = useState<string>("");
+  const [showCategoryDropdown, setShowCategoryDropdown] =
+    useState<boolean>(false);
   const categoryInputRef = useRef<HTMLInputElement>(null);
   const [locations, setLocations] = useState<string[]>([]);
-  const [locationInput, setLocationInput] = useState<string>('');
-  const [showLocationDropdown, setShowLocationDropdown] = useState<boolean>(false);
+  const [locationInput, setLocationInput] = useState<string>("");
+  const [showLocationDropdown, setShowLocationDropdown] =
+    useState<boolean>(false);
   const locationInputRef = useRef<HTMLInputElement>(null);
   const [subComponentItems, setSubComponentItems] = useState<string[]>([]);
-  const [formSubComponents, setFormSubComponents] = useState<SubComponent[]>([]);
-  const [subComponentsExpanded, setSubComponentsExpanded] = useState<boolean>(false);
-  const [activeSubComponentDropdown, setActiveSubComponentDropdown] = useState<number | null>(null);
-  const subComponentItemRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const [formSubComponents, setFormSubComponents] = useState<SubComponent[]>(
+    [],
+  );
+  const [subComponentsExpanded, setSubComponentsExpanded] =
+    useState<boolean>(false);
+  const [activeSubComponentDropdown, setActiveSubComponentDropdown] = useState<
+    number | null
+  >(null);
+  const subComponentItemRefs = useRef<{ [key: number]: HTMLDivElement | null }>(
+    {},
+  );
 
   // Sort state
-  type SortField = 'equipment_name' | 'serial_number' | 'amp_id' | 'calibration_date' | 'calibration_due_date' | 'category' | 'location' | 'assigned_to' | 'notes' | null;
-  type SortDirection = 'asc' | 'desc';
+  type SortField =
+    | "equipment_name"
+    | "serial_number"
+    | "amp_id"
+    | "calibration_date"
+    | "calibration_due_date"
+    | "category"
+    | "location"
+    | "assigned_to"
+    | "notes"
+    | null;
+  type SortDirection = "asc" | "desc";
   const [sortField, setSortField] = useState<SortField>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   // Service filter: show all equipment or only in-service (out-of-service viewable only here)
-  type ServiceFilter = 'all' | 'in_service';
-  const [serviceFilter, setServiceFilter] = useState<ServiceFilter>('all');
+  type ServiceFilter = "all" | "in_service";
+  const [serviceFilter, setServiceFilter] = useState<ServiceFilter>("all");
 
   // Category filter: limits list to equipment in the selected category (saved categories)
-  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
 
   useEffect(() => {
     if (user) {
@@ -182,14 +270,17 @@ export default function FieldEquipmentList() {
   // Open equipment view modal when ?open=id is in the URL (e.g. from portal calibration notifications)
   useEffect(() => {
     if (!openId || equipment.length === 0) return;
-    const found = equipment.find(e => e.id === openId);
+    const found = equipment.find((e) => e.id === openId);
     if (found) {
       setViewingEquipment(found);
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete('open');
-        return next;
-      }, { replace: true });
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete("open");
+          return next;
+        },
+        { replace: true },
+      );
     }
   }, [openId, equipment, setSearchParams]);
 
@@ -199,70 +290,77 @@ export default function FieldEquipmentList() {
       Object.keys(userSelectorRefs.current).forEach((equipmentId) => {
         const ref = userSelectorRefs.current[equipmentId];
         if (ref && !ref.contains(event.target as Node)) {
-          setOpenUserSelectors(prev => ({ ...prev, [equipmentId]: false }));
+          setOpenUserSelectors((prev) => ({ ...prev, [equipmentId]: false }));
         }
       });
       Object.keys(actionMenuRefs.current).forEach((equipmentId) => {
         const ref = actionMenuRefs.current[equipmentId];
         if (ref && !ref.contains(event.target as Node)) {
-          setOpenActionMenus(prev => ({ ...prev, [equipmentId]: false }));
+          setOpenActionMenus((prev) => ({ ...prev, [equipmentId]: false }));
         }
       });
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   async function fetchEquipment() {
     try {
       setLoading(true);
-      
+
       // Get total count (without search filter)
       const { count: totalCountResult } = await supabase
-        .schema('neta_ops')
-        .from('field_equipment')
-        .select('*', { count: 'exact', head: true });
-      
+        .schema("neta_ops")
+        .from("field_equipment")
+        .select("*", { count: "exact", head: true });
+
       setTotalCount(totalCountResult || 0);
-      
+
       // Get filtered equipment
       let query = supabase
-        .schema('neta_ops')
-        .from('field_equipment')
-        .select('*')
-        .order('equipment_name', { ascending: true });
+        .schema("neta_ops")
+        .from("field_equipment")
+        .select("*")
+        .order("equipment_name", { ascending: true });
 
       // Apply search filter
       if (searchTerm.trim()) {
         const searchLower = `%${searchTerm.toLowerCase()}%`;
         query = query.or(
-          `equipment_name.ilike.${searchLower},amp_id.ilike.${searchLower},serial_number.ilike.${searchLower},notes.ilike.${searchLower},category.ilike.${searchLower},location.ilike.${searchLower}`
+          `equipment_name.ilike.${searchLower},amp_id.ilike.${searchLower},serial_number.ilike.${searchLower},notes.ilike.${searchLower},category.ilike.${searchLower},location.ilike.${searchLower}`,
         );
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
-      const rows = (data || []) as (Omit<FieldEquipment, 'sub_components'> & { sub_components?: unknown })[];
-      setEquipment(rows.map(row => {
-        const normalized = normalizeSubComponents(row.sub_components);
-        const { sub_components: _sc, ...rest } = row;
-        return { ...rest, sub_components: normalized.length > 0 ? normalized : null } as FieldEquipment;
-      }));
-      
+      const rows = (data || []) as (Omit<FieldEquipment, "sub_components"> & {
+        sub_components?: unknown;
+      })[];
+      setEquipment(
+        rows.map((row) => {
+          const normalized = normalizeSubComponents(row.sub_components);
+          const { sub_components: _sc, ...rest } = row;
+          return {
+            ...rest,
+            sub_components: normalized.length > 0 ? normalized : null,
+          } as FieldEquipment;
+        }),
+      );
+
       // Refresh categories after equipment is loaded (in case table doesn't exist)
       if (categories.length === 0) {
         fetchCategories();
       }
     } catch (error) {
-      console.error('Error fetching equipment:', error);
+      console.error("Error fetching equipment:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load equipment',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load equipment",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -272,11 +370,11 @@ export default function FieldEquipmentList() {
   async function fetchUsers() {
     try {
       const { data: adminData, error: adminError } = await supabase
-        .schema('common')
-        .rpc('admin_get_users');
+        .schema("common")
+        .rpc("admin_get_users");
 
       if (adminError) {
-        console.error('Error fetching users:', adminError);
+        console.error("Error fetching users:", adminError);
         return;
       }
 
@@ -289,67 +387,70 @@ export default function FieldEquipmentList() {
         setUsers(mappedUsers);
       }
     } catch (err) {
-      console.error('Error fetching users:', err);
+      console.error("Error fetching users:", err);
     }
   }
 
   async function fetchCategories() {
     try {
       const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_categories')
-        .select('name')
-        .order('name', { ascending: true });
+        .schema("neta_ops")
+        .from("equipment_categories")
+        .select("name")
+        .order("name", { ascending: true });
 
       if (error) {
         // If table doesn't exist, extract categories from existing equipment
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+        if (
+          error.code === "42P01" ||
+          error.message?.includes("does not exist")
+        ) {
           const uniqueCategories = Array.from(
             new Set(
               equipment
-                .map(eq => eq.category)
-                .filter((cat): cat is string => cat !== null && cat !== '')
-            )
+                .map((eq) => eq.category)
+                .filter((cat): cat is string => cat !== null && cat !== ""),
+            ),
           ).sort();
           setCategories(uniqueCategories);
           return;
         }
-        console.error('Error fetching categories:', error);
+        console.error("Error fetching categories:", error);
         // Fallback: extract categories from existing equipment
         const uniqueCategories = Array.from(
           new Set(
             equipment
-              .map(eq => eq.category)
-              .filter((cat): cat is string => cat !== null && cat !== '')
-          )
+              .map((eq) => eq.category)
+              .filter((cat): cat is string => cat !== null && cat !== ""),
+          ),
         ).sort();
         setCategories(uniqueCategories);
         return;
       }
 
       if (data) {
-        setCategories(data.map(cat => cat.name));
+        setCategories(data.map((cat) => cat.name));
       } else {
         // If no categories in table, extract from existing equipment
         const uniqueCategories = Array.from(
           new Set(
             equipment
-              .map(eq => eq.category)
-              .filter((cat): cat is string => cat !== null && cat !== '')
-          )
+              .map((eq) => eq.category)
+              .filter((cat): cat is string => cat !== null && cat !== ""),
+          ),
         ).sort();
         setCategories(uniqueCategories);
       }
     } catch (err) {
-      console.error('Error fetching categories:', err);
+      console.error("Error fetching categories:", err);
       // Fallback: extract categories from existing equipment
       const uniqueCategories = Array.from(
         new Set(
           equipment
-            .map(eq => eq.category)
-            .filter((cat): cat is string => cat !== null && cat !== '')
-          )
-        ).sort();
+            .map((eq) => eq.category)
+            .filter((cat): cat is string => cat !== null && cat !== ""),
+        ),
+      ).sort();
       setCategories(uniqueCategories);
     }
   }
@@ -357,16 +458,16 @@ export default function FieldEquipmentList() {
   async function createCategory(categoryName: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_categories')
+        .schema("neta_ops")
+        .from("equipment_categories")
         .insert([{ name: categoryName.trim() }]);
 
       if (error) {
         // If it's a unique constraint error, the category already exists
-        if (error.code === '23505') {
+        if (error.code === "23505") {
           return true; // Category already exists, which is fine
         }
-        console.error('Error creating category:', error);
+        console.error("Error creating category:", error);
         return false;
       }
 
@@ -374,7 +475,7 @@ export default function FieldEquipmentList() {
       await fetchCategories();
       return true;
     } catch (err) {
-      console.error('Error creating category:', err);
+      console.error("Error creating category:", err);
       return false;
     }
   }
@@ -382,36 +483,38 @@ export default function FieldEquipmentList() {
   async function deleteCategory(categoryName: string) {
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_categories')
+        .schema("neta_ops")
+        .from("equipment_categories")
         .delete()
-        .eq('name', categoryName.trim());
+        .eq("name", categoryName.trim());
 
       if (error) {
-        console.error('Error deleting category:', error);
+        console.error("Error deleting category:", error);
         toast({
-          title: 'Error',
-          description: 'Could not delete category',
-          variant: 'destructive',
+          title: "Error",
+          description: "Could not delete category",
+          variant: "destructive",
         });
         return;
       }
-      if (categoryInput.trim().toLowerCase() === categoryName.trim().toLowerCase()) {
-        setCategoryInput('');
-        setFormData(prev => ({ ...prev, category: '' }));
+      if (
+        categoryInput.trim().toLowerCase() === categoryName.trim().toLowerCase()
+      ) {
+        setCategoryInput("");
+        setFormData((prev) => ({ ...prev, category: "" }));
       }
       await fetchCategories();
       toast({
-        title: 'Category removed',
+        title: "Category removed",
         description: `"${categoryName}" removed from saved categories.`,
-        variant: 'success',
+        variant: "success",
       });
     } catch (err) {
-      console.error('Error deleting category:', err);
+      console.error("Error deleting category:", err);
       toast({
-        title: 'Error',
-        description: 'Could not delete category',
-        variant: 'destructive',
+        title: "Error",
+        description: "Could not delete category",
+        variant: "destructive",
       });
     }
   }
@@ -419,30 +522,33 @@ export default function FieldEquipmentList() {
   async function fetchLocations() {
     try {
       const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_locations')
-        .select('name')
-        .order('name', { ascending: true });
+        .schema("neta_ops")
+        .from("equipment_locations")
+        .select("name")
+        .order("name", { ascending: true });
 
       if (error) {
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+        if (
+          error.code === "42P01" ||
+          error.message?.includes("does not exist")
+        ) {
           const uniqueLocations = Array.from(
             new Set(
               equipment
-                .map(eq => eq.location)
-                .filter((loc): loc is string => loc !== null && loc !== '')
-            )
+                .map((eq) => eq.location)
+                .filter((loc): loc is string => loc !== null && loc !== ""),
+            ),
           ).sort();
           setLocations(uniqueLocations);
           return;
         }
-        console.error('Error fetching locations:', error);
+        console.error("Error fetching locations:", error);
         const uniqueLocations = Array.from(
           new Set(
             equipment
-              .map(eq => eq.location)
-              .filter((loc): loc is string => loc !== null && loc !== '')
-          )
+              .map((eq) => eq.location)
+              .filter((loc): loc is string => loc !== null && loc !== ""),
+          ),
         ).sort();
         setLocations(uniqueLocations);
         return;
@@ -454,20 +560,20 @@ export default function FieldEquipmentList() {
         const uniqueLocations = Array.from(
           new Set(
             equipment
-              .map(eq => eq.location)
-              .filter((loc): loc is string => loc !== null && loc !== '')
-          )
+              .map((eq) => eq.location)
+              .filter((loc): loc is string => loc !== null && loc !== ""),
+          ),
         ).sort();
         setLocations(uniqueLocations);
       }
     } catch (err) {
-      console.error('Error fetching locations:', err);
+      console.error("Error fetching locations:", err);
       const uniqueLocations = Array.from(
         new Set(
           equipment
-            .map(eq => eq.location)
-            .filter((loc): loc is string => loc !== null && loc !== '')
-        )
+            .map((eq) => eq.location)
+            .filter((loc): loc is string => loc !== null && loc !== ""),
+        ),
       ).sort();
       setLocations(uniqueLocations);
     }
@@ -476,22 +582,22 @@ export default function FieldEquipmentList() {
   async function createLocation(locationName: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_locations')
+        .schema("neta_ops")
+        .from("equipment_locations")
         .insert([{ name: locationName.trim() }]);
 
       if (error) {
-        if (error.code === '23505') {
+        if (error.code === "23505") {
           return true; // Location already exists
         }
-        console.error('Error creating location:', error);
+        console.error("Error creating location:", error);
         return false;
       }
 
       await fetchLocations();
       return true;
     } catch (err) {
-      console.error('Error creating location:', err);
+      console.error("Error creating location:", err);
       return false;
     }
   }
@@ -499,36 +605,38 @@ export default function FieldEquipmentList() {
   async function deleteLocation(locationName: string) {
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_locations')
+        .schema("neta_ops")
+        .from("equipment_locations")
         .delete()
-        .eq('name', locationName.trim());
+        .eq("name", locationName.trim());
 
       if (error) {
-        console.error('Error deleting location:', error);
+        console.error("Error deleting location:", error);
         toast({
-          title: 'Error',
-          description: 'Could not delete location',
-          variant: 'destructive',
+          title: "Error",
+          description: "Could not delete location",
+          variant: "destructive",
         });
         return;
       }
-      if (locationInput.trim().toLowerCase() === locationName.trim().toLowerCase()) {
-        setLocationInput('');
-        setFormData(prev => ({ ...prev, location: '' }));
+      if (
+        locationInput.trim().toLowerCase() === locationName.trim().toLowerCase()
+      ) {
+        setLocationInput("");
+        setFormData((prev) => ({ ...prev, location: "" }));
       }
       await fetchLocations();
       toast({
-        title: 'Location removed',
+        title: "Location removed",
         description: `"${locationName}" removed from saved locations.`,
-        variant: 'success',
+        variant: "success",
       });
     } catch (err) {
-      console.error('Error deleting location:', err);
+      console.error("Error deleting location:", err);
       toast({
-        title: 'Error',
-        description: 'Could not delete location',
-        variant: 'destructive',
+        title: "Error",
+        description: "Could not delete location",
+        variant: "destructive",
       });
     }
   }
@@ -536,43 +644,46 @@ export default function FieldEquipmentList() {
   async function fetchJobSites() {
     try {
       const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_job_sites')
-        .select('name')
-        .order('name', { ascending: true });
+        .schema("neta_ops")
+        .from("equipment_job_sites")
+        .select("name")
+        .order("name", { ascending: true });
 
       if (error) {
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+        if (
+          error.code === "42P01" ||
+          error.message?.includes("does not exist")
+        ) {
           setJobSites([]);
           return;
         }
-        console.error('Error fetching job sites:', error);
+        console.error("Error fetching job sites:", error);
         setJobSites([]);
         return;
       }
 
       setJobSites((data || []).map((row: any) => row.name));
     } catch (err) {
-      console.error('Error fetching job sites:', err);
+      console.error("Error fetching job sites:", err);
     }
   }
 
   async function createJobSite(name: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_job_sites')
+        .schema("neta_ops")
+        .from("equipment_job_sites")
         .insert([{ name: name.trim() }]);
 
       if (error) {
-        if (error.code === '23505') return true; // already exists
-        console.error('Error creating job site:', error);
+        if (error.code === "23505") return true; // already exists
+        console.error("Error creating job site:", error);
         return false;
       }
       await fetchJobSites();
       return true;
     } catch (err) {
-      console.error('Error creating job site:', err);
+      console.error("Error creating job site:", err);
       return false;
     }
   }
@@ -580,68 +691,79 @@ export default function FieldEquipmentList() {
   async function deleteJobSite(name: string) {
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_job_sites')
+        .schema("neta_ops")
+        .from("equipment_job_sites")
         .delete()
-        .eq('name', name.trim());
+        .eq("name", name.trim());
 
       if (error) {
-        console.error('Error deleting job site:', error);
-        toast({ title: 'Error', description: 'Could not delete job site', variant: 'destructive' });
+        console.error("Error deleting job site:", error);
+        toast({
+          title: "Error",
+          description: "Could not delete job site",
+          variant: "destructive",
+        });
         return;
       }
       await fetchJobSites();
       toast({
-        title: 'Job site removed',
+        title: "Job site removed",
         description: `"${name}" removed from saved job sites.`,
-        variant: 'success',
+        variant: "success",
       });
     } catch (err) {
-      console.error('Error deleting job site:', err);
-      toast({ title: 'Error', description: 'Could not delete job site', variant: 'destructive' });
+      console.error("Error deleting job site:", err);
+      toast({
+        title: "Error",
+        description: "Could not delete job site",
+        variant: "destructive",
+      });
     }
   }
 
   async function fetchTrucks() {
     try {
       const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_trucks')
-        .select('name')
-        .order('name', { ascending: true });
+        .schema("neta_ops")
+        .from("equipment_trucks")
+        .select("name")
+        .order("name", { ascending: true });
 
       if (error) {
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+        if (
+          error.code === "42P01" ||
+          error.message?.includes("does not exist")
+        ) {
           setTrucks([]);
           return;
         }
-        console.error('Error fetching trucks:', error);
+        console.error("Error fetching trucks:", error);
         setTrucks([]);
         return;
       }
 
       setTrucks((data || []).map((row: any) => row.name));
     } catch (err) {
-      console.error('Error fetching trucks:', err);
+      console.error("Error fetching trucks:", err);
     }
   }
 
   async function createTruck(name: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_trucks')
+        .schema("neta_ops")
+        .from("equipment_trucks")
         .insert([{ name: name.trim() }]);
 
       if (error) {
-        if (error.code === '23505') return true; // already exists
-        console.error('Error creating truck:', error);
+        if (error.code === "23505") return true; // already exists
+        console.error("Error creating truck:", error);
         return false;
       }
       await fetchTrucks();
       return true;
     } catch (err) {
-      console.error('Error creating truck:', err);
+      console.error("Error creating truck:", err);
       return false;
     }
   }
@@ -649,38 +771,46 @@ export default function FieldEquipmentList() {
   async function deleteTruck(name: string) {
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_trucks')
+        .schema("neta_ops")
+        .from("equipment_trucks")
         .delete()
-        .eq('name', name.trim());
+        .eq("name", name.trim());
 
       if (error) {
-        console.error('Error deleting truck:', error);
-        toast({ title: 'Error', description: 'Could not delete truck', variant: 'destructive' });
+        console.error("Error deleting truck:", error);
+        toast({
+          title: "Error",
+          description: "Could not delete truck",
+          variant: "destructive",
+        });
         return;
       }
       await fetchTrucks();
       toast({
-        title: 'Truck removed',
+        title: "Truck removed",
         description: `"${name}" removed from saved trucks.`,
-        variant: 'success',
+        variant: "success",
       });
     } catch (err) {
-      console.error('Error deleting truck:', err);
-      toast({ title: 'Error', description: 'Could not delete truck', variant: 'destructive' });
+      console.error("Error deleting truck:", err);
+      toast({
+        title: "Error",
+        description: "Could not delete truck",
+        variant: "destructive",
+      });
     }
   }
 
   async function fetchSubComponentItems() {
     try {
       const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_sub_component_items')
-        .select('name')
-        .order('name', { ascending: true });
+        .schema("neta_ops")
+        .from("equipment_sub_component_items")
+        .select("name")
+        .order("name", { ascending: true });
 
       if (error) {
-        console.error('Error fetching sub component items:', error);
+        console.error("Error fetching sub component items:", error);
         return;
       }
 
@@ -688,29 +818,29 @@ export default function FieldEquipmentList() {
         setSubComponentItems(data.map((item: any) => item.name));
       }
     } catch (err) {
-      console.error('Error fetching sub component items:', err);
+      console.error("Error fetching sub component items:", err);
     }
   }
 
   async function createSubComponentItem(itemName: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_sub_component_items')
+        .schema("neta_ops")
+        .from("equipment_sub_component_items")
         .insert([{ name: itemName.trim() }]);
 
       if (error) {
-        if (error.code === '23505') {
+        if (error.code === "23505") {
           return true; // Item already exists
         }
-        console.error('Error creating sub component item:', error);
+        console.error("Error creating sub component item:", error);
         return false;
       }
 
       await fetchSubComponentItems();
       return true;
     } catch (err) {
-      console.error('Error creating sub component item:', err);
+      console.error("Error creating sub component item:", err);
       return false;
     }
   }
@@ -718,32 +848,32 @@ export default function FieldEquipmentList() {
   async function deleteSubComponentItem(itemName: string) {
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('equipment_sub_component_items')
+        .schema("neta_ops")
+        .from("equipment_sub_component_items")
         .delete()
-        .eq('name', itemName.trim());
+        .eq("name", itemName.trim());
 
       if (error) {
-        console.error('Error deleting sub component item:', error);
+        console.error("Error deleting sub component item:", error);
         toast({
-          title: 'Error',
-          description: 'Could not delete item',
-          variant: 'destructive',
+          title: "Error",
+          description: "Could not delete item",
+          variant: "destructive",
         });
         return;
       }
       await fetchSubComponentItems();
       toast({
-        title: 'Item removed',
+        title: "Item removed",
         description: `"${itemName}" removed from saved sub component items.`,
-        variant: 'success',
+        variant: "success",
       });
     } catch (err) {
-      console.error('Error deleting sub component item:', err);
+      console.error("Error deleting sub component item:", err);
       toast({
-        title: 'Error',
-        description: 'Could not delete item',
-        variant: 'destructive',
+        title: "Error",
+        description: "Could not delete item",
+        variant: "destructive",
       });
     }
   }
@@ -759,46 +889,53 @@ export default function FieldEquipmentList() {
 
   const displayUserName = (u: UserData): string => {
     const raw = u?.user_metadata?.name as string | undefined;
-    if (raw && raw.includes(' ')) return raw;
+    if (raw && raw.includes(" ")) return raw;
     const derived = deriveNameFromEmail(u?.email);
-    return derived || raw || u?.email || 'Unnamed User';
+    return derived || raw || u?.email || "Unnamed User";
   };
 
   const getUserNameById = (userId: string | null): string => {
-    if (!userId) return 'Not assigned';
-    const user = users.find(u => u.id === userId);
-    return user ? displayUserName(user) : 'Unknown User';
+    if (!userId) return "Not assigned";
+    const user = users.find((u) => u.id === userId);
+    return user ? displayUserName(user) : "Unknown User";
   };
 
-  const getAssignedLabel = (item: Pick<FieldEquipment, 'assigned_to' | 'assigned_type'>): string => {
-    if (!item.assigned_to) return 'Not assigned';
-    const type = item.assigned_type || 'user';
-    if (type === 'user') {
-      const u = users.find(usr => usr.id === item.assigned_to);
-      return u ? displayUserName(u) : 'Unknown User';
+  const getAssignedLabel = (
+    item: Pick<FieldEquipment, "assigned_to" | "assigned_type">,
+  ): string => {
+    if (!item.assigned_to) return "Not assigned";
+    const type = item.assigned_type || "user";
+    if (type === "user") {
+      const u = users.find((usr) => usr.id === item.assigned_to);
+      return u ? displayUserName(u) : "Unknown User";
     }
     return item.assigned_to;
   };
 
-  const getAssignedTypeLabel = (type: AssignedType | null | undefined): string => {
+  const getAssignedTypeLabel = (
+    type: AssignedType | null | undefined,
+  ): string => {
     switch (type) {
-      case 'job_site': return 'Job Site';
-      case 'truck': return 'Truck';
-      case 'user':
-      default: return 'User';
+      case "job_site":
+        return "Job Site";
+      case "truck":
+        return "Truck";
+      case "user":
+      default:
+        return "User";
     }
   };
 
   // Helper function to parse date string as local date (not UTC)
   // This prevents timezone issues where dates appear one day off
   const parseLocalDate = (dateString: string): Date => {
-    const [year, month, day] = dateString.split('-').map(Number);
+    const [year, month, day] = dateString.split("-").map(Number);
     return new Date(year, month - 1, day);
   };
 
   // Helper function to format date string as local date string
   const formatLocalDate = (dateString: string | null): string => {
-    if (!dateString) return '-';
+    if (!dateString) return "-";
     const date = parseLocalDate(dateString);
     return date.toLocaleDateString();
   };
@@ -812,45 +949,57 @@ export default function FieldEquipmentList() {
     return due < today;
   };
 
-  const handleFileUpload = async (file: File, equipmentId?: string): Promise<string | null> => {
+  const handleFileUpload = async (
+    file: File,
+    equipmentId?: string,
+  ): Promise<string | null> => {
     try {
       setUploadingFile(true);
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = equipmentId ? `${equipmentId}/${fileName}` : `temp/${fileName}`;
+      const filePath = equipmentId
+        ? `${equipmentId}/${fileName}`
+        : `temp/${fileName}`;
 
       // Upload to Supabase Storage
       const { error: uploadError, data: uploadData } = await supabase.storage
-        .from('equipment-certificates')
+        .from("equipment-certificates")
         .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
+          cacheControl: "3600",
+          upsert: false,
         });
 
       if (uploadError) {
         // Check if it's a bucket not found error
-        if (uploadError.message?.includes('Bucket not found') || uploadError.message?.includes('not found')) {
-          throw new Error('Storage bucket "equipment-certificates" not found. Please create it in Supabase Dashboard → Storage.');
+        if (
+          uploadError.message?.includes("Bucket not found") ||
+          uploadError.message?.includes("not found")
+        ) {
+          throw new Error(
+            'Storage bucket "equipment-certificates" not found. Please create it in Supabase Dashboard → Storage.',
+          );
         }
         throw uploadError;
       }
 
       // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('equipment-certificates')
+      const {
+        data: { publicUrl },
+      } = supabase.storage
+        .from("equipment-certificates")
         .getPublicUrl(filePath);
 
       return publicUrl;
     } catch (error: any) {
-      console.error('Error uploading file:', error);
-      const errorMessage = error.message?.includes('Bucket not found') 
+      console.error("Error uploading file:", error);
+      const errorMessage = error.message?.includes("Bucket not found")
         ? 'Storage bucket not found. Please create "equipment-certificates" bucket in Supabase Dashboard → Storage.'
-        : (error.message || 'Failed to upload certificate');
-      
+        : error.message || "Failed to upload certificate";
+
       toast({
-        title: 'Upload Error',
+        title: "Upload Error",
         description: errorMessage,
-        variant: 'destructive',
+        variant: "destructive",
       });
       return null;
     } finally {
@@ -868,7 +1017,10 @@ export default function FieldEquipmentList() {
       // Upload file if one is selected
       if (selectedFile) {
         if (isEditMode && editingEquipmentId) {
-          certificateUrl = await handleFileUpload(selectedFile, editingEquipmentId);
+          certificateUrl = await handleFileUpload(
+            selectedFile,
+            editingEquipmentId,
+          );
         } else {
           // For new equipment, upload to temp first, then move after insert
           certificateUrl = await handleFileUpload(selectedFile);
@@ -881,7 +1033,7 @@ export default function FieldEquipmentList() {
       // Create category if it's new
       if (formData.category && formData.category.trim()) {
         const categoryExists = categories.some(
-          cat => cat.toLowerCase() === formData.category.trim().toLowerCase()
+          (cat) => cat.toLowerCase() === formData.category.trim().toLowerCase(),
         );
         if (!categoryExists) {
           await createCategory(formData.category);
@@ -891,7 +1043,7 @@ export default function FieldEquipmentList() {
       // Create location if it's new
       if (formData.location && formData.location.trim()) {
         const locationExists = locations.some(
-          loc => loc.toLowerCase() === formData.location.trim().toLowerCase()
+          (loc) => loc.toLowerCase() === formData.location.trim().toLowerCase(),
         );
         if (!locationExists) {
           await createLocation(formData.location);
@@ -899,10 +1051,12 @@ export default function FieldEquipmentList() {
       }
 
       // Create any new sub component items
-      const validSubComponents = formSubComponents.filter(sc => sc.item.trim() !== '');
+      const validSubComponents = formSubComponents.filter(
+        (sc) => sc.item.trim() !== "",
+      );
       for (const sc of validSubComponents) {
         const itemExists = subComponentItems.some(
-          existing => existing.toLowerCase() === sc.item.trim().toLowerCase()
+          (existing) => existing.toLowerCase() === sc.item.trim().toLowerCase(),
         );
         if (!itemExists) {
           await createSubComponentItem(sc.item);
@@ -914,12 +1068,15 @@ export default function FieldEquipmentList() {
         calibration_date: formData.calibration_date || null,
         calibration_due_date: formData.calibration_due_date || null,
         assigned_to: formData.assigned_to || null,
-        assigned_type: formData.assigned_to ? (formData.assigned_type || 'user') : null,
+        assigned_type: formData.assigned_to
+          ? formData.assigned_type || "user"
+          : null,
         notes: formData.notes || null,
         tracking_url: formData.tracking_url || null,
         category: formData.category?.trim() || null,
         location: formData.location?.trim() || null,
-        sub_components: validSubComponents.length > 0 ? validSubComponents : null,
+        sub_components:
+          validSubComponents.length > 0 ? validSubComponents : null,
         in_service: formData.in_service !== false,
       };
 
@@ -928,12 +1085,13 @@ export default function FieldEquipmentList() {
       if (isEditMode && editingEquipmentId) {
         // Get current certificate URL before updating
         const { data: currentEquipment } = await supabase
-          .schema('neta_ops')
-          .from('field_equipment')
-          .select('calibration_certificate_url')
-          .eq('id', editingEquipmentId)
+          .schema("neta_ops")
+          .from("field_equipment")
+          .select("calibration_certificate_url")
+          .eq("id", editingEquipmentId)
           .single();
-        oldCertificateUrl = currentEquipment?.calibration_certificate_url || null;
+        oldCertificateUrl =
+          currentEquipment?.calibration_certificate_url || null;
       }
 
       if (certificateUrl) {
@@ -948,37 +1106,45 @@ export default function FieldEquipmentList() {
 
       if (isEditMode && editingEquipmentId) {
         const { error } = await supabase
-          .schema('neta_ops')
-          .from('field_equipment')
+          .schema("neta_ops")
+          .from("field_equipment")
           .update(submitData)
-          .eq('id', editingEquipmentId);
+          .eq("id", editingEquipmentId);
 
         if (error) throw error;
 
         // Delete old file from storage if certificate was removed or replaced
-        if (oldCertificateUrl && oldCertificateUrl !== submitData.calibration_certificate_url) {
+        if (
+          oldCertificateUrl &&
+          oldCertificateUrl !== submitData.calibration_certificate_url
+        ) {
           try {
-            const urlParts = oldCertificateUrl.split('/equipment-certificates/');
+            const urlParts = oldCertificateUrl.split(
+              "/equipment-certificates/",
+            );
             if (urlParts.length > 1) {
-              const filePath = urlParts[1].split('?')[0];
+              const filePath = urlParts[1].split("?")[0];
               await supabase.storage
-                .from('equipment-certificates')
+                .from("equipment-certificates")
                 .remove([filePath]);
             }
           } catch (storageError) {
-            console.error('Error deleting old certificate from storage:', storageError);
+            console.error(
+              "Error deleting old certificate from storage:",
+              storageError,
+            );
             // Don't fail the update if storage deletion fails
           }
         }
         toast({
-          title: 'Success',
-          description: 'Equipment updated successfully',
-          variant: 'success',
+          title: "Success",
+          description: "Equipment updated successfully",
+          variant: "success",
         });
       } else {
         const { data: newEquipment, error } = await supabase
-          .schema('neta_ops')
-          .from('field_equipment')
+          .schema("neta_ops")
+          .from("field_equipment")
           .insert([{ ...submitData, created_by: user.id }])
           .select()
           .single();
@@ -986,42 +1152,48 @@ export default function FieldEquipmentList() {
         if (error) throw error;
 
         // If we uploaded to temp, move the file to the equipment folder
-        if (certificateUrl && typeof certificateUrl === 'string' && certificateUrl.includes('/temp/')) {
+        if (
+          certificateUrl &&
+          typeof certificateUrl === "string" &&
+          certificateUrl.includes("/temp/")
+        ) {
           const newPath = `${newEquipment.id}/${selectedFile?.name}`;
-          const oldPath = certificateUrl.split('/equipment-certificates/')[1];
-          
+          const oldPath = certificateUrl.split("/equipment-certificates/")[1];
+
           // Copy file to new location
           const { data: fileData } = await supabase.storage
-            .from('equipment-certificates')
+            .from("equipment-certificates")
             .download(oldPath);
-          
+
           if (fileData) {
             await supabase.storage
-              .from('equipment-certificates')
+              .from("equipment-certificates")
               .upload(newPath, fileData);
-            
+
             // Update with new URL
-            const { data: { publicUrl } } = supabase.storage
-              .from('equipment-certificates')
+            const {
+              data: { publicUrl },
+            } = supabase.storage
+              .from("equipment-certificates")
               .getPublicUrl(newPath);
-            
+
             await supabase
-              .schema('neta_ops')
-              .from('field_equipment')
+              .schema("neta_ops")
+              .from("field_equipment")
               .update({ calibration_certificate_url: publicUrl })
-              .eq('id', newEquipment.id);
-            
+              .eq("id", newEquipment.id);
+
             // Delete temp file
             await supabase.storage
-              .from('equipment-certificates')
+              .from("equipment-certificates")
               .remove([oldPath]);
           }
         }
 
         toast({
-          title: 'Success',
-          description: 'Equipment added successfully',
-          variant: 'success',
+          title: "Success",
+          description: "Equipment added successfully",
+          variant: "success",
         });
       }
 
@@ -1030,20 +1202,20 @@ export default function FieldEquipmentList() {
       setSelectedFile(null);
       setIsEditMode(false);
       setEditingEquipmentId(null);
-      setCategoryInput('');
+      setCategoryInput("");
       setShowCategoryDropdown(false);
-      setLocationInput('');
+      setLocationInput("");
       setShowLocationDropdown(false);
       setFormSubComponents([]);
       setSubComponentsExpanded(false);
       setActiveSubComponentDropdown(null);
       fetchEquipment();
     } catch (error: any) {
-      console.error('Error saving equipment:', error);
+      console.error("Error saving equipment:", error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to save equipment',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to save equipment",
+        variant: "destructive",
       });
     } finally {
       setUploadingFile(false);
@@ -1053,20 +1225,22 @@ export default function FieldEquipmentList() {
   function handleEdit(equipmentItem: FieldEquipment) {
     setFormData({
       equipment_name: equipmentItem.equipment_name,
-      amp_id: equipmentItem.amp_id || '',
-      serial_number: equipmentItem.serial_number || '',
-      calibration_date: equipmentItem.calibration_date || '',
-      calibration_due_date: equipmentItem.calibration_due_date || '',
-      category: equipmentItem.category || '',
-      location: equipmentItem.location || '',
+      amp_id: equipmentItem.amp_id || "",
+      serial_number: equipmentItem.serial_number || "",
+      calibration_date: equipmentItem.calibration_date || "",
+      calibration_due_date: equipmentItem.calibration_due_date || "",
+      category: equipmentItem.category || "",
+      location: equipmentItem.location || "",
       assigned_to: equipmentItem.assigned_to,
-      assigned_type: equipmentItem.assigned_type ?? (equipmentItem.assigned_to ? 'user' : null),
-      notes: equipmentItem.notes || '',
-      tracking_url: equipmentItem.tracking_url || '',
+      assigned_type:
+        equipmentItem.assigned_type ??
+        (equipmentItem.assigned_to ? "user" : null),
+      notes: equipmentItem.notes || "",
+      tracking_url: equipmentItem.tracking_url || "",
       in_service: equipmentItem.in_service !== false,
     });
-    setCategoryInput(equipmentItem.category || '');
-    setLocationInput(equipmentItem.location || '');
+    setCategoryInput(equipmentItem.category || "");
+    setLocationInput(equipmentItem.location || "");
     setFormSubComponents(equipmentItem.sub_components || []);
     setSubComponentsExpanded((equipmentItem.sub_components || []).length > 0);
     setSelectedFile(null);
@@ -1086,10 +1260,10 @@ export default function FieldEquipmentList() {
 
     try {
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('field_equipment')
+        .schema("neta_ops")
+        .from("field_equipment")
         .delete()
-        .eq('id', equipmentToDelete);
+        .eq("id", equipmentToDelete);
 
       if (error) throw error;
 
@@ -1097,25 +1271,25 @@ export default function FieldEquipmentList() {
       setEquipmentToDelete(null);
       fetchEquipment();
       toast({
-        title: 'Success',
-        description: 'Equipment deleted successfully',
-        variant: 'success',
+        title: "Success",
+        description: "Equipment deleted successfully",
+        variant: "success",
       });
     } catch (error: any) {
-      console.error('Error deleting equipment:', error);
+      console.error("Error deleting equipment:", error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete equipment',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to delete equipment",
+        variant: "destructive",
       });
     }
   }
 
   function handleInputChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
   const handleAssign = async (
@@ -1125,46 +1299,53 @@ export default function FieldEquipmentList() {
     displayLabel?: string,
   ) => {
     try {
-      const assignedTo = value && value.trim() !== '' ? value : null;
+      const assignedTo = value && value.trim() !== "" ? value : null;
       const assignedType = assignedTo ? type : null;
 
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('field_equipment')
+        .schema("neta_ops")
+        .from("field_equipment")
         .update({
           assigned_to: assignedTo,
           assigned_type: assignedType,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', equipmentId);
+        .eq("id", equipmentId);
 
       if (error) throw error;
 
-      const label = assignedTo ? (displayLabel || value || 'Assigned') : 'Unassigned';
+      const label = assignedTo
+        ? displayLabel || value || "Assigned"
+        : "Unassigned";
       toast({
-        title: 'Success',
-        description: assignedTo ? `Equipment assigned to ${label}` : 'Equipment unassigned',
-        variant: 'success',
+        title: "Success",
+        description: assignedTo
+          ? `Equipment assigned to ${label}`
+          : "Equipment unassigned",
+        variant: "success",
       });
 
-      setOpenUserSelectors(prev => ({ ...prev, [equipmentId]: false }));
-      setUserSearchQueries(prev => ({ ...prev, [equipmentId]: '' }));
+      setOpenUserSelectors((prev) => ({ ...prev, [equipmentId]: false }));
+      setUserSearchQueries((prev) => ({ ...prev, [equipmentId]: "" }));
       fetchEquipment();
     } catch (error: any) {
-      console.error('Failed to assign equipment:', error);
+      console.error("Failed to assign equipment:", error);
       toast({
-        title: 'Error',
-        description: 'Could not assign equipment',
-        variant: 'destructive',
+        title: "Error",
+        description: "Could not assign equipment",
+        variant: "destructive",
       });
     }
   };
 
   // Backwards-compatible helper for user-only assignment paths.
-  const handleAssignUser = (equipmentId: string, selectedUser: UserData | null) => {
+  const handleAssignUser = (
+    equipmentId: string,
+    selectedUser: UserData | null,
+  ) => {
     return handleAssign(
       equipmentId,
-      selectedUser ? 'user' : null,
+      selectedUser ? "user" : null,
       selectedUser ? selectedUser.id : null,
       selectedUser ? displayUserName(selectedUser) : undefined,
     );
@@ -1172,36 +1353,40 @@ export default function FieldEquipmentList() {
 
   const handleCheckOut = async (equipmentId: string) => {
     if (!user) {
-      toast({ title: 'Error', description: 'You must be signed in to check out equipment', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "You must be signed in to check out equipment",
+        variant: "destructive",
+      });
       return;
     }
     try {
       const nowIso = new Date().toISOString();
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('field_equipment')
+        .schema("neta_ops")
+        .from("field_equipment")
         .update({
           checked_out_by: user.id,
           checked_out_at: nowIso,
           updated_at: nowIso,
         })
-        .eq('id', equipmentId);
+        .eq("id", equipmentId);
 
       if (error) throw error;
 
       toast({
-        title: 'Checked out',
-        description: 'Equipment is now checked out to you.',
-        variant: 'success',
+        title: "Checked out",
+        description: "Equipment is now checked out to you.",
+        variant: "success",
       });
-      setOpenActionMenus(prev => ({ ...prev, [equipmentId]: false }));
+      setOpenActionMenus((prev) => ({ ...prev, [equipmentId]: false }));
       fetchEquipment();
     } catch (err: any) {
-      console.error('Failed to check out equipment:', err);
+      console.error("Failed to check out equipment:", err);
       toast({
-        title: 'Error',
-        description: err.message || 'Could not check out equipment',
-        variant: 'destructive',
+        title: "Error",
+        description: err.message || "Could not check out equipment",
+        variant: "destructive",
       });
     }
   };
@@ -1210,48 +1395,48 @@ export default function FieldEquipmentList() {
     try {
       const nowIso = new Date().toISOString();
       const { error } = await supabase
-        .schema('neta_ops')
-        .from('field_equipment')
+        .schema("neta_ops")
+        .from("field_equipment")
         .update({
           checked_out_by: null,
           checked_out_at: null,
           updated_at: nowIso,
         })
-        .eq('id', equipmentId);
+        .eq("id", equipmentId);
 
       if (error) throw error;
 
       toast({
-        title: 'Checked in',
-        description: 'Equipment has been returned.',
-        variant: 'success',
+        title: "Checked in",
+        description: "Equipment has been returned.",
+        variant: "success",
       });
-      setOpenActionMenus(prev => ({ ...prev, [equipmentId]: false }));
+      setOpenActionMenus((prev) => ({ ...prev, [equipmentId]: false }));
       fetchEquipment();
     } catch (err: any) {
-      console.error('Failed to check in equipment:', err);
+      console.error("Failed to check in equipment:", err);
       toast({
-        title: 'Error',
-        description: err.message || 'Could not check in equipment',
-        variant: 'destructive',
+        title: "Error",
+        description: err.message || "Could not check in equipment",
+        variant: "destructive",
       });
     }
   };
 
   const formatDateTime = (iso: string | null): string => {
-    if (!iso) return '';
+    if (!iso) return "";
     const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '';
+    if (Number.isNaN(d.getTime())) return "";
     return d.toLocaleString();
   };
 
   const formatRelativeTime = (iso: string | null): string => {
-    if (!iso) return '';
+    if (!iso) return "";
     const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '';
+    if (Number.isNaN(d.getTime())) return "";
     const diffMs = Date.now() - d.getTime();
     const diffSec = Math.round(diffMs / 1000);
-    if (diffSec < 60) return 'just now';
+    if (diffSec < 60) return "just now";
     const diffMin = Math.round(diffSec / 60);
     if (diffMin < 60) return `${diffMin}m ago`;
     const diffHr = Math.round(diffMin / 60);
@@ -1273,9 +1458,9 @@ export default function FieldEquipmentList() {
   }, [searchTerm]);
 
   const filteredUsers = (equipmentId: string) => {
-    const query = (userSearchQueries[equipmentId] || '').toLowerCase();
-    return users.filter(u => {
-      const email = u.email?.toLowerCase() || '';
+    const query = (userSearchQueries[equipmentId] || "").toLowerCase();
+    return users.filter((u) => {
+      const email = u.email?.toLowerCase() || "";
       if (!/@ampqes\.com$/i.test(email)) return false;
       const name = displayUserName(u).toLowerCase();
       return email.includes(query) || name.includes(query);
@@ -1283,31 +1468,31 @@ export default function FieldEquipmentList() {
   };
 
   const filteredJobSites = (equipmentId: string) => {
-    const query = (userSearchQueries[equipmentId] || '').toLowerCase();
+    const query = (userSearchQueries[equipmentId] || "").toLowerCase();
     if (!query) return jobSites;
-    return jobSites.filter(s => s.toLowerCase().includes(query));
+    return jobSites.filter((s) => s.toLowerCase().includes(query));
   };
 
   const filteredTrucks = (equipmentId: string) => {
-    const query = (userSearchQueries[equipmentId] || '').toLowerCase();
+    const query = (userSearchQueries[equipmentId] || "").toLowerCase();
     if (!query) return trucks;
-    return trucks.filter(t => t.toLowerCase().includes(query));
+    return trucks.filter((t) => t.toLowerCase().includes(query));
   };
 
   // Handle sort column click
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       // If already sorting by this field, toggle direction or clear
-      if (sortDirection === 'asc') {
-        setSortDirection('desc');
+      if (sortDirection === "asc") {
+        setSortDirection("desc");
       } else {
         // Reset sort
         setSortField(null);
-        setSortDirection('asc');
+        setSortDirection("asc");
       }
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -1316,9 +1501,11 @@ export default function FieldEquipmentList() {
     if (sortField !== field) {
       return <ArrowUpDown className="inline-block ml-1 w-3 h-3 opacity-40" />;
     }
-    return sortDirection === 'asc' 
-      ? <ArrowUp className="inline-block ml-1 w-3 h-3 text-blue-500" />
-      : <ArrowDown className="inline-block ml-1 w-3 h-3 text-blue-500" />;
+    return sortDirection === "asc" ? (
+      <ArrowUp className="inline-block ml-1 w-3 h-3 text-blue-500" />
+    ) : (
+      <ArrowDown className="inline-block ml-1 w-3 h-3 text-blue-500" />
+    );
   };
 
   // Filter equipment based on active tab and service filter
@@ -1326,53 +1513,61 @@ export default function FieldEquipmentList() {
     let filtered = equipment;
 
     // Apply service filter: in_service only shows equipment where in_service !== false
-    if (serviceFilter === 'in_service') {
-      filtered = filtered.filter(item => item.in_service !== false);
+    if (serviceFilter === "in_service") {
+      filtered = filtered.filter((item) => item.in_service !== false);
     }
 
     switch (activeTab) {
-      case 'in-cal':
+      case "in-cal":
         // Show equipment with calibration dates
-        filtered = filtered.filter(item => 
-          item.calibration_date !== null || item.calibration_due_date !== null
+        filtered = filtered.filter(
+          (item) =>
+            item.calibration_date !== null ||
+            item.calibration_due_date !== null,
         );
         break;
-      case 'out-of-cal':
+      case "out-of-cal":
         // Show equipment that is past due (calibration_due_date is in the past)
-        filtered = filtered.filter(item => 
-          item.calibration_due_date !== null && isCalibrationPastDue(item.calibration_due_date)
+        filtered = filtered.filter(
+          (item) =>
+            item.calibration_due_date !== null &&
+            isCalibrationPastDue(item.calibration_due_date),
         );
         break;
-      case 'assigned':
+      case "assigned":
         // Show only assigned equipment
-        filtered = filtered.filter(item => item.assigned_to !== null);
+        filtered = filtered.filter((item) => item.assigned_to !== null);
         break;
-      case 'unassigned':
+      case "unassigned":
         // Show only unassigned equipment
-        filtered = filtered.filter(item => item.assigned_to === null);
+        filtered = filtered.filter((item) => item.assigned_to === null);
         break;
-      case 'category':
+      case "category":
         // Show all equipment, will be sorted by category
         break;
-      case 'all':
+      case "all":
       default:
         break;
     }
 
     // Apply category filter (saved categories)
     if (categoryFilter) {
-      if (categoryFilter === '__uncategorized__') {
-        filtered = filtered.filter(item => !item.category || item.category.trim() === '');
+      if (categoryFilter === "__uncategorized__") {
+        filtered = filtered.filter(
+          (item) => !item.category || item.category.trim() === "",
+        );
       } else {
-        filtered = filtered.filter(item => (item.category || '').trim() === categoryFilter);
+        filtered = filtered.filter(
+          (item) => (item.category || "").trim() === categoryFilter,
+        );
       }
     }
 
     // Sort by category for category tab (default when no user sort is active)
-    if (activeTab === 'category' && !sortField) {
+    if (activeTab === "category" && !sortField) {
       filtered = [...filtered].sort((a, b) => {
-        const catA = a.category || 'Uncategorized';
-        const catB = b.category || 'Uncategorized';
+        const catA = a.category || "Uncategorized";
+        const catB = b.category || "Uncategorized";
         if (catA === catB) {
           // If same category, sort by equipment name
           return a.equipment_name.localeCompare(b.equipment_name);
@@ -1384,51 +1579,53 @@ export default function FieldEquipmentList() {
     // Apply user-selected column sort
     if (sortField) {
       filtered = [...filtered].sort((a, b) => {
-        let valA: string = '';
-        let valB: string = '';
+        let valA: string = "";
+        let valB: string = "";
 
         switch (sortField) {
-          case 'equipment_name':
-            valA = a.equipment_name || '';
-            valB = b.equipment_name || '';
+          case "equipment_name":
+            valA = a.equipment_name || "";
+            valB = b.equipment_name || "";
             break;
-          case 'serial_number':
-            valA = a.serial_number || '';
-            valB = b.serial_number || '';
+          case "serial_number":
+            valA = a.serial_number || "";
+            valB = b.serial_number || "";
             break;
-          case 'amp_id':
-            valA = a.amp_id || '';
-            valB = b.amp_id || '';
+          case "amp_id":
+            valA = a.amp_id || "";
+            valB = b.amp_id || "";
             break;
-          case 'calibration_date':
-            valA = a.calibration_date || '';
-            valB = b.calibration_date || '';
+          case "calibration_date":
+            valA = a.calibration_date || "";
+            valB = b.calibration_date || "";
             break;
-          case 'calibration_due_date':
-            valA = a.calibration_due_date || '';
-            valB = b.calibration_due_date || '';
+          case "calibration_due_date":
+            valA = a.calibration_due_date || "";
+            valB = b.calibration_due_date || "";
             break;
-          case 'category':
-            valA = a.category || '';
-            valB = b.category || '';
+          case "category":
+            valA = a.category || "";
+            valB = b.category || "";
             break;
-          case 'location':
-            valA = a.location || '';
-            valB = b.location || '';
+          case "location":
+            valA = a.location || "";
+            valB = b.location || "";
             break;
-          case 'assigned_to': {
-            valA = a.assigned_to ? getAssignedLabel(a) : '';
-            valB = b.assigned_to ? getAssignedLabel(b) : '';
+          case "assigned_to": {
+            valA = a.assigned_to ? getAssignedLabel(a) : "";
+            valB = b.assigned_to ? getAssignedLabel(b) : "";
             break;
           }
-          case 'notes':
-            valA = a.notes || '';
-            valB = b.notes || '';
+          case "notes":
+            valA = a.notes || "";
+            valB = b.notes || "";
             break;
         }
 
-        const comparison = valA.localeCompare(valB, undefined, { sensitivity: 'base' });
-        return sortDirection === 'asc' ? comparison : -comparison;
+        const comparison = valA.localeCompare(valB, undefined, {
+          sensitivity: "base",
+        });
+        return sortDirection === "asc" ? comparison : -comparison;
       });
     }
 
@@ -1436,6 +1633,10 @@ export default function FieldEquipmentList() {
   };
 
   const filteredEquipment = getFilteredEquipment();
+  const currentDivision = location.pathname.split("/").filter(Boolean)[0];
+  const maintenancePath = currentDivision
+    ? `/${currentDivision}/maintenance`
+    : "/field-tech/maintenance";
 
   return (
     <PageLayout title="Field Equipment">
@@ -1445,42 +1646,61 @@ export default function FieldEquipmentList() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Field Equipment
             </h1>
-          <Button
-            onClick={() => {
-              setFormData(initialFormData);
-              setCategoryInput('');
-              setLocationInput('');
-              setFormSubComponents([]);
-              setSubComponentsExpanded(false);
-              setSelectedFile(null);
-              setIsEditMode(false);
-              setEditingEquipmentId(null);
-              setIsOpen(true);
-            }}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Equipment
-          </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => navigate(maintenancePath)}
+                className="group flex items-center gap-2 border border-[#f26722] bg-transparent text-[#f26722] hover:bg-[#f26722] hover:text-white"
+                leftIcon={
+                  <TriangleAlert className="h-4 w-4 text-[#f26722] group-hover:text-white" />
+                }
+              >
+                <span className="text-[#f26722] group-hover:text-white">
+                  Maintenance
+                </span>
+              </Button>
+              <Button
+                onClick={() => {
+                  setFormData(initialFormData);
+                  setCategoryInput("");
+                  setLocationInput("");
+                  setFormSubComponents([]);
+                  setSubComponentsExpanded(false);
+                  setSelectedFile(null);
+                  setIsEditMode(false);
+                  setEditingEquipmentId(null);
+                  setIsOpen(true);
+                }}
+                className="flex items-center gap-2"
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Add Equipment
+              </Button>
+            </div>
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            {activeTab === 'all' ? (
+            {activeTab === "all" ? (
               <>
-                Total Equipment: <span className="font-semibold text-gray-900 dark:text-white">{totalCount}</span>
-                {(searchTerm || categoryFilter) && filteredEquipment.length !== totalCount && (
-                  <span className="ml-2 text-gray-500 dark:text-gray-500">
-                    (Showing {filteredEquipment.length} of {totalCount})
-                  </span>
-                )}
+                Total Equipment:{" "}
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {totalCount}
+                </span>
+                {(searchTerm || categoryFilter) &&
+                  filteredEquipment.length !== totalCount && (
+                    <span className="ml-2 text-gray-500 dark:text-gray-500">
+                      (Showing {filteredEquipment.length} of {totalCount})
+                    </span>
+                  )}
               </>
             ) : (
               <>
-                {activeTab === 'in-cal' && 'Equipment with Calibration: '}
-                {activeTab === 'out-of-cal' && 'Out of Calibration: '}
-                {activeTab === 'assigned' && 'Assigned Equipment: '}
-                {activeTab === 'unassigned' && 'Unassigned Equipment: '}
-                {activeTab === 'category' && 'Equipment by Category: '}
-                <span className="font-semibold text-gray-900 dark:text-white">{filteredEquipment.length}</span>
+                {activeTab === "in-cal" && "Equipment with Calibration: "}
+                {activeTab === "out-of-cal" && "Out of Calibration: "}
+                {activeTab === "assigned" && "Assigned Equipment: "}
+                {activeTab === "unassigned" && "Unassigned Equipment: "}
+                {activeTab === "category" && "Equipment by Category: "}
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {filteredEquipment.length}
+                </span>
                 {(searchTerm || categoryFilter) && (
                   <span className="ml-2 text-gray-500 dark:text-gray-500">
                     (filtered from {totalCount} total)
@@ -1504,10 +1724,14 @@ export default function FieldEquipmentList() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">Show:</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+              Show:
+            </span>
             <select
               value={serviceFilter}
-              onChange={(e) => setServiceFilter(e.target.value as ServiceFilter)}
+              onChange={(e) =>
+                setServiceFilter(e.target.value as ServiceFilter)
+              }
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-150 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722]"
             >
               <option value="all">All equipment</option>
@@ -1515,7 +1739,9 @@ export default function FieldEquipmentList() {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">Category:</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+              Category:
+            </span>
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
@@ -1524,36 +1750,64 @@ export default function FieldEquipmentList() {
               <option value="">All categories</option>
               <option value="__uncategorized__">Uncategorized</option>
               {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
           </div>
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setSortField(null); setSortDirection('asc'); }} className="mb-4">
-          <TabsList>
-            <TabsTrigger value="all" className="flex items-center gap-2">
+        <Tabs
+          value={activeTab}
+          onValueChange={(tab) => {
+            setActiveTab(tab);
+            setSortField(null);
+            setSortDirection("asc");
+          }}
+          className="mb-4"
+        >
+          <TabsList className="inline-flex flex-wrap space-x-1 bg-gray-100 dark:bg-dark-150 p-1 rounded-lg">
+            <TabsTrigger
+              value="all"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            >
               <FileText className="h-4 w-4" />
               All
             </TabsTrigger>
-            <TabsTrigger value="in-cal" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
+            <TabsTrigger
+              value="in-cal"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            >
+              <AlertTriangle className="h-4 w-4" />
               In Cal
             </TabsTrigger>
-            <TabsTrigger value="out-of-cal" className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
+            <TabsTrigger
+              value="out-of-cal"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            >
+              <ThumbsUp className="h-4 w-4" />
               Out of Cal
             </TabsTrigger>
-            <TabsTrigger value="assigned" className="flex items-center gap-2">
+            <TabsTrigger
+              value="assigned"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            >
               <CheckCircle className="h-4 w-4" />
               Assigned
             </TabsTrigger>
-            <TabsTrigger value="unassigned" className="flex items-center gap-2">
+            <TabsTrigger
+              value="unassigned"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            >
               <XCircle className="h-4 w-4" />
               Unassigned
             </TabsTrigger>
-            <TabsTrigger value="category" className="flex items-center gap-2">
+            <TabsTrigger
+              value="category"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            >
               <Tag className="h-4 w-4" />
               Category
             </TabsTrigger>
@@ -1571,68 +1825,99 @@ export default function FieldEquipmentList() {
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-dark-200">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors" onClick={() => handleSort('equipment_name')}>
-                      Equipment Name{renderSortIcon('equipment_name')}
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                      onClick={() => handleSort("equipment_name")}
+                    >
+                      Equipment Name{renderSortIcon("equipment_name")}
                     </th>
-                    {(activeTab === 'all' || activeTab === 'category') && (
+                    {(activeTab === "all" || activeTab === "category") && (
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Status
                       </th>
                     )}
-                    {activeTab === 'all' && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors" onClick={() => handleSort('serial_number')}>
-                        Serial Number{renderSortIcon('serial_number')}
+                    {activeTab === "all" && (
+                      <th
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        onClick={() => handleSort("serial_number")}
+                      >
+                        Serial Number{renderSortIcon("serial_number")}
                       </th>
                     )}
-                    {activeTab !== 'category' && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors" onClick={() => handleSort('amp_id')}>
-                        AMP ID{renderSortIcon('amp_id')}
+                    {activeTab !== "category" && (
+                      <th
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        onClick={() => handleSort("amp_id")}
+                      >
+                        AMP ID{renderSortIcon("amp_id")}
                       </th>
                     )}
-                    {activeTab === 'all' && allTabShowExtraColumns && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors" onClick={() => handleSort('calibration_date')}>
-                        In Cal Date{renderSortIcon('calibration_date')}
+                    {activeTab === "all" && allTabShowExtraColumns && (
+                      <th
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        onClick={() => handleSort("calibration_date")}
+                      >
+                        In Cal Date{renderSortIcon("calibration_date")}
                       </th>
                     )}
-                    {(activeTab === 'in-cal' || activeTab === 'out-of-cal') && (
+                    {(activeTab === "in-cal" || activeTab === "out-of-cal") && (
                       <>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors" onClick={() => handleSort('calibration_date')}>
-                          Calibration Date{renderSortIcon('calibration_date')}
+                        <th
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          onClick={() => handleSort("calibration_date")}
+                        >
+                          Calibration Date{renderSortIcon("calibration_date")}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors" onClick={() => handleSort('calibration_due_date')}>
-                          Cal Due Date{renderSortIcon('calibration_due_date')}
+                        <th
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          onClick={() => handleSort("calibration_due_date")}
+                        >
+                          Cal Due Date{renderSortIcon("calibration_due_date")}
                         </th>
                       </>
                     )}
-                    {activeTab === 'category' && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors" onClick={() => handleSort('category')}>
-                        Category{renderSortIcon('category')}
+                    {activeTab === "category" && (
+                      <th
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        onClick={() => handleSort("category")}
+                      >
+                        Category{renderSortIcon("category")}
                       </th>
                     )}
-                    {(activeTab === 'all' || activeTab === 'category') && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors" onClick={() => handleSort('location')}>
-                        Location{renderSortIcon('location')}
+                    {(activeTab === "all" || activeTab === "category") && (
+                      <th
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        onClick={() => handleSort("location")}
+                      >
+                        Location{renderSortIcon("location")}
                       </th>
                     )}
-                    {activeTab === 'all' && allTabShowExtraColumns && (
+                    {activeTab === "all" && allTabShowExtraColumns && (
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Sub Components
                       </th>
                     )}
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors" onClick={() => handleSort('assigned_to')}>
-                      Assigned To{renderSortIcon('assigned_to')}
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                      onClick={() => handleSort("assigned_to")}
+                    >
+                      Assigned To{renderSortIcon("assigned_to")}
                     </th>
-                    {activeTab !== 'all' && activeTab !== 'category' && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors" onClick={() => handleSort('notes')}>
-                        Notes{renderSortIcon('notes')}
+                    {activeTab !== "all" && activeTab !== "category" && (
+                      <th
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        onClick={() => handleSort("notes")}
+                      >
+                        Notes{renderSortIcon("notes")}
                       </th>
                     )}
-                    {(activeTab === 'all' || activeTab === 'category') && (activeTab !== 'all' || allTabShowExtraColumns) && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Tracking
-                      </th>
-                    )}
-                    {activeTab === 'all' && allTabShowExtraColumns && (
+                    {(activeTab === "all" || activeTab === "category") &&
+                      (activeTab !== "all" || allTabShowExtraColumns) && (
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Tracking
+                        </th>
+                      )}
+                    {activeTab === "all" && allTabShowExtraColumns && (
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Certificate
                       </th>
@@ -1645,47 +1930,57 @@ export default function FieldEquipmentList() {
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-dark-200">
                   {filteredEquipment.length === 0 ? (
                     <tr>
-                      <td colSpan={
-                        activeTab === 'in-cal' || activeTab === 'out-of-cal' ? 7 :
-                        activeTab === 'all' ? (allTabShowExtraColumns ? 12 : 7) :
-                        activeTab === 'category' ? 7 :
-                        5
-                      } className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                        {searchTerm 
-                          ? 'No equipment found matching your search' 
-                          : activeTab === 'in-cal'
-                            ? 'No equipment with calibration dates'
-                            : activeTab === 'out-of-cal'
-                              ? 'No equipment out of calibration'
-                              : activeTab === 'assigned'
-                                ? 'No assigned equipment'
-                                : activeTab === 'unassigned'
-                                  ? 'No unassigned equipment'
-                                  : activeTab === 'category'
-                                    ? 'No equipment available'
-                                    : serviceFilter === 'in_service'
-                                      ? 'No in-service equipment found'
-                                      : 'No equipment available'}
+                      <td
+                        colSpan={
+                          activeTab === "in-cal" || activeTab === "out-of-cal"
+                            ? 7
+                            : activeTab === "all"
+                              ? allTabShowExtraColumns
+                                ? 12
+                                : 7
+                              : activeTab === "category"
+                                ? 7
+                                : 5
+                        }
+                        className="px-4 py-8 text-center text-gray-500 dark:text-gray-400"
+                      >
+                        {searchTerm
+                          ? "No equipment found matching your search"
+                          : activeTab === "in-cal"
+                            ? "No equipment with calibration dates"
+                            : activeTab === "out-of-cal"
+                              ? "No equipment out of calibration"
+                              : activeTab === "assigned"
+                                ? "No assigned equipment"
+                                : activeTab === "unassigned"
+                                  ? "No unassigned equipment"
+                                  : activeTab === "category"
+                                    ? "No equipment available"
+                                    : serviceFilter === "in_service"
+                                      ? "No in-service equipment found"
+                                      : "No equipment available"}
                       </td>
                     </tr>
                   ) : (
                     filteredEquipment.map((item) => {
-                      const isPastDue = isCalibrationPastDue(item.calibration_due_date);
+                      const isPastDue = isCalibrationPastDue(
+                        item.calibration_due_date,
+                      );
                       return (
                         <tr
                           key={item.id}
                           className={`hover:bg-gray-50 dark:hover:bg-dark-100 cursor-pointer ${
-                            isPastDue ? 'bg-red-50 dark:bg-red-900/20' : ''
+                            isPastDue ? "bg-red-50 dark:bg-red-900/20" : ""
                           }`}
                           onClick={(e) => {
                             // Don't trigger if clicking on buttons or interactive elements
                             const target = e.target as HTMLElement;
                             if (
-                              target.closest('button') ||
-                              target.closest('a') ||
-                              target.closest('.relative') ||
-                              target.tagName === 'BUTTON' ||
-                              target.tagName === 'A'
+                              target.closest("button") ||
+                              target.closest("a") ||
+                              target.closest(".relative") ||
+                              target.tagName === "BUTTON" ||
+                              target.tagName === "A"
                             ) {
                               return;
                             }
@@ -1704,7 +1999,8 @@ export default function FieldEquipmentList() {
                               )}
                             </div>
                           </td>
-                          {(activeTab === 'all' || activeTab === 'category') && (
+                          {(activeTab === "all" ||
+                            activeTab === "category") && (
                             <td className="px-4 py-3 whitespace-nowrap">
                               {item.in_service === false ? (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200 rounded">
@@ -1719,65 +2015,81 @@ export default function FieldEquipmentList() {
                               )}
                             </td>
                           )}
-                          {activeTab === 'all' && (
+                          {activeTab === "all" && (
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {item.serial_number || '-'}
+                              {item.serial_number || "-"}
                             </td>
                           )}
-                          {activeTab !== 'category' && (
+                          {activeTab !== "category" && (
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {item.amp_id || '-'}
+                              {item.amp_id || "-"}
                             </td>
                           )}
-                          {activeTab === 'all' && allTabShowExtraColumns && (
+                          {activeTab === "all" && allTabShowExtraColumns && (
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                               {formatLocalDate(item.calibration_date)}
                             </td>
                           )}
-                          {(activeTab === 'in-cal' || activeTab === 'out-of-cal') && (
+                          {(activeTab === "in-cal" ||
+                            activeTab === "out-of-cal") && (
                             <>
                               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {formatLocalDate(item.calibration_date)}
                               </td>
-                              <td className={`px-4 py-3 whitespace-nowrap text-sm ${
-                                isPastDue
-                                  ? 'font-semibold text-red-600 dark:text-red-400'
-                                  : 'text-gray-500 dark:text-gray-400'
-                              }`}>
+                              <td
+                                className={`px-4 py-3 whitespace-nowrap text-sm ${
+                                  isPastDue
+                                    ? "font-semibold text-red-600 dark:text-red-400"
+                                    : "text-gray-500 dark:text-gray-400"
+                                }`}
+                              >
                                 {formatLocalDate(item.calibration_due_date)}
                               </td>
                             </>
                           )}
-                          {activeTab === 'category' && (
+                          {activeTab === "category" && (
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {item.category || 'Uncategorized'}
+                              {item.category || "Uncategorized"}
                             </td>
                           )}
-                          {(activeTab === 'all' || activeTab === 'category') && (
+                          {(activeTab === "all" ||
+                            activeTab === "category") && (
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {item.location || '-'}
+                              {item.location || "-"}
                             </td>
                           )}
-                          {activeTab === 'all' && allTabShowExtraColumns && (
+                          {activeTab === "all" && allTabShowExtraColumns && (
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {item.sub_components && item.sub_components.length > 0
-                                ? `${item.sub_components.length} item${item.sub_components.length > 1 ? 's' : ''}`
-                                : '-'}
+                              {item.sub_components &&
+                              item.sub_components.length > 0
+                                ? `${item.sub_components.length} item${item.sub_components.length > 1 ? "s" : ""}`
+                                : "-"}
                             </td>
                           )}
                           <td className="px-4 py-3 whitespace-nowrap">
-                            <div className="relative" ref={el => { userSelectorRefs.current[item.id] = el; }}>
+                            <div
+                              className="relative"
+                              ref={(el) => {
+                                userSelectorRefs.current[item.id] = el;
+                              }}
+                            >
                               <button
                                 className="flex items-center gap-2 px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-100 text-gray-700 dark:text-white"
-                                onClick={() => setOpenUserSelectors(prev => ({
-                                  ...prev,
-                                  [item.id]: !prev[item.id]
-                                }))}
-                                title={item.assigned_to ? `${getAssignedTypeLabel(item.assigned_type)}: ${getAssignedLabel(item)}` : 'Not assigned'}
+                                onClick={() =>
+                                  setOpenUserSelectors((prev) => ({
+                                    ...prev,
+                                    [item.id]: !prev[item.id],
+                                  }))
+                                }
+                                title={
+                                  item.assigned_to
+                                    ? `${getAssignedTypeLabel(item.assigned_type)}: ${getAssignedLabel(item)}`
+                                    : "Not assigned"
+                                }
                               >
-                                {item.assigned_type === 'job_site' ? (
+                                {item.assigned_type === "job_site" ? (
                                   <Briefcase className="h-4 w-4" />
-                                ) : item.assigned_type === 'truck' ? (
+                                ) : item.assigned_type === "truck" ? (
                                   <TruckIcon className="h-4 w-4" />
                                 ) : (
                                   <User className="h-4 w-4" />
@@ -1790,211 +2102,362 @@ export default function FieldEquipmentList() {
                                   title={`Checked out by ${getUserNameById(item.checked_out_by)} on ${formatDateTime(item.checked_out_at)}`}
                                 >
                                   <ArrowUp className="h-3 w-3" />
-                                  <span>Checked out · {getUserNameById(item.checked_out_by)} · {formatRelativeTime(item.checked_out_at)}</span>
+                                  <span>
+                                    Checked out ·{" "}
+                                    {getUserNameById(item.checked_out_by)} ·{" "}
+                                    {formatRelativeTime(item.checked_out_at)}
+                                  </span>
                                 </div>
                               )}
 
-                              {openUserSelectors[item.id] && (() => {
-                                const activeAssignTab: AssignedType = assignTabByEquipment[item.id] || (item.assigned_type ?? 'user');
-                                const searchValue = userSearchQueries[item.id] || '';
-                                const setSearchValue = (v: string) => setUserSearchQueries(prev => ({ ...prev, [item.id]: v }));
-                                const setActiveAssignTab = (t: AssignedType) => {
-                                  setAssignTabByEquipment(prev => ({ ...prev, [item.id]: t }));
-                                  setSearchValue('');
-                                };
-                                const placeholderByTab: Record<AssignedType, string> = {
-                                  user: 'Search users...',
-                                  job_site: 'Search or create job site...',
-                                  truck: 'Search or create truck...',
-                                };
-                                const tabButtonClass = (t: AssignedType) =>
-                                  `flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium border-b-2 transition-colors ${
-                                    activeAssignTab === t
-                                      ? 'border-[#f26722] text-[#f26722]'
-                                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                                  }`;
-                                return (
-                                  <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
-                                    <div className="flex border-b border-gray-200 dark:border-gray-700">
-                                      <button type="button" className={tabButtonClass('user')} onClick={() => setActiveAssignTab('user')}>
-                                        <User className="h-3.5 w-3.5" /> Users
-                                      </button>
-                                      <button type="button" className={tabButtonClass('job_site')} onClick={() => setActiveAssignTab('job_site')}>
-                                        <Briefcase className="h-3.5 w-3.5" /> Job Sites
-                                      </button>
-                                      <button type="button" className={tabButtonClass('truck')} onClick={() => setActiveAssignTab('truck')}>
-                                        <TruckIcon className="h-3.5 w-3.5" /> Trucks
-                                      </button>
-                                    </div>
-                                    <div className="p-3">
-                                      <Input
-                                        type="text"
-                                        placeholder={placeholderByTab[activeAssignTab]}
-                                        value={searchValue}
-                                        onChange={(e) => setSearchValue(e.target.value)}
-                                        className="w-full"
-                                      />
-                                    </div>
-                                    <div className="max-h-60 overflow-y-auto">
-                                      <div
-                                        className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700"
-                                        onClick={() => handleAssign(item.id, null, null)}
-                                      >
-                                        <div className="flex flex-col">
-                                          <span className="font-medium text-gray-900 dark:text-white">Unassign</span>
-                                          <span className="text-xs text-gray-500 dark:text-gray-400">Remove assignment</span>
-                                        </div>
+                              {openUserSelectors[item.id] &&
+                                (() => {
+                                  const activeAssignTab: AssignedType =
+                                    assignTabByEquipment[item.id] ||
+                                    (item.assigned_type ?? "user");
+                                  const searchValue =
+                                    userSearchQueries[item.id] || "";
+                                  const setSearchValue = (v: string) =>
+                                    setUserSearchQueries((prev) => ({
+                                      ...prev,
+                                      [item.id]: v,
+                                    }));
+                                  const setActiveAssignTab = (
+                                    t: AssignedType,
+                                  ) => {
+                                    setAssignTabByEquipment((prev) => ({
+                                      ...prev,
+                                      [item.id]: t,
+                                    }));
+                                    setSearchValue("");
+                                  };
+                                  const placeholderByTab: Record<
+                                    AssignedType,
+                                    string
+                                  > = {
+                                    user: "Search users...",
+                                    job_site: "Search or create job site...",
+                                    truck: "Search or create truck...",
+                                  };
+                                  const tabButtonClass = (t: AssignedType) =>
+                                    `flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium border-b-2 transition-colors ${
+                                      activeAssignTab === t
+                                        ? "border-[#f26722] text-[#f26722]"
+                                        : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                                    }`;
+                                  return (
+                                    <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                                      <div className="flex border-b border-gray-200 dark:border-gray-700">
+                                        <button
+                                          type="button"
+                                          className={tabButtonClass("user")}
+                                          onClick={() =>
+                                            setActiveAssignTab("user")
+                                          }
+                                        >
+                                          <User className="h-3.5 w-3.5" /> Users
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className={tabButtonClass("job_site")}
+                                          onClick={() =>
+                                            setActiveAssignTab("job_site")
+                                          }
+                                        >
+                                          <Briefcase className="h-3.5 w-3.5" />{" "}
+                                          Job Sites
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className={tabButtonClass("truck")}
+                                          onClick={() =>
+                                            setActiveAssignTab("truck")
+                                          }
+                                        >
+                                          <TruckIcon className="h-3.5 w-3.5" />{" "}
+                                          Trucks
+                                        </button>
                                       </div>
+                                      <div className="p-3">
+                                        <Input
+                                          type="text"
+                                          placeholder={
+                                            placeholderByTab[activeAssignTab]
+                                          }
+                                          value={searchValue}
+                                          onChange={(e) =>
+                                            setSearchValue(e.target.value)
+                                          }
+                                          className="w-full"
+                                        />
+                                      </div>
+                                      <div className="max-h-60 overflow-y-auto">
+                                        <div
+                                          className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700"
+                                          onClick={() =>
+                                            handleAssign(item.id, null, null)
+                                          }
+                                        >
+                                          <div className="flex flex-col">
+                                            <span className="font-medium text-gray-900 dark:text-white">
+                                              Unassign
+                                            </span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                              Remove assignment
+                                            </span>
+                                          </div>
+                                        </div>
 
-                                      {activeAssignTab === 'user' && (
-                                        <>
-                                          {filteredUsers(item.id).map((u) => (
-                                            <div
-                                              key={u.id}
-                                              className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                                              onClick={() => handleAssign(item.id, 'user', u.id, displayUserName(u))}
-                                            >
-                                              <div className="flex flex-col">
-                                                <span className="font-medium text-gray-900 dark:text-white">{displayUserName(u)}</span>
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">{u.email}</span>
-                                                {u.user_metadata?.role && (
-                                                  <span className="text-xs text-gray-600 dark:text-gray-300">Role: {u.user_metadata.role}</span>
-                                                )}
-                                              </div>
-                                            </div>
-                                          ))}
-                                          {filteredUsers(item.id).length === 0 && (
-                                            <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">No users found</div>
-                                          )}
-                                        </>
-                                      )}
-
-                                      {activeAssignTab === 'job_site' && (
-                                        <>
-                                          {filteredJobSites(item.id).map((site) => (
-                                            <div
-                                              key={site}
-                                              className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                                              onClick={() => handleAssign(item.id, 'job_site', site, site)}
-                                            >
-                                              <div className="flex items-center gap-2">
-                                                <Briefcase className="h-4 w-4 text-gray-400" />
-                                                <span className="font-medium text-gray-900 dark:text-white">{site}</span>
-                                              </div>
-                                              <button
-                                                type="button"
-                                                onClick={(e) => { e.stopPropagation(); deleteJobSite(site); }}
-                                                className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
-                                                title="Remove from saved job sites"
-                                              >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                              </button>
-                                            </div>
-                                          ))}
-                                          {searchValue.trim() &&
-                                            !jobSites.some(s => s.toLowerCase() === searchValue.trim().toLowerCase()) && (
+                                        {activeAssignTab === "user" && (
+                                          <>
+                                            {filteredUsers(item.id).map((u) => (
                                               <div
-                                                className="px-3 py-2 cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-t border-gray-200 dark:border-gray-700"
-                                                onClick={async () => {
-                                                  const name = searchValue.trim();
-                                                  const success = await createJobSite(name);
-                                                  if (success) {
-                                                    await handleAssign(item.id, 'job_site', name, name);
-                                                  } else {
-                                                    toast({ title: 'Error', description: 'Failed to create job site', variant: 'destructive' });
-                                                  }
-                                                }}
+                                                key={u.id}
+                                                className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                                onClick={() =>
+                                                  handleAssign(
+                                                    item.id,
+                                                    "user",
+                                                    u.id,
+                                                    displayUserName(u),
+                                                  )
+                                                }
                                               >
-                                                <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                                                  + Create &amp; assign "{searchValue.trim()}"
-                                                </span>
+                                                <div className="flex flex-col">
+                                                  <span className="font-medium text-gray-900 dark:text-white">
+                                                    {displayUserName(u)}
+                                                  </span>
+                                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                    {u.email}
+                                                  </span>
+                                                  {u.user_metadata?.role && (
+                                                    <span className="text-xs text-gray-600 dark:text-gray-300">
+                                                      Role:{" "}
+                                                      {u.user_metadata.role}
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            ))}
+                                            {filteredUsers(item.id).length ===
+                                              0 && (
+                                              <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">
+                                                No users found
                                               </div>
                                             )}
-                                          {filteredJobSites(item.id).length === 0 && !searchValue.trim() && (
-                                            <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
-                                              No saved job sites yet. Type a name above to add one.
-                                            </div>
-                                          )}
-                                        </>
-                                      )}
+                                          </>
+                                        )}
 
-                                      {activeAssignTab === 'truck' && (
-                                        <>
-                                          {filteredTrucks(item.id).map((truckName) => (
-                                            <div
-                                              key={truckName}
-                                              className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                                              onClick={() => handleAssign(item.id, 'truck', truckName, truckName)}
-                                            >
-                                              <div className="flex items-center gap-2">
-                                                <TruckIcon className="h-4 w-4 text-gray-400" />
-                                                <span className="font-medium text-gray-900 dark:text-white">{truckName}</span>
-                                              </div>
-                                              <button
-                                                type="button"
-                                                onClick={(e) => { e.stopPropagation(); deleteTruck(truckName); }}
-                                                className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
-                                                title="Remove from saved trucks"
-                                              >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                              </button>
-                                            </div>
-                                          ))}
-                                          {searchValue.trim() &&
-                                            !trucks.some(t => t.toLowerCase() === searchValue.trim().toLowerCase()) && (
-                                              <div
-                                                className="px-3 py-2 cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-t border-gray-200 dark:border-gray-700"
-                                                onClick={async () => {
-                                                  const name = searchValue.trim();
-                                                  const success = await createTruck(name);
-                                                  if (success) {
-                                                    await handleAssign(item.id, 'truck', name, name);
-                                                  } else {
-                                                    toast({ title: 'Error', description: 'Failed to create truck', variant: 'destructive' });
+                                        {activeAssignTab === "job_site" && (
+                                          <>
+                                            {filteredJobSites(item.id).map(
+                                              (site) => (
+                                                <div
+                                                  key={site}
+                                                  className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                                  onClick={() =>
+                                                    handleAssign(
+                                                      item.id,
+                                                      "job_site",
+                                                      site,
+                                                      site,
+                                                    )
                                                   }
-                                                }}
-                                              >
-                                                <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                                                  + Create &amp; assign "{searchValue.trim()}"
-                                                </span>
-                                              </div>
+                                                >
+                                                  <div className="flex items-center gap-2">
+                                                    <Briefcase className="h-4 w-4 text-gray-400" />
+                                                    <span className="font-medium text-gray-900 dark:text-white">
+                                                      {site}
+                                                    </span>
+                                                  </div>
+                                                  <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      deleteJobSite(site);
+                                                    }}
+                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                                    title="Remove from saved job sites"
+                                                  >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                  </button>
+                                                </div>
+                                              ),
                                             )}
-                                          {filteredTrucks(item.id).length === 0 && !searchValue.trim() && (
-                                            <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
-                                              No saved trucks yet. Type a name above to add one.
-                                            </div>
-                                          )}
-                                        </>
-                                      )}
+                                            {searchValue.trim() &&
+                                              !jobSites.some(
+                                                (s) =>
+                                                  s.toLowerCase() ===
+                                                  searchValue
+                                                    .trim()
+                                                    .toLowerCase(),
+                                              ) && (
+                                                <div
+                                                  className="px-3 py-2 cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-t border-gray-200 dark:border-gray-700"
+                                                  onClick={async () => {
+                                                    const name =
+                                                      searchValue.trim();
+                                                    const success =
+                                                      await createJobSite(name);
+                                                    if (success) {
+                                                      await handleAssign(
+                                                        item.id,
+                                                        "job_site",
+                                                        name,
+                                                        name,
+                                                      );
+                                                    } else {
+                                                      toast({
+                                                        title: "Error",
+                                                        description:
+                                                          "Failed to create job site",
+                                                        variant: "destructive",
+                                                      });
+                                                    }
+                                                  }}
+                                                >
+                                                  <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                                    + Create &amp; assign "
+                                                    {searchValue.trim()}"
+                                                  </span>
+                                                </div>
+                                              )}
+                                            {filteredJobSites(item.id)
+                                              .length === 0 &&
+                                              !searchValue.trim() && (
+                                                <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                                  No saved job sites yet. Type a
+                                                  name above to add one.
+                                                </div>
+                                              )}
+                                          </>
+                                        )}
+
+                                        {activeAssignTab === "truck" && (
+                                          <>
+                                            {filteredTrucks(item.id).map(
+                                              (truckName) => (
+                                                <div
+                                                  key={truckName}
+                                                  className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                                  onClick={() =>
+                                                    handleAssign(
+                                                      item.id,
+                                                      "truck",
+                                                      truckName,
+                                                      truckName,
+                                                    )
+                                                  }
+                                                >
+                                                  <div className="flex items-center gap-2">
+                                                    <TruckIcon className="h-4 w-4 text-gray-400" />
+                                                    <span className="font-medium text-gray-900 dark:text-white">
+                                                      {truckName}
+                                                    </span>
+                                                  </div>
+                                                  <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      deleteTruck(truckName);
+                                                    }}
+                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                                    title="Remove from saved trucks"
+                                                  >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                  </button>
+                                                </div>
+                                              ),
+                                            )}
+                                            {searchValue.trim() &&
+                                              !trucks.some(
+                                                (t) =>
+                                                  t.toLowerCase() ===
+                                                  searchValue
+                                                    .trim()
+                                                    .toLowerCase(),
+                                              ) && (
+                                                <div
+                                                  className="px-3 py-2 cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-t border-gray-200 dark:border-gray-700"
+                                                  onClick={async () => {
+                                                    const name =
+                                                      searchValue.trim();
+                                                    const success =
+                                                      await createTruck(name);
+                                                    if (success) {
+                                                      await handleAssign(
+                                                        item.id,
+                                                        "truck",
+                                                        name,
+                                                        name,
+                                                      );
+                                                    } else {
+                                                      toast({
+                                                        title: "Error",
+                                                        description:
+                                                          "Failed to create truck",
+                                                        variant: "destructive",
+                                                      });
+                                                    }
+                                                  }}
+                                                >
+                                                  <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                                    + Create &amp; assign "
+                                                    {searchValue.trim()}"
+                                                  </span>
+                                                </div>
+                                              )}
+                                            {filteredTrucks(item.id).length ===
+                                              0 &&
+                                              !searchValue.trim() && (
+                                                <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                                  No saved trucks yet. Type a
+                                                  name above to add one.
+                                                </div>
+                                              )}
+                                          </>
+                                        )}
+                                      </div>
+                                      <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+                                        <button
+                                          className="w-full px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                                          onClick={() => {
+                                            setOpenUserSelectors((prev) => ({
+                                              ...prev,
+                                              [item.id]: false,
+                                            }));
+                                            setUserSearchQueries((prev) => ({
+                                              ...prev,
+                                              [item.id]: "",
+                                            }));
+                                          }}
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
                                     </div>
-                                    <div className="p-2 border-t border-gray-200 dark:border-gray-700">
-                                      <button
-                                        className="w-full px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                                        onClick={() => {
-                                          setOpenUserSelectors(prev => ({ ...prev, [item.id]: false }));
-                                          setUserSearchQueries(prev => ({ ...prev, [item.id]: '' }));
-                                        }}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </div>
-                                  </div>
-                                );
-                              })()}
+                                  );
+                                })()}
                             </div>
                           </td>
-                          {activeTab !== 'all' && activeTab !== 'category' && (
+                          {activeTab !== "all" && activeTab !== "category" && (
                             <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 max-w-xs">
-                              <div className="truncate" title={item.notes || ''}>
-                                {item.notes || '-'}
+                              <div
+                                className="truncate"
+                                title={item.notes || ""}
+                              >
+                                {item.notes || "-"}
                               </div>
                             </td>
                           )}
-                          {((activeTab === 'all' && allTabShowExtraColumns) || activeTab === 'category') && (
+                          {((activeTab === "all" && allTabShowExtraColumns) ||
+                            activeTab === "category") && (
                             <td className="px-4 py-3 whitespace-nowrap">
                               {item.tracking_url ? (
                                 <button
-                                  onClick={() => setViewingTrackingUrl(item.tracking_url)}
+                                  onClick={() =>
+                                    setViewingTrackingUrl(item.tracking_url)
+                                  }
                                   className="flex items-center gap-1 px-2 py-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
                                   title="Open Tracking"
                                 >
@@ -2002,16 +2465,22 @@ export default function FieldEquipmentList() {
                                   Tracking
                                 </button>
                               ) : (
-                                <span className="text-gray-400 dark:text-gray-500 text-sm">-</span>
+                                <span className="text-gray-400 dark:text-gray-500 text-sm">
+                                  -
+                                </span>
                               )}
                             </td>
                           )}
-                          {activeTab === 'all' && allTabShowExtraColumns && (
+                          {activeTab === "all" && allTabShowExtraColumns && (
                             <td className="px-4 py-3 whitespace-nowrap">
                               {item.calibration_certificate_url ? (
                                 <div className="flex items-center gap-2">
                                   <button
-                                    onClick={() => setViewingCertificate(item.calibration_certificate_url)}
+                                    onClick={() =>
+                                      setViewingCertificate(
+                                        item.calibration_certificate_url,
+                                      )
+                                    }
                                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                                     title="View Certificate"
                                   >
@@ -2019,10 +2488,11 @@ export default function FieldEquipmentList() {
                                   </button>
                                   <button
                                     onClick={() => {
-                                      const link = document.createElement('a');
-                                      link.href = item.calibration_certificate_url!;
+                                      const link = document.createElement("a");
+                                      link.href =
+                                        item.calibration_certificate_url!;
                                       link.download = `${item.equipment_name}_certificate.pdf`;
-                                      link.target = '_blank';
+                                      link.target = "_blank";
                                       link.click();
                                     }}
                                     className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
@@ -2032,18 +2502,27 @@ export default function FieldEquipmentList() {
                                   </button>
                                 </div>
                               ) : (
-                                <span className="text-gray-400 dark:text-gray-500 text-sm">-</span>
+                                <span className="text-gray-400 dark:text-gray-500 text-sm">
+                                  -
+                                </span>
                               )}
                             </td>
                           )}
                           <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                             <div
                               className="relative inline-block"
-                              ref={el => { actionMenuRefs.current[item.id] = el; }}
+                              ref={(el) => {
+                                actionMenuRefs.current[item.id] = el;
+                              }}
                             >
                               <button
                                 type="button"
-                                onClick={() => setOpenActionMenus(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                                onClick={() =>
+                                  setOpenActionMenus((prev) => ({
+                                    ...prev,
+                                    [item.id]: !prev[item.id],
+                                  }))
+                                }
                                 className="inline-flex items-center gap-1 px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-dark-100 rounded-md transition-colors"
                                 title="Actions"
                               >
@@ -2075,7 +2554,10 @@ export default function FieldEquipmentList() {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setOpenActionMenus(prev => ({ ...prev, [item.id]: false }));
+                                      setOpenActionMenus((prev) => ({
+                                        ...prev,
+                                        [item.id]: false,
+                                      }));
                                       handleEdit(item);
                                     }}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-100"
@@ -2086,7 +2568,10 @@ export default function FieldEquipmentList() {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setOpenActionMenus(prev => ({ ...prev, [item.id]: false }));
+                                      setOpenActionMenus((prev) => ({
+                                        ...prev,
+                                        [item.id]: false,
+                                      }));
                                       handleDelete(item.id);
                                     }}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -2109,13 +2594,17 @@ export default function FieldEquipmentList() {
         )}
 
         {/* Add/Edit Dialog */}
-        <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
+        <Dialog
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+          className="relative z-50"
+        >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <Dialog.Panel className="mx-auto max-w-3xl w-full max-h-[90vh] rounded-lg bg-white dark:bg-dark-150 shadow-xl flex flex-col">
               <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200 dark:border-dark-200 flex-shrink-0">
                 <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {isEditMode ? 'Edit Equipment' : 'Add Equipment'}
+                  {isEditMode ? "Edit Equipment" : "Add Equipment"}
                 </Dialog.Title>
                 <button
                   onClick={() => setIsOpen(false)}
@@ -2125,613 +2614,779 @@ export default function FieldEquipmentList() {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0" autoComplete="off">
+              <form
+                onSubmit={handleSubmit}
+                className="flex flex-col flex-1 min-h-0"
+                autoComplete="off"
+              >
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 pb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Equipment Name *
-                  </label>
-                  <Input
-                    type="text"
-                    name="equipment_name"
-                    value={formData.equipment_name}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    AMP ID
-                  </label>
-                  <Input
-                    type="text"
-                    name="amp_id"
-                    value={formData.amp_id}
-                    onChange={handleInputChange}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Serial Number
-                  </label>
-                  <Input
-                    type="text"
-                    name="serial_number"
-                    value={formData.serial_number}
-                    onChange={handleInputChange}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Category
-                  </label>
-                  <div className="relative" ref={categoryInputRef}>
-                    <Input
-                      type="text"
-                      name="category"
-                      value={categoryInput}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setCategoryInput(value);
-                        setFormData(prev => ({ ...prev, category: value }));
-                        setShowCategoryDropdown(true);
-                      }}
-                      onFocus={() => setShowCategoryDropdown(true)}
-                      onBlur={(e) => {
-                        // Delay hiding dropdown to allow clicking on items
-                        setTimeout(() => {
-                          if (!categoryInputRef.current?.contains(document.activeElement)) {
-                            setShowCategoryDropdown(false);
-                          }
-                        }, 200);
-                      }}
-                      className="w-full"
-                      placeholder="Type to search or add new category"
-                    />
-                    {showCategoryDropdown && (
-                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                        {categories
-                          .filter(cat => 
-                            categoryInput === '' || 
-                            cat.toLowerCase().includes(categoryInput.toLowerCase())
-                          )
-                          .map((category) => (
-                            <div
-                              key={category}
-                              role="option"
-                              className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setCategoryInput(category);
-                                setFormData(prev => ({ ...prev, category }));
-                                setShowCategoryDropdown(false);
-                              }}
-                            >
-                              <span className="text-sm text-gray-900 dark:text-white">{category}</span>
-                              <button
-                                type="button"
-                                onMouseDown={(e) => e.stopPropagation()}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteCategory(category);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
-                                title="Remove from saved categories"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          ))}
-                        {categoryInput && 
-                         !categories.some(cat => cat.toLowerCase() === categoryInput.toLowerCase()) && (
-                          <div
-                            role="option"
-                            className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
-                            onMouseDown={async (e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const success = await createCategory(categoryInput);
-                              if (success) {
-                                setFormData(prev => ({ ...prev, category: categoryInput.trim() }));
-                                setCategoryInput(categoryInput.trim());
-                                setShowCategoryDropdown(false);
-                              } else {
-                                toast({
-                                  title: 'Error',
-                                  description: 'Failed to create category',
-                                  variant: 'destructive',
-                                });
-                              }
-                            }}
-                          >
-                            <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                              + Create "{categoryInput}"
-                            </span>
-                          </div>
-                        )}
-                        {categories.filter(cat => 
-                          categoryInput === '' || 
-                          cat.toLowerCase().includes(categoryInput.toLowerCase())
-                        ).length === 0 && !categoryInput && (
-                          <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
-                            No categories found. Type to create a new one.
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Select an existing category or type to create a new one
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Location
-                  </label>
-                  <div className="relative" ref={locationInputRef}>
-                    <Input
-                      type="text"
-                      name="location"
-                      value={locationInput}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setLocationInput(value);
-                        setFormData(prev => ({ ...prev, location: value }));
-                        setShowLocationDropdown(true);
-                      }}
-                      onFocus={() => setShowLocationDropdown(true)}
-                      onBlur={(e) => {
-                        setTimeout(() => {
-                          if (!locationInputRef.current?.contains(document.activeElement)) {
-                            setShowLocationDropdown(false);
-                          }
-                        }, 200);
-                      }}
-                      className="w-full"
-                      placeholder="Type to search or add new location"
-                    />
-                    {showLocationDropdown && (
-                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                        {locations
-                          .filter(loc => 
-                            locationInput === '' || 
-                            loc.toLowerCase().includes(locationInput.toLowerCase())
-                          )
-                          .map((location) => (
-                            <div
-                              key={location}
-                              role="option"
-                              className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setLocationInput(location);
-                                setFormData(prev => ({ ...prev, location }));
-                                setShowLocationDropdown(false);
-                              }}
-                            >
-                              <span className="text-sm text-gray-900 dark:text-white">{location}</span>
-                              <button
-                                type="button"
-                                onMouseDown={(e) => e.stopPropagation()}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteLocation(location);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
-                                title="Remove from saved locations"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          ))}
-                        {locationInput && 
-                         !locations.some(loc => loc.toLowerCase() === locationInput.toLowerCase()) && (
-                          <div
-                            role="option"
-                            className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
-                            onMouseDown={async (e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const success = await createLocation(locationInput);
-                              if (success) {
-                                setFormData(prev => ({ ...prev, location: locationInput.trim() }));
-                                setLocationInput(locationInput.trim());
-                                setShowLocationDropdown(false);
-                              } else {
-                                toast({
-                                  title: 'Error',
-                                  description: 'Failed to create location',
-                                  variant: 'destructive',
-                                });
-                              }
-                            }}
-                          >
-                            <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                              + Create "{locationInput}"
-                            </span>
-                          </div>
-                        )}
-                        {locations.filter(loc => 
-                          locationInput === '' || 
-                          loc.toLowerCase().includes(locationInput.toLowerCase())
-                        ).length === 0 && !locationInput && (
-                          <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
-                            No locations found. Type to create a new one.
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Select an existing location or type to create a new one
-                  </p>
-                </div>
-
-                <div className="py-2">
-                  <div className="flex items-center justify-between gap-4 mb-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      In service
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Equipment Name *
                     </label>
-                    <Switch
-                      checked={formData.in_service}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, in_service: checked }))}
-                      checkedClassName="bg-[#f26722]"
+                    <Input
+                      type="text"
+                      name="equipment_name"
+                      value={formData.equipment_name}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Out-of-service equipment is hidden from test report equipment selection but remains in this list and can be placed back in service.
-                  </p>
-                </div>
 
-                {/* Sub Components Section */}
-                <div className="border border-gray-200 dark:border-gray-600 rounded-md">
-                  <button
-                    type="button"
-                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 rounded-md transition-colors"
-                    onClick={() => setSubComponentsExpanded(!subComponentsExpanded)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Layers className="h-4 w-4" />
-                      <span>Sub Components {formSubComponents.length > 0 && `(${formSubComponents.length})`}</span>
-                    </div>
-                    {subComponentsExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </button>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      AMP ID
+                    </label>
+                    <Input
+                      type="text"
+                      name="amp_id"
+                      value={formData.amp_id}
+                      onChange={handleInputChange}
+                      className="w-full"
+                    />
+                  </div>
 
-                  {subComponentsExpanded && (
-                    <div className="px-4 pb-4 space-y-3">
-                      {formSubComponents.length > 0 && (
-                        <div className="space-y-2">
-                          {/* Header row - same grid as data rows for alignment */}
-                          <div className="grid grid-cols-[60px_2fr_1.5fr_10rem_7rem_32px] gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                            <span>Qty</span>
-                            <span>Item</span>
-                            <span>SN</span>
-                            <span>Cal Date</span>
-                            <span>AMP ID</span>
-                            <span></span>
-                          </div>
-                          {formSubComponents.map((sc, index) => (
-                            <div key={index} className="grid grid-cols-[60px_2fr_1.5fr_10rem_7rem_32px] gap-2 items-start">
-                              <Input
-                                type="number"
-                                min="1"
-                                value={sc.qty}
-                                onChange={(e) => {
-                                  const updated = [...formSubComponents];
-                                  updated[index] = { ...updated[index], qty: parseInt(e.target.value) || 1 };
-                                  setFormSubComponents(updated);
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Serial Number
+                    </label>
+                    <Input
+                      type="text"
+                      name="serial_number"
+                      value={formData.serial_number}
+                      onChange={handleInputChange}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Category
+                    </label>
+                    <div className="relative" ref={categoryInputRef}>
+                      <Input
+                        type="text"
+                        name="category"
+                        value={categoryInput}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setCategoryInput(value);
+                          setFormData((prev) => ({ ...prev, category: value }));
+                          setShowCategoryDropdown(true);
+                        }}
+                        onFocus={() => setShowCategoryDropdown(true)}
+                        onBlur={(e) => {
+                          // Delay hiding dropdown to allow clicking on items
+                          setTimeout(() => {
+                            if (
+                              !categoryInputRef.current?.contains(
+                                document.activeElement,
+                              )
+                            ) {
+                              setShowCategoryDropdown(false);
+                            }
+                          }, 200);
+                        }}
+                        className="w-full"
+                        placeholder="Type to search or add new category"
+                      />
+                      {showCategoryDropdown && (
+                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                          {categories
+                            .filter(
+                              (cat) =>
+                                categoryInput === "" ||
+                                cat
+                                  .toLowerCase()
+                                  .includes(categoryInput.toLowerCase()),
+                            )
+                            .map((category) => (
+                              <div
+                                key={category}
+                                role="option"
+                                className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setCategoryInput(category);
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    category,
+                                  }));
+                                  setShowCategoryDropdown(false);
                                 }}
-                                className="w-full text-sm"
-                              />
-                              <div className="relative" ref={el => { subComponentItemRefs.current[index] = el; }}>
-                                <Input
-                                  type="text"
-                                  value={sc.item}
-                                  onChange={(e) => {
-                                    const updated = [...formSubComponents];
-                                    updated[index] = { ...updated[index], item: e.target.value };
-                                    setFormSubComponents(updated);
-                                    setActiveSubComponentDropdown(index);
-                                  }}
-                                  onFocus={() => setActiveSubComponentDropdown(index)}
-                                  onBlur={() => {
-                                    setTimeout(() => {
-                                      if (!subComponentItemRefs.current[index]?.contains(document.activeElement)) {
-                                        setActiveSubComponentDropdown(null);
-                                      }
-                                    }, 200);
-                                  }}
-                                  placeholder="Item name"
-                                  className="w-full text-sm"
-                                />
-                                {activeSubComponentDropdown === index && (
-                                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
-                                    {subComponentItems
-                                      .filter(item =>
-                                        sc.item === '' ||
-                                        item.toLowerCase().includes(sc.item.toLowerCase())
-                                      )
-                                      .map((item) => (
-                                        <div
-                                          key={item}
-                                          className="group flex items-center justify-between gap-2 px-3 py-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                                          onClick={() => {
-                                            const updated = [...formSubComponents];
-                                            updated[index] = { ...updated[index], item };
-                                            setFormSubComponents(updated);
-                                            setActiveSubComponentDropdown(null);
-                                          }}
-                                        >
-                                          <span className="text-sm text-gray-900 dark:text-white">{item}</span>
-                                          <button
-                                            type="button"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              deleteSubComponentItem(item);
-                                            }}
-                                            className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
-                                            title="Remove from saved items"
-                                          >
-                                            <Trash2 className="h-3.5 w-3.5" />
-                                          </button>
-                                        </div>
-                                      ))}
-                                    {sc.item && !subComponentItems.some(item => item.toLowerCase() === sc.item.toLowerCase()) && (
-                                      <div
-                                        className="px-3 py-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
-                                        onClick={async () => {
-                                          const success = await createSubComponentItem(sc.item);
-                                          if (success) {
-                                            setActiveSubComponentDropdown(null);
-                                          }
-                                        }}
-                                      >
-                                        <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                                          + Save "{sc.item}"
-                                        </span>
-                                      </div>
-                                    )}
-                                    {subComponentItems.filter(item =>
-                                      sc.item === '' ||
-                                      item.toLowerCase().includes(sc.item.toLowerCase())
-                                    ).length === 0 && !sc.item && (
-                                      <div className="px-3 py-2 text-center text-gray-500 dark:text-gray-400 text-xs">
-                                        No saved items. Type to add.
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                              <Input
-                                type="text"
-                                value={sc.serial_number}
-                                onChange={(e) => {
-                                  const updated = [...formSubComponents];
-                                  updated[index] = { ...updated[index], serial_number: e.target.value };
-                                  setFormSubComponents(updated);
-                                }}
-                                placeholder="Serial number"
-                                className="w-full text-sm"
-                              />
-                              <Input
-                                type="date"
-                                value={sc.cal_date}
-                                onChange={(e) => {
-                                  const updated = [...formSubComponents];
-                                  updated[index] = { ...updated[index], cal_date: e.target.value };
-                                  setFormSubComponents(updated);
-                                }}
-                                placeholder="Cal date"
-                                className="w-full text-sm min-w-0"
-                              />
-                              <Input
-                                type="text"
-                                value={sc.amp_id}
-                                onChange={(e) => {
-                                  const updated = [...formSubComponents];
-                                  updated[index] = { ...updated[index], amp_id: e.target.value };
-                                  setFormSubComponents(updated);
-                                }}
-                                placeholder="AMP ID"
-                                className="w-full text-sm min-w-0"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setFormSubComponents(formSubComponents.filter((_, i) => i !== index));
-                                }}
-                                className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 mt-1"
-                                title="Remove"
                               >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))}
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {category}
+                                </span>
+                                <button
+                                  type="button"
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteCategory(category);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                  title="Remove from saved categories"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          {categoryInput &&
+                            !categories.some(
+                              (cat) =>
+                                cat.toLowerCase() ===
+                                categoryInput.toLowerCase(),
+                            ) && (
+                              <div
+                                role="option"
+                                className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
+                                onMouseDown={async (e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const success =
+                                    await createCategory(categoryInput);
+                                  if (success) {
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      category: categoryInput.trim(),
+                                    }));
+                                    setCategoryInput(categoryInput.trim());
+                                    setShowCategoryDropdown(false);
+                                  } else {
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to create category",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                              >
+                                <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                  + Create "{categoryInput}"
+                                </span>
+                              </div>
+                            )}
+                          {categories.filter(
+                            (cat) =>
+                              categoryInput === "" ||
+                              cat
+                                .toLowerCase()
+                                .includes(categoryInput.toLowerCase()),
+                          ).length === 0 &&
+                            !categoryInput && (
+                              <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                No categories found. Type to create a new one.
+                              </div>
+                            )}
                         </div>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFormSubComponents([...formSubComponents, { ...emptySubComponent }]);
-                        }}
-                        className="flex items-center gap-1 text-sm text-[#f26722] hover:text-[#e55611] font-medium"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                        Add Sub Component
-                      </button>
                     </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Calibration Date
-                    </label>
-                    <Input
-                      type="date"
-                      name="calibration_date"
-                      value={formData.calibration_date}
-                      onChange={handleInputChange}
-                      className="w-full"
-                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Select an existing category or type to create a new one
+                    </p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Calibration Due Date
+                      Location
                     </label>
-                    <Input
-                      type="date"
-                      name="calibration_due_date"
-                      value={formData.calibration_due_date}
-                      onChange={handleInputChange}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Notes
-                  </label>
-                  <textarea
-                    name="notes"
-                    value={formData.notes}
-                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
-                    rows={3}
-                    placeholder="Additional notes or comments..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Tracking URL
-                  </label>
-                  <Input
-                    type="url"
-                    name="tracking_url"
-                    value={formData.tracking_url}
-                    onChange={handleInputChange}
-                    className="w-full"
-                    placeholder="https://example.com/tracking"
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Enter a URL to link to equipment tracking
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Calibration Certificate (PDF)
-                  </label>
-                  <div className="space-y-2">
-                    {isEditMode && editingEquipmentCertificate && !selectedFile && (
-                      <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-200 rounded-md">
-                        <FileText className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400 flex-1">
-                          Current certificate attached
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setViewingCertificate(editingEquipmentCertificate)}
-                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
-                          title="View Certificate"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (window.confirm('Are you sure you want to remove this certificate? The file will be deleted from storage.')) {
-                              // Delete file from storage
-                              if (editingEquipmentCertificate) {
-                                try {
-                                  // Extract file path from URL
-                                  const urlParts = editingEquipmentCertificate.split('/equipment-certificates/');
-                                  if (urlParts.length > 1) {
-                                    const filePath = urlParts[1].split('?')[0]; // Remove query params
-                                    await supabase.storage
-                                      .from('equipment-certificates')
-                                      .remove([filePath]);
+                    <div className="relative" ref={locationInputRef}>
+                      <Input
+                        type="text"
+                        name="location"
+                        value={locationInput}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setLocationInput(value);
+                          setFormData((prev) => ({ ...prev, location: value }));
+                          setShowLocationDropdown(true);
+                        }}
+                        onFocus={() => setShowLocationDropdown(true)}
+                        onBlur={(e) => {
+                          setTimeout(() => {
+                            if (
+                              !locationInputRef.current?.contains(
+                                document.activeElement,
+                              )
+                            ) {
+                              setShowLocationDropdown(false);
+                            }
+                          }, 200);
+                        }}
+                        className="w-full"
+                        placeholder="Type to search or add new location"
+                      />
+                      {showLocationDropdown && (
+                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                          {locations
+                            .filter(
+                              (loc) =>
+                                locationInput === "" ||
+                                loc
+                                  .toLowerCase()
+                                  .includes(locationInput.toLowerCase()),
+                            )
+                            .map((location) => (
+                              <div
+                                key={location}
+                                role="option"
+                                className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setLocationInput(location);
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    location,
+                                  }));
+                                  setShowLocationDropdown(false);
+                                }}
+                              >
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {location}
+                                </span>
+                                <button
+                                  type="button"
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteLocation(location);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                  title="Remove from saved locations"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          {locationInput &&
+                            !locations.some(
+                              (loc) =>
+                                loc.toLowerCase() ===
+                                locationInput.toLowerCase(),
+                            ) && (
+                              <div
+                                role="option"
+                                className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
+                                onMouseDown={async (e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const success =
+                                    await createLocation(locationInput);
+                                  if (success) {
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      location: locationInput.trim(),
+                                    }));
+                                    setLocationInput(locationInput.trim());
+                                    setShowLocationDropdown(false);
+                                  } else {
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to create location",
+                                      variant: "destructive",
+                                    });
                                   }
-                                } catch (error) {
-                                  console.error('Error deleting file from storage:', error);
-                                  // Continue anyway - we'll still remove the reference
-                                }
-                              }
-                              setEditingEquipmentCertificate(null);
-                            }
-                          }}
-                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
-                          title="Remove Certificate"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-50">
-                        <Upload className="h-4 w-4" />
-                        {selectedFile ? selectedFile.name : (isEditMode && editingEquipmentCertificate ? 'Replace PDF file' : 'Choose PDF file')}
-                        <input
-                          type="file"
-                          accept=".pdf,application/pdf"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              if (file.type !== 'application/pdf') {
-                                toast({
-                                  title: 'Invalid File',
-                                  description: 'Please upload a PDF file',
-                                  variant: 'destructive',
-                                });
-                                return;
-                              }
-                              setSelectedFile(file);
-                              setEditingEquipmentCertificate(null); // Clear existing when new file selected
-                            }
-                          }}
-                          className="hidden"
-                        />
+                                }}
+                              >
+                                <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                  + Create "{locationInput}"
+                                </span>
+                              </div>
+                            )}
+                          {locations.filter(
+                            (loc) =>
+                              locationInput === "" ||
+                              loc
+                                .toLowerCase()
+                                .includes(locationInput.toLowerCase()),
+                          ).length === 0 &&
+                            !locationInput && (
+                              <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                No locations found. Type to create a new one.
+                              </div>
+                            )}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Select an existing location or type to create a new one
+                    </p>
+                  </div>
+
+                  <div className="py-2">
+                    <div className="flex items-center justify-between gap-4 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        In service
                       </label>
-                      {selectedFile && (
+                      <Switch
+                        checked={formData.in_service}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            in_service: checked,
+                          }))
+                        }
+                        checkedClassName="bg-[#f26722]"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Out-of-service equipment is hidden from test report
+                      equipment selection but remains in this list and can be
+                      placed back in service.
+                    </p>
+                  </div>
+
+                  {/* Sub Components Section */}
+                  <div className="border border-gray-200 dark:border-gray-600 rounded-md">
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 rounded-md transition-colors"
+                      onClick={() =>
+                        setSubComponentsExpanded(!subComponentsExpanded)
+                      }
+                    >
+                      <div className="flex items-center gap-2">
+                        <Layers className="h-4 w-4" />
+                        <span>
+                          Sub Components{" "}
+                          {formSubComponents.length > 0 &&
+                            `(${formSubComponents.length})`}
+                        </span>
+                      </div>
+                      {subComponentsExpanded ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </button>
+
+                    {subComponentsExpanded && (
+                      <div className="px-4 pb-4 space-y-3">
+                        {formSubComponents.length > 0 && (
+                          <div className="space-y-2">
+                            {/* Header row - same grid as data rows for alignment */}
+                            <div className="grid grid-cols-[60px_2fr_1.5fr_10rem_7rem_32px] gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                              <span>Qty</span>
+                              <span>Item</span>
+                              <span>SN</span>
+                              <span>Cal Date</span>
+                              <span>AMP ID</span>
+                              <span></span>
+                            </div>
+                            {formSubComponents.map((sc, index) => (
+                              <div
+                                key={index}
+                                className="grid grid-cols-[60px_2fr_1.5fr_10rem_7rem_32px] gap-2 items-start"
+                              >
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  value={sc.qty}
+                                  onChange={(e) => {
+                                    const updated = [...formSubComponents];
+                                    updated[index] = {
+                                      ...updated[index],
+                                      qty: parseInt(e.target.value) || 1,
+                                    };
+                                    setFormSubComponents(updated);
+                                  }}
+                                  className="w-full text-sm"
+                                />
+                                <div
+                                  className="relative"
+                                  ref={(el) => {
+                                    subComponentItemRefs.current[index] = el;
+                                  }}
+                                >
+                                  <Input
+                                    type="text"
+                                    value={sc.item}
+                                    onChange={(e) => {
+                                      const updated = [...formSubComponents];
+                                      updated[index] = {
+                                        ...updated[index],
+                                        item: e.target.value,
+                                      };
+                                      setFormSubComponents(updated);
+                                      setActiveSubComponentDropdown(index);
+                                    }}
+                                    onFocus={() =>
+                                      setActiveSubComponentDropdown(index)
+                                    }
+                                    onBlur={() => {
+                                      setTimeout(() => {
+                                        if (
+                                          !subComponentItemRefs.current[
+                                            index
+                                          ]?.contains(document.activeElement)
+                                        ) {
+                                          setActiveSubComponentDropdown(null);
+                                        }
+                                      }, 200);
+                                    }}
+                                    placeholder="Item name"
+                                    className="w-full text-sm"
+                                  />
+                                  {activeSubComponentDropdown === index && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                                      {subComponentItems
+                                        .filter(
+                                          (item) =>
+                                            sc.item === "" ||
+                                            item
+                                              .toLowerCase()
+                                              .includes(sc.item.toLowerCase()),
+                                        )
+                                        .map((item) => (
+                                          <div
+                                            key={item}
+                                            className="group flex items-center justify-between gap-2 px-3 py-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                            onClick={() => {
+                                              const updated = [
+                                                ...formSubComponents,
+                                              ];
+                                              updated[index] = {
+                                                ...updated[index],
+                                                item,
+                                              };
+                                              setFormSubComponents(updated);
+                                              setActiveSubComponentDropdown(
+                                                null,
+                                              );
+                                            }}
+                                          >
+                                            <span className="text-sm text-gray-900 dark:text-white">
+                                              {item}
+                                            </span>
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteSubComponentItem(item);
+                                              }}
+                                              className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                              title="Remove from saved items"
+                                            >
+                                              <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                          </div>
+                                        ))}
+                                      {sc.item &&
+                                        !subComponentItems.some(
+                                          (item) =>
+                                            item.toLowerCase() ===
+                                            sc.item.toLowerCase(),
+                                        ) && (
+                                          <div
+                                            className="px-3 py-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-100 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
+                                            onClick={async () => {
+                                              const success =
+                                                await createSubComponentItem(
+                                                  sc.item,
+                                                );
+                                              if (success) {
+                                                setActiveSubComponentDropdown(
+                                                  null,
+                                                );
+                                              }
+                                            }}
+                                          >
+                                            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                                              + Save "{sc.item}"
+                                            </span>
+                                          </div>
+                                        )}
+                                      {subComponentItems.filter(
+                                        (item) =>
+                                          sc.item === "" ||
+                                          item
+                                            .toLowerCase()
+                                            .includes(sc.item.toLowerCase()),
+                                      ).length === 0 &&
+                                        !sc.item && (
+                                          <div className="px-3 py-2 text-center text-gray-500 dark:text-gray-400 text-xs">
+                                            No saved items. Type to add.
+                                          </div>
+                                        )}
+                                    </div>
+                                  )}
+                                </div>
+                                <Input
+                                  type="text"
+                                  value={sc.serial_number}
+                                  onChange={(e) => {
+                                    const updated = [...formSubComponents];
+                                    updated[index] = {
+                                      ...updated[index],
+                                      serial_number: e.target.value,
+                                    };
+                                    setFormSubComponents(updated);
+                                  }}
+                                  placeholder="Serial number"
+                                  className="w-full text-sm"
+                                />
+                                <Input
+                                  type="date"
+                                  value={sc.cal_date}
+                                  onChange={(e) => {
+                                    const updated = [...formSubComponents];
+                                    updated[index] = {
+                                      ...updated[index],
+                                      cal_date: e.target.value,
+                                    };
+                                    setFormSubComponents(updated);
+                                  }}
+                                  placeholder="Cal date"
+                                  className="w-full text-sm min-w-0"
+                                />
+                                <Input
+                                  type="text"
+                                  value={sc.amp_id}
+                                  onChange={(e) => {
+                                    const updated = [...formSubComponents];
+                                    updated[index] = {
+                                      ...updated[index],
+                                      amp_id: e.target.value,
+                                    };
+                                    setFormSubComponents(updated);
+                                  }}
+                                  placeholder="AMP ID"
+                                  className="w-full text-sm min-w-0"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormSubComponents(
+                                      formSubComponents.filter(
+                                        (_, i) => i !== index,
+                                      ),
+                                    );
+                                  }}
+                                  className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 mt-1"
+                                  title="Remove"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedFile(null);
-                            // Restore existing certificate if in edit mode
-                            if (isEditMode && editingEquipmentId) {
-                              const currentEquipment = equipment.find(e => e.id === editingEquipmentId);
-                              setEditingEquipmentCertificate(currentEquipment?.calibration_certificate_url || null);
-                            }
+                            setFormSubComponents([
+                              ...formSubComponents,
+                              { ...emptySubComponent },
+                            ]);
                           }}
-                          className="text-red-600 hover:text-red-800"
+                          className="flex items-center gap-1 text-sm text-[#f26722] hover:text-[#e55611] font-medium"
                         >
-                          <X className="h-4 w-4" />
+                          <Plus className="h-3.5 w-3.5" />
+                          Add Sub Component
                         </button>
-                      )}
-                    </div>
-                    {uploadingFile && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Uploading...</p>
+                      </div>
                     )}
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {isEditMode && editingEquipmentCertificate && !selectedFile 
-                        ? 'Upload a new file to replace the existing certificate'
-                        : 'Upload a PDF calibration certificate for this equipment'}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Calibration Date
+                      </label>
+                      <Input
+                        type="date"
+                        name="calibration_date"
+                        value={formData.calibration_date}
+                        onChange={handleInputChange}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Calibration Due Date
+                      </label>
+                      <Input
+                        type="date"
+                        name="calibration_due_date"
+                        value={formData.calibration_due_date}
+                        onChange={handleInputChange}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Notes
+                    </label>
+                    <textarea
+                      name="notes"
+                      value={formData.notes}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          notes: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      rows={3}
+                      placeholder="Additional notes or comments..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Tracking URL
+                    </label>
+                    <Input
+                      type="url"
+                      name="tracking_url"
+                      value={formData.tracking_url}
+                      onChange={handleInputChange}
+                      className="w-full"
+                      placeholder="https://example.com/tracking"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Enter a URL to link to equipment tracking
                     </p>
                   </div>
-                </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Calibration Certificate (PDF)
+                    </label>
+                    <div className="space-y-2">
+                      {isEditMode &&
+                        editingEquipmentCertificate &&
+                        !selectedFile && (
+                          <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-200 rounded-md">
+                            <FileText className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            <span className="text-sm text-gray-600 dark:text-gray-400 flex-1">
+                              Current certificate attached
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setViewingCertificate(
+                                  editingEquipmentCertificate,
+                                )
+                              }
+                              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                              title="View Certificate"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (
+                                  window.confirm(
+                                    "Are you sure you want to remove this certificate? The file will be deleted from storage.",
+                                  )
+                                ) {
+                                  // Delete file from storage
+                                  if (editingEquipmentCertificate) {
+                                    try {
+                                      // Extract file path from URL
+                                      const urlParts =
+                                        editingEquipmentCertificate.split(
+                                          "/equipment-certificates/",
+                                        );
+                                      if (urlParts.length > 1) {
+                                        const filePath =
+                                          urlParts[1].split("?")[0]; // Remove query params
+                                        await supabase.storage
+                                          .from("equipment-certificates")
+                                          .remove([filePath]);
+                                      }
+                                    } catch (error) {
+                                      console.error(
+                                        "Error deleting file from storage:",
+                                        error,
+                                      );
+                                      // Continue anyway - we'll still remove the reference
+                                    }
+                                  }
+                                  setEditingEquipmentCertificate(null);
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                              title="Remove Certificate"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                      <div className="flex items-center gap-2">
+                        <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-100 text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-50">
+                          <Upload className="h-4 w-4" />
+                          {selectedFile
+                            ? selectedFile.name
+                            : isEditMode && editingEquipmentCertificate
+                              ? "Replace PDF file"
+                              : "Choose PDF file"}
+                          <input
+                            type="file"
+                            accept=".pdf,application/pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (file.type !== "application/pdf") {
+                                  toast({
+                                    title: "Invalid File",
+                                    description: "Please upload a PDF file",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                setSelectedFile(file);
+                                setEditingEquipmentCertificate(null); // Clear existing when new file selected
+                              }
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                        {selectedFile && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedFile(null);
+                              // Restore existing certificate if in edit mode
+                              if (isEditMode && editingEquipmentId) {
+                                const currentEquipment = equipment.find(
+                                  (e) => e.id === editingEquipmentId,
+                                );
+                                setEditingEquipmentCertificate(
+                                  currentEquipment?.calibration_certificate_url ||
+                                    null,
+                                );
+                              }
+                            }}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                      {uploadingFile && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Uploading...
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {isEditMode &&
+                        editingEquipmentCertificate &&
+                        !selectedFile
+                          ? "Upload a new file to replace the existing certificate"
+                          : "Upload a PDF calibration certificate for this equipment"}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-between p-6 pt-4 border-t border-gray-200 dark:border-dark-200 flex-shrink-0">
@@ -2758,8 +3413,8 @@ export default function FieldEquipmentList() {
                       onClick={() => {
                         setIsOpen(false);
                         setFormData(initialFormData);
-                        setCategoryInput('');
-                        setLocationInput('');
+                        setCategoryInput("");
+                        setLocationInput("");
                         setFormSubComponents([]);
                         setSubComponentsExpanded(false);
                         setSelectedFile(null);
@@ -2770,7 +3425,7 @@ export default function FieldEquipmentList() {
                       Cancel
                     </Button>
                     <Button type="submit">
-                      {isEditMode ? 'Update' : 'Add'} Equipment
+                      {isEditMode ? "Update" : "Add"} Equipment
                     </Button>
                   </div>
                 </div>
@@ -2780,7 +3435,11 @@ export default function FieldEquipmentList() {
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)} className="relative z-50">
+        <Dialog
+          open={deleteConfirmOpen}
+          onClose={() => setDeleteConfirmOpen(false)}
+          className="relative z-50"
+        >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <Dialog.Panel className="mx-auto max-w-md rounded-lg bg-white dark:bg-dark-150 p-6 shadow-xl">
@@ -2788,7 +3447,8 @@ export default function FieldEquipmentList() {
                 Confirm Delete
               </Dialog.Title>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                Are you sure you want to delete this equipment? This action cannot be undone.
+                Are you sure you want to delete this equipment? This action
+                cannot be undone.
               </p>
               <div className="flex justify-end gap-2">
                 <Button
@@ -2797,10 +3457,7 @@ export default function FieldEquipmentList() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  variant="destructive"
-                  onClick={confirmDelete}
-                >
+                <Button variant="destructive" onClick={confirmDelete}>
                   Delete
                 </Button>
               </div>
@@ -2809,7 +3466,11 @@ export default function FieldEquipmentList() {
         </Dialog>
 
         {/* Equipment Details Viewer Dialog */}
-        <Dialog open={!!viewingEquipment} onClose={() => setViewingEquipment(null)} className="relative z-50">
+        <Dialog
+          open={!!viewingEquipment}
+          onClose={() => setViewingEquipment(null)}
+          className="relative z-50"
+        >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <Dialog.Panel className="mx-auto max-w-2xl w-full max-h-[90vh] rounded-lg bg-white dark:bg-dark-150 shadow-xl flex flex-col">
@@ -2835,7 +3496,9 @@ export default function FieldEquipmentList() {
                       </label>
                       <p className="text-base font-semibold text-gray-900 dark:text-white">
                         {viewingEquipment.equipment_name}
-                        {isCalibrationPastDue(viewingEquipment.calibration_due_date) && (
+                        {isCalibrationPastDue(
+                          viewingEquipment.calibration_due_date,
+                        ) && (
                           <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-red-500 text-white rounded">
                             PAST DUE
                           </span>
@@ -2850,7 +3513,7 @@ export default function FieldEquipmentList() {
                           AMP ID
                         </label>
                         <p className="text-base text-gray-900 dark:text-white">
-                          {viewingEquipment.amp_id || '-'}
+                          {viewingEquipment.amp_id || "-"}
                         </p>
                       </div>
 
@@ -2859,7 +3522,7 @@ export default function FieldEquipmentList() {
                           Serial Number
                         </label>
                         <p className="text-base text-gray-900 dark:text-white">
-                          {viewingEquipment.serial_number || '-'}
+                          {viewingEquipment.serial_number || "-"}
                         </p>
                       </div>
 
@@ -2868,7 +3531,7 @@ export default function FieldEquipmentList() {
                           Category
                         </label>
                         <p className="text-base text-gray-900 dark:text-white">
-                          {viewingEquipment.category || '-'}
+                          {viewingEquipment.category || "-"}
                         </p>
                       </div>
 
@@ -2877,7 +3540,7 @@ export default function FieldEquipmentList() {
                           Location
                         </label>
                         <p className="text-base text-gray-900 dark:text-white">
-                          {viewingEquipment.location || '-'}
+                          {viewingEquipment.location || "-"}
                         </p>
                       </div>
 
@@ -2907,20 +3570,24 @@ export default function FieldEquipmentList() {
                         <p className="text-base text-gray-900 dark:text-white flex items-center gap-2">
                           {viewingEquipment.assigned_to ? (
                             <>
-                              {viewingEquipment.assigned_type === 'job_site' ? (
+                              {viewingEquipment.assigned_type === "job_site" ? (
                                 <Briefcase className="h-4 w-4 text-gray-400" />
-                              ) : viewingEquipment.assigned_type === 'truck' ? (
+                              ) : viewingEquipment.assigned_type === "truck" ? (
                                 <TruckIcon className="h-4 w-4 text-gray-400" />
                               ) : (
                                 <User className="h-4 w-4 text-gray-400" />
                               )}
                               <span>{getAssignedLabel(viewingEquipment)}</span>
                               <span className="text-xs text-gray-500 dark:text-gray-400">
-                                ({getAssignedTypeLabel(viewingEquipment.assigned_type)})
+                                (
+                                {getAssignedTypeLabel(
+                                  viewingEquipment.assigned_type,
+                                )}
+                                )
                               </span>
                             </>
                           ) : (
-                            'Not assigned'
+                            "Not assigned"
                           )}
                         </p>
                       </div>
@@ -2933,10 +3600,22 @@ export default function FieldEquipmentList() {
                           <div className="space-y-2">
                             <p className="text-base text-gray-900 dark:text-white flex items-center gap-2">
                               <ArrowUp className="h-4 w-4 text-amber-500" />
-                              <span>{getUserNameById(viewingEquipment.checked_out_by)}</span>
+                              <span>
+                                {getUserNameById(
+                                  viewingEquipment.checked_out_by,
+                                )}
+                              </span>
                               {viewingEquipment.checked_out_at && (
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  · {formatDateTime(viewingEquipment.checked_out_at)} ({formatRelativeTime(viewingEquipment.checked_out_at)})
+                                  ·{" "}
+                                  {formatDateTime(
+                                    viewingEquipment.checked_out_at,
+                                  )}{" "}
+                                  (
+                                  {formatRelativeTime(
+                                    viewingEquipment.checked_out_at,
+                                  )}
+                                  )
                                 </span>
                               )}
                             </p>
@@ -2954,7 +3633,9 @@ export default function FieldEquipmentList() {
                           </div>
                         ) : (
                           <div className="space-y-2">
-                            <p className="text-base text-gray-500 dark:text-gray-400">Not checked out</p>
+                            <p className="text-base text-gray-500 dark:text-gray-400">
+                              Not checked out
+                            </p>
                             <button
                               type="button"
                               onClick={() => {
@@ -2983,46 +3664,76 @@ export default function FieldEquipmentList() {
                         <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                           Calibration Due Date
                         </label>
-                        <p className={`text-base ${
-                          isCalibrationPastDue(viewingEquipment.calibration_due_date)
-                            ? 'font-semibold text-red-600 dark:text-red-400'
-                            : 'text-gray-900 dark:text-white'
-                        }`}>
-                          {formatLocalDate(viewingEquipment.calibration_due_date)}
+                        <p
+                          className={`text-base ${
+                            isCalibrationPastDue(
+                              viewingEquipment.calibration_due_date,
+                            )
+                              ? "font-semibold text-red-600 dark:text-red-400"
+                              : "text-gray-900 dark:text-white"
+                          }`}
+                        >
+                          {formatLocalDate(
+                            viewingEquipment.calibration_due_date,
+                          )}
                         </p>
                       </div>
                     </div>
 
                     {/* Sub Components - always show section; data from sub_components column, items from equipment_sub_component_items */}
                     {(() => {
-                      const subList = normalizeSubComponents(viewingEquipment.sub_components);
+                      const subList = normalizeSubComponents(
+                        viewingEquipment.sub_components,
+                      );
                       return (
                         <div>
                           <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
                             Sub Components
                           </label>
                           {subList.length === 0 ? (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">No sub components</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              No sub components
+                            </p>
                           ) : (
                             <div className="border border-gray-200 dark:border-dark-200 rounded-md overflow-hidden">
                               <table className="w-full">
                                 <thead className="bg-gray-50 dark:bg-dark-200">
                                   <tr>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">QTY</th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SN</th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cal Date</th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">AMP ID</th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                      QTY
+                                    </th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                      Item
+                                    </th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                      SN
+                                    </th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                      Cal Date
+                                    </th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                      AMP ID
+                                    </th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-dark-200">
                                   {subList.map((sc, index) => (
                                     <tr key={index}>
-                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{sc.qty}</td>
-                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{sc.item}</td>
-                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{sc.serial_number || '-'}</td>
-                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{sc.cal_date || '-'}</td>
-                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{sc.amp_id || '-'}</td>
+                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                                        {sc.qty}
+                                      </td>
+                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                                        {sc.item}
+                                      </td>
+                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                                        {sc.serial_number || "-"}
+                                      </td>
+                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                                        {sc.cal_date || "-"}
+                                      </td>
+                                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                                        {sc.amp_id || "-"}
+                                      </td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -3059,7 +3770,9 @@ export default function FieldEquipmentList() {
                             className="flex items-center gap-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                           >
                             <ExternalLink className="h-4 w-4" />
-                            <span className="text-sm break-all">{viewingEquipment.tracking_url}</span>
+                            <span className="text-sm break-all">
+                              {viewingEquipment.tracking_url}
+                            </span>
                           </a>
                         </div>
                       </div>
@@ -3073,7 +3786,11 @@ export default function FieldEquipmentList() {
                         </label>
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setViewingCertificate(viewingEquipment.calibration_certificate_url)}
+                            onClick={() =>
+                              setViewingCertificate(
+                                viewingEquipment.calibration_certificate_url,
+                              )
+                            }
                             className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
                           >
                             <Eye className="h-4 w-4" />
@@ -3081,10 +3798,11 @@ export default function FieldEquipmentList() {
                           </button>
                           <button
                             onClick={() => {
-                              const link = document.createElement('a');
-                              link.href = viewingEquipment.calibration_certificate_url!;
+                              const link = document.createElement("a");
+                              link.href =
+                                viewingEquipment.calibration_certificate_url!;
                               link.download = `${viewingEquipment.equipment_name}_certificate.pdf`;
-                              link.target = '_blank';
+                              link.target = "_blank";
                               link.click();
                             }}
                             className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors"
@@ -3100,12 +3818,16 @@ export default function FieldEquipmentList() {
                     <div className="pt-4 border-t border-gray-200 dark:border-dark-200">
                       <div className="grid grid-cols-2 gap-6 text-xs text-gray-500 dark:text-gray-400">
                         <div>
-                          <span className="font-medium">Created:</span>{' '}
-                          {new Date(viewingEquipment.created_at).toLocaleString()}
+                          <span className="font-medium">Created:</span>{" "}
+                          {new Date(
+                            viewingEquipment.created_at,
+                          ).toLocaleString()}
                         </div>
                         <div>
-                          <span className="font-medium">Last Updated:</span>{' '}
-                          {new Date(viewingEquipment.updated_at).toLocaleString()}
+                          <span className="font-medium">Last Updated:</span>{" "}
+                          {new Date(
+                            viewingEquipment.updated_at,
+                          ).toLocaleString()}
                         </div>
                       </div>
                     </div>
@@ -3141,7 +3863,11 @@ export default function FieldEquipmentList() {
         </Dialog>
 
         {/* Tracking URL Viewer Dialog */}
-        <Dialog open={!!viewingTrackingUrl} onClose={() => setViewingTrackingUrl(null)} className="relative z-50">
+        <Dialog
+          open={!!viewingTrackingUrl}
+          onClose={() => setViewingTrackingUrl(null)}
+          className="relative z-50"
+        >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <Dialog.Panel className="mx-auto max-w-4xl w-full max-h-[90vh] rounded-lg bg-white dark:bg-dark-150 shadow-xl flex flex-col">
@@ -3155,7 +3881,7 @@ export default function FieldEquipmentList() {
                     size="sm"
                     onClick={() => {
                       if (viewingTrackingUrl) {
-                        window.open(viewingTrackingUrl, '_blank');
+                        window.open(viewingTrackingUrl, "_blank");
                       }
                     }}
                   >
@@ -3177,7 +3903,7 @@ export default function FieldEquipmentList() {
                     src={viewingTrackingUrl}
                     className="w-full h-full border border-gray-300 dark:border-gray-600 rounded shadow-lg bg-white"
                     title="Equipment Tracking"
-                    style={{ minHeight: '600px' }}
+                    style={{ minHeight: "600px" }}
                   />
                 )}
               </div>
@@ -3186,14 +3912,22 @@ export default function FieldEquipmentList() {
         </Dialog>
 
         {/* PDF Certificate Viewer Dialog */}
-        <Dialog open={!!viewingCertificate} onClose={() => {
-          setViewingCertificate(null);
-          setPdfZoom(100);
-          setIsFullscreen(false);
-        }} className="relative z-50">
+        <Dialog
+          open={!!viewingCertificate}
+          onClose={() => {
+            setViewingCertificate(null);
+            setPdfZoom(100);
+            setIsFullscreen(false);
+          }}
+          className="relative z-50"
+        >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-          <div className={`fixed inset-0 flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-4'}`}>
-            <Dialog.Panel className={`${isFullscreen ? 'w-full h-full rounded-none' : 'mx-auto max-w-[95vw] w-full max-h-[95vh] rounded-lg'} bg-white dark:bg-dark-150 shadow-xl flex flex-col`}>
+          <div
+            className={`fixed inset-0 flex items-center justify-center ${isFullscreen ? "p-0" : "p-4"}`}
+          >
+            <Dialog.Panel
+              className={`${isFullscreen ? "w-full h-full rounded-none" : "mx-auto max-w-[95vw] w-full max-h-[95vh] rounded-lg"} bg-white dark:bg-dark-150 shadow-xl flex flex-col`}
+            >
               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-200 flex-shrink-0">
                 <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
                   Calibration Certificate
@@ -3202,7 +3936,9 @@ export default function FieldEquipmentList() {
                   {/* Zoom Controls */}
                   <div className="flex items-center gap-1 border border-gray-300 dark:border-gray-600 rounded-md">
                     <button
-                      onClick={() => setPdfZoom(prev => Math.max(50, prev - 25))}
+                      onClick={() =>
+                        setPdfZoom((prev) => Math.max(50, prev - 25))
+                      }
                       className="p-1.5 hover:bg-gray-100 dark:hover:bg-dark-100 text-gray-700 dark:text-gray-300"
                       title="Zoom Out"
                     >
@@ -3212,7 +3948,9 @@ export default function FieldEquipmentList() {
                       {pdfZoom}%
                     </span>
                     <button
-                      onClick={() => setPdfZoom(prev => Math.min(200, prev + 25))}
+                      onClick={() =>
+                        setPdfZoom((prev) => Math.min(200, prev + 25))
+                      }
                       className="p-1.5 hover:bg-gray-100 dark:hover:bg-dark-100 text-gray-700 dark:text-gray-300"
                       title="Zoom In"
                     >
@@ -3239,7 +3977,7 @@ export default function FieldEquipmentList() {
                     size="sm"
                     onClick={() => {
                       if (viewingCertificate) {
-                        window.open(viewingCertificate, '_blank');
+                        window.open(viewingCertificate, "_blank");
                       }
                     }}
                   >
@@ -3251,9 +3989,9 @@ export default function FieldEquipmentList() {
                     size="sm"
                     onClick={() => {
                       if (viewingCertificate) {
-                        const link = document.createElement('a');
+                        const link = document.createElement("a");
                         link.href = viewingCertificate;
-                        link.download = 'calibration_certificate.pdf';
+                        link.download = "calibration_certificate.pdf";
                         link.click();
                       }
                     }}
@@ -3284,8 +4022,8 @@ export default function FieldEquipmentList() {
                       style={{
                         width: `${pdfZoom}%`,
                         height: `${(pdfZoom / 100) * 800}px`,
-                        minHeight: '600px',
-                        maxWidth: '100%'
+                        minHeight: "600px",
+                        maxWidth: "100%",
                       }}
                     />
                   </div>
@@ -3298,4 +4036,3 @@ export default function FieldEquipmentList() {
     </PageLayout>
   );
 }
-

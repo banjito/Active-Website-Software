@@ -137,7 +137,7 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
                       : ""
                   }`}
                 >
-                  Estimating Preset Settings
+                  Estimating Presets
                 </Button>
               </Link>
             </div>

@@ -44,7 +44,6 @@ import ThreeLowVoltageCableMTSForm from './components/reports/3-LowVoltageCableM
 import ThreeLowVoltageCableATSForm from './components/reports/3-LowVoltageCableATS';
 import MediumVoltageVLFMTSReport from './components/reports/MediumVoltageVLFMTSReport';
 import ProfileSetup from './pages/ProfileSetup';
-import TechnicianProfilesPage from './pages/TechnicianProfilesPage';
 import CustomerCategoriesPage from './pages/CustomerCategoriesPage';
 import ReportsPage from './app/[division]/reports/page';
 import AdminDashboard from './app/admin-dashboard/page';
@@ -139,8 +138,6 @@ import CalibrationDashboard from './app/dashboards/CalibrationDashboard';
 import ScavengerDashboard from './app/dashboards/ScavengerDashboard';
 import FieldTechDashboard from './app/dashboards/FieldTechDashboard';
 
-// Import Equipment Management
-import EquipmentPage from './app/[division]/equipment/page';
 // Import Maintenance Management
 import MaintenancePage from './app/[division]/maintenance/page';
 
@@ -695,12 +692,8 @@ function App() {
                   {/* Field Equipment */}
                   <Route path="/:division/field-equipment" element={<RequireAuth><Layout><FieldEquipmentPage /></Layout></RequireAuth>} />
                   <Route path="/field-tech/field-equipment" element={<RequireAuth><Layout><FieldEquipmentPage /></Layout></RequireAuth>} />
-                  {/* Equipment Management */}
-                  <Route path="/:division/equipment" element={<RequireAuth><Layout><EquipmentPage /></Layout></RequireAuth>} />
                   {/* Equipment Maintenance */}
                   <Route path="/:division/maintenance" element={<RequireAuth><Layout><MaintenancePage /></Layout></RequireAuth>} />
-                  {/* Technician Profiles */}
-                  <Route path="/:division/profiles" element={<RequireAuth><Layout><TechnicianProfilesPage /></Layout></RequireAuth>} />
                   {/* Reports Management */}
                   <Route path="/:division/reports" element={<RequireAuth><Layout><ReportsPage /></Layout></RequireAuth>} />
                   {/* Resource Management */}

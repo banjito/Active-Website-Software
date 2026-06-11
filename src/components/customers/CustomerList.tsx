@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Plus,
   Pencil,
@@ -6,8 +6,8 @@ import {
   X,
   Filter,
   Tag,
-  ArrowUpAZ,
-  ArrowDownAZ,
+  ArrowDownWideNarrow,
+  Check,
   Users,
   Phone,
   Mail,
@@ -142,6 +142,10 @@ export default function CustomerList() {
   const [isEditing, setIsEditing] = useState(false);
   const [customerToEdit, setCustomerToEdit] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
   const [formLoading, setFormLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>(
     initialSettings.searchTerm,
@@ -170,6 +174,7 @@ export default function CustomerList() {
 
   const pageSize = 50;
   const totalPages = Math.ceil(totalCount / pageSize);
+  const activeFilterCount = Object.values(activeFilters).filter(Boolean).length;
 
   useEffect(() => {
     if (user) {
@@ -229,6 +234,74 @@ export default function CustomerList() {
       JSON.stringify(activeDivisionTabs),
     );
   }, [activeDivisionTabs]);
+
+  useEffect(() => {
+    if (!isFilterMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        filterMenuRef.current &&
+        !filterMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsFilterMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isFilterMenuOpen]);
+
+  useEffect(() => {
+    if (!isSortMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sortMenuRef.current &&
+        !sortMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsSortMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isSortMenuOpen]);
+
+  function renderSingleChoiceOptions<T extends string>(
+    options: Array<{ value: T; label: string }>,
+    selectedValue: T | null | undefined,
+    setValue: (nextValue: T | null) => void,
+  ) {
+    return (
+      <div className="space-y-0.5">
+        {options.map((option) => {
+          const checked = selectedValue === option.value;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                setValue(checked ? null : option.value);
+                setPage(1);
+              }}
+              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                checked
+                  ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                  : "text-gray-700 hover:bg-gray-50 dark:text-white dark:hover:bg-dark-100"
+              }`}
+              aria-pressed={checked}
+            >
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                {checked && <Check className="h-4 w-4" />}
+              </span>
+              <span>{option.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   function toggleDivisionTab(divisionValue: string) {
     setActiveDivisionTabs((prev) => {
@@ -604,33 +677,47 @@ export default function CustomerList() {
               <LoadingSpinner size="xs" />
             </div>
           )}
-          <button
-            type="button"
-            onClick={toggleSortOrder}
-            className={`inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm ${
-              sortOrder
-                ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722] hover:bg-[#f26722]/20"
-                : "border-gray-300 bg-white dark:bg-dark-150 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-200"
-            }`}
-            title={
-              sortOrder === "asc"
-                ? "Sorted A-Z (click to sort Z-A)"
-                : sortOrder === "desc"
-                  ? "Sorted Z-A (click to clear sort)"
-                  : "Sort alphabetically"
-            }
-          >
-            {sortOrder === "desc" ? (
-              <ArrowDownAZ className="h-4 w-4 mr-2" />
-            ) : (
-              <ArrowUpAZ className="h-4 w-4 mr-2" />
+          <div className="relative" ref={sortMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsSortMenuOpen((prev) => !prev)}
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                sortOrder
+                  ? "text-[#f26722]"
+                  : "text-gray-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+              }`}
+              aria-expanded={isSortMenuOpen}
+              aria-label="Sort customers"
+              title="Sort"
+            >
+              <ArrowDownWideNarrow className="h-5 w-5" />
+            </button>
+            {isSortMenuOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                <div>
+                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    Sort by
+                  </div>
+                  <div className="rounded-md bg-orange-50 px-2.5 py-1.5 text-sm text-[#f26722] dark:bg-orange-900/20">
+                    Company Name
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    Order
+                  </div>
+                  {renderSingleChoiceOptions(
+                    [
+                      { value: "asc", label: "Ascending" },
+                      { value: "desc", label: "Descending" },
+                    ],
+                    sortOrder,
+                    setSortOrder,
+                  )}
+                </div>
+              </div>
             )}
-            {sortOrder === "asc"
-              ? "A-Z"
-              : sortOrder === "desc"
-                ? "Z-A"
-                : "Sort"}
-          </button>
+          </div>
           <button
             onClick={navigateToCategoriesPage}
             className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white dark:bg-dark-150 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200"
@@ -638,19 +725,61 @@ export default function CustomerList() {
             <Tag className="h-4 w-4 mr-2" />
             Categories
           </button>
-          <button
-            type="button"
-            onClick={() => setFilterOpen(true)}
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white dark:bg-dark-150 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200"
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-            {Object.keys(activeFilters).length > 0 && (
-              <span className="ml-1 rounded-full bg-[#f26722] w-5 h-5 flex items-center justify-center text-xs text-white">
-                {Object.keys(activeFilters).length}
-              </span>
+          <div className="relative" ref={filterMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsFilterMenuOpen((prev) => !prev)}
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                activeFilterCount > 0
+                  ? "text-[#f26722]"
+                  : "text-gray-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+              }`}
+              aria-expanded={isFilterMenuOpen}
+              aria-label="Filter customers"
+              title="Filter"
+            >
+              <Filter className="h-5 w-5" />
+            </button>
+            {isFilterMenuOpen && (
+              <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-72 overflow-y-scroll rounded-md border border-gray-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#f26722_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#f26722] [&::-webkit-scrollbar-thumb]:hover:bg-[#e55611] dark:[scrollbar-color:#f26722_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200">
+                {categories.length > 0 && (
+                  <div>
+                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                      Category
+                    </div>
+                    {renderSingleChoiceOptions(
+                      categories.map((category) => ({
+                        value: category.id,
+                        label: category.name,
+                      })),
+                      activeFilters.category_id,
+                      (nextValue) =>
+                        handleFilterChange("category_id", nextValue),
+                    )}
+                  </div>
+                )}
+                <div className={categories.length > 0 ? "mt-2" : ""}>
+                  <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">
+                    Status
+                  </div>
+                  {renderSingleChoiceOptions(
+                    statusOptions,
+                    activeFilters.status,
+                    (nextValue) => handleFilterChange("status", nextValue),
+                  )}
+                </div>
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="mt-3 w-full rounded-md border border-gray-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
             )}
-          </button>
+          </div>
           <button
             type="button"
             onClick={() => {

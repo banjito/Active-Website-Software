@@ -245,7 +245,7 @@ export const FieldTechDashboard: React.FC = () => {
         </Card>
 
         <Card className="hover:shadow-md hover:border-green-200 transition-all cursor-pointer">
-          <Link to="/field-tech/equipment" className="block p-3 sm:p-4">
+          <Link to="/field-tech/field-equipment" className="block p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center min-w-0 flex-1">
                 <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
@@ -426,5 +426,4 @@ export const FieldTechDashboard: React.FC = () => {
 };
 
 export default FieldTechDashboard;
-
 

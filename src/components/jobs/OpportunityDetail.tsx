@@ -3198,7 +3198,6 @@ export default function OpportunityDetail() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition-colors flex items-center">
-                      <Settings className="h-4 w-4 mr-2" />
                       Manage Opportunity
                       <ChevronDown className="h-4 w-4 ml-2" />
                     </button>

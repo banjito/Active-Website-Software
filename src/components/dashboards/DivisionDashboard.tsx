@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useLayoutEffect } from 'react';
+import React, { useEffect, useState, useMemo, useLayoutEffect } from "react";
 import {
   BriefcaseIcon,
   CalendarIcon,
@@ -25,19 +25,31 @@ import {
   Wrench,
   FileLineChart,
   Gauge,
-  Settings
+  Settings,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Badge } from "@/components/ui/Badge";
-import { supabase, isConnectionError, isSchemaError, tryWithFallbackSchema } from '@/lib/supabase';
-import { useAuth } from '@/lib/AuthContext';
-import { useDemoMode } from '@/lib/DemoModeContext';
-import { NETAMetrics } from '@/components/metrics/NETAMetrics';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
-import { useMobileDetection } from '@/hooks/useMobileDetection';
+import {
+  supabase,
+  isConnectionError,
+  isSchemaError,
+  tryWithFallbackSchema,
+} from "@/lib/supabase";
+import { useAuth } from "@/lib/AuthContext";
+import { useDemoMode } from "@/lib/DemoModeContext";
+import { NETAMetrics } from "@/components/metrics/NETAMetrics";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
+import { useMobileDetection } from "@/hooks/useMobileDetection";
 
 interface CountsData {
   customers: number;
@@ -95,17 +107,17 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
   showCalibrations = false,
   showDocumentation = false,
   customMetrics = [],
-  metricsComponent
+  metricsComponent,
 }) => {
   const { user } = useAuth();
   const { maskCustomerName, maskJobTitle } = useDemoMode();
   const navigate = useNavigate();
   const { isMobile, deviceType } = useMobileDetection();
-  
+
   const [recentJobs, setRecentJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Stats state
   const [counts, setCounts] = useState<CountsData>({
     customers: 0,
@@ -114,7 +126,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
     activeJobs: 0,
     upcomingJobs: 0,
     completedJobs: 0,
-    documents: 0
+    documents: 0,
   });
 
   // Sample data for tabs that might not exist yet
@@ -131,17 +143,17 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
     if (user) {
       setLoading(true);
       setError(null);
-      
+
       const loadData = async () => {
         try {
           // Load all necessary data
           const [countsData, jobs] = await Promise.all([
             fetchCounts(),
-            fetchRecentJobs()
+            fetchRecentJobs(),
           ]);
 
           setCounts(countsData);
-          
+
           // Transform and set jobs
           const transformedJobs = (jobs || []).map((job: any) => ({
             id: job.id,
@@ -152,15 +164,14 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             due_date: job.due_date,
             customers: {
               company_name: job.customer?.company_name || null,
-              name: job.customer?.name || 'Unknown Customer'
-            }
+              name: job.customer?.name || "Unknown Customer",
+            },
           }));
-          
-          setRecentJobs(transformedJobs);
 
+          setRecentJobs(transformedJobs);
         } catch (err: any) {
           console.error(`${divisionName} Dashboard - Error loading data:`, err);
-          setError(err.message || 'Failed to load dashboard data.');
+          setError(err.message || "Failed to load dashboard data.");
         } finally {
           setLoading(false);
         }
@@ -174,44 +185,78 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 
   async function fetchCounts(): Promise<CountsData> {
     try {
-      console.log(`${divisionName} Dashboard - Fetching counts for division:`, division);
-      
+      console.log(
+        `${divisionName} Dashboard - Fetching counts for division:`,
+        division,
+      );
+
       // Base queries
-      const customersQuery = supabase.schema('common').from('customers').select('*', { count: 'exact', head: true });
-      const contactsQuery = supabase.schema('common').from('contacts').select('*', { count: 'exact', head: true });
-      let jobsQuery = supabase.schema('neta_ops').from('jobs').select('*', { count: 'exact', head: true }).is('deleted_at', null);
-      let activeJobsQuery = supabase.schema('neta_ops').from('jobs').select('*', { count: 'exact', head: true }).eq('status', 'in_progress').is('deleted_at', null);
-      let upcomingJobsQuery = supabase.schema('neta_ops').from('jobs').select('*', { count: 'exact', head: true }).eq('status', 'pending').is('deleted_at', null);
-      let completedJobsQuery = supabase.schema('neta_ops').from('jobs').select('*', { count: 'exact', head: true }).eq('status', 'completed').is('deleted_at', null);
-      
+      const customersQuery = supabase
+        .schema("common")
+        .from("customers")
+        .select("*", { count: "exact", head: true });
+      const contactsQuery = supabase
+        .schema("common")
+        .from("contacts")
+        .select("*", { count: "exact", head: true });
+      let jobsQuery = supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .select("*", { count: "exact", head: true })
+        .is("deleted_at", null);
+      let activeJobsQuery = supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "in_progress")
+        .is("deleted_at", null);
+      let upcomingJobsQuery = supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending")
+        .is("deleted_at", null);
+      let completedJobsQuery = supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "completed")
+        .is("deleted_at", null);
+
       // Documents query
-      let documentsQuery = supabase.schema('common').from('documents').select('*', { count: 'exact', head: true });
-      
+      let documentsQuery = supabase
+        .schema("common")
+        .from("documents")
+        .select("*", { count: "exact", head: true });
+
       // Initialize opportunity counts (will remain 0 if that module is disabled)
       const opportunitiesCount = 0;
       const awardedOpportunitiesCount = 0;
       let documentsCount = 0;
-      
+
       // Add division filter for relevant queries
-      jobsQuery = jobsQuery.eq('division', division);
-      activeJobsQuery = activeJobsQuery.eq('division', division);
-      upcomingJobsQuery = upcomingJobsQuery.eq('division', division);
-      completedJobsQuery = completedJobsQuery.eq('division', division);
-      
+      jobsQuery = jobsQuery.eq("division", division);
+      activeJobsQuery = activeJobsQuery.eq("division", division);
+      upcomingJobsQuery = upcomingJobsQuery.eq("division", division);
+      completedJobsQuery = completedJobsQuery.eq("division", division);
+
       // Add division filter to documents query if applicable
       if (showDocumentation) {
-        documentsQuery = documentsQuery.eq('division', division);
+        documentsQuery = documentsQuery.eq("division", division);
       }
-      
+
       // Log the queries being prepared
-      console.log(`${divisionName} Dashboard - Preparing queries with schemas:`, {
-        customers: 'common',
-        contacts: 'common',
-        jobs: 'neta_ops',
-        opportunities: 'not used',
-        documents: showDocumentation ? 'common' : 'not used'
-      });
-      
+      console.log(
+        `${divisionName} Dashboard - Preparing queries with schemas:`,
+        {
+          customers: "common",
+          contacts: "common",
+          jobs: "neta_ops",
+          opportunities: "not used",
+          documents: showDocumentation ? "common" : "not used",
+        },
+      );
+
       // Handle opportunity counts - currently disabled
       // Uncomment and fix the condition below when we're ready to show opportunities
       /*
@@ -219,17 +264,17 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         try {
           const getOpportunityCounts = async (schema: string) => {
             const results = { total: 0, awarded: 0 };
-            
+
             try {
               let totalQuery = supabase.schema(schema).from('opportunities').select('*', { count: 'exact', head: true });
               let awardedQuery = supabase.schema(schema).from('opportunities').select('*', { count: 'exact', head: true }).eq('status', 'awarded');
-              
+
               // Try to apply division filter if that column exists
               try {
                 const { data: columnInfo, error: columnError } = await supabase
                   .schema(schema)
                   .rpc('get_columns_info', { table_name: 'opportunities' });
-                  
+
                 if (!columnError && columnInfo) {
                   const hasColumn = columnInfo.some((col: any) => col.column_name === 'division');
                   if (hasColumn) {
@@ -244,12 +289,12 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 console.warn(`${divisionName} Dashboard - Could not check if division column exists:`, columnError);
                 // Continue without division filter
               }
-              
+
               const [totalResult, awardedResult] = await Promise.all([totalQuery, awardedQuery]);
-              
+
               if (totalResult.error) throw totalResult.error;
               if (awardedResult.error) throw awardedResult.error;
-              
+
               results.total = totalResult.count || 0;
               results.awarded = awardedResult.count || 0;
             } catch (error) {
@@ -260,14 +305,14 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
               }
               throw error;
             }
-            
+
             return results;
           };
-          
+
           const opportunityCounts = await tryWithFallbackSchema(getOpportunityCounts, 'business', 'common');
           opportunitiesCount = opportunityCounts.total;
           awardedOpportunitiesCount = opportunityCounts.awarded;
-          
+
           console.log(`${divisionName} Dashboard - Fetched opportunity counts:`, {
             total: opportunitiesCount,
             awarded: awardedOpportunitiesCount
@@ -283,10 +328,13 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       if (showDocumentation) {
         try {
           const { count, error } = await documentsQuery;
-          
+
           if (error) {
             if (isSchemaError(error)) {
-              console.warn(`Schema error for documents table. It may not exist yet:`, error);
+              console.warn(
+                `Schema error for documents table. It may not exist yet:`,
+                error,
+              );
             } else {
               console.error(`Error fetching document counts:`, error);
             }
@@ -295,7 +343,10 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             documentsCount = count || 0;
           }
         } catch (err) {
-          console.error(`${divisionName} Dashboard - Error fetching document counts:`, err);
+          console.error(
+            `${divisionName} Dashboard - Error fetching document counts:`,
+            err,
+          );
           // Keep zero for documents count
         }
       }
@@ -307,11 +358,13 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         jobsQuery,
         activeJobsQuery,
         upcomingJobsQuery,
-        completedJobsQuery
+        completedJobsQuery,
       ];
-      
-      console.log(`${divisionName} Dashboard - Executing ${queries.length} base queries`);
-      
+
+      console.log(
+        `${divisionName} Dashboard - Executing ${queries.length} base queries`,
+      );
+
       // Execute all base queries in parallel
       const results = await Promise.all(queries);
 
@@ -320,25 +373,34 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       for (let i = 0; i < results.length; i++) {
         const result = results[i];
         if (result.error) {
-          console.error(`${divisionName} Dashboard - Error fetching count for query #${i}:`, result.error);
-          
+          console.error(
+            `${divisionName} Dashboard - Error fetching count for query #${i}:`,
+            result.error,
+          );
+
           // Check specifically for schema-related errors
           if (isSchemaError(result.error)) {
             hasSchemaErrors = true;
           }
-          
+
           if (isConnectionError(result.error)) {
-            throw new Error('Unable to connect to the database. Please check your connection.');
+            throw new Error(
+              "Unable to connect to the database. Please check your connection.",
+            );
           }
         }
       }
-      
+
       // If we have schema errors, throw a specific error
       if (hasSchemaErrors) {
-        console.error(`${divisionName} Dashboard - Schema-related errors detected. Database structure may be incorrect.`);
-        throw new Error('Database schema error. The required tables may not exist or permissions may be incorrect.');
+        console.error(
+          `${divisionName} Dashboard - Schema-related errors detected. Database structure may be incorrect.`,
+        );
+        throw new Error(
+          "Database schema error. The required tables may not exist or permissions may be incorrect.",
+        );
       }
-      
+
       // Base counts - use 0 as fallback if errors occurred
       const countsData: CountsData = {
         customers: results[0].count || 0,
@@ -346,15 +408,18 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         jobs: results[2].count || 0,
         activeJobs: results[3].count || 0,
         upcomingJobs: results[4].count || 0,
-        completedJobs: results[5].count || 0
+        completedJobs: results[5].count || 0,
       };
-      
+
       // Add documents count
       if (showDocumentation) {
         countsData.documents = documentsCount;
       }
 
-      console.log(`${divisionName} Dashboard - Successfully fetched counts:`, countsData);
+      console.log(
+        `${divisionName} Dashboard - Successfully fetched counts:`,
+        countsData,
+      );
       return countsData;
     } catch (error) {
       console.error(`Unexpected error in ${divisionName} fetchCounts:`, error);
@@ -366,19 +431,20 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         activeJobs: 0,
         upcomingJobs: 0,
         completedJobs: 0,
-        documents: 0
+        documents: 0,
       };
       // Re-throw to allow the component to show an error state
       throw error;
     }
   }
-  
+
   async function fetchRecentJobs() {
     try {
       const query = supabase
-        .schema('neta_ops')
-        .from('jobs')
-        .select(`
+        .schema("neta_ops")
+        .from("jobs")
+        .select(
+          `
           id,
           title,
           status,
@@ -386,168 +452,114 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
           job_number,
           due_date,
           customer_id
-        `)
-        .eq('division', division)
-        .is('deleted_at', null) // Only fetch non-deleted jobs
-        .order('created_at', { ascending: false })
+        `,
+        )
+        .eq("division", division)
+        .is("deleted_at", null) // Only fetch non-deleted jobs
+        .order("created_at", { ascending: false })
         .limit(5);
 
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching recent jobs:', error);
+        console.error("Error fetching recent jobs:", error);
         throw error;
       }
 
       // Batch-fetch all customers in one query (avoids N+1)
-      const customerIds = [...new Set((data || []).filter(j => j.customer_id).map(j => j.customer_id))];
+      const customerIds = [
+        ...new Set(
+          (data || []).filter((j) => j.customer_id).map((j) => j.customer_id),
+        ),
+      ];
       let customerMap: Record<string, any> = {};
       if (customerIds.length > 0) {
         try {
           const { data: customersData } = await supabase
-            .schema('common')
-            .from('customers')
-            .select('id, name, company_name')
-            .in('id', customerIds);
+            .schema("common")
+            .from("customers")
+            .select("id, name, company_name")
+            .in("id", customerIds);
           if (customersData) {
-            customersData.forEach((c: any) => { customerMap[c.id] = c; });
+            customersData.forEach((c: any) => {
+              customerMap[c.id] = c;
+            });
           }
         } catch (err) {
-          console.warn('Error batch-fetching customers:', err);
+          console.warn("Error batch-fetching customers:", err);
         }
       }
 
-      return (data || []).map(job => ({
+      return (data || []).map((job) => ({
         ...job,
-        customer: job.customer_id ? (customerMap[job.customer_id] || null) : null,
+        customer: job.customer_id ? customerMap[job.customer_id] || null : null,
       }));
     } catch (error) {
-      console.error(`Unexpected error in ${divisionName} fetchRecentJobs:`, error);
+      console.error(
+        `Unexpected error in ${divisionName} fetchRecentJobs:`,
+        error,
+      );
       throw error;
     }
   }
 
   function getJobStatusColor(status: string) {
     switch (status?.toLowerCase()) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in_progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "in_progress":
+        return "bg-blue-100 text-blue-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   }
 
   // Check if the division is one with special metrics
-  const hasCustomMetricsComponent = ['calibration', 'scavenger'].includes(division);
+  const hasCustomMetricsComponent = ["calibration", "scavenger"].includes(
+    division,
+  );
 
   // Add formatDate helper function
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
   };
 
   // Check if the division is a NETA division
-  const isNETADivision = ['north_alabama', 'tennessee', 'georgia', 'international'].includes(division);
+  const isNETADivision = [
+    "north_alabama",
+    "tennessee",
+    "georgia",
+    "international",
+  ].includes(division);
 
   return (
-    <div className={`w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 no-horizontal-scroll ${isMobile ? 'mobile-container mobile-force-small' : ''}`}>
+    <div
+      className={`w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 no-horizontal-scroll ${isMobile ? "mobile-container mobile-force-small" : ""}`}
+    >
       {error && (
         <div className="mb-4 p-3 sm:p-4 bg-red-100 text-red-800 rounded-md text-sm">
           Error loading dashboard: {error}
         </div>
       )}
-      
-      {/* Quick Actions Section - Add for NETA Divisions */}
-      {isNETADivision && (
-        <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mobile-gap-2">
-          <Card className="hover:shadow-md hover:border-green-200 transition-all cursor-pointer touch-target">
-            <Link to={`/${division}/equipment`} className="block p-3 sm:p-4 mobile-card-sm">
-              <div className="flex items-center justify-between mobile-gap-2">
-                <div className="flex items-center min-w-0 flex-1 mobile-gap-2">
-                  <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0 mobile-p-2">
-                    <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mobile-icon-sm" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate mobile-card-title">Equipment Management</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-white line-clamp-2 mobile-text-xs">Track, assign, and maintain equipment</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2 mobile-icon-sm" />
-              </div>
-            </Link>
-          </Card>
-          
-          <Card className="hover:shadow-md hover:border-orange-200 transition-all cursor-pointer touch-target">
-            <Link to={`/${division}/maintenance`} className="block p-3 sm:p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center min-w-0 flex-1">
-                  <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
-                    <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">Equipment Maintenance</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-white line-clamp-2">Schedule and track maintenance</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2" />
-              </div>
-            </Link>
-          </Card>
-          
-          <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer touch-target">
-            <Link to={`/${division}/profiles`} className="block p-3 sm:p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center min-w-0 flex-1">
-                  <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
-                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">Technician Profiles</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-white line-clamp-2">Manage skills and certifications</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2" />
-              </div>
-            </Link>
-          </Card>
-          
-          <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer touch-target">
-            <Link to={`/${division}/jobs`} className="block p-3 sm:p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center min-w-0 flex-1">
-                  <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-full mr-2 sm:mr-3 flex-shrink-0">
-                    <BriefcaseIcon className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">Job Management</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-white line-clamp-2">View and manage jobs</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2" />
-              </div>
-            </Link>
-          </Card>
-          
 
-        </div>
-      )}
-      
       {/* 1. Performance Metrics Section - For NETA divisions use NETAMetrics, otherwise use provided component */}
       {metricsComponent ? (
-        <div className="mb-12">
-          {metricsComponent}
-        </div>
-      ) : !hasCustomMetricsComponent && (
-        <div className="mb-12">
-          <NETAMetrics division={division} />
-        </div>
+        <div className="mb-12">{metricsComponent}</div>
+      ) : (
+        !hasCustomMetricsComponent && (
+          <div className="mb-12">
+            <NETAMetrics division={division} />
+          </div>
+        )
       )}
-      
+
       {/* Performance metrics placeholder for special divisions with no metrics component */}
-      {hasCustomMetricsComponent && !metricsComponent && <div className="mb-12"></div>}
+      {hasCustomMetricsComponent && !metricsComponent && (
+        <div className="mb-12"></div>
+      )}
 
       {/* 2. Core Business Metrics (Customers, Contacts, Documents) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8 mt-8 sm:mt-12">
@@ -555,10 +567,18 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         <Card>
           <div className="flex items-center justify-between p-4 sm:p-6 mobile-card-sm">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70 mobile-text-xs">Customers</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mobile-text-lg">{counts.customers}</p>
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70 mobile-text-xs">
+                Customers
+              </p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mobile-text-lg">
+                {counts.customers}
+              </p>
               <Link to={`/${division}/customers`}>
-                <Button variant="ghost" size="sm" className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90 mobile-btn-sm mobile-text-xs">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90 mobile-btn-sm mobile-text-xs"
+                >
                   View all customers
                   <ChevronRight className="ml-1 h-3 w-3 mobile-icon-xs" />
                 </Button>
@@ -574,10 +594,18 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         <Card>
           <div className="flex items-center justify-between p-4 sm:p-6">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Contacts</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.contacts}</p>
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
+                Contacts
+              </p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                {counts.contacts}
+              </p>
               <Link to={`/${division}/contacts`}>
-                <Button variant="ghost" size="sm" className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                >
                   View all contacts
                   <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
@@ -594,10 +622,18 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
           <Card>
             <div className="flex items-center justify-between p-4 sm:p-6">
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Documents</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.documents}</p>
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
+                  Documents
+                </p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                  {counts.documents}
+                </p>
                 <Link to={`/${division}/reports`}>
-                  <Button variant="ghost" size="sm" className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                  >
                     View all documents
                     <ChevronRight className="ml-1 h-3 w-3" />
                   </Button>
@@ -612,13 +648,19 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       </div>
 
       {/* 3. Job Status Section */}
-      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 mobile-section-title">Job Status</h2>
+      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 mobile-section-title">
+        Job Status
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <Card>
           <div className="flex items-center justify-between p-4 sm:p-6">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Active Jobs</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.activeJobs}</p>
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
+                Active Jobs
+              </p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                {counts.activeJobs}
+              </p>
             </div>
             <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <Clock className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
@@ -629,8 +671,12 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         <Card>
           <div className="flex items-center justify-between p-4 sm:p-6">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Upcoming Jobs</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.upcomingJobs}</p>
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
+                Upcoming Jobs
+              </p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                {counts.upcomingJobs}
+              </p>
             </div>
             <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <CalendarIcon className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
@@ -641,8 +687,12 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         <Card>
           <div className="flex items-center justify-between p-4 sm:p-6">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">Completed Jobs</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{counts.completedJobs}</p>
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70">
+                Completed Jobs
+              </p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                {counts.completedJobs}
+              </p>
             </div>
             <div className="rounded-full bg-black/5 dark:bg-white/5 p-2 flex-shrink-0">
               <CheckCircle className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
@@ -652,11 +702,13 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
       </div>
 
       {/* 4. Recent Activity Tabs */}
-      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 mobile-section-title">Recent Activity</h2>
+      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 mobile-section-title">
+        Recent Activity
+      </h2>
       <Card>
         <Tabs defaultValue="jobs" className="w-full">
           <TabsList className="flex justify-between bg-transparent space-x-0 border-b overflow-x-auto mobile-scroll">
-            <TabsTrigger 
+            <TabsTrigger
               className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
               value="jobs"
             >
@@ -667,9 +719,9 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 </span>
               </div>
             </TabsTrigger>
-            
+
             {showDocumentation && (
-              <TabsTrigger 
+              <TabsTrigger
                 className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="documents"
               >
@@ -681,9 +733,9 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 </div>
               </TabsTrigger>
             )}
-            
+
             {showTechnicians && (
-              <TabsTrigger 
+              <TabsTrigger
                 className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="technicians"
               >
@@ -697,7 +749,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             )}
 
             {showEquipment && (
-              <TabsTrigger 
+              <TabsTrigger
                 className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="equipment"
               >
@@ -711,7 +763,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
             )}
 
             {showCalibrations && (
-              <TabsTrigger 
+              <TabsTrigger
                 className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="calibrations"
               >
@@ -724,11 +776,13 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
               </TabsTrigger>
             )}
           </TabsList>
-          
+
           <TabsContent value="jobs" className="p-3 sm:p-6">
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {recentJobs.length === 0 ? (
-                <div className="text-center py-6 text-gray-500 text-sm sm:text-base">No recent jobs found</div>
+                <div className="text-center py-6 text-gray-500 text-sm sm:text-base">
+                  No recent jobs found
+                </div>
               ) : (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -738,34 +792,48 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                           <div className="p-3 sm:p-4 flex flex-col h-full mobile-card-compact">
                             <div className="flex justify-between items-start gap-2 mobile-gap-1">
                               <div className="min-w-0 flex-1">
-                                <p className="font-medium text-[#f26722] truncate text-sm sm:text-base mobile-card-title">{maskJobTitle(job.title)}</p>
+                                <p className="font-medium text-[#f26722] truncate text-sm sm:text-base mobile-card-title">
+                                  {maskJobTitle(job.title)}
+                                </p>
                                 <p className="text-xs sm:text-sm text-gray-600 dark:text-white mt-1 line-clamp-2 mobile-text-xs">
-                                  {maskCustomerName(job.customers?.company_name || job.customers?.name) || 'No customer'}
+                                  {maskCustomerName(
+                                    job.customers?.company_name ||
+                                      job.customers?.name,
+                                  ) || "No customer"}
                                 </p>
                               </div>
-                              <Badge 
+                              <Badge
                                 className={`
                                   px-1.5 sm:px-2 py-1 text-xs font-normal whitespace-nowrap flex-shrink-0 mobile-badge
-                                  ${job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : ''}
-                                  ${job.status === 'in-progress' || job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' : ''}
-                                  ${job.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' : ''}
+                                  ${job.status === "completed" ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" : ""}
+                                  ${job.status === "in-progress" || job.status === "in_progress" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400" : ""}
+                                  ${job.status === "pending" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400" : ""}
                                 `}
                               >
-                                {job.status?.replace(/_/g, ' ')}
+                                {job.status?.replace(/_/g, " ")}
                               </Badge>
                             </div>
-                            
+
                             <div className="flex justify-between mt-auto pt-2 sm:pt-3 text-xs sm:text-sm text-gray-500 dark:text-white border-t border-gray-100 dark:border-gray-700 mt-2 sm:mt-3">
                               <div className="flex items-center min-w-0 flex-1">
                                 <BriefcaseIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
-                                <span className="truncate">{job.job_number || 'No number'}</span>
+                                <span className="truncate">
+                                  {job.job_number || "No number"}
+                                </span>
                               </div>
                               {/* Due date is optional */}
                               {job.due_date && (
                                 <div className="flex items-center flex-shrink-0 ml-2">
                                   <CalendarIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
-                                  <span className="hidden sm:inline">{formatDate(job.due_date)}</span>
-                                  <span className="sm:hidden">{new Date(job.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                  <span className="hidden sm:inline">
+                                    {formatDate(job.due_date)}
+                                  </span>
+                                  <span className="sm:hidden">
+                                    {new Date(job.due_date).toLocaleDateString(
+                                      "en-US",
+                                      { month: "short", day: "numeric" },
+                                    )}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -774,10 +842,14 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                       </Link>
                     ))}
                   </div>
-                  
+
                   <div className="flex justify-center mt-4 sm:mt-6">
                     <Link to={`/${division}/jobs`}>
-                      <Button variant="outline" size="sm" className="touch-target">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="touch-target"
+                      >
                         View all jobs
                         <ChevronRight className="ml-1 h-3 w-3" />
                       </Button>
@@ -787,13 +859,15 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
               )}
             </div>
           </TabsContent>
-          
+
           {showDocumentation && (
             <TabsContent value="documents" className="p-3 sm:p-6">
               <Card>
                 <div className="p-4 sm:p-6 text-center py-6 sm:py-8">
                   <FileText className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-300 dark:text-white" />
-                  <h3 className="text-base sm:text-lg font-medium mb-2">Documentation Module</h3>
+                  <h3 className="text-base sm:text-lg font-medium mb-2">
+                    Documentation Module
+                  </h3>
                   <p className="text-sm sm:text-base text-gray-500 dark:text-white mb-4">
                     Access to division-specific documentation and files.
                   </p>

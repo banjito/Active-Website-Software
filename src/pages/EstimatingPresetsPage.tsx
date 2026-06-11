@@ -1,5 +1,5 @@
 /**
- * Estimating Preset Settings Page
+ * Estimating Presets Page
  *
  * Allows users to view and modify company-wide default values used in estimates.
  * These presets pre-populate estimate forms with default values.
@@ -315,7 +315,7 @@ export default function EstimatingPresetsPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
               <Calculator className="h-7 w-7 text-[#f26722]" />
-              Estimating Preset Settings
+              Estimating Presets
             </h1>
           </div>
           <div className="flex items-center gap-3">
@@ -373,7 +373,7 @@ export default function EstimatingPresetsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* General Estimating Variables */}
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <DollarSign className="h-5 w-5 text-[#f26722]" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -448,7 +448,7 @@ export default function EstimatingPresetsPage() {
         </div>
 
         {/* Vehicle Travel Variables */}
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <Truck className="h-5 w-5 text-[#f26722]" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -497,7 +497,7 @@ export default function EstimatingPresetsPage() {
         </div>
 
         {/* Per Diem & Lodging Variables */}
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <Users className="h-5 w-5 text-[#f26722]" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -525,7 +525,7 @@ export default function EstimatingPresetsPage() {
         </div>
 
         {/* Flight Travel Variables */}
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <Plane className="h-5 w-5 text-[#f26722]" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -562,7 +562,7 @@ export default function EstimatingPresetsPage() {
         </div>
 
         {/* Rental Car Variables */}
-        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 lg:col-span-2">
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 lg:col-span-2">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <Clock className="h-5 w-5 text-[#f26722]" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">

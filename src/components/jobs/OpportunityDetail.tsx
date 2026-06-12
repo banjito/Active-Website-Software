@@ -686,6 +686,7 @@ export default function OpportunityDetail() {
   const [showEstimate, setShowEstimate] = useState<
     "new" | "view" | "letter" | "letters" | "combined-letter" | false
   >(false);
+  const [activeEstimateId, setActiveEstimateId] = useState<string | null>(null);
 
   const resolveQuotePreparedByNames = async (
     opportunityId: string,
@@ -813,10 +814,21 @@ export default function OpportunityDetail() {
   // Listen for estimate save events to update prepared_by field
   useEffect(() => {
     const handleEstimateSaved = (event: CustomEvent) => {
-      const { opportunityId } = event.detail;
+      const { opportunityId, estimateId, preparedBy } = event.detail || {};
       if (opportunityId === id) {
-        // Refresh the opportunity so UI shows latest prepared_by immediately
-        fetchOpportunity();
+        if (typeof estimateId === "string") {
+          setActiveEstimateId(estimateId);
+        }
+
+        if (typeof preparedBy === "string") {
+          setQuotePreparedBy(preparedBy || null);
+          setOpportunity((prev) =>
+            prev
+              ? ({ ...prev, prepared_by: preparedBy } as OpportunityWithCustomer)
+              : prev,
+          );
+        }
+
         // Refresh estimate approval status so the dropdown reflects the latest estimate
         if (id) fetchLatestEstimateStatus(id);
         // Switch to view mode to show the saved estimate in read mode
@@ -931,6 +943,7 @@ export default function OpportunityDetail() {
       setAvailableQuotes([]);
       setSelectedQuoteIds([]);
       setShowEstimate(false);
+      setActiveEstimateId(null);
       setIsEditing(false);
 
       fetchOpportunity();
@@ -950,6 +963,7 @@ export default function OpportunityDetail() {
   useEffect(() => {
     const handleResetEstimateMode = () => {
       setShowEstimate(false);
+      setActiveEstimateId(null);
     };
 
     window.addEventListener("resetEstimateMode", handleResetEstimateMode);
@@ -1196,6 +1210,8 @@ export default function OpportunityDetail() {
     setEstimateApprovalStatus(value);
     setIsSavingEstimateStatus(true);
     try {
+      let changedEstimateId = latestEstimateId;
+
       if (latestEstimateId) {
         const { error } = await supabase
           .schema("business")
@@ -1268,6 +1284,7 @@ export default function OpportunityDetail() {
           .single();
         if (error) throw error;
         if (newEstimate?.id) {
+          changedEstimateId = newEstimate.id;
           setLatestEstimateId(newEstimate.id);
         }
       }
@@ -1285,7 +1302,9 @@ export default function OpportunityDetail() {
       }
       setIsEstimateApprovalEditing(false);
       window.dispatchEvent(
-        new CustomEvent("estimateSaved", { detail: { opportunityId: id } }),
+        new CustomEvent("estimateSaved", {
+          detail: { opportunityId: id, estimateId: changedEstimateId },
+        }),
       );
     } catch (err) {
       console.error("Error updating estimate approval status:", err);
@@ -4480,7 +4499,10 @@ export default function OpportunityDetail() {
                           Set status above or{" "}
                           <button
                             type="button"
-                            onClick={() => setShowEstimate("new")}
+                            onClick={() => {
+                              setActiveEstimateId(null);
+                              setShowEstimate("new");
+                            }}
                             className="text-[#f26722] hover:underline font-medium"
                           >
                             Open Estimate
@@ -5123,6 +5145,7 @@ export default function OpportunityDetail() {
                   <div className="flex flex-row justify-center gap-4 mb-4">
                     <button
                       onClick={() => {
+                        setActiveEstimateId(null);
                         setShowEstimate("new");
                         setEstimateOpenSignal((s) => s + 1);
                       }}
@@ -5170,6 +5193,8 @@ export default function OpportunityDetail() {
                       opportunityId={id || ""}
                       mode={showEstimate}
                       openSignal={estimateOpenSignal}
+                      preferredEstimateId={activeEstimateId}
+                      onActiveEstimateChange={setActiveEstimateId}
                     />
                   )}
                 </div>

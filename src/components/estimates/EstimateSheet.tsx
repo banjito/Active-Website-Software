@@ -162,6 +162,8 @@ interface EstimateSheetProps {
   opportunityId: string;
   mode?: "new" | "view" | "letter" | "letters" | "combined-letter";
   openSignal?: number;
+  preferredEstimateId?: string | null;
+  onActiveEstimateChange?: (estimateId: string | null) => void;
 }
 
 interface OpportunityData {
@@ -625,6 +627,8 @@ export default function EstimateSheet({
   opportunityId,
   mode,
   openSignal,
+  preferredEstimateId,
+  onActiveEstimateChange,
 }: EstimateSheetProps) {
   const theme = window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
@@ -1038,6 +1042,15 @@ export default function EstimateSheet({
     }
   }, [opportunityId, isOpen, isNewQuote]);
 
+  useEffect(() => {
+    if (!onActiveEstimateChange || isNewQuote || selectedQuoteIndex < 0) return;
+
+    const activeQuoteId = quotes[selectedQuoteIndex]?.id;
+    if (activeQuoteId) {
+      onActiveEstimateChange(activeQuoteId);
+    }
+  }, [isNewQuote, onActiveEstimateChange, quotes, selectedQuoteIndex]);
+
   // Restore draft from Supabase preferences when opening 'new' estimate for this opportunity
   useEffect(() => {
     if (!opportunityId) return;
@@ -1261,18 +1274,20 @@ export default function EstimateSheet({
         // Apply saved tab order if it exists
         const orderedQuotes = applySavedOrder(quoteData);
 
-        // Determine which index to select
+        // Determine which index to select. Prefer the estimate the parent
+        // asked us to reopen after a save/remount, then fall back to the
+        // currently selected quote when preserving selection.
         let indexToSelect = 0;
-        if (preserveSelection && quotes.length > 0) {
-          // Try to find the currently selected quote in the new list
-          const currentQuoteId = quotes[selectedQuoteIndex]?.id;
-          if (currentQuoteId) {
-            const foundIndex = orderedQuotes.findIndex(
-              (q) => q.id === currentQuoteId,
-            );
-            if (foundIndex !== -1) {
-              indexToSelect = foundIndex;
-            }
+        const quoteIdToSelect =
+          preferredEstimateId ||
+          (preserveSelection ? quotes[selectedQuoteIndex]?.id : null);
+
+        if (quoteIdToSelect) {
+          const foundIndex = orderedQuotes.findIndex(
+            (q) => q.id === quoteIdToSelect,
+          );
+          if (foundIndex !== -1) {
+            indexToSelect = foundIndex;
           }
         }
 
@@ -1817,6 +1832,7 @@ export default function EstimateSheet({
     try {
       setIsSaving(true);
       let result;
+      let preparedByAfterSave: string | null = null;
 
       // Determine if we are updating an existing selected quote or inserting a new one
       const isUpdating =
@@ -1849,7 +1865,6 @@ export default function EstimateSheet({
               index === selectedQuoteIndex ? updatedQuote : q,
             ),
           );
-          alert("Quote updated successfully!");
           // Clear any draft from Supabase after a successful save
           deletePreference(`drafts.${draftKey}`);
           setIsDirty(false);
@@ -1879,6 +1894,7 @@ export default function EstimateSheet({
                   });
                 parts.push(preparedByName);
                 const newPreparedBy = parts.join(", ");
+                preparedByAfterSave = newPreparedBy;
                 await supabase
                   .schema("business")
                   .from("opportunities")
@@ -1891,9 +1907,15 @@ export default function EstimateSheet({
                 e,
               );
             }
-            // Notify listeners to refresh
+            // Notify parent without forcing a full opportunity reload.
             window.dispatchEvent(
-              new CustomEvent("estimateSaved", { detail: { opportunityId } }),
+              new CustomEvent("estimateSaved", {
+                detail: {
+                  opportunityId,
+                  estimateId: quoteIdToUpdate,
+                  preparedBy: preparedByAfterSave,
+                },
+              }),
             );
           }
         } else {
@@ -1918,7 +1940,6 @@ export default function EstimateSheet({
           setSelectedQuoteIndex(0);
           setIsNewQuote(false); // It's no longer a new quote conceptually
           setHasQuote(true);
-          alert("New quote saved successfully!");
           // Clear draft from Supabase after successful creation
           deletePreference(`drafts.${draftKey}`);
           setIsDirty(false);
@@ -1950,6 +1971,7 @@ export default function EstimateSheet({
                     });
                   parts.push(preparedByName);
                   const newPreparedBy = parts.join(", ");
+                  preparedByAfterSave = newPreparedBy;
                   await supabase
                     .schema("business")
                     .from("opportunities")
@@ -1963,10 +1985,14 @@ export default function EstimateSheet({
                 );
               }
             }
-            // Then notify listeners to refresh
+            // Notify parent without forcing a full opportunity reload.
             window.dispatchEvent(
               new CustomEvent("estimateSaved", {
-                detail: { opportunityId },
+                detail: {
+                  opportunityId,
+                  estimateId: newQuote.id,
+                  preparedBy: preparedByAfterSave,
+                },
               }),
             );
           }
@@ -2087,7 +2113,9 @@ export default function EstimateSheet({
 
         // Notify listeners to refresh
         window.dispatchEvent(
-          new CustomEvent("estimateSaved", { detail: { opportunityId } }),
+          new CustomEvent("estimateSaved", {
+            detail: { opportunityId, estimateId: newQuote.id },
+          }),
         );
       }
     } catch (e) {
@@ -2549,7 +2577,9 @@ export default function EstimateSheet({
           setCopyTargetQuoteId("");
           setNewCopyEstimateTitle("");
           window.dispatchEvent(
-            new CustomEvent("estimateSaved", { detail: { opportunityId } }),
+            new CustomEvent("estimateSaved", {
+              detail: { opportunityId, estimateId: newQuote.id },
+            }),
           );
           alert("SOV items copied.");
         }
@@ -2600,7 +2630,9 @@ export default function EstimateSheet({
         setSelectedSovItemIndexes([]);
         setCopyTargetQuoteId("");
         window.dispatchEvent(
-          new CustomEvent("estimateSaved", { detail: { opportunityId } }),
+          new CustomEvent("estimateSaved", {
+            detail: { opportunityId, estimateId: updatedQuote.id },
+          }),
         );
         alert(
           currentQuoteId === updatedQuote.id
@@ -6764,9 +6796,10 @@ export default function EstimateSheet({
                 <Button
                   onClick={saveQuote}
                   disabled={isSaving}
+                  isLoading={isSaving}
                   className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
                 >
-                  {isSaving ? "Saving..." : "Save Quote"}
+                  Save Quote
                 </Button>
               ) : isViewMode ? (
                 <>
@@ -6810,9 +6843,10 @@ export default function EstimateSheet({
                   <Button
                     onClick={saveQuote}
                     disabled={isSaving}
+                    isLoading={isSaving}
                     className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
                   >
-                    {isSaving ? "Saving..." : "Save Changes"}
+                    Save Changes
                   </Button>
                   {selectedQuoteIndex >= 0 && quotes[selectedQuoteIndex] && (
                     <>
@@ -6822,8 +6856,8 @@ export default function EstimateSheet({
                         }
                         disabled={isSaving}
                         className="bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
+                        leftIcon={<Copy className="h-4 w-4" />}
                       >
-                        <Copy className="h-4 w-4" />
                         Duplicate
                       </Button>
                       <Button
@@ -6896,7 +6930,23 @@ export default function EstimateSheet({
             ) : (
               <div className="h-[calc(95vh-120px)] overflow-y-auto">
                 {!isNewQuote && quotes.length > 0 ? (
-                  <Tab.Group>
+                  <Tab.Group
+                    selectedIndex={
+                      selectedQuoteIndex >= 0 &&
+                      selectedQuoteIndex < quotes.length
+                        ? selectedQuoteIndex
+                        : 0
+                    }
+                    onChange={(index) => {
+                      if (isDraggingTabRef.current) return;
+
+                      const quote = quotes[index];
+                      if (!quote) return;
+
+                      setSelectedQuoteIndex(index);
+                      loadQuoteData(quote);
+                    }}
+                  >
                     <div className="mb-4">
                       <Tab.List className="flex space-x-2 border-b border-gray-200">
                         {quotes.map((quote, index) => (
@@ -6944,10 +6994,7 @@ export default function EstimateSheet({
                                 if (isDraggingTabRef.current) {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  return;
                                 }
-                                setSelectedQuoteIndex(index);
-                                loadQuoteData(quote);
                               }}
                             >
                               {getQuoteDisplayName(quote, index)}

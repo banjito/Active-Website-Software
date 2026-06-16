@@ -26,6 +26,7 @@ import { Database } from "@/types/supabase"; // Assuming this is the correct pat
 import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
+import { formatStatusLabel } from "@/utils/formatters";
 
 interface Contact {
   id: string;
@@ -1768,7 +1769,7 @@ export default function JobList() {
                       <span
                         className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(job.status)}`}
                       >
-                        {job.status}
+                        {formatStatusLabel(job.status)}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white">
@@ -1807,7 +1808,7 @@ export default function JobList() {
                               : "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400"
                         }`}
                       >
-                        {job.priority}
+                        {formatStatusLabel(job.priority)}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white">

@@ -1,46 +1,160 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/AuthContext';
-import { useDemoMode } from '@/lib/DemoModeContext';
-import { navigateAfterSave } from './ReportUtils';
-import { getReportName, getAssetName } from './reportMappings';
-import { ReportWrapper } from './ReportWrapper';
-import JobInfoPrintTable from './common/JobInfoPrintTable';
-import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
-import { formatLocalDateShort } from '@/utils/dateUtils';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
+import React, { useState, useEffect } from "react";
+import {
+  useParams,
+  useNavigate,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/AuthContext";
+import { useDemoMode } from "@/lib/DemoModeContext";
+
+import { getReportName, getAssetName } from "./reportMappings";
+import { ReportWrapper } from "./ReportWrapper";
+import JobInfoPrintTable from "./common/JobInfoPrintTable";
+import { ReportHeader } from "./common/ReportHeader";
+import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
+import { formatLocalDateShort } from "@/utils/dateUtils";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 
 // Temperature conversion and correction factor lookup tables (copied from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
-  '-24': 0.054, '-23': 0.068, '-22': 0.082, '-21': 0.096, '-20': 0.11,
-  '-19': 0.124, '-18': 0.138, '-17': 0.152, '-16': 0.166, '-15': 0.18,
-  '-14': 0.194, '-13': 0.208, '-12': 0.222, '-11': 0.236, '-10': 0.25,
-  '-9': 0.264, '-8': 0.278, '-7': 0.292, '-6': 0.306, '-5': 0.32,
-  '-4': 0.336, '-3': 0.352, '-2': 0.368, '-1': 0.384, '0': 0.4,
-  '1': 0.42, '2': 0.44, '3': 0.46, '4': 0.48, '5': 0.5,
-  '6': 0.526, '7': 0.552, '8': 0.578, '9': 0.604, '10': 0.63,
-  '11': 0.666, '12': 0.702, '13': 0.738, '14': 0.774, '15': 0.81,
-  '16': 0.848, '17': 0.886, '18': 0.924, '19': 0.962, '20': 1,
-  '21': 1.05, '22': 1.1, '23': 1.15, '24': 1.2, '25': 1.25,
-  '26': 1.316, '27': 1.382, '28': 1.448, '29': 1.514, '30': 1.58,
-  '31': 1.664, '32': 1.748, '33': 1.832, '34': 1.872, '35': 2,
-  '36': 2.1, '37': 2.2, '38': 2.3, '39': 2.4, '40': 2.5,
-  '41': 2.628, '42': 2.756, '43': 2.884, '44': 3.012, '45': 3.15,
-  '46': 3.316, '47': 3.482, '48': 3.648, '49': 3.814, '50': 3.98,
-  '51': 4.184, '52': 4.388, '53': 4.592, '54': 4.796, '55': 5,
-  '56': 5.26, '57': 5.52, '58': 5.78, '59': 6.04, '60': 6.3,
-  '61': 6.62, '62': 6.94, '63': 7.26, '64': 7.58, '65': 7.9,
-  '66': 8.32, '67': 8.74, '68': 9.16, '69': 9.58, '70': 10,
-  '71': 10.52, '72': 11.04, '73': 11.56, '74': 12.08, '75': 12.6,
-  '76': 13.24, '77': 13.88, '78': 14.52, '79': 15.16, '80': 15.8,
-  '81': 16.64, '82': 17.48, '83': 18.32, '84': 19.16, '85': 20,
-  '86': 21.04, '87': 22.08, '88': 23.12, '89': 24.16, '90': 25.2,
-  '91': 26.45, '92': 27.7, '93': 28.95, '94': 30.2, '95': 31.6,
-  '96': 33.28, '97': 34.96, '98': 36.64, '99': 38.32, '100': 40,
-  '101': 42.08, '102': 44.16, '103': 46.24, '104': 48.32, '105': 50.4,
-  '106': 52.96, '107': 55.52, '108': 58.08, '109': 60.64, '110': 63.2
+  "-24": 0.054,
+  "-23": 0.068,
+  "-22": 0.082,
+  "-21": 0.096,
+  "-20": 0.11,
+  "-19": 0.124,
+  "-18": 0.138,
+  "-17": 0.152,
+  "-16": 0.166,
+  "-15": 0.18,
+  "-14": 0.194,
+  "-13": 0.208,
+  "-12": 0.222,
+  "-11": 0.236,
+  "-10": 0.25,
+  "-9": 0.264,
+  "-8": 0.278,
+  "-7": 0.292,
+  "-6": 0.306,
+  "-5": 0.32,
+  "-4": 0.336,
+  "-3": 0.352,
+  "-2": 0.368,
+  "-1": 0.384,
+  "0": 0.4,
+  "1": 0.42,
+  "2": 0.44,
+  "3": 0.46,
+  "4": 0.48,
+  "5": 0.5,
+  "6": 0.526,
+  "7": 0.552,
+  "8": 0.578,
+  "9": 0.604,
+  "10": 0.63,
+  "11": 0.666,
+  "12": 0.702,
+  "13": 0.738,
+  "14": 0.774,
+  "15": 0.81,
+  "16": 0.848,
+  "17": 0.886,
+  "18": 0.924,
+  "19": 0.962,
+  "20": 1,
+  "21": 1.05,
+  "22": 1.1,
+  "23": 1.15,
+  "24": 1.2,
+  "25": 1.25,
+  "26": 1.316,
+  "27": 1.382,
+  "28": 1.448,
+  "29": 1.514,
+  "30": 1.58,
+  "31": 1.664,
+  "32": 1.748,
+  "33": 1.832,
+  "34": 1.872,
+  "35": 2,
+  "36": 2.1,
+  "37": 2.2,
+  "38": 2.3,
+  "39": 2.4,
+  "40": 2.5,
+  "41": 2.628,
+  "42": 2.756,
+  "43": 2.884,
+  "44": 3.012,
+  "45": 3.15,
+  "46": 3.316,
+  "47": 3.482,
+  "48": 3.648,
+  "49": 3.814,
+  "50": 3.98,
+  "51": 4.184,
+  "52": 4.388,
+  "53": 4.592,
+  "54": 4.796,
+  "55": 5,
+  "56": 5.26,
+  "57": 5.52,
+  "58": 5.78,
+  "59": 6.04,
+  "60": 6.3,
+  "61": 6.62,
+  "62": 6.94,
+  "63": 7.26,
+  "64": 7.58,
+  "65": 7.9,
+  "66": 8.32,
+  "67": 8.74,
+  "68": 9.16,
+  "69": 9.58,
+  "70": 10,
+  "71": 10.52,
+  "72": 11.04,
+  "73": 11.56,
+  "74": 12.08,
+  "75": 12.6,
+  "76": 13.24,
+  "77": 13.88,
+  "78": 14.52,
+  "79": 15.16,
+  "80": 15.8,
+  "81": 16.64,
+  "82": 17.48,
+  "83": 18.32,
+  "84": 19.16,
+  "85": 20,
+  "86": 21.04,
+  "87": 22.08,
+  "88": 23.12,
+  "89": 24.16,
+  "90": 25.2,
+  "91": 26.45,
+  "92": 27.7,
+  "93": 28.95,
+  "94": 30.2,
+  "95": 31.6,
+  "96": 33.28,
+  "97": 34.96,
+  "98": 36.64,
+  "99": 38.32,
+  "100": 40,
+  "101": 42.08,
+  "102": 44.16,
+  "103": 46.24,
+  "104": 48.32,
+  "105": 50.4,
+  "106": 52.96,
+  "107": 55.52,
+  "108": 58.08,
+  "109": 60.64,
+  "110": 63.2,
 };
 
 const getTCF = (celsius: number): number => {
@@ -55,7 +169,7 @@ const visualInspectionOptions = [
   "Unsatisfactory",
   "Cleaned",
   "See Comments",
-  "Not Applicable"
+  "Not Applicable",
 ];
 
 const insulationResistanceUnits = ["kΩ", "MΩ", "GΩ"];
@@ -75,7 +189,7 @@ interface FormData {
   substation: string;
   eqptLocation: string;
   identifier: string;
-  status: 'PASS' | 'FAIL' | 'LIMITED SERVICE';
+  status: "PASS" | "FAIL" | "LIMITED SERVICE";
 
   // Temperature Data
   temperature: {
@@ -187,21 +301,61 @@ interface FormData {
 }
 
 const visualInspectionItemsList = [
-  { id: '7.6.3.A.1', description: 'Compare equipment nameplate data with drawings and specifications.' },
-  { id: '7.6.3.A.2', description: 'Inspect physical and mechanical condition.' },
-  { id: '7.6.3.A.3', description: 'Inspect anchorage, alignment, and grounding.' },
-  { id: '7.6.3.A.4', description: 'Verify that all maintenance devices such as special tools and gauges specified by the manufacturer are available for servicing and operating the breaker.' },
-  { id: '7.6.3.A.5', description: 'Verify the unit is clean.' },
-  { id: '7.6.3.A.6', description: 'Perform all mechanical operation tests on the operating mechanism in accordance with manufacturer\'s published data.' },
-  { id: '7.6.3.A.7', description: 'Measure critical distances such as contact gap as recommended by manufacturer.' },
-  { id: '7.6.3.A.8.1', description: 'Use of low-resistance ohmmeter in accordance with Section 7.6.3.B.1.' },
-  { id: '7.6.3.A.9', description: 'Verify cell fit and element alignment.' },
-  { id: '7.6.3.A.10', description: 'Verify racking mechanism operation.' },
-  { id: '7.6.3.A.11', description: 'Verify appropriate lubrication on moving, current-carrying parts and on moving and sliding surfaces.' }
+  {
+    id: "7.6.3.A.1",
+    description:
+      "Compare equipment nameplate data with drawings and specifications.",
+  },
+  {
+    id: "7.6.3.A.2",
+    description: "Inspect physical and mechanical condition.",
+  },
+  {
+    id: "7.6.3.A.3",
+    description: "Inspect anchorage, alignment, and grounding.",
+  },
+  {
+    id: "7.6.3.A.4",
+    description:
+      "Verify that all maintenance devices such as special tools and gauges specified by the manufacturer are available for servicing and operating the breaker.",
+  },
+  { id: "7.6.3.A.5", description: "Verify the unit is clean." },
+  {
+    id: "7.6.3.A.6",
+    description:
+      "Perform all mechanical operation tests on the operating mechanism in accordance with manufacturer's published data.",
+  },
+  {
+    id: "7.6.3.A.7",
+    description:
+      "Measure critical distances such as contact gap as recommended by manufacturer.",
+  },
+  {
+    id: "7.6.3.A.8.1",
+    description:
+      "Use of low-resistance ohmmeter in accordance with Section 7.6.3.B.1.",
+  },
+  { id: "7.6.3.A.9", description: "Verify cell fit and element alignment." },
+  { id: "7.6.3.A.10", description: "Verify racking mechanism operation." },
+  {
+    id: "7.6.3.A.11",
+    description:
+      "Verify appropriate lubrication on moving, current-carrying parts and on moving and sliding surfaces.",
+  },
 ];
 
 const MediumVoltageCircuitBreakerReport: React.FC = () => {
-  const { id: jobId, reportId } = useParams<{ id: string; reportId?: string }>();
+  const { id: jobId, reportId } = useParams<{
+    id: string;
+    reportId?: string;
+  }>();
+  const [currentReportId, setCurrentReportId] =
+    useState<string | undefined>(reportId);
+
+  useEffect(() => {
+    setCurrentReportId(reportId);
+  }, [reportId]);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -210,63 +364,112 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
 
   // Print Mode Detection
   const [searchParams] = useSearchParams();
-  const isPrintMode = searchParams.get('print') === 'true';
-  const isPreviewFlag = searchParams.get('preview') === 'true';
+  const isPrintMode = searchParams.get("print") === "true";
+  const isPreviewFlag = searchParams.get("preview") === "true";
 
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
-  const reportSlug = 'medium-voltage-circuit-breaker-report'; // This component handles the medium-voltage-circuit-breaker-report route
+  const reportSlug = "medium-voltage-circuit-breaker-report"; // This component handles the medium-voltage-circuit-breaker-report route
   const reportName = getReportName(reportSlug);
   const [isEditing, setIsEditing] = useState<boolean>(!reportId);
   const [saving, setSaving] = useState<boolean>(false);
+  const [justSaved, setJustSaved] = useState(false);
 
   const initialFormData: FormData = {
-    customer: '', address: '', user: '', date: new Date().toISOString().split('T')[0],
-    jobNumber: '', technicians: '', substation: '', eqptLocation: '', identifier: '', status: 'PASS',
-    temperature: { fahrenheit: 68, celsius: 20, tcf: 1 }, humidity: 80,
-    manufacturer: '', catalogNumber: '', serialNumber: '', type: '', manufacturingDate: '',
-    icRating: '', ratedVoltage: '', operatingVoltage: '', ampacity: '', mvaRating: '',
-    visualMechanicalInspection: visualInspectionItemsList.reduce((acc, item) => ({ ...acc, [item.id]: 'Select One' }), {}),
-    counterReadingAsFound: '', counterReadingAsLeft: '',
-    contactResistance: { p1: '', p2: '', p3: '', units: 'μΩ' },
+    customer: "",
+    address: "",
+    user: "",
+    date: new Date().toISOString().split("T")[0],
+    jobNumber: "",
+    technicians: "",
+    substation: "",
+    eqptLocation: "",
+    identifier: "",
+    status: "PASS",
+    temperature: { fahrenheit: 68, celsius: 20, tcf: 1 },
+    humidity: 80,
+    manufacturer: "",
+    catalogNumber: "",
+    serialNumber: "",
+    type: "",
+    manufacturingDate: "",
+    icRating: "",
+    ratedVoltage: "",
+    operatingVoltage: "",
+    ampacity: "",
+    mvaRating: "",
+    visualMechanicalInspection: visualInspectionItemsList.reduce(
+      (acc, item) => ({ ...acc, [item.id]: "Select One" }),
+      {},
+    ),
+    counterReadingAsFound: "",
+    counterReadingAsLeft: "",
+    contactResistance: { p1: "", p2: "", p3: "", units: "μΩ" },
     insulationResistanceMeasured: {
-      testVoltage: '1000V',
-      poleToPoleUnits: 'MΩ',
-      poleToFrameUnits: 'MΩ',
-      lineToLoadUnits: 'MΩ',
-      poleToPoleClosedP1P2: '',
-      poleToPoleClosedP2P3: '',
-      poleToPoleClosedP3P1: '',
-      poleToFrameClosedP1: '',
-      poleToFrameClosedP2: '',
-      poleToFrameClosedP3: '',
-      lineToLoadOpenP1: '',
-      lineToLoadOpenP2: '',
-      lineToLoadOpenP3: '',
+      testVoltage: "1000V",
+      poleToPoleUnits: "MΩ",
+      poleToFrameUnits: "MΩ",
+      lineToLoadUnits: "MΩ",
+      poleToPoleClosedP1P2: "",
+      poleToPoleClosedP2P3: "",
+      poleToPoleClosedP3P1: "",
+      poleToFrameClosedP1: "",
+      poleToFrameClosedP2: "",
+      poleToFrameClosedP3: "",
+      lineToLoadOpenP1: "",
+      lineToLoadOpenP2: "",
+      lineToLoadOpenP3: "",
     },
     insulationResistanceCorrected: {
-      poleToPoleClosedP1P2: '', poleToPoleClosedP2P3: '', poleToPoleClosedP3P1: '',
-      poleToFrameClosedP1: '', poleToFrameClosedP2: '', poleToFrameClosedP3: '',
-      lineToLoadOpenP1: '', lineToLoadOpenP2: '', lineToLoadOpenP3: '',
+      poleToPoleClosedP1P2: "",
+      poleToPoleClosedP2P3: "",
+      poleToPoleClosedP3P1: "",
+      poleToFrameClosedP1: "",
+      poleToFrameClosedP2: "",
+      poleToFrameClosedP3: "",
+      lineToLoadOpenP1: "",
+      lineToLoadOpenP2: "",
+      lineToLoadOpenP3: "",
     },
     dielectricWithstandClosed: {
-      p1Ground: '', p2Ground: '', p3Ground: '', units: 'μA', result: '', testVoltage: '', testDuration: '1 Min.'
+      p1Ground: "",
+      p2Ground: "",
+      p3Ground: "",
+      units: "μA",
+      result: "",
+      testVoltage: "",
+      testDuration: "1 Min.",
     },
     vacuumIntegrityOpen: {
-      p1: '', p2: '', p3: '', units: 'μA', result: '', testVoltage: '', testDuration: '1 Min.'
+      p1: "",
+      p2: "",
+      p3: "",
+      units: "μA",
+      result: "",
+      testVoltage: "",
+      testDuration: "1 Min.",
     },
     testEquipment: {
       insulationResistanceTester: {
-        model: '', serial: '', id: '', calDate: '',
+        model: "",
+        serial: "",
+        id: "",
+        calDate: "",
       },
       microOhmmeter: {
-        model: '', serial: '', id: '', calDate: '',
+        model: "",
+        serial: "",
+        id: "",
+        calDate: "",
       },
       hiPotTester: {
-        model: '', serial: '', id: '', calDate: '',
+        model: "",
+        serial: "",
+        id: "",
+        calDate: "",
       },
     },
-    comments: '',
+    comments: "",
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -275,11 +478,13 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
   useEffect(() => {
     if (!isPreviewFlag) return;
     const root = document.documentElement;
-    root.classList.add('force-print');
+    root.classList.add("force-print");
     // Global ReportWrapper already injects force-print mirror; avoid duplicates here
-    const style = document.getElementById('force-print-toggle') as HTMLStyleElement | null;
+    const style = document.getElementById(
+      "force-print-toggle",
+    ) as HTMLStyleElement | null;
     return () => {
-      root.classList.remove('force-print');
+      root.classList.remove("force-print");
       if (style && style.parentNode) style.parentNode.removeChild(style);
     };
   }, [isPreviewFlag]);
@@ -289,35 +494,35 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
       if (!jobId) return;
       try {
         const { data: jobData, error: jobError } = await supabase
-          .schema('neta_ops')
-          .from('jobs')
-          .select('title, job_number, customer_id, site_address')
-          .eq('id', jobId)
+          .schema("neta_ops")
+          .from("jobs")
+          .select("title, job_number, customer_id, site_address")
+          .eq("id", jobId)
           .single();
         if (jobError) throw jobError;
 
-        let customerName = '';
-        let customerAddress = (jobData as any).site_address || '';
+        let customerName = "";
+        let customerAddress = (jobData as any).site_address || "";
         if (jobData?.customer_id) {
           const { data: customerData, error: customerError } = await supabase
-            .schema('common')
-            .from('customers')
-            .select('name, company_name, address')
-            .eq('id', jobData.customer_id)
+            .schema("common")
+            .from("customers")
+            .select("name, company_name, address")
+            .eq("id", jobData.customer_id)
             .single();
           if (!customerError && customerData) {
-            customerName = customerData.company_name || customerData.name || '';
-            if (!customerAddress) customerAddress = customerData.address || '';
+            customerName = customerData.company_name || customerData.name || "";
+            if (!customerAddress) customerAddress = customerData.address || "";
           }
         }
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           customer: maskCustomerName(customerName),
           address: maskCustomerAddress(customerAddress),
-          jobNumber: jobData?.job_number || '',
+          jobNumber: jobData?.job_number || "",
         }));
       } catch (error) {
-        console.error('Error loading job info:', error);
+        console.error("Error loading job info:", error);
         alert(`Failed to load job info: ${(error as Error).message}`);
       }
     };
@@ -332,47 +537,63 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
       setLoading(true);
       try {
         const { data, error } = await supabase
-          .schema('neta_ops')
-          .from('medium_voltage_circuit_breaker_reports')
-          .select('*')
-          .eq('id', reportId)
+          .schema("neta_ops")
+          .from("medium_voltage_circuit_breaker_reports")
+          .select("*")
+          .eq("id", reportId)
           .single();
 
         if (error) {
-          if (error.code === 'PGRST116') { // Not found
+          if (error.code === "PGRST116") {
+            // Not found
             setIsEditing(true);
           } else {
             throw error;
           }
         }
         if (data) {
-          console.log('🔍 MediumVoltageCircuitBreakerReport - Loading report data:');
-          console.log('  - Raw data:', data);
-          console.log('  - report_data:', data.report_data);
-          console.log('  - visualMechanicalInspection:', data.report_data?.visualMechanicalInspection);
-          
-          const payload: any = (data as any).report_data || (data as any).data || {};
+          console.log(
+            "🔍 MediumVoltageCircuitBreakerReport - Loading report data:",
+          );
+          console.log("  - Raw data:", data);
+          console.log("  - report_data:", data.report_data);
+          console.log(
+            "  - visualMechanicalInspection:",
+            data.report_data?.visualMechanicalInspection,
+          );
+
+          const payload: any =
+            (data as any).report_data || (data as any).data || {};
           // Normalize Visual/Mechanical Inspection into an object keyed by NETA id
-          const defaultVmi = visualInspectionItemsList.reduce((acc, item) => ({ ...acc, [item.id]: 'Select One' }), {} as Record<string, string>);
+          const defaultVmi = visualInspectionItemsList.reduce(
+            (acc, item) => ({ ...acc, [item.id]: "Select One" }),
+            {} as Record<string, string>,
+          );
           let loadedVmi: Record<string, string> = {};
-          const rawVmi = payload.visualMechanicalInspection || payload.visual_mechanical_inspection || payload.report_info?.visualMechanicalInspection;
+          const rawVmi =
+            payload.visualMechanicalInspection ||
+            payload.visual_mechanical_inspection ||
+            payload.report_info?.visualMechanicalInspection;
           if (Array.isArray(rawVmi)) {
-            loadedVmi = rawVmi.reduce((acc: Record<string,string>, it: any) => {
-              const key = it.id || it.netaSection || it.section || '';
-              const val = it.result || it.value || it.status || 'Select One';
-              if (key) acc[key] = val;
-              return acc;
-            }, {});
-          } else if (rawVmi && typeof rawVmi === 'object') {
+            loadedVmi = rawVmi.reduce(
+              (acc: Record<string, string>, it: any) => {
+                const key = it.id || it.netaSection || it.section || "";
+                const val = it.result || it.value || it.status || "Select One";
+                if (key) acc[key] = val;
+                return acc;
+              },
+              {},
+            );
+          } else if (rawVmi && typeof rawVmi === "object") {
             // Flatten any nested object created by older buggy saves (e.g., {7:{6:{3:{A:{'8':{'1':'Satisfactory'}}}}}})
-            const flatten = (obj: any, prefix = ''): Record<string,string> => {
-              const out: Record<string,string> = {};
-              Object.keys(obj || {}).forEach(k => {
+            const flatten = (obj: any, prefix = ""): Record<string, string> => {
+              const out: Record<string, string> = {};
+              Object.keys(obj || {}).forEach((k) => {
                 const value = obj[k];
                 const nextKey = prefix ? `${prefix}.${k}` : k;
-                if (value && typeof value === 'object') {
+                if (value && typeof value === "object") {
                   Object.assign(out, flatten(value, nextKey));
-                } else if (typeof value === 'string') {
+                } else if (typeof value === "string") {
                   out[nextKey] = value;
                 }
               });
@@ -382,15 +603,24 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           }
           const mergedVmi = { ...defaultVmi, ...loadedVmi };
 
-          const newFormData = { ...initialFormData, ...payload, status: (payload.status as 'PASS' | 'FAIL' | 'LIMITED SERVICE') || 'PASS', visualMechanicalInspection: mergedVmi };
-          console.log('  - New form data after merge:', newFormData);
-          console.log('  - visualMechanicalInspection in new form data:', newFormData.visualMechanicalInspection);
-          
+          const newFormData = {
+            ...initialFormData,
+            ...payload,
+            status:
+              (payload.status as "PASS" | "FAIL" | "LIMITED SERVICE") || "PASS",
+            visualMechanicalInspection: mergedVmi,
+          };
+          console.log("  - New form data after merge:", newFormData);
+          console.log(
+            "  - visualMechanicalInspection in new form data:",
+            newFormData.visualMechanicalInspection,
+          );
+
           setFormData(newFormData);
           setIsEditing(false);
         }
       } catch (error) {
-        console.error('Error loading report:', error);
+        console.error("Error loading report:", error);
         alert(`Failed to load report: ${(error as Error).message}`);
         setIsEditing(true);
       } finally {
@@ -400,12 +630,16 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
     if (reportId) loadReportData();
   }, [reportId]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
     // Special handling for visualMechanicalInspection.* keys; the part after the prefix can contain dots
-    if (name.startsWith('visualMechanicalInspection.')) {
-      const key = name.substring('visualMechanicalInspection.'.length);
-      setFormData(prev => ({
+    if (name.startsWith("visualMechanicalInspection.")) {
+      const key = name.substring("visualMechanicalInspection.".length);
+      setFormData((prev) => ({
         ...prev,
         visualMechanicalInspection: {
           ...prev.visualMechanicalInspection,
@@ -414,9 +648,9 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
       }));
       return;
     }
-    
-    const keys = name.split('.');
-    setFormData(prev => {
+
+    const keys = name.split(".");
+    setFormData((prev) => {
       const current = { ...prev } as any;
       let pointer = current;
       keys.forEach((key, index) => {
@@ -430,34 +664,41 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
       return current;
     });
   };
-  
+
   const handleFahrenheitChange = (fahrenheit: number) => {
+    setJustSaved(false);
     const celsius = Math.round(((fahrenheit - 32) * 5) / 9);
     const tcf = getTCF(celsius);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      temperature: { ...prev.temperature, fahrenheit, celsius, tcf }
+      temperature: { ...prev.temperature, fahrenheit, celsius, tcf },
     }));
   };
 
   const handleCelsiusChange = (celsius: number) => {
+    setJustSaved(false);
     const roundedCelsius = Math.round(celsius);
     const fahrenheit = Math.round((roundedCelsius * 9) / 5 + 32);
     const tcf = getTCF(roundedCelsius);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      temperature: { ...prev.temperature, celsius: roundedCelsius, fahrenheit, tcf }
+      temperature: {
+        ...prev.temperature,
+        celsius: roundedCelsius,
+        fahrenheit,
+        tcf,
+      },
     }));
   };
 
   useEffect(() => {
     const calculateCorrected = () => {
-      const corrected: Partial<FormData['insulationResistanceCorrected']> = {};
+      const corrected: Partial<FormData["insulationResistanceCorrected"]> = {};
       const measured = formData.insulationResistanceMeasured;
       const tcf = formData.temperature.tcf;
 
       for (const key in measured) {
-        if (key !== 'testVoltage' && key !== 'units') {
+        if (key !== "testVoltage" && key !== "units") {
           const valueStr = (measured as any)[key];
           if (valueStr && !isNaN(parseFloat(valueStr))) {
             (corrected as any)[key] = (parseFloat(valueStr) * tcf).toFixed(2);
@@ -466,9 +707,10 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           }
         }
       }
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        insulationResistanceCorrected: corrected as FormData['insulationResistanceCorrected']
+        insulationResistanceCorrected:
+          corrected as FormData["insulationResistanceCorrected"],
       }));
     };
     calculateCorrected();
@@ -483,10 +725,13 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
 
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
+    const wasExistingReport = Boolean(reportId);
     setSaving(true);
 
     // Also persist an array form for visual/mechanical to maximize compatibility with existing readers
-    const vmiArray = Object.entries(formData.visualMechanicalInspection || {}).map(([id, result]) => ({ id, result }));
+    const vmiArray = Object.entries(
+      formData.visualMechanicalInspection || {},
+    ).map(([id, result]) => ({ id, result }));
     const reportPayload = {
       job_id: jobId,
       user_id: user.id,
@@ -497,39 +742,46 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
       let result;
       if (reportId) {
         result = await supabase
-          .schema('neta_ops')
-          .from('medium_voltage_circuit_breaker_reports')
+          .schema("neta_ops")
+          .from("medium_voltage_circuit_breaker_reports")
           .update(reportPayload)
-          .eq('id', reportId)
-          .select('id')
+          .eq("id", reportId)
+          .select("id")
           .maybeSingle();
       } else {
         result = await supabase
-          .schema('neta_ops')
-          .from('medium_voltage_circuit_breaker_reports')
+          .schema("neta_ops")
+          .from("medium_voltage_circuit_breaker_reports")
           .insert(reportPayload)
-          .select('id')
+          .select("id")
           .maybeSingle();
 
         if (result.data) {
           const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
+            name: getAssetName(
+              reportSlug,
+              formData.identifier || formData.eqptLocation || "",
+            ),
             file_url: `report:/jobs/${jobId}/medium-voltage-circuit-breaker-report/${result.data.id}`,
             user_id: user.id,
           };
-          const { error: assetError } = await supabase.schema('neta_ops').from('assets').insert(assetData);
+          const { error: assetError } = await supabase
+            .schema("neta_ops")
+            .from("assets")
+            .insert(assetData);
           if (assetError) throw assetError;
-          
+
           // Get the newly created asset's ID to link it
           const { data: newAsset, error: newAssetError } = await supabase
-            .schema('neta_ops')
-            .from('assets')
-            .select('id')
-            .eq('file_url', assetData.file_url)
+            .schema("neta_ops")
+            .from("assets")
+            .select("id")
+            .eq("file_url", assetData.file_url)
             .single();
-          if (newAssetError || !newAsset) throw newAssetError || new Error("Failed to retrieve new asset ID");
+          if (newAssetError || !newAsset)
+            throw newAssetError || new Error("Failed to retrieve new asset ID");
 
-          await supabase.schema('neta_ops').from('job_assets').insert({
+          await supabase.schema("neta_ops").from("job_assets").insert({
             job_id: jobId,
             asset_id: newAsset.id,
             user_id: user.id,
@@ -537,75 +789,79 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
         }
       }
       // If RLS prevents returning rows, PostgREST may return PGRST116 (no rows). Treat as success.
-      if (result.error && result.error.code !== 'PGRST116') throw result.error;
-      setIsEditing(false);
-      alert(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
-      navigateAfterSave(navigate, jobId, location);
+      if (result.error && result.error.code !== "PGRST116") throw result.error;
+      setJustSaved(true);
+      if (!wasExistingReport) {
+        setIsEditing(false);
+        const newId = (result as any)?.data?.id || (result as any)?.id;
+        if (newId) {
+          setCurrentReportId(newId);
+          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
+        }
+      }
     } catch (error) {
-      console.error('Error saving report:', error);
+      console.error("Error saving report:", error);
       alert(`Failed to save report: ${(error as Error).message}`);
     } finally {
       setSaving(false);
     }
   };
-  
-  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingSpinner size="md" /></div>;
+
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    if (currentReportId) {
+      setIsEditing(false);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <LoadingSpinner size="md" />
+      </div>
+    );
 
   const renderHeader = () => (
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
-      <div className="flex gap-2">
-        <button
-          onClick={() => {
-            if (isEditing) {
-              setFormData(prev => ({
-                ...prev,
-                status: prev.status === 'PASS' ? 'FAIL' : prev.status === 'FAIL' ? 'LIMITED SERVICE' : 'PASS'
-              }));
-            }
-          }}
-          className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-            formData.status === 'PASS'
-              ? 'bg-green-600 text-white focus:ring-green-500 hover:bg-green-700'
-              : formData.status === 'FAIL'
-              ? 'bg-red-600 text-white focus:ring-red-500 hover:bg-red-700'
-              : 'bg-yellow-500 text-black focus:ring-yellow-400 hover:bg-yellow-600'
-          } ${!isEditing ? 'opacity-70 cursor-not-allowed' : ''}`}
-        >
-          {formData.status}
-        </button>
-
-        {reportId && !isEditing ? (
-          <>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Edit Report
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Print Report
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={handleSave}
-            disabled={!isEditing || saving}
-            className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
-          >
-            {saving ? 'Saving...' : (reportId ? 'Update Report' : 'Save Report')}
-          </button>
-        )}
-      </div>
-    </div>
+    <ReportHeader
+      title={reportName}
+      isAutoSaving={false}
+      isEditing={isEditing}
+      justSaved={justSaved}
+      isSaving={saving}
+      status={formData.status}
+      hasReport={!!currentReportId}
+      onStatusToggle={() => {
+        if (isEditing) {
+          setFormData((prev) => ({
+            ...prev,
+            status:
+              prev.status === "PASS"
+                ? "FAIL"
+                : prev.status === "FAIL"
+                  ? "LIMITED SERVICE"
+                  : "PASS",
+          }));
+        }
+      }}
+      onSave={handleSave}
+      onSaveAndClose={handleSaveAndClose}
+      onEdit={() => setIsEditing(true)}
+      onBack={() => navigate(`/jobs/${jobId}`)}
+      onPrint={() => window.print()}
+      isPrintMode={isPrintMode}
+    />
   );
 
-  const renderInput = (name: string, placeholder?: string, type: string = "text", readOnlyOverride?: boolean, widthClass: string = "w-full") => {
-    const value = name.split('.').reduce((o, i) => o?.[i], formData);
-    const displayValue = (typeof value === 'string' || typeof value === 'number') ? value : '';
+  const renderInput = (
+    name: string,
+    placeholder?: string,
+    type: string = "text",
+    readOnlyOverride?: boolean,
+    widthClass: string = "w-full",
+  ) => {
+    const value = name.split(".").reduce((o, i) => o?.[i], formData);
+    const displayValue =
+      typeof value === "string" || typeof value === "number" ? value : "";
     return (
       <input
         type={type}
@@ -614,129 +870,216 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
         onChange={handleInputChange}
         placeholder={placeholder}
         readOnly={!isEditing || readOnlyOverride}
-        className={`mt-1 block ${widthClass} rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${(!isEditing || readOnlyOverride) ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+        className={`mt-1 block ${widthClass} rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || readOnlyOverride ? "bg-gray-100 dark:bg-dark-150" : ""}`}
       />
     );
-  }
+  };
 
-  const renderSelect = (name: string, options: readonly string[], readOnlyOverride?: boolean, widthClass: string = "w-full") => {
+  const renderSelect = (
+    name: string,
+    options: readonly string[],
+    readOnlyOverride?: boolean,
+    widthClass: string = "w-full",
+  ) => {
     let value;
-    
+
     // Special handling for visualMechanicalInspection fields since they contain dots in the keys
-    if (name.startsWith('visualMechanicalInspection.')) {
-      const key = name.replace('visualMechanicalInspection.', '');
+    if (name.startsWith("visualMechanicalInspection.")) {
+      const key = name.replace("visualMechanicalInspection.", "");
       value = formData.visualMechanicalInspection[key];
     } else {
       // Regular nested object access for other fields
-      value = name.split('.').reduce((o, i) => o?.[i], formData);
+      value = name.split(".").reduce((o, i) => o?.[i], formData);
     }
-    
-    const displayValue = (typeof value === 'string' || typeof value === 'number') ? value : '';
-    
+
+    const displayValue =
+      typeof value === "string" || typeof value === "number" ? value : "";
+
     // Debug logging for visual mechanical inspection
-    if (name.startsWith('visualMechanicalInspection.')) {
+    if (name.startsWith("visualMechanicalInspection.")) {
       console.log(`🔍 renderSelect for ${name}:`);
       console.log(`  - name: ${name}`);
-      console.log(`  - key: ${name.replace('visualMechanicalInspection.', '')}`);
-      console.log(`  - formData.visualMechanicalInspection:`, formData.visualMechanicalInspection);
+      console.log(
+        `  - key: ${name.replace("visualMechanicalInspection.", "")}`,
+      );
+      console.log(
+        `  - formData.visualMechanicalInspection:`,
+        formData.visualMechanicalInspection,
+      );
       console.log(`  - value: ${value}`);
       console.log(`  - displayValue: ${displayValue}`);
     }
-    
+
     return (
       <select
         name={name}
         value={displayValue}
         onChange={handleInputChange}
         disabled={!isEditing || readOnlyOverride}
-        className={`mt-1 block ${widthClass} rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${(!isEditing || readOnlyOverride) ? 'bg-gray-100 dark:bg-dark-150 cursor-not-allowed' : ''}`}
+        className={`mt-1 block ${widthClass} rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || readOnlyOverride ? "bg-gray-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
       >
-        {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+        {options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
       </select>
     );
-  }
+  };
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
       <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
-        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
+          alt="AMP Logo"
+          className="h-10 w-auto"
+          style={{ maxHeight: 40 }}
+        />
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+        <div
+          className="text-right font-extrabold text-xl"
+          style={{ color: "#1a4e7c" }}
+        >
           NETA - ATS 7.6.3
           <div className="hidden print:block mt-2">
             <div
               className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
-                display: 'inline-block',
-                padding: '4px 10px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                textAlign: 'center',
-                width: 'fit-content',
-                borderRadius: '6px',
-                border: formData.status === 'PASS' ? '2px solid #16a34a' : formData.status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
-                backgroundColor: formData.status === 'PASS' ? '#22c55e' : formData.status === 'FAIL' ? '#ef4444' : '#eab308',
-                color: 'white',
-                WebkitPrintColorAdjust: 'exact',
-                printColorAdjust: 'exact',
-                boxSizing: 'border-box',
-                minWidth: '50px',
+                display: "inline-block",
+                padding: "4px 10px",
+                fontSize: "12px",
+                fontWeight: "bold",
+                textAlign: "center",
+                width: "fit-content",
+                borderRadius: "6px",
+                border:
+                  formData.status === "PASS"
+                    ? "2px solid #16a34a"
+                    : formData.status === "FAIL"
+                      ? "2px solid #dc2626"
+                      : "2px solid #ca8a04",
+                backgroundColor:
+                  formData.status === "PASS"
+                    ? "#22c55e"
+                    : formData.status === "FAIL"
+                      ? "#ef4444"
+                      : "#eab308",
+                color: "white",
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact",
+                boxSizing: "border-box",
+                minWidth: "50px",
               }}
             >
-              {formData.status || 'PASS'}
+              {formData.status || "PASS"}
             </div>
           </div>
         </div>
       </div>
-
       <div className="p-6 flex justify-center">
         <div className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
-          <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
+          <div className={`${isPrintMode ? "hidden" : ""} print:hidden`}>
             {renderHeader()}
           </div>
 
           {/* Job Information */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Job Information
+            </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print:hidden job-info-onscreen">
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Customer:</label>{renderInput("customer", "", "text", true)}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Job #:</label>{renderInput("jobNumber", "", "text", true)}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Address:</label>{renderInput("address", "", "text", true)}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Technicians:</label>{renderInput("technicians")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">User:</label>{renderInput("user", "", "text", true)}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Substation:</label>{renderInput("substation")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Date:</label>{renderInput("date", "", "date")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Eqpt. Location:</label>{renderInput("eqptLocation")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Identifier:</label>{renderInput("identifier")}</div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Customer:
+                </label>
+                {renderInput("customer", "", "text", true)}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Job #:
+                </label>
+                {renderInput("jobNumber", "", "text", true)}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Address:
+                </label>
+                {renderInput("address", "", "text", true)}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Technicians:
+                </label>
+                {renderInput("technicians")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  User:
+                </label>
+                {renderInput("user", "", "text", true)}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Substation:
+                </label>
+                {renderInput("substation")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Date:
+                </label>
+                {renderInput("date", "", "date")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Eqpt. Location:
+                </label>
+                {renderInput("eqptLocation")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Identifier:
+                </label>
+                {renderInput("identifier")}
+              </div>
             </div>
             <div className="grid grid-cols-4 gap-4 mt-4 print:hidden job-info-onscreen">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">Temp. °F:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Temp. °F:
+                </label>
                 <input
                   type="number"
                   value={formData.temperature.fahrenheit}
-                  onChange={(e) => handleFahrenheitChange(Number(e.target.value))}
+                  onChange={(e) =>
+                    handleFahrenheitChange(Number(e.target.value))
+                  }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  className={`mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">°C:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  °C:
+                </label>
                 <input
                   type="number"
                   value={formData.temperature.celsius}
                   onChange={(e) => handleCelsiusChange(Number(e.target.value))}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                  className={`mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">TCF:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  TCF:
+                </label>
                 <input
                   type="number"
                   value={formData.temperature.tcf}
@@ -745,7 +1088,9 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">Humidity %:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Humidity %:
+                </label>
                 {renderInput("humidity", "", "number")}
               </div>
             </div>
@@ -760,7 +1105,10 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 user: formData.user,
                 substation: formData.substation,
                 eqptLocation: formData.eqptLocation,
-                temperature: { ...formData.temperature, humidity: formData.humidity }
+                temperature: {
+                  ...formData.temperature,
+                  humidity: formData.humidity,
+                },
               }}
             />
           </section>
@@ -768,44 +1116,150 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           {/* Nameplate Data */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Nameplate Data
+            </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print:hidden nameplate-onscreen">
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Manufacturer:</label>{renderInput("manufacturer")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">I.C. Rating (kA):</label>{renderInput("icRating")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Catalog Number:</label>{renderInput("catalogNumber")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Rated Voltage (kV):</label>{renderInput("ratedVoltage")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Serial Number:</label>{renderInput("serialNumber")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Operating Voltage (kV):</label>{renderInput("operatingVoltage")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Type:</label>{renderInput("type")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Ampacity (A):</label>{renderInput("ampacity")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Manufacturing Date:</label>{renderInput("manufacturingDate")}</div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-white">MVA Rating:</label>{renderInput("mvaRating")}</div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Manufacturer:
+                </label>
+                {renderInput("manufacturer")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  I.C. Rating (kA):
+                </label>
+                {renderInput("icRating")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Catalog Number:
+                </label>
+                {renderInput("catalogNumber")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Rated Voltage (kV):
+                </label>
+                {renderInput("ratedVoltage")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Serial Number:
+                </label>
+                {renderInput("serialNumber")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Operating Voltage (kV):
+                </label>
+                {renderInput("operatingVoltage")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Type:
+                </label>
+                {renderInput("type")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Ampacity (A):
+                </label>
+                {renderInput("ampacity")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Manufacturing Date:
+                </label>
+                {renderInput("manufacturingDate")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  MVA Rating:
+                </label>
+                {renderInput("mvaRating")}
+              </div>
             </div>
             {/* Print-only Nameplate Data Table */}
             <div className="hidden print:block">
               <table className="w-full border-collapse border border-gray-300 print:border-black">
                 <colgroup>
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Manufacturer:</div><div className="text-xs">{formData.manufacturer || ''}</div></td>
-                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">I.C. Rating (kA):</div><div className="text-xs">{formData.icRating || ''}</div></td>
-                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Catalog Number:</div><div className="text-xs">{formData.catalogNumber || ''}</div></td>
-                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Rated Voltage (kV):</div><div className="text-xs">{formData.ratedVoltage || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">Manufacturer:</div>
+                      <div className="text-xs">
+                        {formData.manufacturer || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">
+                        I.C. Rating (kA):
+                      </div>
+                      <div className="text-xs">{formData.icRating || ""}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">
+                        Catalog Number:
+                      </div>
+                      <div className="text-xs">
+                        {formData.catalogNumber || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">
+                        Rated Voltage (kV):
+                      </div>
+                      <div className="text-xs">
+                        {formData.ratedVoltage || ""}
+                      </div>
+                    </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Serial Number:</div><div className="text-xs">{formData.serialNumber || ''}</div></td>
-                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Operating Voltage (kV):</div><div className="text-xs">{formData.operatingVoltage || ''}</div></td>
-                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Type:</div><div className="text-xs">{formData.type || ''}</div></td>
-                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Ampacity (A):</div><div className="text-xs">{formData.ampacity || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">
+                        Serial Number:
+                      </div>
+                      <div className="text-xs">
+                        {formData.serialNumber || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">
+                        Operating Voltage (kV):
+                      </div>
+                      <div className="text-xs">
+                        {formData.operatingVoltage || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">Type:</div>
+                      <div className="text-xs">{formData.type || ""}</div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">Ampacity (A):</div>
+                      <div className="text-xs">{formData.ampacity || ""}</div>
+                    </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">Manufacturing Date:</div><div className="text-xs">{formData.manufacturingDate || ''}</div></td>
-                    <td className="p-2 border border-gray-300 print:border-black"><div className="font-semibold text-xs">MVA Rating:</div><div className="text-xs">{formData.mvaRating || ''}</div></td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">
+                        Manufacturing Date:
+                      </div>
+                      <div className="text-xs">
+                        {formData.manufacturingDate || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      <div className="font-semibold text-xs">MVA Rating:</div>
+                      <div className="text-xs">{formData.mvaRating || ""}</div>
+                    </td>
                     <td className="p-2 border border-gray-300 print:border-black"></td>
                     <td className="p-2 border border-gray-300 print:border-black"></td>
                   </tr>
@@ -817,29 +1271,48 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           {/* Visual and Mechanical Inspection */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Visual and Mechanical Inspection
+            </h2>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
                 <colgroup>
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '70%' }} />
-                  <col style={{ width: '18%' }} />
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "70%" }} />
+                  <col style={{ width: "18%" }} />
                 </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-150">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">NETA Section</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Description</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Results</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      NETA Section
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Description
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Results
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
-                  {visualInspectionItemsList.map(item => (
+                  {visualInspectionItemsList.map((item) => (
                     <tr key={item.id}>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
-                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{item.description}</td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {item.id}
+                      </td>
+                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">
+                        {item.description}
+                      </td>
                       <td className="px-3 py-2 whitespace-nowrap">
-                        <div className="print:hidden">{renderSelect(`visualMechanicalInspection.${item.id}`, visualInspectionOptions)}</div>
-                        <div className="hidden print:block text-center">{formData.visualMechanicalInspection[item.id] || ''}</div>
+                        <div className="print:hidden">
+                          {renderSelect(
+                            `visualMechanicalInspection.${item.id}`,
+                            visualInspectionOptions,
+                          )}
+                        </div>
+                        <div className="hidden print:block text-center">
+                          {formData.visualMechanicalInspection[item.id] || ""}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -849,22 +1322,41 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
               <table className="mt-4 border-collapse border border-gray-200 dark:border-gray-700">
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150" colSpan={2}>
+                    <th
+                      className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150"
+                      colSpan={2}
+                    >
                       Counter Reading
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">As Found</td>
+                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                      As Found
+                    </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("counterReadingAsFound", "", "text", false, "w-full")}
+                      {renderInput(
+                        "counterReadingAsFound",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">As Left</td>
+                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                      As Left
+                    </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("counterReadingAsLeft", "", "text", false, "w-full")}
+                      {renderInput(
+                        "counterReadingAsLeft",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                   </tr>
                 </tbody>
@@ -875,36 +1367,69 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           {/* Contact/Pole Resistance */}
           <section className="mb-6 section-contact-resistance">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Contact/Pole Resistance</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Electrical Tests - Contact/Pole Resistance
+            </h2>
             <div className="overflow-x-auto">
               <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
                 <colgroup>
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
                 </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-150">
                   <tr>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">P1</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">P2</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">P3</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">Units</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                      P1
+                    </th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                      P2
+                    </th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                      P3
+                    </th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                      Units
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
                     <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                      {renderInput("contactResistance.p1", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "contactResistance.p1",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                      {renderInput("contactResistance.p2", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "contactResistance.p2",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                      {renderInput("contactResistance.p3", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "contactResistance.p3",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                      {renderSelect("contactResistance.units", contactResistanceUnits, false, "w-full text-center")}
+                      {renderSelect(
+                        "contactResistance.units",
+                        contactResistanceUnits,
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                   </tr>
                 </tbody>
@@ -915,58 +1440,121 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           {/* Insulation Resistance */}
           <section className="mb-6 section-insulation-resistance">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Insulation Resistance</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Electrical Tests - Insulation Resistance
+            </h2>
             <div className="overflow-x-auto">
               <div className="flex items-center mb-4">
-                <span className="text-sm font-medium text-gray-700 dark:text-white mr-2">Test Voltage:</span>
-                {renderSelect("insulationResistanceMeasured.testVoltage", insulationTestVoltages, false, "w-32")}
+                <span className="text-sm font-medium text-gray-700 dark:text-white mr-2">
+                  Test Voltage:
+                </span>
+                {renderSelect(
+                  "insulationResistanceMeasured.testVoltage",
+                  insulationTestVoltages,
+                  false,
+                  "w-32",
+                )}
               </div>
               <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
                 <colgroup>
-                  <col style={{ width: '16%' }} />
-                  <col style={{ width: '12.5%' }} />
-                  <col style={{ width: '12.5%' }} />
-                  <col style={{ width: '12.5%' }} />
-                  <col style={{ width: '12.5%' }} />
-                  <col style={{ width: '12.5%' }} />
-                  <col style={{ width: '12.5%' }} />
-                  <col style={{ width: '9%' }} />
+                  <col style={{ width: "16%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "9%" }} />
                 </colgroup>
                 <thead className="bg-gray-50 dark:bg-dark-150">
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}></th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Measured Values</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" colSpan={3}>Temperature Corrected</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white" rowSpan={2}>Units</th>
+                    <th
+                      className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white"
+                      rowSpan={2}
+                    ></th>
+                    <th
+                      className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"
+                      colSpan={3}
+                    >
+                      Measured Values
+                    </th>
+                    <th
+                      className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"
+                      colSpan={3}
+                    >
+                      Temperature Corrected
+                    </th>
+                    <th
+                      className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-white"
+                      rowSpan={2}
+                    >
+                      Units
+                    </th>
                   </tr>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P1 (P1-P2)</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P2 (P2-P3)</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P3 (P3-P1)</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P1 (P1-P2)</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P2 (P2-P3)</th>
-                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">P3 (P3-P1)</th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      P1 (P1-P2)
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      P2 (P2-P3)
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      P3 (P3-P1)
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      P1 (P1-P2)
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      P2 (P2-P3)
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      P3 (P3-P1)
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {/* Pole to Pole (Closed) */}
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">Pole to Pole (Closed)</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">
+                      Pole to Pole (Closed)
+                    </td>
                     {/* Measured Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderInput("insulationResistanceMeasured.poleToPoleClosedP1P2", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "insulationResistanceMeasured.poleToPoleClosedP1P2",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderInput("insulationResistanceMeasured.poleToPoleClosedP2P3", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "insulationResistanceMeasured.poleToPoleClosedP2P3",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderInput("insulationResistanceMeasured.poleToPoleClosedP3P1", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "insulationResistanceMeasured.poleToPoleClosedP3P1",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     {/* Corrected Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
-                        value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToPoleClosedP1P2, formData.temperature.tcf)}
+                        value={calculateCorrectedValue(
+                          formData.insulationResistanceMeasured
+                            .poleToPoleClosedP1P2,
+                          formData.temperature.tcf,
+                        )}
                         readOnly
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
                       />
@@ -974,7 +1562,11 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
-                        value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToPoleClosedP2P3, formData.temperature.tcf)}
+                        value={calculateCorrectedValue(
+                          formData.insulationResistanceMeasured
+                            .poleToPoleClosedP2P3,
+                          formData.temperature.tcf,
+                        )}
                         readOnly
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
                       />
@@ -982,7 +1574,11 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
-                        value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToPoleClosedP3P1, formData.temperature.tcf)}
+                        value={calculateCorrectedValue(
+                          formData.insulationResistanceMeasured
+                            .poleToPoleClosedP3P1,
+                          formData.temperature.tcf,
+                        )}
                         readOnly
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
                       />
@@ -990,29 +1586,60 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     {/* Units */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <div className="print:hidden">
-                        {renderSelect("insulationResistanceMeasured.poleToPoleUnits", insulationResistanceUnits, false, "w-full text-center")}
+                        {renderSelect(
+                          "insulationResistanceMeasured.poleToPoleUnits",
+                          insulationResistanceUnits,
+                          false,
+                          "w-full text-center",
+                        )}
                       </div>
-                      <div className="hidden print:block text-center">{formData.insulationResistanceMeasured.poleToPoleUnits}</div>
+                      <div className="hidden print:block text-center">
+                        {formData.insulationResistanceMeasured.poleToPoleUnits}
+                      </div>
                     </td>
                   </tr>
                   {/* Pole to Frame (Closed) */}
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">Pole to Frame (Closed)</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">
+                      Pole to Frame (Closed)
+                    </td>
                     {/* Measured Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderInput("insulationResistanceMeasured.poleToFrameClosedP1", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "insulationResistanceMeasured.poleToFrameClosedP1",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderInput("insulationResistanceMeasured.poleToFrameClosedP2", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "insulationResistanceMeasured.poleToFrameClosedP2",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderInput("insulationResistanceMeasured.poleToFrameClosedP3", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "insulationResistanceMeasured.poleToFrameClosedP3",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     {/* Corrected Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
-                        value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToFrameClosedP1, formData.temperature.tcf)}
+                        value={calculateCorrectedValue(
+                          formData.insulationResistanceMeasured
+                            .poleToFrameClosedP1,
+                          formData.temperature.tcf,
+                        )}
                         readOnly
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
                       />
@@ -1020,7 +1647,11 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
-                        value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToFrameClosedP2, formData.temperature.tcf)}
+                        value={calculateCorrectedValue(
+                          formData.insulationResistanceMeasured
+                            .poleToFrameClosedP2,
+                          formData.temperature.tcf,
+                        )}
                         readOnly
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
                       />
@@ -1028,7 +1659,11 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
-                        value={calculateCorrectedValue(formData.insulationResistanceMeasured.poleToFrameClosedP3, formData.temperature.tcf)}
+                        value={calculateCorrectedValue(
+                          formData.insulationResistanceMeasured
+                            .poleToFrameClosedP3,
+                          formData.temperature.tcf,
+                        )}
                         readOnly
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
                       />
@@ -1036,29 +1671,60 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     {/* Units */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <div className="print:hidden">
-                        {renderSelect("insulationResistanceMeasured.poleToFrameUnits", insulationResistanceUnits, false, "w-full text-center")}
+                        {renderSelect(
+                          "insulationResistanceMeasured.poleToFrameUnits",
+                          insulationResistanceUnits,
+                          false,
+                          "w-full text-center",
+                        )}
                       </div>
-                      <div className="hidden print:block text-center">{formData.insulationResistanceMeasured.poleToFrameUnits}</div>
+                      <div className="hidden print:block text-center">
+                        {formData.insulationResistanceMeasured.poleToFrameUnits}
+                      </div>
                     </td>
                   </tr>
                   {/* Line to Load (Open) */}
                   <tr>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">Line to Load (Open)</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">
+                      Line to Load (Open)
+                    </td>
                     {/* Measured Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderInput("insulationResistanceMeasured.lineToLoadOpenP1", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "insulationResistanceMeasured.lineToLoadOpenP1",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderInput("insulationResistanceMeasured.lineToLoadOpenP2", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "insulationResistanceMeasured.lineToLoadOpenP2",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                      {renderInput("insulationResistanceMeasured.lineToLoadOpenP3", "", "text", false, "w-full text-center")}
+                      {renderInput(
+                        "insulationResistanceMeasured.lineToLoadOpenP3",
+                        "",
+                        "text",
+                        false,
+                        "w-full text-center",
+                      )}
                     </td>
                     {/* Corrected Values */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
-                        value={calculateCorrectedValue(formData.insulationResistanceMeasured.lineToLoadOpenP1, formData.temperature.tcf)}
+                        value={calculateCorrectedValue(
+                          formData.insulationResistanceMeasured
+                            .lineToLoadOpenP1,
+                          formData.temperature.tcf,
+                        )}
                         readOnly
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
                       />
@@ -1066,7 +1732,11 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
-                        value={calculateCorrectedValue(formData.insulationResistanceMeasured.lineToLoadOpenP2, formData.temperature.tcf)}
+                        value={calculateCorrectedValue(
+                          formData.insulationResistanceMeasured
+                            .lineToLoadOpenP2,
+                          formData.temperature.tcf,
+                        )}
                         readOnly
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
                       />
@@ -1074,7 +1744,11 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <input
                         type="text"
-                        value={calculateCorrectedValue(formData.insulationResistanceMeasured.lineToLoadOpenP3, formData.temperature.tcf)}
+                        value={calculateCorrectedValue(
+                          formData.insulationResistanceMeasured
+                            .lineToLoadOpenP3,
+                          formData.temperature.tcf,
+                        )}
                         readOnly
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-dark-150 text-center"
                       />
@@ -1082,9 +1756,16 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                     {/* Units */}
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
                       <div className="print:hidden">
-                        {renderSelect("insulationResistanceMeasured.lineToLoadUnits", insulationResistanceUnits, false, "w-full text-center")}
+                        {renderSelect(
+                          "insulationResistanceMeasured.lineToLoadUnits",
+                          insulationResistanceUnits,
+                          false,
+                          "w-full text-center",
+                        )}
                       </div>
-                      <div className="hidden print:block text-center">{formData.insulationResistanceMeasured.lineToLoadUnits}</div>
+                      <div className="hidden print:block text-center">
+                        {formData.insulationResistanceMeasured.lineToLoadUnits}
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -1095,28 +1776,31 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           {/* Vacuum Integrity/Dielectric Withstand */}
           <section className="mb-6 section-dielectric-withstand">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Vacuum Integrity/Dielectric Withstand</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Vacuum Integrity/Dielectric Withstand
+            </h2>
             <div className="space-y-6">
               {/* Dielectric Withstand - Breaker CLOSED */}
               <div>
                 <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
                   <colgroup>
-                    <col style={{ width: '20%' }} />
-                    <col style={{ width: '20%' }} />
-                    <col style={{ width: '20%' }} />
-                    <col style={{ width: '20%' }} />
-                    <col style={{ width: '20%' }} />
+                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "20%" }} />
                   </colgroup>
                   <thead className="bg-gray-50 dark:bg-dark-150">
                     <tr>
-                      <th colSpan={5} className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-150">
+                      <th
+                        colSpan={5}
+                        className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-150"
+                      >
                         Dielectric Withstand - Breaker CLOSED
                       </th>
                     </tr>
                     <tr>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-150">
-                        
-                      </th>
+                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-150"></th>
                       <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-150">
                         P1-Ground
                       </th>
@@ -1133,30 +1817,71 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150">
                     <tr>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">Result:</td>
-                      <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                        {renderInput("dielectricWithstandClosed.p1Ground", "", "text", false, "w-full text-center")}
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                        Result:
                       </td>
                       <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                        {renderInput("dielectricWithstandClosed.p2Ground", "", "text", false, "w-full text-center")}
+                        {renderInput(
+                          "dielectricWithstandClosed.p1Ground",
+                          "",
+                          "text",
+                          false,
+                          "w-full text-center",
+                        )}
                       </td>
                       <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                        {renderInput("dielectricWithstandClosed.p3Ground", "", "text", false, "w-full text-center")}
+                        {renderInput(
+                          "dielectricWithstandClosed.p2Ground",
+                          "",
+                          "text",
+                          false,
+                          "w-full text-center",
+                        )}
                       </td>
                       <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                        {renderSelect("dielectricWithstandClosed.units", dielectricWithstandUnits, false, "w-full text-center")}
+                        {renderInput(
+                          "dielectricWithstandClosed.p3Ground",
+                          "",
+                          "text",
+                          false,
+                          "w-full text-center",
+                        )}
+                      </td>
+                      <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                        {renderSelect(
+                          "dielectricWithstandClosed.units",
+                          dielectricWithstandUnits,
+                          false,
+                          "w-full text-center",
+                        )}
                       </td>
                     </tr>
                   </tbody>
                 </table>
                 <div className="flex justify-end mt-2 space-x-4">
                   <div className="flex items-center">
-                    <label className="text-sm font-medium text-gray-700 dark:text-white mr-2">Test Voltage:</label>
-                    {renderInput("dielectricWithstandClosed.testVoltage", "", "text", false, "w-24")}
+                    <label className="text-sm font-medium text-gray-700 dark:text-white mr-2">
+                      Test Voltage:
+                    </label>
+                    {renderInput(
+                      "dielectricWithstandClosed.testVoltage",
+                      "",
+                      "text",
+                      false,
+                      "w-24",
+                    )}
                   </div>
                   <div className="flex items-center">
-                    <label className="text-sm font-medium text-gray-700 dark:text-white mr-2">Test Duration:</label>
-                    {renderInput("dielectricWithstandClosed.testDuration", "", "text", false, "w-24")}
+                    <label className="text-sm font-medium text-gray-700 dark:text-white mr-2">
+                      Test Duration:
+                    </label>
+                    {renderInput(
+                      "dielectricWithstandClosed.testDuration",
+                      "",
+                      "text",
+                      false,
+                      "w-24",
+                    )}
                   </div>
                 </div>
               </div>
@@ -1165,22 +1890,23 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
               <div>
                 <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-600">
                   <colgroup>
-                    <col style={{ width: '20%' }} />
-                    <col style={{ width: '20%' }} />
-                    <col style={{ width: '20%' }} />
-                    <col style={{ width: '20%' }} />
-                    <col style={{ width: '20%' }} />
+                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "20%" }} />
                   </colgroup>
                   <thead className="bg-gray-50 dark:bg-dark-150">
                     <tr>
-                      <th colSpan={5} className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-150">
+                      <th
+                        colSpan={5}
+                        className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-150"
+                      >
                         Vacuum Integrity - Breaker OPEN
                       </th>
                     </tr>
                     <tr>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-150">
-                        
-                      </th>
+                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-150"></th>
                       <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark-150">
                         P1
                       </th>
@@ -1197,30 +1923,71 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-dark-150">
                     <tr>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">Result:</td>
-                      <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                        {renderInput("vacuumIntegrityOpen.p1", "", "text", false, "w-full text-center")}
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                        Result:
                       </td>
                       <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                        {renderInput("vacuumIntegrityOpen.p2", "", "text", false, "w-full text-center")}
+                        {renderInput(
+                          "vacuumIntegrityOpen.p1",
+                          "",
+                          "text",
+                          false,
+                          "w-full text-center",
+                        )}
                       </td>
                       <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                        {renderInput("vacuumIntegrityOpen.p3", "", "text", false, "w-full text-center")}
+                        {renderInput(
+                          "vacuumIntegrityOpen.p2",
+                          "",
+                          "text",
+                          false,
+                          "w-full text-center",
+                        )}
                       </td>
                       <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
-                        {renderSelect("vacuumIntegrityOpen.units", dielectricWithstandUnits, false, "w-full text-center")}
+                        {renderInput(
+                          "vacuumIntegrityOpen.p3",
+                          "",
+                          "text",
+                          false,
+                          "w-full text-center",
+                        )}
+                      </td>
+                      <td className="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                        {renderSelect(
+                          "vacuumIntegrityOpen.units",
+                          dielectricWithstandUnits,
+                          false,
+                          "w-full text-center",
+                        )}
                       </td>
                     </tr>
                   </tbody>
                 </table>
                 <div className="flex justify-end mt-2 space-x-4">
                   <div className="flex items-center">
-                    <label className="text-sm font-medium text-gray-700 dark:text-white mr-2">Test Voltage:</label>
-                    {renderInput("vacuumIntegrityOpen.testVoltage", "", "text", false, "w-24")}
+                    <label className="text-sm font-medium text-gray-700 dark:text-white mr-2">
+                      Test Voltage:
+                    </label>
+                    {renderInput(
+                      "vacuumIntegrityOpen.testVoltage",
+                      "",
+                      "text",
+                      false,
+                      "w-24",
+                    )}
                   </div>
                   <div className="flex items-center">
-                    <label className="text-sm font-medium text-gray-700 dark:text-white mr-2">Test Duration:</label>
-                    {renderInput("vacuumIntegrityOpen.testDuration", "", "text", false, "w-24")}
+                    <label className="text-sm font-medium text-gray-700 dark:text-white mr-2">
+                      Test Duration:
+                    </label>
+                    {renderInput(
+                      "vacuumIntegrityOpen.testDuration",
+                      "",
+                      "text",
+                      false,
+                      "w-24",
+                    )}
                   </div>
                 </div>
               </div>
@@ -1230,87 +1997,235 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           {/* Test Equipment Used */}
           <section className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Test Equipment Used
+            </h2>
             {/* On-screen form - hidden in print */}
             <div className="overflow-x-auto print:hidden test-eqpt-onscreen">
               <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">Equipment</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">Model</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">Serial</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">ID</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">Cal Date</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">
+                      Equipment
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">
+                      Model
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">
+                      Serial
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">
+                      ID
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-150">
+                      Cal Date
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Insulation Resistance Tester</td>
+                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                      Insulation Resistance Tester
+                    </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
                       <EquipmentAutocomplete
-                        value={formData.testEquipment.insulationResistanceTester.model}
-                        onChange={(value) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, insulationResistanceTester: { ...prev.testEquipment.insulationResistanceTester, model: value } } }))}
+                        value={
+                          formData.testEquipment.insulationResistanceTester
+                            .model
+                        }
+                        onChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            testEquipment: {
+                              ...prev.testEquipment,
+                              insulationResistanceTester: {
+                                ...prev.testEquipment
+                                  .insulationResistanceTester,
+                                model: value,
+                              },
+                            },
+                          }))
+                        }
                         onSelect={(equip) => {
-                          setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, insulationResistanceTester: { model: equip.equipment_name, serial: equip.serial_number || '', id: equip.amp_id || '', calDate: formatLocalDateShort(equip.calibration_date) } } }));
+                          setFormData((prev) => ({
+                            ...prev,
+                            testEquipment: {
+                              ...prev.testEquipment,
+                              insulationResistanceTester: {
+                                model: equip.equipment_name,
+                                serial: equip.serial_number || "",
+                                id: equip.amp_id || "",
+                                calDate: formatLocalDateShort(
+                                  equip.calibration_date,
+                                ),
+                              },
+                            },
+                          }));
                         }}
                         readOnly={!isEditing}
                         className="w-full"
                       />
                     </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("testEquipment.insulationResistanceTester.serial", "", "text", false, "w-full")}
+                      {renderInput(
+                        "testEquipment.insulationResistanceTester.serial",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("testEquipment.insulationResistanceTester.id", "", "text", false, "w-full")}
+                      {renderInput(
+                        "testEquipment.insulationResistanceTester.id",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("testEquipment.insulationResistanceTester.calDate", "", "text", false, "w-full")}
+                      {renderInput(
+                        "testEquipment.insulationResistanceTester.calDate",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Micro-ohmmeter</td>
+                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                      Micro-ohmmeter
+                    </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
                       <EquipmentAutocomplete
                         value={formData.testEquipment.microOhmmeter.model}
-                        onChange={(value) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, microOhmmeter: { ...prev.testEquipment.microOhmmeter, model: value } } }))}
+                        onChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            testEquipment: {
+                              ...prev.testEquipment,
+                              microOhmmeter: {
+                                ...prev.testEquipment.microOhmmeter,
+                                model: value,
+                              },
+                            },
+                          }))
+                        }
                         onSelect={(equip) => {
-                          setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, microOhmmeter: { model: equip.equipment_name, serial: equip.serial_number || '', id: equip.amp_id || '', calDate: formatLocalDateShort(equip.calibration_date) } } }));
+                          setFormData((prev) => ({
+                            ...prev,
+                            testEquipment: {
+                              ...prev.testEquipment,
+                              microOhmmeter: {
+                                model: equip.equipment_name,
+                                serial: equip.serial_number || "",
+                                id: equip.amp_id || "",
+                                calDate: formatLocalDateShort(
+                                  equip.calibration_date,
+                                ),
+                              },
+                            },
+                          }));
                         }}
                         readOnly={!isEditing}
                         className="w-full"
                       />
                     </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("testEquipment.microOhmmeter.serial", "", "text", false, "w-full")}
+                      {renderInput(
+                        "testEquipment.microOhmmeter.serial",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("testEquipment.microOhmmeter.id", "", "text", false, "w-full")}
+                      {renderInput(
+                        "testEquipment.microOhmmeter.id",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("testEquipment.microOhmmeter.calDate", "", "text", false, "w-full")}
+                      {renderInput(
+                        "testEquipment.microOhmmeter.calDate",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">Hi-Pot Tester</td>
+                    <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                      Hi-Pot Tester
+                    </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
                       <EquipmentAutocomplete
                         value={formData.testEquipment.hiPotTester.model}
-                        onChange={(value) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, hiPotTester: { ...prev.testEquipment.hiPotTester, model: value } } }))}
+                        onChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            testEquipment: {
+                              ...prev.testEquipment,
+                              hiPotTester: {
+                                ...prev.testEquipment.hiPotTester,
+                                model: value,
+                              },
+                            },
+                          }))
+                        }
                         onSelect={(equip) => {
-                          setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, hiPotTester: { model: equip.equipment_name, serial: equip.serial_number || '', id: equip.amp_id || '', calDate: formatLocalDateShort(equip.calibration_date) } } }));
+                          setFormData((prev) => ({
+                            ...prev,
+                            testEquipment: {
+                              ...prev.testEquipment,
+                              hiPotTester: {
+                                model: equip.equipment_name,
+                                serial: equip.serial_number || "",
+                                id: equip.amp_id || "",
+                                calDate: formatLocalDateShort(
+                                  equip.calibration_date,
+                                ),
+                              },
+                            },
+                          }));
                         }}
                         readOnly={!isEditing}
                         className="w-full"
                       />
                     </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("testEquipment.hiPotTester.serial", "", "text", false, "w-full")}
+                      {renderInput(
+                        "testEquipment.hiPotTester.serial",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("testEquipment.hiPotTester.id", "", "text", false, "w-full")}
+                      {renderInput(
+                        "testEquipment.hiPotTester.id",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                     <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">
-                      {renderInput("testEquipment.hiPotTester.calDate", "", "text", false, "w-full")}
+                      {renderInput(
+                        "testEquipment.hiPotTester.calDate",
+                        "",
+                        "text",
+                        false,
+                        "w-full",
+                      )}
                     </td>
                   </tr>
                 </tbody>
@@ -1321,34 +2236,78 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
               <table className="w-full border border-gray-300 print:border-black">
                 <thead>
                   <tr>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Equipment</th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Model</th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Serial</th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">ID</th>
-                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">Cal Date</th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                      Equipment
+                    </th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                      Model
+                    </th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                      Serial
+                    </th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                      ID
+                    </th>
+                    <th className="p-2 border border-gray-300 print:border-black bg-gray-50 print:bg-gray-100 text-left">
+                      Cal Date
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black font-semibold">Insulation Resistance Tester</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.insulationResistanceTester.model || ''}</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.insulationResistanceTester.serial || ''}</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.insulationResistanceTester.id || ''}</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.insulationResistanceTester.calDate || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black font-semibold">
+                      Insulation Resistance Tester
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.insulationResistanceTester
+                        .model || ""}
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.insulationResistanceTester
+                        .serial || ""}
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.insulationResistanceTester.id ||
+                        ""}
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.insulationResistanceTester
+                        .calDate || ""}
+                    </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black font-semibold">Micro-ohmmeter</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.microOhmmeter.model || ''}</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.microOhmmeter.serial || ''}</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.microOhmmeter.id || ''}</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.microOhmmeter.calDate || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black font-semibold">
+                      Micro-ohmmeter
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.microOhmmeter.model || ""}
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.microOhmmeter.serial || ""}
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.microOhmmeter.id || ""}
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.microOhmmeter.calDate || ""}
+                    </td>
                   </tr>
                   <tr>
-                    <td className="p-2 border border-gray-300 print:border-black font-semibold">Hi-Pot Tester</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.hiPotTester.model || ''}</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.hiPotTester.serial || ''}</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.hiPotTester.id || ''}</td>
-                    <td className="p-2 border border-gray-300 print:border-black">{formData.testEquipment.hiPotTester.calDate || ''}</td>
+                    <td className="p-2 border border-gray-300 print:border-black font-semibold">
+                      Hi-Pot Tester
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.hiPotTester.model || ""}
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.hiPotTester.serial || ""}
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.hiPotTester.id || ""}
+                    </td>
+                    <td className="p-2 border border-gray-300 print:border-black">
+                      {formData.testEquipment.hiPotTester.calDate || ""}
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -1356,9 +2315,13 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           </section>
 
           {/* Comments */}
-          <section className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
+          <section
+            className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
+          >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Comments
+            </h2>
             <div className="print:hidden comments-onscreen">
               <textarea
                 name="comments"
@@ -1367,57 +2330,63 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
                 placeholder="Enter any comments or notes here..."
                 readOnly={!isEditing}
                 rows={6}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             {formData.comments?.trim() && (
-            <div className="hidden print:block">
-              <table className="w-full border-collapse border border-gray-300 print:border-black">
-                <tbody>
-                  <tr>
-                    <td className="p-2 border border-gray-300 print:border-black">
-                      <div className="text-xs whitespace-pre-wrap break-words">{formData.comments}</div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+              <div className="hidden print:block">
+                <table className="w-full border-collapse border border-gray-300 print:border-black">
+                  <tbody>
+                    <tr>
+                      <td className="p-2 border border-gray-300 print:border-black">
+                        <div className="text-xs whitespace-pre-wrap break-words">
+                          {formData.comments}
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             )}
           </section>
         </div>
-        </div>      {/* Mark Ready to Review Button */}
+      </div>{" "}
+      {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (
         <div className="mb-6 print:hidden flex justify-center">
           <button
             onClick={async () => {
               if (!jobId || !user?.id) return;
-              
+
               try {
                 // Save the report first
                 await handleSave();
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
                 // Get the report ID (may have been created by save)
-                const savedReportId = reportId || window.location.pathname.split('/').pop();
-                if (!savedReportId) throw new Error('Failed to save report');
-                
+                const savedReportId =
+                  reportId || window.location.pathname.split("/").pop();
+                if (!savedReportId) throw new Error("Failed to save report");
+
                 // Update asset status to ready_for_review
                 const fileUrl = `report:/jobs/${jobId}/${reportSlug}/${savedReportId}`;
                 const { error } = await supabase
-                  .schema('neta_ops')
-                  .from('assets')
-                  .update({ 
-                    status: 'ready_for_review',
-                    submitted_at: new Date().toISOString()
+                  .schema("neta_ops")
+                  .from("assets")
+                  .update({
+                    status: "ready_for_review",
+                    submitted_at: new Date().toISOString(),
                   })
-                  .eq('file_url', fileUrl);
-                
+                  .eq("file_url", fileUrl);
+
                 if (error) throw error;
-                
-                alert('Report marked as ready for review!');
+
+                alert("Report marked as ready for review!");
               } catch (error: any) {
-                console.error('Error marking report as ready:', error);
-                alert(`Failed to mark as ready: ${error?.message || 'Unknown error'}`);
+                console.error("Error marking report as ready:", error);
+                alert(
+                  `Failed to mark as ready: ${error?.message || "Unknown error"}`,
+                );
               }
             }}
             className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -1426,35 +2395,34 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           </button>
         </div>
       )}
-
-      </ReportWrapper>
+    </ReportWrapper>
   );
 };
 
 export default MediumVoltageCircuitBreakerReport;
 
 // Add print styles
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
   style.textContent = `
     @media print {
       body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-      
+
       /* Hide all navigation and header elements */
-      header, nav, .navigation, [class*="nav"], [class*="header"], 
-      .sticky, [class*="sticky"], .print\\:hidden { 
-        display: none !important; 
+      header, nav, .navigation, [class*="nav"], [class*="header"],
+      .sticky, [class*="sticky"], .print\\:hidden {
+        display: none !important;
       }
-      
+
       /* Hide Back to Job button and division headers specifically */
-      button[class*="Back"], 
-      *[class*="Back to Job"], 
+      button[class*="Back"],
+      *[class*="Back to Job"],
       h2[class*="Division"],
       .mobile-nav-text,
       [class*="formatDivisionName"] {
         display: none !important;
       }
-      
+
       .print\\:break-before-page { page-break-before: always; }
       .print\\:break-after-page { page-break-after: always; }
       .print\\:break-inside-avoid { page-break-inside: avoid; }
@@ -1463,28 +2431,28 @@ if (typeof document !== 'undefined') {
       .print\\:border-black { border-color: black !important; }
       .print\\:font-bold { font-weight: bold !important; }
       .print\\:text-center { text-align: center !important; }
-      
+
       table { border-collapse: collapse; width: 100%; }
       th, td { border: 1px solid black !important; padding: 4px !important; }
       th { background-color: #f0f0f0 !important; font-weight: bold !important; }
-      
-      input, select, textarea { 
-        background-color: white !important; 
-        border: 1px solid black !important; 
+
+      input, select, textarea {
+        background-color: white !important;
+        border: 1px solid black !important;
         color: black !important;
-        padding: 2px !important; 
+        padding: 2px !important;
         font-size: 10px !important;
         -webkit-appearance: none !important;
         -moz-appearance: none !important;
         appearance: none !important;
       }
-      
+
       /* Hide dropdown arrows and form control indicators */
       select {
         background-image: none !important;
         padding-right: 8px !important;
       }
-      
+
       /* Hide spin buttons on number inputs */
       input[type="number"]::-webkit-outer-spin-button,
       input[type="number"]::-webkit-inner-spin-button {
@@ -1494,14 +2462,14 @@ if (typeof document !== 'undefined') {
       input[type="number"] {
         -moz-appearance: textfield !important;
       }
-      
+
       /* Hide interactive elements (but keep print header logo) */
       button:not(.print-visible) { display: none !important; }
       .print\:flex img { display: inline-block !important; }
-      
+
       /* Section styling */
       section { break-inside: avoid !important; margin-bottom: 20px !important; }
-      
+
       /* Comments textarea specific styling */
       textarea {
         width: 100% !important;
@@ -1513,7 +2481,7 @@ if (typeof document !== 'undefined') {
       /* Hide on-screen job info unit labels/inputs in print */
       .job-info-onscreen span { display: none !important; }
       .job-info-onscreen input { display: none !important; }
-      
+
       /* Contact Resistance and Insulation Resistance table styling for print */
       .section-contact-resistance table,
       .section-insulation-resistance table {
@@ -1521,7 +2489,7 @@ if (typeof document !== 'undefined') {
         border-collapse: collapse !important;
         margin-bottom: 20px !important;
       }
-      
+
       .section-contact-resistance th,
       .section-contact-resistance td,
       .section-insulation-resistance th,
@@ -1531,25 +2499,25 @@ if (typeof document !== 'undefined') {
         text-align: center !important;
         vertical-align: middle !important;
       }
-      
+
       .section-contact-resistance th,
       .section-insulation-resistance th {
         background-color: #f0f0f0 !important;
         font-weight: bold !important;
         color: black !important;
       }
-      
+
       .section-contact-resistance td,
       .section-insulation-resistance td {
         background-color: white !important;
         color: black !important;
       }
-      
+
       /* Ensure proper column widths in print */
       .section-contact-resistance table {
         table-layout: fixed !important;
       }
-      
+
       .section-contact-resistance th:nth-child(1),
       .section-contact-resistance td:nth-child(1) { width: 25% !important; }
       .section-contact-resistance th:nth-child(2),
@@ -1558,12 +2526,12 @@ if (typeof document !== 'undefined') {
       .section-contact-resistance td:nth-child(3) { width: 25% !important; }
       .section-contact-resistance th:nth-child(4),
       .section-contact-resistance td:nth-child(4) { width: 25% !important; }
-      
+
       /* Insulation resistance table column widths */
       .section-insulation-resistance table {
         table-layout: fixed !important;
       }
-      
+
       .section-insulation-resistance th:first-child,
       .section-insulation-resistance td:first-child { width: 16% !important; }
       .section-insulation-resistance th:nth-child(2),
@@ -1580,7 +2548,7 @@ if (typeof document !== 'undefined') {
       .section-insulation-resistance td:nth-child(7) { width: 12.5% !important; }
       .section-insulation-resistance th:last-child,
       .section-insulation-resistance td:last-child { width: 9% !important; }
-      
+
       /* Dielectric withstand table styling for print */
       .section-dielectric-withstand table {
         width: 100% !important;
@@ -1588,7 +2556,7 @@ if (typeof document !== 'undefined') {
         margin-bottom: 20px !important;
         table-layout: fixed !important;
       }
-      
+
       .section-dielectric-withstand th,
       .section-dielectric-withstand td {
         border: 1px solid black !important;
@@ -1596,18 +2564,18 @@ if (typeof document !== 'undefined') {
         text-align: center !important;
         vertical-align: middle !important;
       }
-      
+
       .section-dielectric-withstand th {
         background-color: #f0f0f0 !important;
         font-weight: bold !important;
         color: black !important;
       }
-      
+
       .section-dielectric-withstand td {
         background-color: white !important;
         color: black !important;
       }
-      
+
       /* Dielectric withstand table column widths */
       .section-dielectric-withstand th:nth-child(1),
       .section-dielectric-withstand td:nth-child(1) { width: 20% !important; }
@@ -1619,7 +2587,7 @@ if (typeof document !== 'undefined') {
       .section-dielectric-withstand td:nth-child(4) { width: 20% !important; }
       .section-dielectric-withstand th:nth-child(5),
       .section-dielectric-withstand td:nth-child(5) { width: 20% !important; }
-      
+
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }
     }
@@ -1653,11 +2621,11 @@ if (typeof document !== 'undefined') {
     .force-print th, .force-print td { border: 1px solid black !important; padding: 4px !important; }
     .force-print th { background-color: #f0f0f0 !important; font-weight: bold !important; }
 
-    .force-print input, .force-print select, .force-print textarea { 
-      background-color: white !important; 
-      border: 1px solid black !important; 
+    .force-print input, .force-print select, .force-print textarea {
+      background-color: white !important;
+      border: 1px solid black !important;
       color: black !important;
-      padding: 2px !important; 
+      padding: 2px !important;
       font-size: 10px !important;
       -webkit-appearance: none !important;
       -moz-appearance: none !important;
@@ -1696,20 +2664,20 @@ if (typeof document !== 'undefined') {
     .force-print .section-insulation-resistance th,
     .force-print .section-insulation-resistance td,
     .force-print .section-dielectric-withstand th,
-    .force-print .section-dielectric-withstand td { 
-      border: 1px solid black !important; 
-      padding: 8px !important; 
-      text-align: center !important; 
-      vertical-align: middle !important; 
-      background-color: white !important; 
-      color: black !important; 
+    .force-print .section-dielectric-withstand td {
+      border: 1px solid black !important;
+      padding: 8px !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+      background-color: white !important;
+      color: black !important;
     }
     .force-print .section-contact-resistance th,
     .force-print .section-insulation-resistance th,
-    .force-print .section-dielectric-withstand th { 
-      background-color: #f0f0f0 !important; 
-      font-weight: bold !important; 
-      color: black !important; 
+    .force-print .section-dielectric-withstand th {
+      background-color: #f0f0f0 !important;
+      font-weight: bold !important;
+      color: black !important;
     }
 
     /* Column widths mirror */
@@ -1753,4 +2721,4 @@ if (typeof document !== 'undefined') {
     .force-print * { color: black !important; }
   `;
   document.head.appendChild(style);
-} 
+}

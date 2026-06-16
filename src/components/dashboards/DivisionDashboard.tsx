@@ -41,6 +41,7 @@ import {
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { NETAMetrics } from "@/components/metrics/NETAMetrics";
+import { formatStatusLabel } from "@/utils/formatters";
 import {
   Table,
   TableBody,
@@ -810,7 +811,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                                   ${job.status === "pending" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400" : ""}
                                 `}
                               >
-                                {job.status?.replace(/_/g, " ")}
+                                {formatStatusLabel(job.status)}
                               </Badge>
                             </div>
 

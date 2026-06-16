@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { ReportHeader } from "@/components/reports/common/ReportHeader";
 import {
   useLocation,
   useNavigate,
@@ -327,11 +328,25 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(!initialReportId);
   const [status, setStatus] = useState<PassFail>("PASS");
   const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
   const reportIdRef = React.useRef<string | undefined>(initialReportId);
   const creatingRef = React.useRef(false);
   const pendingSaveRef = React.useRef(false);
+
+  const waitForCreatedReportId = React.useCallback(async () => {
+    if (reportIdRef.current) return reportIdRef.current;
+    if (!creatingRef.current) return undefined;
+
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      if (reportIdRef.current) return reportIdRef.current;
+    }
+
+    return undefined;
+  }, []);
 
   const reportSlug = "23-medium-voltage-switch-mts-report";
   const reportTitle = getReportName(reportSlug);
@@ -659,7 +674,9 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditMode) return;
+    const wasExistingReport = Boolean(currentReportId || reportIdRef.current);
     try {
+      setSaving(true);
       const payload = {
         job_id: jobId,
         user_id: user.id,
@@ -676,27 +693,18 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           .select()
           .single();
       } else if (creatingRef.current) {
-        const deadline = Date.now() + 5000;
-        while (
-          creatingRef.current &&
-          !reportIdRef.current &&
-          Date.now() < deadline
-        ) {
-          await new Promise((r) => setTimeout(r, 50));
+        const createdReportId = await waitForCreatedReportId();
+        if (!createdReportId) {
+          pendingSaveRef.current = true;
+          return;
         }
-        if (reportIdRef.current) {
-          result = await supabase
-            .schema("neta_ops")
-            .from("medium_voltage_switch_mts_reports")
-            .update(payload)
-            .eq("id", reportIdRef.current)
-            .select()
-            .single();
-        } else {
-          throw new Error(
-            "Report creation is still in progress. Please try again.",
-          );
-        }
+        result = await supabase
+          .schema("neta_ops")
+          .from("medium_voltage_switch_mts_reports")
+          .update(payload)
+          .eq("id", createdReportId)
+          .select()
+          .single();
       } else {
         creatingRef.current = true;
         try {
@@ -743,67 +751,61 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
       }
 
       if ((result as any)?.error) throw (result as any).error;
-      setIsEditMode(false);
-      alert(`Report ${currentReportId ? "updated" : "saved"} successfully!`);
-      navigateAfterSave(navigate, jobId, location);
+      setJustSaved(true);
+      if (!wasExistingReport) {
+        setIsEditMode(false);
+        // Quietly update URL with new report ID
+        const newId = (result as any)?.data?.id || (result as any)?.id;
+        if (newId) {
+          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
+        }
+      }
     } catch (err: any) {
       alert(`Failed to save report: ${err?.message || "Unknown error"}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    if (reportIdRef.current) {
+      setIsEditMode(false);
     }
   };
 
   // Helpers
-  const setJobInfo = (field: keyof ReportData, value: any) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
-  const setTemp = (key: keyof ReportData["temperature"], value: any) =>
-    setForm((prev) => ({
+  const setJobInfo = (field: keyof ReportData, value: any) => {
+    setJustSaved(false);
+    return setForm((prev) => ({ ...prev, [field]: value }));
+  };
+  const setTemp = (key: keyof ReportData["temperature"], value: any) => {
+    setJustSaved(false);
+    return setForm((prev) => ({
       ...prev,
       temperature: { ...prev.temperature, [key]: value },
     }));
+  };
 
   const header = (
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        {reportTitle}
-      </h1>
-      <div className="flex gap-2 items-center">
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-          ✓ Auto Saving Enabled
-        </span>
-
-        <button
-          onClick={() => {
-            if (isEditMode) setStatus(status === "PASS" ? "FAIL" : "PASS");
-          }}
-          className={`px-4 py-2 text-sm font-medium rounded-md ${status === "PASS" ? "bg-green-600 text-white" : "bg-red-600 text-white"} ${!isEditMode ? "opacity-70 cursor-not-allowed" : "hover:opacity-90"}`}
-        >
-          {status}
-        </button>
-        {currentReportId && !isEditMode ? (
-          <>
-            <button
-              onClick={() => setIsEditMode(true)}
-              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md"
-            >
-              Edit Report
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md"
-            >
-              Print Report
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={handleSave}
-            disabled={!isEditMode}
-            className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md ${!isEditMode ? "opacity-60 cursor-not-allowed" : "hover:bg-orange-700"}`}
-          >
-            Save Report
-          </button>
-        )}
-      </div>
-    </div>
+    <ReportHeader
+      title={reportTitle}
+      isAutoSaving={isAutoSaving}
+      isEditing={isEditMode}
+      justSaved={justSaved}
+      isSaving={saving}
+      status={status}
+      hasReport={!!currentReportId}
+      onStatusToggle={() => {
+        if (isEditMode) setStatus(status === "PASS" ? "FAIL" : "PASS");
+      }}
+      onSave={handleSave}
+      onSaveAndClose={handleSaveAndClose}
+      onEdit={() => setIsEditMode(true)}
+      onBack={() => navigate(`/jobs/${jobId}`)}
+      onPrint={() => window.print()}
+      isPrintMode={isPrintMode}
+    />
   );
 
   const jobInfo = (

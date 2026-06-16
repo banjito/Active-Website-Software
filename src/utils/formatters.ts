@@ -45,4 +45,15 @@ export const formatPercentage = (value: number, decimals: number = 0): string =>
  */
 export const formatNumber = (value: number): string => {
   return new Intl.NumberFormat('en-US').format(value);
-}; 
+};
+
+export const formatStatusLabel = (status?: string | null): string => {
+  if (!status) return '';
+
+  return status
+    .replace(/[-_]+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};

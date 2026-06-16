@@ -519,7 +519,7 @@ export function ReportApprovalWorkflow({
             "potential-transformer-ats-report":
               "potential_transformer_ats_reports",
             "low-voltage-panelboard-small-breaker-report":
-              "low_voltage_panelboard_small_breaker_report",
+              "low_voltage_panelboard_small_breaker_reports",
             "medium-voltage-circuit-breaker-report":
               "medium_voltage_circuit_breaker_reports",
             "medium-voltage-circuit-breaker-mts-report":

@@ -47,7 +47,7 @@ const slugToTable: Record<string, string> = {
   'medium-voltage-switch-sf6': 'medium_voltage_switch_sf6_reports',
   'medium-voltage-switch-sf6-report': 'medium_voltage_switch_sf6_reports',
   'potential-transformer-ats-report': 'potential_transformer_ats_reports',
-  'low-voltage-panelboard-small-breaker-report': 'low_voltage_panelboard_small_breaker_report',
+  'low-voltage-panelboard-small-breaker-report': 'low_voltage_panelboard_small_breaker_reports',
   'medium-voltage-circuit-breaker-report': 'medium_voltage_circuit_breaker_reports',
   'medium-voltage-circuit-breaker-mts-report': 'medium_voltage_circuit_breaker_mts_reports',
   'medium-voltage-vlf-mts-report': 'medium_voltage_vlf_mts_reports',

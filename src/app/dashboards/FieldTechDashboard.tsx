@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { supabase, isConnectionError, isSchemaError } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
+import { formatStatusLabel } from '@/utils/formatters';
 
 interface CountsData {
   customers: number;
@@ -386,7 +387,7 @@ export const FieldTechDashboard: React.FC = () => {
                                 <p className="text-xs sm:text-sm text-gray-600 dark:text-white mt-1 line-clamp-2">{maskCustomerName(job.customers?.company_name || job.customers?.name) || 'No customer'}</p>
                               </div>
                               <Badge className={`${getJobStatusColor(job.status)} px-1.5 sm:px-2 py-1 text-xs font-normal whitespace-nowrap flex-shrink-0`}>
-                                {(job.status || '').replace(/_/g, ' ')}
+                                {formatStatusLabel(job.status)}
                               </Badge>
                             </div>
                             <div className="flex justify-between mt-auto pt-2 sm:pt-3 text-xs sm:text-sm text-gray-500 dark:text-white border-t border-gray-100 dark:border-gray-700 mt-2 sm:mt-3">
@@ -426,4 +427,3 @@ export const FieldTechDashboard: React.FC = () => {
 };
 
 export default FieldTechDashboard;
-

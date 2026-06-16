@@ -42,6 +42,7 @@ import { useAuth } from "../../lib/AuthContext";
 import { isSuperUser } from "../../lib/roles";
 import { useDemoMode } from "../../lib/DemoModeContext";
 import { useJobDetails } from "../../lib/hooks";
+import { formatStatusLabel } from "@/utils/formatters";
 import { format } from "date-fns";
 import { Button } from "../ui/Button";
 import { reportImportService } from "../../services/reportImport";
@@ -1488,6 +1489,7 @@ export default function JobDetail() {
   );
   const [isArchiving, setIsArchiving] = useState(false);
   const [isBatchUploading, setIsBatchUploading] = useState(false);
+
   const [batchUploadProgress, setBatchUploadProgress] = useState(0);
   const [batchUploadStatus, setBatchUploadStatus] = useState<string>("");
   const [opportunity, setOpportunity] = useState<RelatedOpportunity | null>(
@@ -2797,17 +2799,7 @@ export default function JobDetail() {
   async function fetchJobAssets() {
     if (!id) return;
     try {
-      // 1. Get total count of linked assets
-      const { count, error: countError } = await supabase
-        .schema("neta_ops")
-        .from("job_assets")
-        .select("asset_id", { count: "exact", head: true })
-        .eq("job_id", id);
-      if (!countError && typeof count === "number") {
-        setTotalAssetCount(count);
-      }
-
-      // 2. Fetch ALL asset IDs in batches
+      // 1. Fetch ALL asset IDs in batches
       let allAssetIds: string[] = [];
       let offset = 0;
       while (true) {
@@ -2827,12 +2819,13 @@ export default function JobDetail() {
       }
 
       if (allAssetIds.length === 0) {
+        setTotalAssetCount(0);
         setJobAssets([]);
         setFilteredJobAssets([]);
         return;
       }
 
-      // 3. Fetch asset details in batches
+      // 2. Fetch asset details in batches
       const allAssetsData: any[] = [];
       for (let i = 0; i < allAssetIds.length; i += JOB_ASSETS_BATCH_SIZE) {
         const chunk = allAssetIds.slice(i, i + JOB_ASSETS_BATCH_SIZE);
@@ -2855,10 +2848,13 @@ export default function JobDetail() {
         .filter(Boolean) as any[];
 
       setJobAssets(orderedAssets);
+      setTotalAssetCount(
+        orderedAssets.filter((asset) => asset.status !== "archived").length,
+      );
       setFilteredJobAssets(orderedAssets);
       setDynamicAssetNames({});
 
-      // 4. For report assets, fetch linked report timestamps
+      // 3. For report assets, fetch linked report timestamps
       const reportAssetIds = orderedAssets
         .filter((a) => a.file_url?.startsWith("report:"))
         .map((a) => a.id);
@@ -4451,7 +4447,7 @@ export default function JobDetail() {
       (da) => da.id === asset.id && da.file_url.startsWith("report:"),
     );
 
-    if (isTemplate) {
+    if (isTemplate || !reportIdFromUrl) {
       // For templates (new reports), navigate to the path without a reportId segment.
       // The jobIdSegment here is the current job's ID passed via the template literal in defaultAssets
       return `/jobs/${jobIdSegment}/${mappedReportName}`;
@@ -4464,15 +4460,9 @@ export default function JobDetail() {
       } else {
         return `/jobs/${jobIdSegment}/${mappedReportName}/${reportIdFromUrl}?returnToAssets=true`;
       }
-    } else {
-      // Fallback for existing assets that might have a malformed URL or if it's a template missed by the above check.
-      // This primarily targets new reports from templates.
-      console.warn(
-        "Asset is not a template and has no reportId in URL, defaulting to new report path:",
-        asset.file_url,
-      );
-      return `/jobs/${jobIdSegment}/${mappedReportName}?returnToAssets=true`;
     }
+
+    return `/jobs/${jobIdSegment}/${mappedReportName}`;
   };
 
   // Helper: derive current identifier and substation for a report asset to compute display name and grouping
@@ -4520,7 +4510,7 @@ export default function JobDetail() {
         "medium-voltage-switch-sf6-report": "medium_voltage_switch_sf6_reports",
         "potential-transformer-ats-report": "potential_transformer_ats_reports",
         "low-voltage-panelboard-small-breaker-report":
-          "low_voltage_panelboard_small_breaker_report",
+          "low_voltage_panelboard_small_breaker_reports",
         "medium-voltage-circuit-breaker-report":
           "medium_voltage_circuit_breaker_reports",
         "medium-voltage-circuit-breaker-mts-report":
@@ -8740,8 +8730,8 @@ ${newBodyHtml}
                             ) : (
                               <CheckCircle className="h-4 w-4 text-green-500" />
                             )}
-                            <span className="text-lg font-semibold capitalize text-gray-900 dark:text-white">
-                              {job.priority}
+                            <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                              {formatStatusLabel(job.priority)}
                             </span>
                           </div>
                         </CardContent>

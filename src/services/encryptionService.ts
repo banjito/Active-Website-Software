@@ -16,7 +16,8 @@ export const initEncryptionService = async (): Promise<boolean> => {
   try {
     // Try to get existing encryption settings from the system_config table
     const { data, error } = await supabase
-      .from('common.system_config')
+      .schema('common')
+      .from('system_config')
       .select('value')
       .eq('key', ENCRYPTION_CONFIG_KEY)
       .single();
@@ -34,7 +35,8 @@ export const initEncryptionService = async (): Promise<boolean> => {
       
       // Store the encryption settings
       const { error: insertError } = await supabase
-        .from('common.system_config')
+        .schema('common')
+        .from('system_config')
         .insert({
           key: ENCRYPTION_CONFIG_KEY,
           value: {
@@ -64,7 +66,8 @@ export const initEncryptionService = async (): Promise<boolean> => {
         await rotateEncryptionKey();
         // Re-fetch the encryption settings after rotation
         const { data: updatedData, error: refetchError } = await supabase
-          .from('common.system_config')
+          .schema('common')
+          .from('system_config')
           .select('value')
           .eq('key', ENCRYPTION_CONFIG_KEY)
           .single();
@@ -96,7 +99,8 @@ export const rotateEncryptionKey = async (): Promise<boolean> => {
   try {
     // Fetch current encryption settings
     const { data, error } = await supabase
-      .from('common.system_config')
+      .schema('common')
+      .from('system_config')
       .select('value')
       .eq('key', ENCRYPTION_CONFIG_KEY)
       .single();
@@ -119,7 +123,8 @@ export const rotateEncryptionKey = async (): Promise<boolean> => {
     
     // Update with new key
     const { error: updateError } = await supabase
-      .from('common.system_config')
+      .schema('common')
+      .from('system_config')
       .update({
         value: {
           currentKey: newKey,
@@ -250,7 +255,8 @@ export const isEncryptionInitialized = (): boolean => {
 export const getEncryptionSettings = async (): Promise<any | null> => {
   try {
     const { data, error } = await supabase
-      .from('common.system_config')
+      .schema('common')
+      .from('system_config')
       .select('value')
       .eq('key', ENCRYPTION_CONFIG_KEY)
       .single();

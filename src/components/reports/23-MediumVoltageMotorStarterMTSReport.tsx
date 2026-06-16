@@ -13,9 +13,12 @@ import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { ReportWrapper } from "./ReportWrapper";
 import { formatLocalDateShort } from "@/utils/dateUtils";
+import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { useSaveIndicator } from "./common/useSaveIndicator";
+import { ReportHeader } from "./common/ReportHeader";
 
 // Temperature conversion and correction factor lookup tables (reuse from other reports)
 const tcfTable: { [key: string]: number } = {
@@ -466,12 +469,21 @@ const initialVisualMechanicalItems = [
 
 const MediumVoltageMotorStarterMTSReport: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
+
+  useEffect(() => {
+    setCurrentReportId(reportId);
+  }, [reportId]);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const { maskCustomerName, maskCustomerAddress } = useDemoMode();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { justSaved, markSaved, markEdited } = useSaveIndicator();
 
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
@@ -812,6 +824,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
+    const wasExistingReport = Boolean(reportId);
 
     const reportPayload = {
       job_id: jobId,
@@ -820,6 +833,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
     };
 
     try {
+      setIsSaving(true);
       let result;
       const reportTableName = "medium_voltage_motor_starter_mts_reports"; // Define table name
 
@@ -864,16 +878,40 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
         }
       }
       if (result.error) throw result.error;
-      setIsEditing(false);
-      alert(`Report ${reportId ? "updated" : "saved"} successfully!`);
-      navigateAfterSave(navigate, jobId, location);
+      markSaved();
+      if (!wasExistingReport) {
+        setIsEditing(false);
+        // Quietly update URL with new report ID
+        const newId = result?.data?.id;
+        if (newId) {
+          setCurrentReportId(newId);
+          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
+        }
+      }
     } catch (error: any) {
       console.error("Error saving report:", error);
       alert(`Failed to save report: ${error?.message || "Unknown error"}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleStatusToggle = () => {
+    setFormData((prev) => ({
+      ...prev,
+      status: prev.status === "PASS" ? "FAIL" : "PASS",
+    }));
+  };
+
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    if (reportId) {
+      setIsEditing(false);
     }
   };
 
   const handleFahrenheitChange = (fahrenheit: number) => {
+    markEdited();
     const celsius = Math.round(((fahrenheit - 32) * 5) / 9);
     const tcf = getTCF(celsius);
     setFormData((prev) => ({
@@ -883,6 +921,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
   };
 
   const handleCelsiusChange = (celsius: number) => {
+    markEdited();
     const fahrenheit = Math.round((celsius * 9) / 5 + 32);
     const tcf = getTCF(celsius);
     setFormData((prev) => ({
@@ -892,6 +931,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
   };
 
   const handleChange = (path: string, value: any) => {
+    markEdited();
     setFormData((prev) => _.set(_.cloneDeep(prev), path, value));
   };
 
@@ -901,6 +941,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
     field: string,
     value: any,
   ) => {
+    markEdited();
     setFormData((prev) => {
       const newList = _.cloneDeep(_.get(prev, listPath));
       if (newList && newList[index]) {
@@ -1041,59 +1082,22 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
       </div>
       {/* End Print Header */}
       <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
-        {/* Header: Title and Buttons */}
-        <div className="print:hidden flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {reportName}
-          </h1>
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                if (isEditing)
-                  handleChange(
-                    "status",
-                    formData.status === "PASS" ? "FAIL" : "PASS",
-                  );
-              }}
-              disabled={!isEditing}
-              className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                formData.status === "PASS"
-                  ? "bg-green-600 text-white focus:ring-green-500"
-                  : "bg-red-600 text-white focus:ring-red-500"
-              } ${!isEditing ? "opacity-70 cursor-not-allowed" : "hover:opacity-90 dark:bg-opacity-80"}`}
-            >
-              {formData.status}
-            </button>
-            {reportId && !isEditing ? (
-              <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Edit Report
-                </button>
-                <button
-                  onClick={() => window.print()}
-                  className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                >
-                  Print Report
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={handleSave}
-                disabled={!isEditing || loading}
-                className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing || loading ? "opacity-50 cursor-not-allowed" : "hover:bg-orange-700"}`}
-              >
-                {loading
-                  ? "Saving..."
-                  : reportId
-                    ? "Update Report"
-                    : "Save Report"}
-              </button>
-            )}
-          </div>
-        </div>
+        <ReportHeader
+          title={reportName}
+          isAutoSaving={isAutoSaving}
+          isEditing={isEditing}
+          justSaved={justSaved}
+          isSaving={isSaving}
+          status={formData.status}
+          hasReport={!!currentReportId}
+          onStatusToggle={handleStatusToggle}
+          onSave={handleSave}
+          onSaveAndClose={handleSaveAndClose}
+          onEdit={() => setIsEditing(true)}
+          onBack={() => navigate(`/jobs/${jobId}`)}
+          isPrintMode={isPrintMode}
+          loading={loading}
+        />
 
         {/* Job Information Section */}
         <div className="mb-6">

@@ -326,7 +326,6 @@ const StandardReportTemplate: React.FC = () => {
       if (result.error) throw result.error;
 
       setIsEditMode(false);
-      alert(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
       navigate(`/jobs/${jobId}`);
     } catch (error: any) {
       console.error('Error saving report:', error);

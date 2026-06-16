@@ -11,6 +11,7 @@ import CustomerDocumentManagement from './CustomerDocumentManagement';
 import CustomerHealthMonitoring from './CustomerHealth';
 import { toast } from '../../components/ui/toast';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { formatStatusLabel } from '@/utils/formatters';
 
 interface Contact {
   id: string;
@@ -697,14 +698,14 @@ export default function CustomerDetail() {
                                 job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                                 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                               }`}>
-                                {job.status}
+                                {formatStatusLabel(job.status)}
                               </span>
                               <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
                                 job.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
                                 job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                                 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                               }`}>
-                                {job.priority}
+                                {formatStatusLabel(job.priority)}
                               </span>
                             </div>
                           </div>
@@ -1060,15 +1061,15 @@ export default function CustomerDetail() {
                               job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                               job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                               'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            }`}>
-                              {job.status}
-                            </span>
+                              }`}>
+                                {formatStatusLabel(job.status)}
+                              </span>
                             <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
                               job.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
                               job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                               'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                             }`}>
-                              {job.priority}
+                              {formatStatusLabel(job.priority)}
                             </span>
                           </div>
                         </div>

@@ -1,17 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/AuthContext';
-import { useDemoMode } from '@/lib/DemoModeContext';
-import { navigateAfterSave } from './ReportUtils';
-import { getReportName, getAssetName } from './reportMappings';
-import { ReportWrapper } from './ReportWrapper';
-import JobInfoPrintTable from './common/JobInfoPrintTable';
-import NameplatePrintTable from './common/NameplatePrintTable';
-import { EquipmentAutocomplete } from '../equipment/EquipmentAutocomplete';
-import { formatLocalDateShort } from '@/utils/dateUtils';
-import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useState, useEffect } from "react";
+import {
+  useParams,
+  useNavigate,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/AuthContext";
+import { useDemoMode } from "@/lib/DemoModeContext";
+import { navigateAfterSave } from "./ReportUtils";
+import { getReportName, getAssetName } from "./reportMappings";
+import { ReportWrapper } from "./ReportWrapper";
+import { ReportHeader } from "./common/ReportHeader";
+import JobInfoPrintTable from "./common/JobInfoPrintTable";
+import NameplatePrintTable from "./common/NameplatePrintTable";
+import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
+import { formatLocalDateShort } from "@/utils/dateUtils";
+import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 // Add these constants at the top of the file, after the imports
 const visualInspectionOptions = [
@@ -20,19 +26,19 @@ const visualInspectionOptions = [
   "Unsatisfactory",
   "Cleaned",
   "See Comments",
-  "Not Applicable"
+  "Not Applicable",
 ];
 
 const insulationResistanceUnits = [
   { symbol: "kΩ", name: "Kilo-Ohms" },
   { symbol: "MΩ", name: "Mega-Ohms" },
-  { symbol: "GΩ", name: "Giga-Ohms" }
+  { symbol: "GΩ", name: "Giga-Ohms" },
 ];
 
 const contactResistanceUnits = [
   { symbol: "µΩ", name: "Micro-Ohms" },
   { symbol: "mΩ", name: "Milli-Ohms" },
-  { symbol: "Ω", name: "Ohms" }
+  { symbol: "Ω", name: "Ohms" },
 ];
 
 interface FormData {
@@ -50,7 +56,7 @@ interface FormData {
     humidity: number;
     tcf: number;
   };
-  
+
   // Nameplate Data
   manufacturer: string;
   catalogNumber: string;
@@ -147,7 +153,7 @@ interface FormData {
   };
 
   comments: string;
-  status: 'PASS' | 'FAIL' | 'LIMITED SERVICE';
+  status: "PASS" | "FAIL" | "LIMITED SERVICE";
 
   // New fields
   jobTitle: string;
@@ -162,35 +168,143 @@ interface FormData {
 // Add TCF lookup function
 const getTCF = (celsius: number): number => {
   const tcfTable = {
-    '-24': 0.054, '-23': 0.068, '-22': 0.082, '-21': 0.096, '-20': 0.11,
-    '-19': 0.124, '-18': 0.138, '-17': 0.152, '-16': 0.166, '-15': 0.18,
-    '-14': 0.194, '-13': 0.208, '-12': 0.222, '-11': 0.236, '-10': 0.25,
-    '-9': 0.264, '-8': 0.278, '-7': 0.292, '-6': 0.306, '-5': 0.32,
-    '-4': 0.336, '-3': 0.352, '-2': 0.368, '-1': 0.384, '0': 0.4,
-    '1': 0.42, '2': 0.44, '3': 0.46, '4': 0.48, '5': 0.5,
-    '6': 0.526, '7': 0.552, '8': 0.578, '9': 0.604, '10': 0.63,
-    '11': 0.666, '12': 0.702, '13': 0.738, '14': 0.774, '15': 0.81,
-    '16': 0.848, '17': 0.886, '18': 0.924, '19': 0.962, '20': 1,
-    '21': 1.05, '22': 1.1, '23': 1.15, '24': 1.2, '25': 1.25,
-    '26': 1.316, '27': 1.382, '28': 1.448, '29': 1.514, '30': 1.58,
-    '31': 1.664, '32': 1.748, '33': 1.832, '34': 1.872, '35': 2,
-    '36': 2.1, '37': 2.2, '38': 2.3, '39': 2.4, '40': 2.5,
-    '41': 2.628, '42': 2.756, '43': 2.884, '44': 3.012, '45': 3.15,
-    '46': 3.316, '47': 3.482, '48': 3.648, '49': 3.814, '50': 3.98,
-    '51': 4.184, '52': 4.388, '53': 4.592, '54': 4.796, '55': 5,
-    '56': 5.26, '57': 5.52, '58': 5.78, '59': 6.04, '60': 6.3,
-    '61': 6.62, '62': 6.94, '63': 7.26, '64': 7.58, '65': 7.9,
-    '66': 8.32, '67': 8.74, '68': 9.16, '69': 9.58, '70': 10,
-    '71': 10.52, '72': 11.04, '73': 11.56, '74': 12.08, '75': 12.6,
-    '76': 13.24, '77': 13.88, '78': 14.52, '79': 15.16, '80': 15.8,
-    '81': 16.64, '82': 17.48, '83': 18.32, '84': 19.16, '85': 20,
-    '86': 21.04, '87': 22.08, '88': 23.12, '89': 24.16, '90': 25.2,
-    '91': 26.45, '92': 27.7, '93': 28.95, '94': 30.2, '95': 31.6,
-    '96': 33.28, '97': 34.96, '98': 36.64, '99': 38.32, '100': 40,
-    '101': 42.08, '102': 44.16, '103': 46.24, '104': 48.32, '105': 50.4,
-    '106': 52.96, '107': 55.52, '108': 58.08, '109': 60.64, '110': 63.2
+    "-24": 0.054,
+    "-23": 0.068,
+    "-22": 0.082,
+    "-21": 0.096,
+    "-20": 0.11,
+    "-19": 0.124,
+    "-18": 0.138,
+    "-17": 0.152,
+    "-16": 0.166,
+    "-15": 0.18,
+    "-14": 0.194,
+    "-13": 0.208,
+    "-12": 0.222,
+    "-11": 0.236,
+    "-10": 0.25,
+    "-9": 0.264,
+    "-8": 0.278,
+    "-7": 0.292,
+    "-6": 0.306,
+    "-5": 0.32,
+    "-4": 0.336,
+    "-3": 0.352,
+    "-2": 0.368,
+    "-1": 0.384,
+    "0": 0.4,
+    "1": 0.42,
+    "2": 0.44,
+    "3": 0.46,
+    "4": 0.48,
+    "5": 0.5,
+    "6": 0.526,
+    "7": 0.552,
+    "8": 0.578,
+    "9": 0.604,
+    "10": 0.63,
+    "11": 0.666,
+    "12": 0.702,
+    "13": 0.738,
+    "14": 0.774,
+    "15": 0.81,
+    "16": 0.848,
+    "17": 0.886,
+    "18": 0.924,
+    "19": 0.962,
+    "20": 1,
+    "21": 1.05,
+    "22": 1.1,
+    "23": 1.15,
+    "24": 1.2,
+    "25": 1.25,
+    "26": 1.316,
+    "27": 1.382,
+    "28": 1.448,
+    "29": 1.514,
+    "30": 1.58,
+    "31": 1.664,
+    "32": 1.748,
+    "33": 1.832,
+    "34": 1.872,
+    "35": 2,
+    "36": 2.1,
+    "37": 2.2,
+    "38": 2.3,
+    "39": 2.4,
+    "40": 2.5,
+    "41": 2.628,
+    "42": 2.756,
+    "43": 2.884,
+    "44": 3.012,
+    "45": 3.15,
+    "46": 3.316,
+    "47": 3.482,
+    "48": 3.648,
+    "49": 3.814,
+    "50": 3.98,
+    "51": 4.184,
+    "52": 4.388,
+    "53": 4.592,
+    "54": 4.796,
+    "55": 5,
+    "56": 5.26,
+    "57": 5.52,
+    "58": 5.78,
+    "59": 6.04,
+    "60": 6.3,
+    "61": 6.62,
+    "62": 6.94,
+    "63": 7.26,
+    "64": 7.58,
+    "65": 7.9,
+    "66": 8.32,
+    "67": 8.74,
+    "68": 9.16,
+    "69": 9.58,
+    "70": 10,
+    "71": 10.52,
+    "72": 11.04,
+    "73": 11.56,
+    "74": 12.08,
+    "75": 12.6,
+    "76": 13.24,
+    "77": 13.88,
+    "78": 14.52,
+    "79": 15.16,
+    "80": 15.8,
+    "81": 16.64,
+    "82": 17.48,
+    "83": 18.32,
+    "84": 19.16,
+    "85": 20,
+    "86": 21.04,
+    "87": 22.08,
+    "88": 23.12,
+    "89": 24.16,
+    "90": 25.2,
+    "91": 26.45,
+    "92": 27.7,
+    "93": 28.95,
+    "94": 30.2,
+    "95": 31.6,
+    "96": 33.28,
+    "97": 34.96,
+    "98": 36.64,
+    "99": 38.32,
+    "100": 40,
+    "101": 42.08,
+    "102": 44.16,
+    "103": 46.24,
+    "104": 48.32,
+    "105": 50.4,
+    "106": 52.96,
+    "107": 55.52,
+    "108": 58.08,
+    "109": 60.64,
+    "110": 63.2,
   };
-  
+
   // Round to nearest integer for lookup
   const roundedTemp = Math.round(celsius);
   return tcfTable[roundedTemp.toString()] || 1; // Default to 1 if temperature not found
@@ -198,221 +312,443 @@ const getTCF = (celsius: number): number => {
 
 const SwitchgearReport: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
+
+  useEffect(() => {
+    setCurrentReportId(reportId);
+  }, [reportId]);
+
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { maskCustomerName, maskCustomerAddress, maskJobTitle } = useDemoMode();
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(!reportId); // True if new report, false if loading existing
-  
+  const [isEditing, setIsEditing] = useState(!reportId);
+  const [justSaved, setJustSaved] = useState(false); // True if new report, false if loading existing
+  const [isSaving, setIsSaving] = useState(false);
+
   // Print Mode Detection
-  const isPrintMode = searchParams.get('print') === 'true';
-  
+  const isPrintMode = searchParams.get("print") === "true";
+
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
-  const reportSlug = 'switchgear-report'; // This component handles the switchgear-report route
+  const reportSlug = "switchgear-report"; // This component handles the switchgear-report route
   const reportName = getReportName(reportSlug);
   const [formData, setFormData] = useState<FormData>({
     // Initialize with default values
-    customer: '',
-    address: '',
-    date: new Date().toISOString().split('T')[0],
-    technicians: '',
-    jobNumber: '',
-    substation: '',
-    eqptLocation: '',
+    customer: "",
+    address: "",
+    date: new Date().toISOString().split("T")[0],
+    technicians: "",
+    jobNumber: "",
+    substation: "",
+    eqptLocation: "",
     temperature: {
       fahrenheit: 68,
       celsius: 20,
       humidity: 0,
-      tcf: 1
+      tcf: 1,
     },
-    manufacturer: '',
-    catalogNumber: '',
-    serialNumber: '',
-    type: '',
-    systemVoltage: '',
-    ratedVoltage: '',
-    ratedCurrent: '',
-    phaseConfiguration: '',
+    manufacturer: "",
+    catalogNumber: "",
+    serialNumber: "",
+    type: "",
+    systemVoltage: "",
+    ratedVoltage: "",
+    ratedCurrent: "",
+    phaseConfiguration: "",
     visualInspectionItems: [
-      { id: '7.1.A.1', description: 'Compare equipment nameplate data with drawings and specifications.', result: '', comments: '' },
-      { id: '7.1.A.2', description: 'Inspect physical, electrical, and mechanical condition of cords and connectors.', result: '', comments: '' },
-      { id: '7.1.A.3', description: 'Inspect anchorage, alignment, grounding, and required area clearances.', result: '', comments: '' },
-      { id: '7.1.A.4', description: 'Verify the unit is clean and all shipping bracing, loose parts, and documentation shipped inside cubicles have been removed.', result: '', comments: '' },
-      { id: '7.1.A.5', description: 'Verify that fuse and circuit breaker sizes and types correspond to drawings and coordination study as well as to the circuit breaker address for microprocessor-communication packages.', result: '', comments: '' },
-      { id: '7.1.A.6', description: 'Verify that current and voltage transformer ratios correspond to drawings.', result: '', comments: '' },
-      { id: '7.1.A.7', description: 'Verify that wiring connections are tight and that wiring is secure to prevent damage during routine operation of moving parts.', result: '', comments: '' },
-      { id: '7.1.A.8.1', description: 'Use of a low-resistance ohmmeter in accordance with Section 7.1.B.1.', result: '', comments: '' },
-      { id: '7.1.A.9', description: 'Confirm correct operation and sequencing of electrical and mechanical interlock systems.', result: '', comments: '' },
-      { id: '7.1.A.10', description: 'Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.', result: '', comments: '' },
-      { id: '7.1.A.11', description: 'Inspect insulators for evidence of physical damage or contaminated surfaces.', result: '', comments: '' },
-      { id: '7.1.A.12', description: 'Verify correct barrier and shutter installation and operation.', result: '', comments: '' },
-      { id: '7.1.A.13', description: 'Exercise all active components.', result: '', comments: '' },
-      { id: '7.1.A.14', description: 'Inspect mechanical indicating devices for correct operation.', result: '', comments: '' },
-      { id: '7.1.A.15', description: 'Verify that filters are in place and vents are clear.', result: '', comments: '' }
+      {
+        id: "7.1.A.1",
+        description:
+          "Compare equipment nameplate data with drawings and specifications.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.2",
+        description:
+          "Inspect physical, electrical, and mechanical condition of cords and connectors.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.3",
+        description:
+          "Inspect anchorage, alignment, grounding, and required area clearances.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.4",
+        description:
+          "Verify the unit is clean and all shipping bracing, loose parts, and documentation shipped inside cubicles have been removed.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.5",
+        description:
+          "Verify that fuse and circuit breaker sizes and types correspond to drawings and coordination study as well as to the circuit breaker address for microprocessor-communication packages.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.6",
+        description:
+          "Verify that current and voltage transformer ratios correspond to drawings.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.7",
+        description:
+          "Verify that wiring connections are tight and that wiring is secure to prevent damage during routine operation of moving parts.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.8.1",
+        description:
+          "Use of a low-resistance ohmmeter in accordance with Section 7.1.B.1.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.9",
+        description:
+          "Confirm correct operation and sequencing of electrical and mechanical interlock systems.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.10",
+        description:
+          "Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.11",
+        description:
+          "Inspect insulators for evidence of physical damage or contaminated surfaces.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.12",
+        description:
+          "Verify correct barrier and shutter installation and operation.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.13",
+        description: "Exercise all active components.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.14",
+        description:
+          "Inspect mechanical indicating devices for correct operation.",
+        result: "",
+        comments: "",
+      },
+      {
+        id: "7.1.A.15",
+        description: "Verify that filters are in place and vents are clear.",
+        result: "",
+        comments: "",
+      },
     ],
     insulationResistanceTests: [
       {
-        busSection: 'Bus 1',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        testVoltage: '',
-        unit: 'MΩ'
+        busSection: "Bus 1",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        testVoltage: "",
+        unit: "MΩ",
       },
       {
-        busSection: 'Bus 2',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        testVoltage: '',
-        unit: 'MΩ'
+        busSection: "Bus 2",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        testVoltage: "",
+        unit: "MΩ",
       },
       {
-        busSection: 'Bus 3',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        testVoltage: '',
-        unit: 'MΩ'
+        busSection: "Bus 3",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        testVoltage: "",
+        unit: "MΩ",
       },
       {
-        busSection: 'Bus 4',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        testVoltage: '',
-        unit: 'MΩ'
+        busSection: "Bus 4",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        testVoltage: "",
+        unit: "MΩ",
       },
       {
-        busSection: 'Bus 5',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        testVoltage: '',
-        unit: 'MΩ'
+        busSection: "Bus 5",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        testVoltage: "",
+        unit: "MΩ",
       },
       {
-        busSection: 'Bus 6',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        testVoltage: '',
-        unit: 'MΩ'
-      }
+        busSection: "Bus 6",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        testVoltage: "",
+        unit: "MΩ",
+      },
     ],
     temperatureCorrectedTests: [
       {
-        busSection: 'Bus 1',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        unit: 'MΩ'
+        busSection: "Bus 1",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        unit: "MΩ",
       },
       {
-        busSection: 'Bus 2',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        unit: 'MΩ'
+        busSection: "Bus 2",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        unit: "MΩ",
       },
       {
-        busSection: 'Bus 3',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        unit: 'MΩ'
+        busSection: "Bus 3",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        unit: "MΩ",
       },
       {
-        busSection: 'Bus 4',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        unit: 'MΩ'
+        busSection: "Bus 4",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        unit: "MΩ",
       },
       {
-        busSection: 'Bus 5',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        unit: 'MΩ'
+        busSection: "Bus 5",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        unit: "MΩ",
       },
       {
-        busSection: 'Bus 6',
-        values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
-        unit: 'MΩ'
-      }
+        busSection: "Bus 6",
+        values: {
+          ag: "",
+          bg: "",
+          cg: "",
+          ab: "",
+          bc: "",
+          ca: "",
+          an: "",
+          bn: "",
+          cn: "",
+        },
+        unit: "MΩ",
+      },
     ],
     contactResistanceTests: [
       {
-        busSection: 'Bus 1',
-        values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' },
-        testVoltage: '',
-        unit: 'µΩ'
+        busSection: "Bus 1",
+        values: { aPhase: "", bPhase: "", cPhase: "", neutral: "", ground: "" },
+        testVoltage: "",
+        unit: "µΩ",
       },
       {
-        busSection: 'Bus 2',
-        values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' },
-        testVoltage: '',
-        unit: 'µΩ'
+        busSection: "Bus 2",
+        values: { aPhase: "", bPhase: "", cPhase: "", neutral: "", ground: "" },
+        testVoltage: "",
+        unit: "µΩ",
       },
       {
-        busSection: 'Bus 3',
-        values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' },
-        testVoltage: '',
-        unit: 'µΩ'
+        busSection: "Bus 3",
+        values: { aPhase: "", bPhase: "", cPhase: "", neutral: "", ground: "" },
+        testVoltage: "",
+        unit: "µΩ",
       },
       {
-        busSection: 'Bus 4',
-        values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' },
-        testVoltage: '',
-        unit: 'µΩ'
+        busSection: "Bus 4",
+        values: { aPhase: "", bPhase: "", cPhase: "", neutral: "", ground: "" },
+        testVoltage: "",
+        unit: "µΩ",
       },
       {
-        busSection: 'Bus 5',
-        values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' },
-        testVoltage: '',
-        unit: 'µΩ'
+        busSection: "Bus 5",
+        values: { aPhase: "", bPhase: "", cPhase: "", neutral: "", ground: "" },
+        testVoltage: "",
+        unit: "µΩ",
       },
       {
-        busSection: 'Bus 6',
-        values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' },
-        testVoltage: '',
-        unit: 'µΩ'
-      }
+        busSection: "Bus 6",
+        values: { aPhase: "", bPhase: "", cPhase: "", neutral: "", ground: "" },
+        testVoltage: "",
+        unit: "µΩ",
+      },
     ],
     dielectricWithstandTests: [
       {
-        busSection: 'Bus 1',
-        values: { ag: '', bg: '', cg: '' },
-        testVoltage: '',
-        unit: 'µA'
+        busSection: "Bus 1",
+        values: { ag: "", bg: "", cg: "" },
+        testVoltage: "",
+        unit: "µA",
       },
       {
-        busSection: 'Bus 2',
-        values: { ag: '', bg: '', cg: '' },
-        testVoltage: '',
-        unit: 'µA'
+        busSection: "Bus 2",
+        values: { ag: "", bg: "", cg: "" },
+        testVoltage: "",
+        unit: "µA",
       },
       {
-        busSection: 'Bus 3',
-        values: { ag: '', bg: '', cg: '' },
-        testVoltage: '',
-        unit: 'µA'
+        busSection: "Bus 3",
+        values: { ag: "", bg: "", cg: "" },
+        testVoltage: "",
+        unit: "µA",
       },
       {
-        busSection: 'Bus 4',
-        values: { ag: '', bg: '', cg: '' },
-        testVoltage: '',
-        unit: 'µA'
+        busSection: "Bus 4",
+        values: { ag: "", bg: "", cg: "" },
+        testVoltage: "",
+        unit: "µA",
       },
       {
-        busSection: 'Bus 5',
-        values: { ag: '', bg: '', cg: '' },
-        testVoltage: '',
-        unit: 'µA'
+        busSection: "Bus 5",
+        values: { ag: "", bg: "", cg: "" },
+        testVoltage: "",
+        unit: "µA",
       },
       {
-        busSection: 'Bus 6',
-        values: { ag: '', bg: '', cg: '' },
-        testVoltage: '',
-        unit: 'µA'
-      }
+        busSection: "Bus 6",
+        values: { ag: "", bg: "", cg: "" },
+        testVoltage: "",
+        unit: "µA",
+      },
     ],
     testEquipment: {
-      megohmmeter: { name: '', serialNumber: '', ampId: '', calDate: '' },
-      lowResistance: { name: '', serialNumber: '', ampId: '', calDate: '' }
+      megohmmeter: { name: "", serialNumber: "", ampId: "", calDate: "" },
+      lowResistance: { name: "", serialNumber: "", ampId: "", calDate: "" },
     },
-    comments: '',
-    jobTitle: '',
-    customerName: '',
-    customerLocation: '',
-    jobId: '',
-    identifier: '',
-    userName: '',
-    testEquipmentLocation: '',
-    status: 'PASS'
+    comments: "",
+    jobTitle: "",
+    customerName: "",
+    customerLocation: "",
+    jobId: "",
+    identifier: "",
+    userName: "",
+    testEquipmentLocation: "",
+    status: "PASS",
   });
+
+  useEffect(() => {
+    if (isEditing && justSaved) {
+      setJustSaved(false);
+    }
+  }, [formData]);
 
   useEffect(() => {
     if (jobId) {
@@ -421,11 +757,11 @@ const SwitchgearReport: React.FC = () => {
     if (reportId) {
       loadReport();
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        jobId: jobId || '',
-        customerName: prev.customerName || '',
-        customerLocation: prev.customerLocation || '',
+        jobId: jobId || "",
+        customerName: prev.customerName || "",
+        customerLocation: prev.customerLocation || "",
       }));
     }
     setIsEditing(!reportId);
@@ -433,33 +769,80 @@ const SwitchgearReport: React.FC = () => {
 
   useEffect(() => {
     const tcf = getTCF(formData.temperature.celsius);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       temperature: {
         ...prev.temperature,
-        tcf
+        tcf,
       },
       // Update temperature corrected values
-      temperatureCorrectedTests: formData.insulationResistanceTests.map(test => ({
-        busSection: test.busSection,
-        values: {
-          ag: test.values.ag && test.values.ag.trim() !== '' && test.values.ag.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.ag) * tcf).toFixed(2) : 'N/A',
-          bg: test.values.bg && test.values.bg.trim() !== '' && test.values.bg.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.bg) * tcf).toFixed(2) : 'N/A',
-          cg: test.values.cg && test.values.cg.trim() !== '' && test.values.cg.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.cg) * tcf).toFixed(2) : 'N/A',
-          ab: test.values.ab && test.values.ab.trim() !== '' && test.values.ab.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.ab) * tcf).toFixed(2) : 'N/A',
-          bc: test.values.bc && test.values.bc.trim() !== '' && test.values.bc.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.bc) * tcf).toFixed(2) : 'N/A',
-          ca: test.values.ca && test.values.ca.trim() !== '' && test.values.ca.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.ca) * tcf).toFixed(2) : 'N/A',
-          an: test.values.an && test.values.an.trim() !== '' && test.values.an.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.an) * tcf).toFixed(2) : 'N/A',
-          bn: test.values.bn && test.values.bn.trim() !== '' && test.values.bn.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.bn) * tcf).toFixed(2) : 'N/A',
-          cn: test.values.cn && test.values.cn.trim() !== '' && test.values.cn.trim().toLowerCase() !== 'n/a' ? (parseFloat(test.values.cn) * tcf).toFixed(2) : 'N/A'
-        },
-        unit: test.unit
-      }))
+      temperatureCorrectedTests: formData.insulationResistanceTests.map(
+        (test) => ({
+          busSection: test.busSection,
+          values: {
+            ag:
+              test.values.ag &&
+              test.values.ag.trim() !== "" &&
+              test.values.ag.trim().toLowerCase() !== "n/a"
+                ? (parseFloat(test.values.ag) * tcf).toFixed(2)
+                : "N/A",
+            bg:
+              test.values.bg &&
+              test.values.bg.trim() !== "" &&
+              test.values.bg.trim().toLowerCase() !== "n/a"
+                ? (parseFloat(test.values.bg) * tcf).toFixed(2)
+                : "N/A",
+            cg:
+              test.values.cg &&
+              test.values.cg.trim() !== "" &&
+              test.values.cg.trim().toLowerCase() !== "n/a"
+                ? (parseFloat(test.values.cg) * tcf).toFixed(2)
+                : "N/A",
+            ab:
+              test.values.ab &&
+              test.values.ab.trim() !== "" &&
+              test.values.ab.trim().toLowerCase() !== "n/a"
+                ? (parseFloat(test.values.ab) * tcf).toFixed(2)
+                : "N/A",
+            bc:
+              test.values.bc &&
+              test.values.bc.trim() !== "" &&
+              test.values.bc.trim().toLowerCase() !== "n/a"
+                ? (parseFloat(test.values.bc) * tcf).toFixed(2)
+                : "N/A",
+            ca:
+              test.values.ca &&
+              test.values.ca.trim() !== "" &&
+              test.values.ca.trim().toLowerCase() !== "n/a"
+                ? (parseFloat(test.values.ca) * tcf).toFixed(2)
+                : "N/A",
+            an:
+              test.values.an &&
+              test.values.an.trim() !== "" &&
+              test.values.an.trim().toLowerCase() !== "n/a"
+                ? (parseFloat(test.values.an) * tcf).toFixed(2)
+                : "N/A",
+            bn:
+              test.values.bn &&
+              test.values.bn.trim() !== "" &&
+              test.values.bn.trim().toLowerCase() !== "n/a"
+                ? (parseFloat(test.values.bn) * tcf).toFixed(2)
+                : "N/A",
+            cn:
+              test.values.cn &&
+              test.values.cn.trim() !== "" &&
+              test.values.cn.trim().toLowerCase() !== "n/a"
+                ? (parseFloat(test.values.cn) * tcf).toFixed(2)
+                : "N/A",
+          },
+          unit: test.unit,
+        }),
+      ),
     }));
   }, [formData.temperature.celsius, formData.insulationResistanceTests]);
 
   useEffect(() => {
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       .section-insulation-resistance table,
       .section-temp-corrected table,
@@ -479,7 +862,13 @@ const SwitchgearReport: React.FC = () => {
       .section-dielectric td input { width: 100%; }
     `;
     document.head.appendChild(style);
-    return () => { try { document.head.removeChild(style); } catch { /* ignore */ } };
+    return () => {
+      try {
+        document.head.removeChild(style);
+      } catch {
+        /* ignore */
+      }
+    };
   }, []);
 
   const loadJobInfo = async () => {
@@ -489,52 +878,60 @@ const SwitchgearReport: React.FC = () => {
       setLoading(true);
       // First fetch job data from neta_ops schema
       const { data: jobData, error: jobError } = await supabase
-        .schema('neta_ops')
-        .from('jobs')
-        .select(`
+        .schema("neta_ops")
+        .from("jobs")
+        .select(
+          `
           title,
           job_number,
           customer_id,
           site_address
-        `)
-        .eq('id', jobId)
+        `,
+        )
+        .eq("id", jobId)
         .single();
 
       if (jobError) throw jobError;
 
       if (jobData) {
         // Then fetch customer data from common schema
-        let customerName = '';
-        let customerAddress = jobData.site_address || '';
-        
+        let customerName = "";
+        let customerAddress = jobData.site_address || "";
+
         if (jobData.customer_id) {
           const { data: customerData, error: customerError } = await supabase
-            .schema('common')
-            .from('customers')
-            .select(`
+            .schema("common")
+            .from("customers")
+            .select(
+              `
               name,
               company_name,
               address
-            `)
-            .eq('id', jobData.customer_id)
+            `,
+            )
+            .eq("id", jobData.customer_id)
             .single();
-            
+
           if (!customerError && customerData) {
-            customerName = customerData.company_name || customerData.name || '';
-            customerAddress = jobData.site_address || customerData.address || customerAddress || '';
+            customerName = customerData.company_name || customerData.name || "";
+            customerAddress =
+              jobData.site_address ||
+              customerData.address ||
+              customerAddress ||
+              "";
           }
         }
 
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          jobNumber: jobData.job_number || '',
+          jobNumber: jobData.job_number || "",
           customerName: maskCustomerName(customerName),
           customerLocation: maskCustomerAddress(customerAddress),
-          jobTitle: maskJobTitle(jobData.title || '')
+          jobTitle: maskJobTitle(jobData.title || ""),
         }));
       }
     } catch (error) {
-      console.error('Error loading job info:', error);
+      console.error("Error loading job info:", error);
       alert(`Failed to load job info: ${(error as any).message}`);
     } finally {
       if (!reportId) {
@@ -552,15 +949,17 @@ const SwitchgearReport: React.FC = () => {
 
     try {
       const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('switchgear_reports')
-        .select('*')
-        .eq('id', reportId)
+        .schema("neta_ops")
+        .from("switchgear_reports")
+        .select("*")
+        .eq("id", reportId)
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          console.warn(`Report with ID ${reportId} not found. Starting new report.`);
+        if (error.code === "PGRST116") {
+          console.warn(
+            `Report with ID ${reportId} not found. Starting new report.`,
+          );
           setIsEditing(true);
         } else {
           throw error;
@@ -568,25 +967,32 @@ const SwitchgearReport: React.FC = () => {
       }
 
       if (data) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           ...data.report_info,
           customerName: data.report_info?.customer || prev.customerName,
           customerLocation: data.report_info?.address || prev.customerLocation,
-          identifier: data.report_info?.identifier || '',
-          userName: data.report_info?.userName || '',
-          testEquipmentLocation: data.report_info?.testEquipmentLocation || '',
-          visualInspectionItems: data.visual_mechanical?.items || prev.visualInspectionItems,
-          insulationResistanceTests: data.insulation_resistance?.tests || prev.insulationResistanceTests,
-          temperatureCorrectedTests: data.insulation_resistance?.correctedTests || prev.temperatureCorrectedTests,
-          contactResistanceTests: data.contact_resistance?.tests || prev.contactResistanceTests,
-          dielectricWithstandTests: data.contact_resistance?.dielectricTests || prev.dielectricWithstandTests,
-          comments: data.comments || ''
+          identifier: data.report_info?.identifier || "",
+          userName: data.report_info?.userName || "",
+          testEquipmentLocation: data.report_info?.testEquipmentLocation || "",
+          visualInspectionItems:
+            data.visual_mechanical?.items || prev.visualInspectionItems,
+          insulationResistanceTests:
+            data.insulation_resistance?.tests || prev.insulationResistanceTests,
+          temperatureCorrectedTests:
+            data.insulation_resistance?.correctedTests ||
+            prev.temperatureCorrectedTests,
+          contactResistanceTests:
+            data.contact_resistance?.tests || prev.contactResistanceTests,
+          dielectricWithstandTests:
+            data.contact_resistance?.dielectricTests ||
+            prev.dielectricWithstandTests,
+          comments: data.comments || "",
         }));
         setIsEditing(false);
       }
     } catch (error) {
-      console.error('Error loading report:', error);
+      console.error("Error loading report:", error);
       alert(`Failed to load report: ${(error as Error).message}`);
       setIsEditing(true);
     } finally {
@@ -596,6 +1002,7 @@ const SwitchgearReport: React.FC = () => {
 
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
+    setIsSaving(true);
 
     const reportData = {
       job_id: jobId,
@@ -621,20 +1028,20 @@ const SwitchgearReport: React.FC = () => {
         identifier: formData.identifier,
         userName: formData.userName,
         testEquipmentLocation: formData.testEquipmentLocation,
-        status: formData.status
+        status: formData.status,
       },
       visual_mechanical: {
-        items: formData.visualInspectionItems
+        items: formData.visualInspectionItems,
       },
       insulation_resistance: {
         tests: formData.insulationResistanceTests,
-        correctedTests: formData.temperatureCorrectedTests
+        correctedTests: formData.temperatureCorrectedTests,
       },
       contact_resistance: {
         tests: formData.contactResistanceTests,
-        dielectricTests: formData.dielectricWithstandTests
+        dielectricTests: formData.dielectricWithstandTests,
       },
-      comments: formData.comments
+      comments: formData.comments,
     };
 
     try {
@@ -642,32 +1049,35 @@ const SwitchgearReport: React.FC = () => {
       if (reportId) {
         // Update existing report
         result = await supabase
-          .schema('neta_ops')
-          .from('switchgear_reports')
+          .schema("neta_ops")
+          .from("switchgear_reports")
           .update(reportData)
-          .eq('id', reportId)
+          .eq("id", reportId)
           .select()
           .single();
       } else {
         // Create new report
         result = await supabase
-          .schema('neta_ops')
-          .from('switchgear_reports')
+          .schema("neta_ops")
+          .from("switchgear_reports")
           .insert(reportData)
           .select()
           .single();
 
         // Create asset entry
         if (result.data) {
-                      const assetData = {
-              name: getAssetName(reportSlug, formData.identifier || formData.eqptLocation || ''),
-              file_url: `report:/jobs/${jobId}/switchgear-report/${result.data.id}`,
-            user_id: user.id
+          const assetData = {
+            name: getAssetName(
+              reportSlug,
+              formData.identifier || formData.eqptLocation || "",
+            ),
+            file_url: `report:/jobs/${jobId}/switchgear-report/${result.data.id}`,
+            user_id: user.id,
           };
 
           const { data: assetResult, error: assetError } = await supabase
-            .schema('neta_ops')
-            .from('assets')
+            .schema("neta_ops")
+            .from("assets")
             .insert(assetData)
             .select()
             .single();
@@ -675,63 +1085,79 @@ const SwitchgearReport: React.FC = () => {
           if (assetError) throw assetError;
 
           // Link asset to job
-          await supabase
-            .schema('neta_ops')
-            .from('job_assets')
-            .insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id
-            });
+          await supabase.schema("neta_ops").from("job_assets").insert({
+            job_id: jobId,
+            asset_id: assetResult.id,
+            user_id: user.id,
+          });
         }
       }
 
       if (result.error) throw result.error;
 
-      console.log('Switchgear report saved/updated successfully. Result:', result.data);
-      setIsEditing(false); // Exit editing mode after successful save
-      alert("Report saved successfully!");
-      
-      // Use the utility function to navigate back to job with the correct tab
-      navigateAfterSave(navigate, jobId, location);
+      console.log(
+        "Switchgear report saved/updated successfully. Result:",
+        result.data,
+      );
+      if (!reportId) {
+        setIsEditing(false);
+        const newId = (result as any)?.data?.id;
+        if (newId) {
+          setCurrentReportId(newId);
+          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
+        }
+      } else {
+        setJustSaved(true);
+      }
     } catch (error: any) {
-      console.error('Error saving report:', error);
-      alert(`Failed to save report: ${error?.message || 'Unknown error'}`);
+      console.error("Error saving report:", error);
+      alert(`Failed to save report: ${error?.message || "Unknown error"}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    if (reportId) {
+      setIsEditing(false);
     }
   };
 
   // Update temperature change handlers to round Celsius
   const handleFahrenheitChange = (fahrenheit: number) => {
+    setJustSaved(false);
     const celsius = Math.round(((fahrenheit - 32) * 5) / 9);
     const tcf = getTCF(celsius);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       temperature: {
         ...prev.temperature,
         fahrenheit,
         celsius,
-        tcf
-      }
+        tcf,
+      },
     }));
   };
 
   const handleCelsiusChange = (celsius: number) => {
+    setJustSaved(false);
     const fahrenheit = Math.round((celsius * 9) / 5 + 32);
     const tcf = getTCF(celsius);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       temperature: {
         ...prev.temperature,
         celsius,
         fahrenheit,
-        tcf
-      }
+        tcf,
+      },
     }));
   };
 
   const calculateCorrectedValue = (value: string): string => {
     const tcf = getTCF(formData.temperature.celsius);
-    if (value === '' || value === null || value === undefined) return '';
+    if (value === "" || value === null || value === undefined) return "";
     const trimmed = value.toString().trim();
     const numeric = parseFloat(trimmed);
     if (isNaN(numeric) || trimmed !== numeric.toString()) return trimmed;
@@ -740,176 +1166,235 @@ const SwitchgearReport: React.FC = () => {
   };
 
   const fillEmptyFieldsWithNA = () => {
-    const newTests = formData.insulationResistanceTests.map(test => ({
+    const newTests = formData.insulationResistanceTests.map((test) => ({
       ...test,
       values: {
-        ag: test.values.ag && test.values.ag.trim() !== '' ? test.values.ag : 'N/A',
-        bg: test.values.bg && test.values.bg.trim() !== '' ? test.values.bg : 'N/A',
-        cg: test.values.cg && test.values.cg.trim() !== '' ? test.values.cg : 'N/A',
-        ab: test.values.ab && test.values.ab.trim() !== '' ? test.values.ab : 'N/A',
-        bc: test.values.bc && test.values.bc.trim() !== '' ? test.values.bc : 'N/A',
-        ca: test.values.ca && test.values.ca.trim() !== '' ? test.values.ca : 'N/A',
-        an: test.values.an && test.values.an.trim() !== '' ? test.values.an : 'N/A',
-        bn: test.values.bn && test.values.bn.trim() !== '' ? test.values.bn : 'N/A',
-        cn: test.values.cn && test.values.cn.trim() !== '' ? test.values.cn : 'N/A'
-      }
+        ag:
+          test.values.ag && test.values.ag.trim() !== ""
+            ? test.values.ag
+            : "N/A",
+        bg:
+          test.values.bg && test.values.bg.trim() !== ""
+            ? test.values.bg
+            : "N/A",
+        cg:
+          test.values.cg && test.values.cg.trim() !== ""
+            ? test.values.cg
+            : "N/A",
+        ab:
+          test.values.ab && test.values.ab.trim() !== ""
+            ? test.values.ab
+            : "N/A",
+        bc:
+          test.values.bc && test.values.bc.trim() !== ""
+            ? test.values.bc
+            : "N/A",
+        ca:
+          test.values.ca && test.values.ca.trim() !== ""
+            ? test.values.ca
+            : "N/A",
+        an:
+          test.values.an && test.values.an.trim() !== ""
+            ? test.values.an
+            : "N/A",
+        bn:
+          test.values.bn && test.values.bn.trim() !== ""
+            ? test.values.bn
+            : "N/A",
+        cn:
+          test.values.cn && test.values.cn.trim() !== ""
+            ? test.values.cn
+            : "N/A",
+      },
     }));
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      insulationResistanceTests: newTests
+      insulationResistanceTests: newTests,
     }));
   };
 
-  const nextBusSectionLabel = () => `Bus ${formData.insulationResistanceTests.length + 1}`;
+  const nextBusSectionLabel = () =>
+    `Bus ${formData.insulationResistanceTests.length + 1}`;
 
   const addBusSection = () => {
-    const testVoltage = formData.insulationResistanceTests[0]?.testVoltage ?? '';
-    const irUnit = formData.insulationResistanceTests[0]?.unit ?? 'MΩ';
+    const testVoltage =
+      formData.insulationResistanceTests[0]?.testVoltage ?? "";
+    const irUnit = formData.insulationResistanceTests[0]?.unit ?? "MΩ";
     const busLabel = nextBusSectionLabel();
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       insulationResistanceTests: [
         ...prev.insulationResistanceTests,
         {
           busSection: busLabel,
-          values: { ag: '', bg: '', cg: '', ab: '', bc: '', ca: '', an: '', bn: '', cn: '' },
+          values: {
+            ag: "",
+            bg: "",
+            cg: "",
+            ab: "",
+            bc: "",
+            ca: "",
+            an: "",
+            bn: "",
+            cn: "",
+          },
           testVoltage,
-          unit: irUnit
-        }
+          unit: irUnit,
+        },
       ],
       contactResistanceTests: [
         ...prev.contactResistanceTests,
         {
           busSection: busLabel,
-          values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' },
-          testVoltage: prev.contactResistanceTests[0]?.testVoltage ?? '',
-          unit: 'µΩ'
-        }
+          values: {
+            aPhase: "",
+            bPhase: "",
+            cPhase: "",
+            neutral: "",
+            ground: "",
+          },
+          testVoltage: prev.contactResistanceTests[0]?.testVoltage ?? "",
+          unit: "µΩ",
+        },
       ],
       dielectricWithstandTests: [
         ...prev.dielectricWithstandTests,
         {
           busSection: busLabel,
-          values: { ag: '', bg: '', cg: '' },
-          testVoltage: prev.dielectricWithstandTests[0]?.testVoltage ?? '',
-          unit: 'µA'
-        }
-      ]
+          values: { ag: "", bg: "", cg: "" },
+          testVoltage: prev.dielectricWithstandTests[0]?.testVoltage ?? "",
+          unit: "µA",
+        },
+      ],
     }));
   };
 
   const removeBusSection = () => {
     if (formData.insulationResistanceTests.length <= 1) return;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       insulationResistanceTests: prev.insulationResistanceTests.slice(0, -1),
       contactResistanceTests: prev.contactResistanceTests.slice(0, -1),
-      dielectricWithstandTests: prev.dielectricWithstandTests.slice(0, -1)
+      dielectricWithstandTests: prev.dielectricWithstandTests.slice(0, -1),
     }));
   };
 
   if (loading) {
-    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <LoadingSpinner size="md" />
+      </div>
+    );
   }
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
       <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6 relative">
-        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
+          alt="AMP Logo"
+          className="h-10 w-auto"
+          style={{ maxHeight: 40 }}
+        />
         <div className="flex-1 text-center flex flex-col items-center justify-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+        <div
+          className="text-right font-extrabold text-xl"
+          style={{ color: "#1a4e7c" }}
+        >
           NETA - ATS 7.1
           <div className="hidden print:block mt-2">
             <div
               className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}
               style={{
-                display: 'inline-block',
-                padding: '4px 10px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                textAlign: 'center',
-                width: 'fit-content',
-                borderRadius: '6px',
-                border: formData.status === 'PASS' ? '2px solid #16a34a' : formData.status === 'FAIL' ? '2px solid #dc2626' : '2px solid #ca8a04',
-                backgroundColor: formData.status === 'PASS' ? '#22c55e' : formData.status === 'FAIL' ? '#ef4444' : '#eab308',
-                color: formData.status === 'LIMITED SERVICE' ? 'black' : 'white',
-                WebkitPrintColorAdjust: 'exact',
-                printColorAdjust: 'exact',
-                boxSizing: 'border-box',
-                minWidth: '50px',
+                display: "inline-block",
+                padding: "4px 10px",
+                fontSize: "12px",
+                fontWeight: "bold",
+                textAlign: "center",
+                width: "fit-content",
+                borderRadius: "6px",
+                border:
+                  formData.status === "PASS"
+                    ? "2px solid #16a34a"
+                    : formData.status === "FAIL"
+                      ? "2px solid #dc2626"
+                      : "2px solid #ca8a04",
+                backgroundColor:
+                  formData.status === "PASS"
+                    ? "#22c55e"
+                    : formData.status === "FAIL"
+                      ? "#ef4444"
+                      : "#eab308",
+                color:
+                  formData.status === "LIMITED SERVICE" ? "black" : "white",
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact",
+                boxSizing: "border-box",
+                minWidth: "50px",
               }}
             >
-              {formData.status || 'PASS'}
+              {formData.status || "PASS"}
             </div>
           </div>
         </div>
       </div>
       {/* End Print Header */}
-      
       <div className="p-6 flex justify-center">
         <div className="max-w-7xl w-full space-y-6">
-          {/* Header with title and buttons */}
-          <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{reportName}</h1>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    if (isEditing) {
-                      setFormData(prev => ({
-                        ...prev,
-                        status: prev.status === 'PASS' ? 'FAIL' : prev.status === 'FAIL' ? 'LIMITED SERVICE' : 'PASS'
-                      }));
-                    }
-                  }}
-                  className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                    formData.status === 'PASS'
-                      ? 'bg-green-600 text-white focus:ring-green-500 hover:bg-green-700'
-                      : formData.status === 'FAIL'
-                      ? 'bg-red-600 text-white focus:ring-red-500 hover:bg-red-700'
-                      : 'bg-yellow-500 text-black focus:ring-yellow-400 hover:bg-yellow-600'
-                  } ${!isEditing ? 'opacity-70 cursor-not-allowed' : ''}`}
-                  disabled={!isEditing}
-                >
-                  {formData.status}
-                </button>
-
-                {reportId && !isEditing ? (
-                  <>
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      Edit Report
-                    </button>
-                    <button
-                      onClick={() => window.print()}
-                      className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                    >
-                      Print Report
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={handleSave}
-                    disabled={!isEditing}
-                    className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
-                  >
-                    Save Report
-                  </button>
-                )}
-              </div>
-            </div>
-            {/* Bus section row controls - same as device count in multi-device report */}
+          <div className={`${isPrintMode ? "hidden" : ""} print:hidden`}>
+            <ReportHeader
+              title={reportName}
+              isAutoSaving={false}
+              isEditing={isEditing}
+              justSaved={justSaved}
+              isSaving={isSaving}
+              status={formData.status}
+              hasReport={!!currentReportId}
+              onStatusToggle={() => {
+                if (isEditing) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    status:
+                      prev.status === "PASS"
+                        ? "FAIL"
+                        : prev.status === "FAIL"
+                          ? "LIMITED SERVICE"
+                          : "PASS",
+                  }));
+                }
+              }}
+              onSave={handleSave}
+              onSaveAndClose={handleSaveAndClose}
+              onEdit={() => setIsEditing(true)}
+              onBack={() => navigate(`/jobs/${jobId}`)}
+              onPrint={() => window.print()}
+              isPrintMode={isPrintMode}
+            />
             {isEditing && (
               <div className="flex items-center gap-2 mb-4">
-                <button type="button" onClick={addBusSection} className="px-3 py-1 text-sm text-white bg-green-600 hover:bg-green-700 rounded-md">+ Add Bus Section</button>
-                <button type="button" onClick={removeBusSection} disabled={formData.insulationResistanceTests.length <= 1} className="px-3 py-1 text-sm text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">- Remove Last Section</button>
-                <span className="text-sm text-gray-600 dark:text-gray-400">({formData.insulationResistanceTests.length} bus section{formData.insulationResistanceTests.length !== 1 ? 's' : ''})</span>
+                <button
+                  type="button"
+                  onClick={addBusSection}
+                  className="px-3 py-1 text-sm text-white bg-green-600 hover:bg-green-700 rounded-md"
+                >
+                  + Add Bus Section
+                </button>
+                <button
+                  type="button"
+                  onClick={removeBusSection}
+                  disabled={formData.insulationResistanceTests.length <= 1}
+                  className="px-3 py-1 text-sm text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  - Remove Last Section
+                </button>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  ({formData.insulationResistanceTests.length} bus section
+                  {formData.insulationResistanceTests.length !== 1 ? "s" : ""})
+                </span>
               </div>
             )}
           </div>
@@ -917,67 +1402,246 @@ const SwitchgearReport: React.FC = () => {
           {/* Job Information */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Job Information
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
               <div>
-                <label htmlFor="customer" className="form-label">Customer:</label>
-                <input id="customer" type="text" name="customer" value={formData.customerName} onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))} readOnly className={`form-input text-sm bg-gray-100 dark:bg-dark-150 cursor-not-allowed`} />
+                <label htmlFor="customer" className="form-label">
+                  Customer:
+                </label>
+                <input
+                  id="customer"
+                  type="text"
+                  name="customer"
+                  value={formData.customerName}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      customerName: e.target.value,
+                    }))
+                  }
+                  readOnly
+                  className={`form-input text-sm bg-gray-100 dark:bg-dark-150 cursor-not-allowed`}
+                />
               </div>
               <div>
-                <label htmlFor="address" className="form-label">Address:</label>
-                <input id="address" type="text" name="address" value={maskCustomerAddress(formData.customerLocation)} onChange={(e) => setFormData(prev => ({ ...prev, customerLocation: e.target.value }))} readOnly className={`form-input text-sm bg-gray-100 dark:bg-dark-150 cursor-not-allowed`} />
+                <label htmlFor="address" className="form-label">
+                  Address:
+                </label>
+                <input
+                  id="address"
+                  type="text"
+                  name="address"
+                  value={maskCustomerAddress(formData.customerLocation)}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      customerLocation: e.target.value,
+                    }))
+                  }
+                  readOnly
+                  className={`form-input text-sm bg-gray-100 dark:bg-dark-150 cursor-not-allowed`}
+                />
               </div>
               <div>
-                <label htmlFor="jobNumber" className="form-label">Job Number:</label>
-                <input id="jobNumber" type="text" name="jobNumber" value={formData.jobNumber} onChange={(e) => setFormData(prev => ({ ...prev, jobNumber: e.target.value }))} readOnly className={`form-input text-sm bg-gray-100 dark:bg-dark-150 cursor-not-allowed`} />
+                <label htmlFor="jobNumber" className="form-label">
+                  Job Number:
+                </label>
+                <input
+                  id="jobNumber"
+                  type="text"
+                  name="jobNumber"
+                  value={formData.jobNumber}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      jobNumber: e.target.value,
+                    }))
+                  }
+                  readOnly
+                  className={`form-input text-sm bg-gray-100 dark:bg-dark-150 cursor-not-allowed`}
+                />
               </div>
               <div>
-                <label htmlFor="date" className="form-label">Date:</label>
-                <input id="date" type="date" name="date" value={formData.date} onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                <label htmlFor="date" className="form-label">
+                  Date:
+                </label>
+                <input
+                  id="date"
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, date: e.target.value }))
+                  }
+                  readOnly={!isEditing}
+                  className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                />
               </div>
               <div>
-                <label htmlFor="technicians" className="form-label">Technicians:</label>
-                <input id="technicians" type="text" name="technicians" value={formData.technicians} onChange={(e) => setFormData(prev => ({ ...prev, technicians: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                <label htmlFor="technicians" className="form-label">
+                  Technicians:
+                </label>
+                <input
+                  id="technicians"
+                  type="text"
+                  name="technicians"
+                  value={formData.technicians}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      technicians: e.target.value,
+                    }))
+                  }
+                  readOnly={!isEditing}
+                  className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                />
               </div>
               <div>
-                <label htmlFor="identifier" className="form-label">Identifier:</label>
-                <input id="identifier" type="text" name="identifier" value={formData.identifier} onChange={(e) => setFormData(prev => ({ ...prev, identifier: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                <label htmlFor="identifier" className="form-label">
+                  Identifier:
+                </label>
+                <input
+                  id="identifier"
+                  type="text"
+                  name="identifier"
+                  value={formData.identifier}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      identifier: e.target.value,
+                    }))
+                  }
+                  readOnly={!isEditing}
+                  className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                />
               </div>
               <div className="grid grid-cols-2 gap-x-2">
                 <div>
-                  <label htmlFor="tempF" className="form-label">Temp (°F):</label>
+                  <label htmlFor="tempF" className="form-label">
+                    Temp (°F):
+                  </label>
                   <div className="flex items-center">
-                    <input id="tempF" type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleFahrenheitChange(parseFloat(e.target.value))} readOnly={!isEditing} className={`form-input text-sm w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                    <input
+                      id="tempF"
+                      type="number"
+                      value={formData.temperature.fahrenheit}
+                      onChange={(e) =>
+                        handleFahrenheitChange(parseFloat(e.target.value))
+                      }
+                      readOnly={!isEditing}
+                      className={`form-input text-sm w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    />
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="tempC" className="form-label">Temp (°C):</label>
+                  <label htmlFor="tempC" className="form-label">
+                    Temp (°C):
+                  </label>
                   <div className="flex items-center">
-                    <input id="tempC" type="number" value={formData.temperature.celsius} onChange={(e) => handleCelsiusChange(parseFloat(e.target.value))} readOnly={!isEditing} className={`form-input text-sm w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                    <input
+                      id="tempC"
+                      type="number"
+                      value={formData.temperature.celsius}
+                      onChange={(e) =>
+                        handleCelsiusChange(parseFloat(e.target.value))
+                      }
+                      readOnly={!isEditing}
+                      className={`form-input text-sm w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                    />
                   </div>
                 </div>
               </div>
               <div>
-                <label htmlFor="user" className="form-label">User:</label>
-                <input id="user" type="text" name="user" value={formData.userName} onChange={(e) => setFormData(prev => ({ ...prev, userName: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                <label htmlFor="user" className="form-label">
+                  User:
+                </label>
+                <input
+                  id="user"
+                  type="text"
+                  name="user"
+                  value={formData.userName}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      userName: e.target.value,
+                    }))
+                  }
+                  readOnly={!isEditing}
+                  className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                />
               </div>
               <div>
-                <label htmlFor="humidity" className="form-label">Humidity (%):</label>
+                <label htmlFor="humidity" className="form-label">
+                  Humidity (%):
+                </label>
                 <div className="flex items-center">
-                  <input id="humidity" type="number" name="temperature.humidity" value={formData.temperature.humidity || ''} onChange={(e) => setFormData(prev => ({ ...prev, temperature: { ...prev.temperature, humidity: e.target.value === '' ? null : Number(e.target.value) } }))} readOnly={!isEditing} className={`form-input text-sm w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                  <input
+                    id="humidity"
+                    type="number"
+                    name="temperature.humidity"
+                    value={formData.temperature.humidity || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        temperature: {
+                          ...prev.temperature,
+                          humidity:
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                        },
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`form-input text-sm w-full ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
                 </div>
               </div>
               <div className="flex items-center mt-auto mb-1">
                 <label className="form-label mr-2">TCF:</label>
-                <span className="font-medium text-gray-900 dark:text-white">{formData.temperature.tcf}</span>
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {formData.temperature.tcf}
+                </span>
               </div>
               <div>
-                <label htmlFor="substation" className="form-label">Substation:</label>
-                <input id="substation" type="text" name="substation" value={formData.substation} onChange={(e) => setFormData(prev => ({ ...prev, substation: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                <label htmlFor="substation" className="form-label">
+                  Substation:
+                </label>
+                <input
+                  id="substation"
+                  type="text"
+                  name="substation"
+                  value={formData.substation}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      substation: e.target.value,
+                    }))
+                  }
+                  readOnly={!isEditing}
+                  className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                />
               </div>
               <div>
-                <label htmlFor="eqptLocation" className="form-label">Eqpt. Location:</label>
-                <input id="eqptLocation" type="text" name="eqptLocation" value={formData.eqptLocation} onChange={(e) => setFormData(prev => ({ ...prev, eqptLocation: e.target.value }))} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                <label htmlFor="eqptLocation" className="form-label">
+                  Eqpt. Location:
+                </label>
+                <input
+                  id="eqptLocation"
+                  type="text"
+                  name="eqptLocation"
+                  value={formData.eqptLocation}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      eqptLocation: e.target.value,
+                    }))
+                  }
+                  readOnly={!isEditing}
+                  className={`form-input text-sm ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                />
               </div>
             </div>
             <JobInfoPrintTable
@@ -1004,19 +1668,146 @@ const SwitchgearReport: React.FC = () => {
           {/* Nameplate Data */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Nameplate Data</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Nameplate Data
+            </h2>
             <div className="grid grid-cols-2 gap-4 print:hidden nameplate-onscreen">
               <div className="space-y-4">
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Manufacturer</label><input type="text" value={formData.manufacturer} onChange={(e) => setFormData(prev => ({ ...prev, manufacturer: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Catalog No.</label><input type="text" value={formData.catalogNumber} onChange={(e) => setFormData(prev => ({ ...prev, catalogNumber: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Serial Number</label><input type="text" value={formData.serialNumber} onChange={(e) => setFormData(prev => ({ ...prev, serialNumber: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Type</label><input type="text" value={formData.type} onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Manufacturer
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.manufacturer}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        manufacturer: e.target.value,
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Catalog No.
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.catalogNumber}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        catalogNumber: e.target.value,
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Serial Number
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.serialNumber}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        serialNumber: e.target.value,
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Type
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.type}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, type: e.target.value }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
               </div>
               <div className="space-y-4">
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">System Voltage (V)</label><input type="text" value={formData.systemVoltage} onChange={(e) => setFormData(prev => ({ ...prev, systemVoltage: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Rated Voltage (V)</label><input type="text" value={formData.ratedVoltage} onChange={(e) => setFormData(prev => ({ ...prev, ratedVoltage: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Rated Current (A)</label><input type="text" value={formData.ratedCurrent} onChange={(e) => setFormData(prev => ({ ...prev, ratedCurrent: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Phase Configuration</label><input type="text" value={formData.phaseConfiguration} onChange={(e) => setFormData(prev => ({ ...prev, phaseConfiguration: e.target.value }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    System Voltage (V)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.systemVoltage}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        systemVoltage: e.target.value,
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Rated Voltage (V)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.ratedVoltage}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        ratedVoltage: e.target.value,
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Rated Current (A)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.ratedCurrent}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        ratedCurrent: e.target.value,
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Phase Configuration
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.phaseConfiguration}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        phaseConfiguration: e.target.value,
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
               </div>
             </div>
             <NameplatePrintTable
@@ -1036,41 +1827,92 @@ const SwitchgearReport: React.FC = () => {
           {/* Visual and Mechanical Inspection */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Visual and Mechanical Inspection</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Visual and Mechanical Inspection
+            </h2>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 visual-mechanical-table table-fixed">
                 <colgroup>
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '58%' }} />
-                  <col style={{ width: '15%' }} />
-                  <col style={{ width: '15%' }} />
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "58%" }} />
+                  <col style={{ width: "15%" }} />
+                  <col style={{ width: "15%" }} />
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">ID</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Description</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Result</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Comments</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      ID
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Description
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Result
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Comments
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={item.id}>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.id}</td>
-                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">{item.description}</td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {item.id}
+                      </td>
+                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-normal break-words">
+                        {item.description}
+                      </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <div className="print:hidden">
-                          <select value={item.result} onChange={(e) => { const newItems = [...formData.visualInspectionItems]; newItems[index].result = e.target.value; setFormData({ ...formData, visualInspectionItems: newItems }); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
-                            {visualInspectionOptions.map(option => (<option key={option} value={option}>{option}</option>))}
+                          <select
+                            value={item.result}
+                            onChange={(e) => {
+                              const newItems = [
+                                ...formData.visualInspectionItems,
+                              ];
+                              newItems[index].result = e.target.value;
+                              setFormData({
+                                ...formData,
+                                visualInspectionItems: newItems,
+                              });
+                            }}
+                            disabled={!isEditing}
+                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          >
+                            {visualInspectionOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
                           </select>
                         </div>
-                        <div className="hidden print:block text-center">{item.result}</div>
+                        <div className="hidden print:block text-center">
+                          {item.result}
+                        </div>
                       </td>
                       <td className="px-3 py-2">
                         <div className="print:hidden">
-                          <input type="text" value={item.comments} onChange={(e) => { const newItems = [...formData.visualInspectionItems]; newItems[index].comments = e.target.value; setFormData({ ...formData, visualInspectionItems: newItems }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                          <input
+                            type="text"
+                            value={item.comments}
+                            onChange={(e) => {
+                              const newItems = [
+                                ...formData.visualInspectionItems,
+                              ];
+                              newItems[index].comments = e.target.value;
+                              setFormData({
+                                ...formData,
+                                visualInspectionItems: newItems,
+                              });
+                            }}
+                            readOnly={!isEditing}
+                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          />
                         </div>
-                        <div className="hidden print:block">{item.comments}</div>
+                        <div className="hidden print:block">
+                          {item.comments}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1082,20 +1924,39 @@ const SwitchgearReport: React.FC = () => {
           {/* Electrical Tests - Measured Insulation Resistance */}
           <div className="mb-6 section-insulation-resistance">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Electrical Tests - Measured Insulation Resistance Values</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Electrical Tests - Measured Insulation Resistance Values
+            </h2>
             <div className="flex justify-between items-center mb-2">
               <div className="print:hidden">
                 <button
                   onClick={fillEmptyFieldsWithNA}
                   disabled={!isEditing}
-                  className={`px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${!isEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${!isEditing ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   Fill Empty Fields with N/A
                 </button>
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
-                <select value={formData.insulationResistanceTests[0]?.testVoltage || ''} onChange={(e) => { const newTests = formData.insulationResistanceTests.map(test => ({ ...test, testVoltage: e.target.value })); setFormData({ ...formData, insulationResistanceTests: newTests }); }} disabled={!isEditing} className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
+                <span className="text-sm font-medium text-gray-700 dark:text-white">
+                  Test Voltage:
+                </span>
+                <select
+                  value={
+                    formData.insulationResistanceTests[0]?.testVoltage || ""
+                  }
+                  onChange={(e) => {
+                    const newTests = formData.insulationResistanceTests.map(
+                      (test) => ({ ...test, testVoltage: e.target.value }),
+                    );
+                    setFormData({
+                      ...formData,
+                      insulationResistanceTests: newTests,
+                    });
+                  }}
+                  disabled={!isEditing}
+                  className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                >
                   <option value="">Select...</option>
                   <option value="250V">250V</option>
                   <option value="500V">500V</option>
@@ -1108,35 +1969,62 @@ const SwitchgearReport: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700 print:border-black">
                 <colgroup>
-                  <col style={{ width: '8%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '8%' }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "8%" }} />
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Bus Section</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider" colSpan={9}>Insulation Resistance</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Units</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Bus Section
+                    </th>
+                    <th
+                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      colSpan={9}
+                    >
+                      Insulation Resistance
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Units
+                    </th>
                   </tr>
                   <tr>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">A-G</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">B-G</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">C-G</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">A-B</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">B-C</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">C-A</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">A-N</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">B-N</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">C-N</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      A-G
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      B-G
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      C-G
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      A-B
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      B-C
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      C-A
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      A-N
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      B-N
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      C-N
+                    </th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
                   </tr>
                 </thead>
@@ -1145,32 +2033,83 @@ const SwitchgearReport: React.FC = () => {
                     <tr key={index}>
                       <td className="px-3 py-2">
                         <div className="print:hidden">
-                          <input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white" />
+                          <input
+                            type="text"
+                            value={test.busSection}
+                            readOnly
+                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                          />
                         </div>
-                        <div className="hidden print:block text-center">{test.busSection}</div>
+                        <div className="hidden print:block text-center">
+                          {test.busSection}
+                        </div>
                       </td>
-                      {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
+                      {[
+                        "ag",
+                        "bg",
+                        "cg",
+                        "ab",
+                        "bc",
+                        "ca",
+                        "an",
+                        "bn",
+                        "cn",
+                      ].map((key) => (
                         <td key={key} className="px-3 py-2">
                           <div className="print:hidden">
-                            <input type="text" value={test.values[key]} onChange={(e) => { 
-                              const newTests = [...formData.insulationResistanceTests]; 
-                              newTests[index].values[key] = e.target.value; 
-                              setFormData(prev => ({ 
-                                ...prev, 
-                                insulationResistanceTests: newTests 
-                              })); 
-                            }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
+                            <input
+                              type="text"
+                              value={test.values[key]}
+                              onChange={(e) => {
+                                const newTests = [
+                                  ...formData.insulationResistanceTests,
+                                ];
+                                newTests[index].values[key] = e.target.value;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  insulationResistanceTests: newTests,
+                                }));
+                              }}
+                              readOnly={!isEditing}
+                              className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                            />
                           </div>
-                          <div className="hidden print:block text-center">{test.values[key]}</div>
+                          <div className="hidden print:block text-center">
+                            {test.values[key]}
+                          </div>
                         </td>
                       ))}
                       <td className="px-3 py-2">
                         <div className="print:hidden">
-                          <select value={test.unit} onChange={(e) => { const newTests = [...formData.insulationResistanceTests]; newTests[index].unit = e.target.value; setFormData(prev => ({ ...prev, insulationResistanceTests: newTests })); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
-                            {insulationResistanceUnits.map(unit => (<option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-150 dark:text-white">{unit.symbol}</option>))}
+                          <select
+                            value={test.unit}
+                            onChange={(e) => {
+                              const newTests = [
+                                ...formData.insulationResistanceTests,
+                              ];
+                              newTests[index].unit = e.target.value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                insulationResistanceTests: newTests,
+                              }));
+                            }}
+                            disabled={!isEditing}
+                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          >
+                            {insulationResistanceUnits.map((unit) => (
+                              <option
+                                key={unit.symbol}
+                                value={unit.symbol}
+                                className="dark:bg-dark-150 dark:text-white"
+                              >
+                                {unit.symbol}
+                              </option>
+                            ))}
                           </select>
                         </div>
-                        <div className="hidden print:block text-center">{test.unit}</div>
+                        <div className="hidden print:block text-center">
+                          {test.unit}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1182,50 +2121,130 @@ const SwitchgearReport: React.FC = () => {
           {/* Temperature Corrected Values */}
           <div className="mb-6 section-temp-corrected">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Temperature Corrected Values</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Temperature Corrected Values
+            </h2>
             <div className="overflow-x-auto">
               <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
                 <colgroup>
-                  <col style={{ width: '8%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '9.3%' }} />
-                  <col style={{ width: '8%' }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "9.3%" }} />
+                  <col style={{ width: "8%" }} />
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Bus Section</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider" colSpan={9}>Insulation Resistance</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Units</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Bus Section
+                    </th>
+                    <th
+                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      colSpan={9}
+                    >
+                      Insulation Resistance
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Units
+                    </th>
                   </tr>
                   <tr>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">A-G</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">B-G</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">C-G</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">A-B</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">B-C</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">C-A</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">A-N</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">B-N</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">C-N</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      A-G
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      B-G
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      C-G
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      A-B
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      B-C
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      C-A
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      A-N
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      B-N
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      C-N
+                    </th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.temperatureCorrectedTests.map((test, index) => (
                     <tr key={index}>
-                      <td className="px-3 py-2"><div className="print:hidden"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{test.busSection}</div></td>
-                      {['ag', 'bg', 'cg', 'ab', 'bc', 'ca', 'an', 'bn', 'cn'].map((key) => (
-                        <td key={key} className="px-3 py-2"><div className="print:hidden"><input type="text" value={formData.temperatureCorrectedTests[index]?.values[key] || 'N/A'} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{formData.temperatureCorrectedTests[index]?.values[key] || 'N/A'}</div></td>
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <input
+                            type="text"
+                            value={test.busSection}
+                            readOnly
+                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                          />
+                        </div>
+                        <div className="hidden print:block text-center">
+                          {test.busSection}
+                        </div>
+                      </td>
+                      {[
+                        "ag",
+                        "bg",
+                        "cg",
+                        "ab",
+                        "bc",
+                        "ca",
+                        "an",
+                        "bn",
+                        "cn",
+                      ].map((key) => (
+                        <td key={key} className="px-3 py-2">
+                          <div className="print:hidden">
+                            <input
+                              type="text"
+                              value={
+                                formData.temperatureCorrectedTests[index]
+                                  ?.values[key] || "N/A"
+                              }
+                              readOnly
+                              className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            />
+                          </div>
+                          <div className="hidden print:block text-center">
+                            {formData.temperatureCorrectedTests[index]?.values[
+                              key
+                            ] || "N/A"}
+                          </div>
+                        </td>
                       ))}
-                      <td className="px-3 py-2"><div className="print:hidden"><input type="text" value={test.unit} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{test.unit}</div></td>
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <input
+                            type="text"
+                            value={test.unit}
+                            readOnly
+                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                          />
+                        </div>
+                        <div className="hidden print:block text-center">
+                          {test.unit}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1236,11 +2255,28 @@ const SwitchgearReport: React.FC = () => {
           {/* Contact Resistance */}
           <div className="mb-6 section-contact-resistance">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Contact Resistance</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Contact Resistance
+            </h2>
             <div className="flex justify-end mb-2">
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-white">Test Voltage:</span>
-                <select value={formData.contactResistanceTests[0]?.testVoltage || ''} onChange={(e) => { const newTests = formData.contactResistanceTests.map(test => ({ ...test, testVoltage: e.target.value })); setFormData({ ...formData, contactResistanceTests: newTests }); }} disabled={!isEditing} className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}>
+                <span className="text-sm font-medium text-gray-700 dark:text-white">
+                  Test Voltage:
+                </span>
+                <select
+                  value={formData.contactResistanceTests[0]?.testVoltage || ""}
+                  onChange={(e) => {
+                    const newTests = formData.contactResistanceTests.map(
+                      (test) => ({ ...test, testVoltage: e.target.value }),
+                    );
+                    setFormData({
+                      ...formData,
+                      contactResistanceTests: newTests,
+                    });
+                  }}
+                  disabled={!isEditing}
+                  className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                >
                   <option value="">Select...</option>
                   <option value="250V">250V</option>
                   <option value="500V">500V</option>
@@ -1254,49 +2290,134 @@ const SwitchgearReport: React.FC = () => {
               <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
                 <colgroup>
                   {/* Bus Section (left) */}
-                  <col style={{ width: '8%' }} />
+                  <col style={{ width: "8%" }} />
                   {/* Five contact resistance readings spread wide */}
-                  <col style={{ width: '16.8%' }} />
-                  <col style={{ width: '16.8%' }} />
-                  <col style={{ width: '16.8%' }} />
-                  <col style={{ width: '16.8%' }} />
-                  <col style={{ width: '16.8%' }} />
+                  <col style={{ width: "16.8%" }} />
+                  <col style={{ width: "16.8%" }} />
+                  <col style={{ width: "16.8%" }} />
+                  <col style={{ width: "16.8%" }} />
+                  <col style={{ width: "16.8%" }} />
                   {/* Units (right) */}
-                  <col style={{ width: '8%' }} />
+                  <col style={{ width: "8%" }} />
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Bus Section</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider" colSpan={5}>Contact Resistance</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">Units</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Bus Section
+                    </th>
+                    <th
+                      className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider"
+                      colSpan={5}
+                    >
+                      Contact Resistance
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
+                      Units
+                    </th>
                   </tr>
                   <tr>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">A Phase</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">B Phase</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">C Phase</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">Neutral</th>
-                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">Ground</th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      A Phase
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      B Phase
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      C Phase
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      Neutral
+                    </th>
+                    <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase">
+                      Ground
+                    </th>
                     <th className="px-3 py-2 bg-gray-50 dark:bg-dark-150 text-center text-xs font-medium text-gray-500 dark:text-white uppercase"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                   {formData.contactResistanceTests.map((test, index) => (
                     <tr key={index}>
-                      <td className="px-3 py-2"><div className="print:hidden"><input type="text" value={test.busSection} readOnly className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white" /></div><div className="hidden print:block text-center">{test.busSection}</div></td>
-                      {['aPhase', 'bPhase', 'cPhase', 'neutral', 'ground'].map((key) => (
-                        <td key={key} className="px-3 py-2">
-                          <div className="print:hidden">
-                            <input type="text" value={test.values[key]} onChange={(e) => { const newTests = [...formData.contactResistanceTests]; if (!newTests[index]) { newTests[index] = { busSection: '', values: { aPhase: '', bPhase: '', cPhase: '', neutral: '', ground: '' }, testVoltage: newTests[0]?.testVoltage || '', unit: 'µΩ' }; } newTests[index].values[key] = e.target.value; setFormData({ ...formData, contactResistanceTests: newTests }); }} readOnly={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} />
-                          </div>
-                          <div className="hidden print:block text-center">{test.values[key]}</div>
-                        </td>
-                      ))}
                       <td className="px-3 py-2">
                         <div className="print:hidden">
-                          <select value={test.unit} onChange={(e) => { const newTests = [...formData.contactResistanceTests]; newTests[index].unit = e.target.value; setFormData(prev => ({ ...prev, contactResistanceTests: newTests })); }} disabled={!isEditing} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}><option value="µΩ">µΩ</option><option value="mΩ">mΩ</option><option value="Ω">Ω</option></select>
+                          <input
+                            type="text"
+                            value={test.busSection}
+                            readOnly
+                            className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                          />
                         </div>
-                        <div className="hidden print:block text-center">{test.unit}</div>
+                        <div className="hidden print:block text-center">
+                          {test.busSection}
+                        </div>
+                      </td>
+                      {["aPhase", "bPhase", "cPhase", "neutral", "ground"].map(
+                        (key) => (
+                          <td key={key} className="px-3 py-2">
+                            <div className="print:hidden">
+                              <input
+                                type="text"
+                                value={test.values[key]}
+                                onChange={(e) => {
+                                  const newTests = [
+                                    ...formData.contactResistanceTests,
+                                  ];
+                                  if (!newTests[index]) {
+                                    newTests[index] = {
+                                      busSection: "",
+                                      values: {
+                                        aPhase: "",
+                                        bPhase: "",
+                                        cPhase: "",
+                                        neutral: "",
+                                        ground: "",
+                                      },
+                                      testVoltage:
+                                        newTests[0]?.testVoltage || "",
+                                      unit: "µΩ",
+                                    };
+                                  }
+                                  newTests[index].values[key] = e.target.value;
+                                  setFormData({
+                                    ...formData,
+                                    contactResistanceTests: newTests,
+                                  });
+                                }}
+                                readOnly={!isEditing}
+                                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                              />
+                            </div>
+                            <div className="hidden print:block text-center">
+                              {test.values[key]}
+                            </div>
+                          </td>
+                        ),
+                      )}
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <select
+                            value={test.unit}
+                            onChange={(e) => {
+                              const newTests = [
+                                ...formData.contactResistanceTests,
+                              ];
+                              newTests[index].unit = e.target.value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                contactResistanceTests: newTests,
+                              }));
+                            }}
+                            disabled={!isEditing}
+                            className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                          >
+                            <option value="µΩ">µΩ</option>
+                            <option value="mΩ">mΩ</option>
+                            <option value="Ω">Ω</option>
+                          </select>
+                        </div>
+                        <div className="hidden print:block text-center">
+                          {test.unit}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1308,81 +2429,257 @@ const SwitchgearReport: React.FC = () => {
           {/* Test Equipment Used */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment Used</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Test Equipment Used
+            </h2>
             <div className="grid grid-cols-1 gap-6 test-eqpt-onscreen print:hidden">
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Megohmmeter</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                    Megohmmeter
+                  </label>
                   <EquipmentAutocomplete
                     value={formData.testEquipment.megohmmeter.name}
-                    onChange={(value) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, megohmmeter: { ...prev.testEquipment.megohmmeter, name: value } } }))}
+                    onChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        testEquipment: {
+                          ...prev.testEquipment,
+                          megohmmeter: {
+                            ...prev.testEquipment.megohmmeter,
+                            name: value,
+                          },
+                        },
+                      }))
+                    }
                     onSelect={(equipment) => {
-                      const formatDate = (dateString: string | null): string => {
-                        if (!dateString) return '';
+                      const formatDate = (
+                        dateString: string | null,
+                      ): string => {
+                        if (!dateString) return "";
                         try {
                           const date = new Date(dateString);
-                          return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+                          return date.toLocaleDateString("en-US", {
+                            month: "2-digit",
+                            day: "2-digit",
+                            year: "numeric",
+                          });
                         } catch {
                           return dateString;
                         }
                       };
-                      setFormData(prev => ({
+                      setFormData((prev) => ({
                         ...prev,
                         testEquipment: {
                           ...prev.testEquipment,
                           megohmmeter: {
                             name: equipment.equipment_name,
-                            serialNumber: equipment.serial_number || '',
-                            ampId: equipment.amp_id || '',
-                            calDate: formatLocalDateShort(equipment.calibration_date)
-                          }
-                        }
+                            serialNumber: equipment.serial_number || "",
+                            ampId: equipment.amp_id || "",
+                            calDate: formatLocalDateShort(
+                              equipment.calibration_date,
+                            ),
+                          },
+                        },
                       }));
                     }}
                     readOnly={!isEditing}
                     className="mt-1"
                   />
                 </div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Serial Number</label><input type="text" value={formData.testEquipment.megohmmeter.serialNumber} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, megohmmeter: { ...prev.testEquipment.megohmmeter, serialNumber: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">AMP ID</label><input type="text" value={formData.testEquipment.megohmmeter.ampId} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, megohmmeter: { ...prev.testEquipment.megohmmeter, ampId: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Cal Date</label><input type="text" value={formData.testEquipment.megohmmeter.calDate} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, megohmmeter: { ...prev.testEquipment.megohmmeter, calDate: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Serial Number
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.megohmmeter.serialNumber}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        testEquipment: {
+                          ...prev.testEquipment,
+                          megohmmeter: {
+                            ...prev.testEquipment.megohmmeter,
+                            serialNumber: e.target.value,
+                          },
+                        },
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    AMP ID
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.megohmmeter.ampId}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        testEquipment: {
+                          ...prev.testEquipment,
+                          megohmmeter: {
+                            ...prev.testEquipment.megohmmeter,
+                            ampId: e.target.value,
+                          },
+                        },
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Cal Date
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.megohmmeter.calDate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        testEquipment: {
+                          ...prev.testEquipment,
+                          megohmmeter: {
+                            ...prev.testEquipment.megohmmeter,
+                            calDate: e.target.value,
+                          },
+                        },
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Low Resistance</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                    Low Resistance
+                  </label>
                   <EquipmentAutocomplete
                     value={formData.testEquipment.lowResistance.name}
-                    onChange={(value) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, lowResistance: { ...prev.testEquipment.lowResistance, name: value } } }))}
+                    onChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        testEquipment: {
+                          ...prev.testEquipment,
+                          lowResistance: {
+                            ...prev.testEquipment.lowResistance,
+                            name: value,
+                          },
+                        },
+                      }))
+                    }
                     onSelect={(equipment) => {
-                      const formatDate = (dateString: string | null): string => {
-                        if (!dateString) return '';
+                      const formatDate = (
+                        dateString: string | null,
+                      ): string => {
+                        if (!dateString) return "";
                         try {
                           const date = new Date(dateString);
-                          return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+                          return date.toLocaleDateString("en-US", {
+                            month: "2-digit",
+                            day: "2-digit",
+                            year: "numeric",
+                          });
                         } catch {
                           return dateString;
                         }
                       };
-                      setFormData(prev => ({
+                      setFormData((prev) => ({
                         ...prev,
                         testEquipment: {
                           ...prev.testEquipment,
                           lowResistance: {
                             name: equipment.equipment_name,
-                            serialNumber: equipment.serial_number || '',
-                            ampId: equipment.amp_id || '',
-                            calDate: formatLocalDateShort(equipment.calibration_date)
-                          }
-                        }
+                            serialNumber: equipment.serial_number || "",
+                            ampId: equipment.amp_id || "",
+                            calDate: formatLocalDateShort(
+                              equipment.calibration_date,
+                            ),
+                          },
+                        },
                       }));
                     }}
                     readOnly={!isEditing}
                     className="mt-1"
                   />
                 </div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Serial Number</label><input type="text" value={formData.testEquipment.lowResistance.serialNumber} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, lowResistance: { ...prev.testEquipment.lowResistance, serialNumber: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">AMP ID</label><input type="text" value={formData.testEquipment.lowResistance.ampId} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, lowResistance: { ...prev.testEquipment.lowResistance, ampId: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 dark:text-white">Cal Date</label><input type="text" value={formData.testEquipment.lowResistance.calDate} onChange={(e) => setFormData(prev => ({ ...prev, testEquipment: { ...prev.testEquipment, lowResistance: { ...prev.testEquipment.lowResistance, calDate: e.target.value } } }))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`} /></div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Serial Number
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.lowResistance.serialNumber}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        testEquipment: {
+                          ...prev.testEquipment,
+                          lowResistance: {
+                            ...prev.testEquipment.lowResistance,
+                            serialNumber: e.target.value,
+                          },
+                        },
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    AMP ID
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.lowResistance.ampId}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        testEquipment: {
+                          ...prev.testEquipment,
+                          lowResistance: {
+                            ...prev.testEquipment.lowResistance,
+                            ampId: e.target.value,
+                          },
+                        },
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                    Cal Date
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.lowResistance.calDate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        testEquipment: {
+                          ...prev.testEquipment,
+                          lowResistance: {
+                            ...prev.testEquipment.lowResistance,
+                            calDate: e.target.value,
+                          },
+                        },
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -1390,40 +2687,80 @@ const SwitchgearReport: React.FC = () => {
           <div className="hidden print:block">
             <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
               <colgroup>
-                <col style={{ width: '25%' }} />
-                <col style={{ width: '25%' }} />
-                <col style={{ width: '25%' }} />
-                <col style={{ width: '25%' }} />
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "25%" }} />
               </colgroup>
               <tbody>
                 <tr>
-                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Megohmmeter:</div><div>{formData.testEquipment.megohmmeter.name}</div></td>
-                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Serial Number:</div><div>{formData.testEquipment.megohmmeter.serialNumber}</div></td>
-                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">AMP ID:</div><div>{formData.testEquipment.megohmmeter.ampId}</div></td>
-                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Cal Date:</div><div>{formData.testEquipment.megohmmeter.calDate}</div></td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Megohmmeter:</div>
+                    <div>{formData.testEquipment.megohmmeter.name}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Serial Number:</div>
+                    <div>{formData.testEquipment.megohmmeter.serialNumber}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">AMP ID:</div>
+                    <div>{formData.testEquipment.megohmmeter.ampId}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Cal Date:</div>
+                    <div>{formData.testEquipment.megohmmeter.calDate}</div>
+                  </td>
                 </tr>
                 <tr>
-                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Low Resistance:</div><div>{formData.testEquipment.lowResistance.name}</div></td>
-                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Serial Number:</div><div>{formData.testEquipment.lowResistance.serialNumber}</div></td>
-                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">AMP ID:</div><div>{formData.testEquipment.lowResistance.ampId}</div></td>
-                  <td className="p-2 align-top border border-gray-300 print:border-black"><div className="font-semibold">Cal Date:</div><div>{formData.testEquipment.lowResistance.calDate}</div></td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Low Resistance:</div>
+                    <div>{formData.testEquipment.lowResistance.name}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Serial Number:</div>
+                    <div>
+                      {formData.testEquipment.lowResistance.serialNumber}
+                    </div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">AMP ID:</div>
+                    <div>{formData.testEquipment.lowResistance.ampId}</div>
+                  </td>
+                  <td className="p-2 align-top border border-gray-300 print:border-black">
+                    <div className="font-semibold">Cal Date:</div>
+                    <div>{formData.testEquipment.lowResistance.calDate}</div>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
           {/* Comments */}
-          <div className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? 'print:hidden' : ''}`}>
+          <div
+            className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
+          >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
-            <textarea value={formData.comments} onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))} readOnly={!isEditing} rows={4} className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''} print:hidden`} />
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Comments
+            </h2>
+            <textarea
+              value={formData.comments}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, comments: e.target.value }))
+              }
+              readOnly={!isEditing}
+              rows={4}
+              className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""} print:hidden`}
+            />
             {formData.comments?.trim() && (
               <div className="hidden print:block">
                 <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
                   <tbody>
                     <tr>
                       <td className="p-2 align-top border border-gray-300 print:border-black">
-                        <div className="mt-0 whitespace-pre-wrap break-words">{formData.comments}</div>
+                        <div className="mt-0 whitespace-pre-wrap break-words">
+                          {formData.comments}
+                        </div>
                       </td>
                     </tr>
                   </tbody>
@@ -1432,39 +2769,43 @@ const SwitchgearReport: React.FC = () => {
             )}
           </div>
         </div>
-      </div>      {/* Mark Ready to Review Button */}
+      </div>{" "}
+      {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (
         <div className="mb-6 print:hidden flex justify-center">
           <button
             onClick={async () => {
               if (!jobId || !user?.id) return;
-              
+
               try {
                 // Save the report first
                 await handleSave();
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
                 // Get the report ID (may have been created by save)
-                const savedReportId = reportId || window.location.pathname.split('/').pop();
-                if (!savedReportId) throw new Error('Failed to save report');
-                
+                const savedReportId =
+                  reportId || window.location.pathname.split("/").pop();
+                if (!savedReportId) throw new Error("Failed to save report");
+
                 // Update asset status to ready_for_review
                 const fileUrl = `report:/jobs/${jobId}/${reportSlug}/${savedReportId}`;
                 const { error } = await supabase
-                  .schema('neta_ops')
-                  .from('assets')
-                  .update({ 
-                    status: 'ready_for_review',
-                    submitted_at: new Date().toISOString()
+                  .schema("neta_ops")
+                  .from("assets")
+                  .update({
+                    status: "ready_for_review",
+                    submitted_at: new Date().toISOString(),
                   })
-                  .eq('file_url', fileUrl);
-                
+                  .eq("file_url", fileUrl);
+
                 if (error) throw error;
-                
-                alert('Report marked as ready for review!');
+
+                alert("Report marked as ready for review!");
               } catch (error: any) {
-                console.error('Error marking report as ready:', error);
-                alert(`Failed to mark as ready: ${error?.message || 'Unknown error'}`);
+                console.error("Error marking report as ready:", error);
+                alert(
+                  `Failed to mark as ready: ${error?.message || "Unknown error"}`,
+                );
               }
             }}
             className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -1473,7 +2814,6 @@ const SwitchgearReport: React.FC = () => {
           </button>
         </div>
       )}
-
     </ReportWrapper>
   );
 };
@@ -1481,28 +2821,28 @@ const SwitchgearReport: React.FC = () => {
 export default SwitchgearReport;
 
 // Add print styles
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
   style.textContent = `
     @media print {
       body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif !important; }
       html, body { font-size: 9px !important; color: black !important; background: white !important; line-height: 1 !important; }
-      
+
       /* Hide all navigation and header elements */
-      header, nav, .navigation, [class*="nav"], [class*="header"], 
-      .sticky, [class*="sticky"], .print\\:hidden { 
-        display: none !important; 
+      header, nav, .navigation, [class*="nav"], [class*="header"],
+      .sticky, [class*="sticky"], .print\\:hidden {
+        display: none !important;
       }
-      
+
       /* Hide Back to Job button and division headers specifically */
-      button[class*="Back"], 
-      *[class*="Back to Job"], 
+      button[class*="Back"],
+      *[class*="Back to Job"],
       h2[class*="Division"],
       .mobile-nav-text,
       [class*="formatDivisionName"] {
         display: none !important;
       }
-      
+
       .print\\:break-before-page { page-break-before: always; }
       .print\\:break-after-page { page-break-after: always; }
       .print\\:break-inside-avoid { page-break-inside: avoid; }
@@ -1511,7 +2851,7 @@ if (typeof document !== 'undefined') {
       .print\\:border-black { border-color: black !important; }
       .print\\:font-bold { font-weight: bold !important; }
       .print\\:text-center { text-align: center !important; }
-      
+
       /* Remove non-table borders to avoid conflicts and ensure crisp table lines */
       * { border: none !important; box-shadow: none !important; outline: none !important; }
       table { border-collapse: collapse !important; width: 100% !important; margin: 1px 0 !important; font-size: 8px !important; }
@@ -1520,24 +2860,24 @@ if (typeof document !== 'undefined') {
       table, th, td, thead, tbody, tr { border: 1px solid black !important; }
       th, td { padding: 2px 3px !important; text-align: center !important; font-size: 8px !important; height: 12px !important; line-height: 1 !important; }
       th { background-color: #f0f0f0 !important; font-weight: bold !important; }
-      
-      input, select, textarea { 
-        background-color: white !important; 
-        border: 1px solid black !important; 
+
+      input, select, textarea {
+        background-color: white !important;
+        border: 1px solid black !important;
         color: black !important;
-        padding: 2px !important; 
+        padding: 2px !important;
         font-size: 10px !important;
         -webkit-appearance: none !important;
         -moz-appearance: none !important;
         appearance: none !important;
       }
-      
+
       /* Hide dropdown arrows and form control indicators */
       select {
         background-image: none !important;
         padding-right: 8px !important;
       }
-      
+
       /* Hide spin buttons on number inputs */
       input[type="number"]::-webkit-outer-spin-button,
       input[type="number"]::-webkit-inner-spin-button {
@@ -1547,18 +2887,18 @@ if (typeof document !== 'undefined') {
       input[type="number"] {
         -moz-appearance: textfield !important;
       }
-      
+
       /* Hide interactive elements */
       button:not(.print-visible) { display: none !important; }
-      
+
       /* Section styling */
       section { break-inside: avoid !important; margin-bottom: 20px !important; }
-      
+
       /* Job Information: compact like TwoSmallDryTyperXfmrATSReport */
       section:has(> h2:contains('Job Information')) .grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 8px !important; }
       section:has(> h2:contains('Job Information')) input,
       section:has(> h2:contains('Job Information')) select { font-size: 10px !important; height: 22px !important; padding: 2px 4px !important; }
-      
+
       /* Ensure all text is black for maximum readability */
       * { color: black !important; }
 
@@ -1602,4 +2942,4 @@ if (typeof document !== 'undefined') {
     }
   `;
   document.head.appendChild(style);
-} 
+}

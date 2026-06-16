@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { PageLayout } from '@/components/ui/PageLayout';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { formatStatusLabel } from '@/utils/formatters';
 
 const PAGE_SIZE = 50;
 
@@ -468,7 +469,7 @@ export default function UnifiedJobsPage() {
                           <td className="px-3 py-4 text-sm text-gray-600 dark:text-gray-300 max-w-xs truncate">{maskJobTitle(job.title)}</td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-600 dark:text-gray-300">{maskCustomerName(job.customers?.company_name || job.customers?.name) || '—'}</td>
                           <td className="whitespace-nowrap px-3 py-4">
-                            <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(job.status)}`}>{job.status}</span>
+                            <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(job.status)}`}>{formatStatusLabel(job.status)}</span>
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm">
                             {job.contractValue !== undefined && job.contractValue !== 0 ? (

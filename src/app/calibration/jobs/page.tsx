@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/Badge';
 import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { JobCreationForm } from '@/components/jobs/JobCreationForm';
+import { formatStatusLabel } from '@/utils/formatters';
 
 interface Customer {
   company_name?: string;
@@ -264,7 +265,7 @@ export default function CalibrationJobsPage() {
                         {maskJobTitle(job.title)}
                       </h3>
                       <Badge className={`ml-2 ${getStatusColor(job.status)}`}>
-                        {job.status}
+                        {formatStatusLabel(job.status)}
                       </Badge>
                       <Badge className="ml-2 bg-gray-100 text-gray-800 dark:bg-dark-150 dark:text-white">
                         {job.division.charAt(0).toUpperCase() + job.division.slice(1)}

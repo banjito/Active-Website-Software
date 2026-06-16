@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/AuthContext';
-import { navigateAfterSave } from './ReportUtils';
-import { ReportWrapper } from './ReportWrapper';
-import JobInfoPrintTable from './common/JobInfoPrintTable';
-import { getReportName } from './reportMappings';
-import { getPassFailBadgeClass } from '@/lib/reportPassFailStatus';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import React, { useState, useEffect } from "react";
+import {
+  useParams,
+  useNavigate,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/AuthContext";
+import { navigateAfterSave } from "./ReportUtils";
+import { ReportWrapper } from "./ReportWrapper";
+import JobInfoPrintTable from "./common/JobInfoPrintTable";
+import { ReportHeader } from "./common/ReportHeader";
+import { getReportName } from "./reportMappings";
+import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   LineChart,
   Line,
@@ -17,7 +23,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
+} from "recharts";
 
 interface TanDeltaDataPoint {
   voltageLabel: string;
@@ -41,42 +47,76 @@ interface TestEquipment {
 
 // Initial data based on the image
 const initialData: TanDeltaDataPoint[] = [
-  { voltageLabel: '0.5 Uo', kV: 7.200, phaseA: 4.0, phaseAStdDev: null, phaseB: 4.4, phaseBStdDev: null, phaseC: 5.0, phaseCStdDev: null },
-  { voltageLabel: '1.0 Uo', kV: 14.400, phaseA: 4.0, phaseAStdDev: null, phaseB: 4.5, phaseBStdDev: null, phaseC: 5.1, phaseCStdDev: null },
-  { voltageLabel: '1.5 Uo', kV: 21.600, phaseA: 4.1, phaseAStdDev: null, phaseB: 4.5, phaseBStdDev: null, phaseC: 5.2, phaseCStdDev: null },
+  {
+    voltageLabel: "0.5 Uo",
+    kV: 7.2,
+    phaseA: 4.0,
+    phaseAStdDev: null,
+    phaseB: 4.4,
+    phaseBStdDev: null,
+    phaseC: 5.0,
+    phaseCStdDev: null,
+  },
+  {
+    voltageLabel: "1.0 Uo",
+    kV: 14.4,
+    phaseA: 4.0,
+    phaseAStdDev: null,
+    phaseB: 4.5,
+    phaseBStdDev: null,
+    phaseC: 5.1,
+    phaseCStdDev: null,
+  },
+  {
+    voltageLabel: "1.5 Uo",
+    kV: 21.6,
+    phaseA: 4.1,
+    phaseAStdDev: null,
+    phaseB: 4.5,
+    phaseBStdDev: null,
+    phaseC: 5.2,
+    phaseCStdDev: null,
+  },
 ];
 
 const TanDeltaChartMTS: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId);
+
+  useEffect(() => {
+    setCurrentReportId(reportId);
+  }, [reportId]);
+
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  
+
   // Print Mode Detection
-  const isPrintMode = searchParams.get('print') === 'true';
-  
+  const isPrintMode = searchParams.get("print") === "true";
+
   // Determine which report type this is based on the URL path
   const currentPath = location.pathname;
-  const reportSlug = 'medium-voltage-vlf-tan-delta-mts';
+  const reportSlug = "medium-voltage-vlf-tan-delta-mts";
   const reportName = getReportName(reportSlug);
-  
+
   const [loading, setLoading] = useState<boolean>(false);
+  const [justSaved, setJustSaved] = useState(false);
   const [isEditing, setIsEditing] = useState<boolean>(!reportId);
-  const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
+  const [status, setStatus] = useState<"PASS" | "FAIL">("PASS");
   const [data, setData] = useState<TanDeltaDataPoint[]>(initialData);
   const [editingData, setEditingData] = useState<boolean>(false);
-  const [testDate, setTestDate] = useState<string>('');
-  const [cableType, setCableType] = useState<string>('');
-  const [systemVoltage, setSystemVoltage] = useState<string>('14.400');
-  const [comments, setComments] = useState<string>('');
+  const [testDate, setTestDate] = useState<string>("");
+  const [cableType, setCableType] = useState<string>("");
+  const [systemVoltage, setSystemVoltage] = useState<string>("14.400");
+  const [comments, setComments] = useState<string>("");
   const [equipment, setEquipment] = useState<TestEquipment>({
-    megohmeterSerial: '',
-    megohmmeterAmpId: '',
-    megohmmeterCalDate: '',
-    vlfHipotSerial: '',
-    vlfHipotAmpId: '',
-    vlfHipotCalDate: ''
+    megohmeterSerial: "",
+    megohmmeterAmpId: "",
+    megohmmeterCalDate: "",
+    vlfHipotSerial: "",
+    vlfHipotAmpId: "",
+    vlfHipotCalDate: "",
   });
 
   useEffect(() => {
@@ -91,31 +131,33 @@ const TanDeltaChartMTS: React.FC = () => {
 
   // Debug: Monitor data changes for chart updates
   useEffect(() => {
-    console.log('Chart data updated:', data);
+    console.log("Chart data updated:", data);
   }, [data]);
 
   const loadJobInfo = async () => {
     if (!jobId) return;
-    
+
     try {
       setLoading(true);
       const { data: jobData, error: jobError } = await supabase
-        .schema('neta_ops')
-        .from('jobs')
-        .select(`
+        .schema("neta_ops")
+        .from("jobs")
+        .select(
+          `
           title,
           job_number,
           customer_id,
           site_address
-        `)
-        .eq('id', jobId)
+        `,
+        )
+        .eq("id", jobId)
         .single();
 
       if (jobError) throw jobError;
 
       // Additional job data loading as needed
     } catch (error) {
-      console.error('Error loading job info:', error);
+      console.error("Error loading job info:", error);
       alert(`Failed to load job info: ${(error as any).message}`);
     } finally {
       if (!reportId) {
@@ -134,15 +176,17 @@ const TanDeltaChartMTS: React.FC = () => {
     try {
       setLoading(true);
       const { data: reportData, error } = await supabase
-        .schema('neta_ops')
-        .from('tandelta_mts_reports')
-        .select('*')
-        .eq('id', reportId)
+        .schema("neta_ops")
+        .from("tandelta_mts_reports")
+        .select("*")
+        .eq("id", reportId)
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          console.warn(`Report with ID ${reportId} not found. Starting new report.`);
+        if (error.code === "PGRST116") {
+          console.warn(
+            `Report with ID ${reportId} not found. Starting new report.`,
+          );
           setIsEditing(true);
         } else {
           throw error;
@@ -153,24 +197,32 @@ const TanDeltaChartMTS: React.FC = () => {
         // Load report data from database; filter out 2.0 Uo rows
         const rawPoints = reportData.test_data?.points || initialData;
         const pointsWithout2Uo = Array.isArray(rawPoints)
-          ? rawPoints.filter((row: any) => (row?.voltageLabel || '').trim() !== '2.0 Uo')
+          ? rawPoints.filter(
+              (row: any) => (row?.voltageLabel || "").trim() !== "2.0 Uo",
+            )
           : rawPoints;
         setData(pointsWithout2Uo?.length ? pointsWithout2Uo : initialData);
-        setTestDate(reportData.report_info?.date || '');
-        setCableType(reportData.report_info?.cableType || '');
-        setSystemVoltage(reportData.report_info?.systemVoltage || '14.400');
-        setComments((reportData as any).comments || reportData.report_info?.comments || '');
-        setEquipment(reportData.report_info?.testEquipment || {
-          megohmeterSerial: '',
-          megohmmeterAmpId: '',
-          vlfHipotSerial: '',
-          vlfHipotAmpId: ''
-        });
-        setStatus(reportData.report_info?.status || 'PASS');
+        setTestDate(reportData.report_info?.date || "");
+        setCableType(reportData.report_info?.cableType || "");
+        setSystemVoltage(reportData.report_info?.systemVoltage || "14.400");
+        setComments(
+          (reportData as any).comments ||
+            reportData.report_info?.comments ||
+            "",
+        );
+        setEquipment(
+          reportData.report_info?.testEquipment || {
+            megohmeterSerial: "",
+            megohmmeterAmpId: "",
+            vlfHipotSerial: "",
+            vlfHipotAmpId: "",
+          },
+        );
+        setStatus(reportData.report_info?.status || "PASS");
         setIsEditing(false);
       }
     } catch (error) {
-      console.error('Error loading report:', error);
+      console.error("Error loading report:", error);
       alert(`Failed to load report: ${(error as Error).message}`);
       setIsEditing(true);
     } finally {
@@ -183,7 +235,7 @@ const TanDeltaChartMTS: React.FC = () => {
 
     try {
       setLoading(true);
-      
+
       const reportData = {
         job_id: jobId,
         user_id: user.id,
@@ -192,29 +244,29 @@ const TanDeltaChartMTS: React.FC = () => {
           cableType: cableType,
           systemVoltage: systemVoltage,
           testEquipment: equipment,
-          status: status
+          status: status,
         },
         comments: comments,
         test_data: {
-          points: data
-        }
+          points: data,
+        },
       };
 
       let result;
       if (reportId) {
         // Update existing report
         result = await supabase
-          .schema('neta_ops')
-          .from('tandelta_mts_reports')
+          .schema("neta_ops")
+          .from("tandelta_mts_reports")
           .update(reportData)
-          .eq('id', reportId)
+          .eq("id", reportId)
           .select()
           .single();
       } else {
         // Create new report
         result = await supabase
-          .schema('neta_ops')
-          .from('tandelta_mts_reports')
+          .schema("neta_ops")
+          .from("tandelta_mts_reports")
           .insert(reportData)
           .select()
           .single();
@@ -222,14 +274,14 @@ const TanDeltaChartMTS: React.FC = () => {
         // Create asset entry
         if (result.data) {
           const assetData = {
-            name: `Tan Delta Test MTS - ${cableType || 'Cable'}`,
+            name: `Tan Delta Test MTS - ${cableType || "Cable"}`,
             file_url: `report:/jobs/${jobId}/medium-voltage-vlf-tan-delta-mts/${result.data.id}`,
-            user_id: user.id
+            user_id: user.id,
           };
 
           const { data: assetResult, error: assetError } = await supabase
-            .schema('neta_ops')
-            .from('assets')
+            .schema("neta_ops")
+            .from("assets")
             .insert(assetData)
             .select()
             .single();
@@ -237,32 +289,41 @@ const TanDeltaChartMTS: React.FC = () => {
           if (assetError) throw assetError;
 
           // Link asset to job
-          await supabase
-            .schema('neta_ops')
-            .from('job_assets')
-            .insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id
-            });
+          await supabase.schema("neta_ops").from("job_assets").insert({
+            job_id: jobId,
+            asset_id: assetResult.id,
+            user_id: user.id,
+          });
         }
       }
 
       if (result.error) throw result.error;
 
-      setIsEditing(false);
-      alert("Report saved successfully!");
-      
-      // Navigate back to job page
-      navigateAfterSave(navigate, jobId, location);
+      if (!reportId) {
+        setIsEditing(false);
+        const newId = (result as any)?.data?.id;
+        if (newId) {
+          setCurrentReportId(newId);
+          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
+        }
+      } else {
+        setJustSaved(true);
+      }
     } catch (error: any) {
-      console.error('Error saving report:', error);
-      alert(`Failed to save report: ${error?.message || 'Unknown error'}`);
+      console.error("Error saving report:", error);
+      alert(`Failed to save report: ${error?.message || "Unknown error"}`);
     } finally {
       setLoading(false);
     }
   };
-  
+
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    if (reportId) {
+      setIsEditing(false);
+    }
+  };
+
   const toggleEditMode = () => {
     setEditingData(!editingData);
   };
@@ -270,110 +331,104 @@ const TanDeltaChartMTS: React.FC = () => {
   const handleDataChange = (
     index: number,
     field: keyof TanDeltaDataPoint,
-    value: string | number
+    value: string | number,
   ) => {
+    setJustSaved(false);
     const newData = [...data];
-    if (field === 'voltageLabel') {
+    if (field === "voltageLabel") {
       newData[index][field] = String(value);
-    } else if (field === 'phaseAStdDev' || field === 'phaseBStdDev' || field === 'phaseCStdDev') {
+    } else if (
+      field === "phaseAStdDev" ||
+      field === "phaseBStdDev" ||
+      field === "phaseCStdDev"
+    ) {
       // For standard deviation fields, use null for empty values
       const s = String(value);
-      newData[index][field] = s === '' ? null : parseFloat(s) || 0;
+      newData[index][field] = s === "" ? null : parseFloat(s) || 0;
     } else {
-      newData[index][field] = typeof value === 'number' ? value : (parseFloat(String(value)) || 0);
+      newData[index][field] =
+        typeof value === "number" ? value : parseFloat(String(value)) || 0;
     }
-    console.log('Data changed:', { index, field, value, newData });
+    console.log("Data changed:", { index, field, value, newData });
     setData(newData);
   };
 
   const handleEquipmentChange = (field: keyof TestEquipment, value: string) => {
-    setEquipment(prev => ({
+    setJustSaved(false);
+    setEquipment((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const renderHeader = () => (
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        4-Medium Voltage Cable VLF Tan Delta MTS
-      </h1>
-      <div className="flex gap-2">
-        <button
-          onClick={() => {
-            if (isEditing) {
-              setStatus(status === 'PASS' ? 'FAIL' : 'PASS');
-            }
-          }}
-          className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-            status === 'PASS'
-              ? 'bg-green-600 text-white focus:ring-green-500'
-              : 'bg-red-600 text-white focus:ring-red-500'
-          } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
-        >
-          {status === 'PASS' ? 'PASS' : 'FAIL'}
-        </button>
-
-        {reportId && !isEditing ? (
-          <>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Edit Report
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Print Report
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={handleSave}
-            disabled={!isEditing}
-            className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
-          >
-            Save Report
-          </button>
-        )}
-      </div>
-    </div>
+    <ReportHeader
+      title={reportName}
+      isAutoSaving={false}
+      isEditing={isEditing}
+      justSaved={justSaved}
+      isSaving={loading}
+      status={status}
+      hasReport={!!currentReportId}
+      onStatusToggle={() => {
+        if (isEditing) {
+          setStatus(status === "PASS" ? "FAIL" : "PASS");
+        }
+      }}
+      onSave={handleSave}
+      onSaveAndClose={handleSaveAndClose}
+      onEdit={() => setIsEditing(true)}
+      onBack={() => navigate(`/jobs/${jobId}`)}
+      onPrint={() => window.print()}
+      isPrintMode={isPrintMode}
+    />
   );
 
   if (loading) {
-    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner size="md" /></div>;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <LoadingSpinner size="md" />
+      </div>
+    );
   }
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
       <div className="print:flex hidden items-center justify-between border-b-2 border-gray-800 pb-4 mb-6">
-        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" className="h-10 w-auto" style={{ maxHeight: 40 }} />
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
+          alt="AMP Logo"
+          className="h-10 w-auto"
+          style={{ maxHeight: 40 }}
+        />
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
         </div>
-        <div className="text-right font-extrabold text-xl" style={{ color: '#1a4e7c' }}>
+        <div
+          className="text-right font-extrabold text-xl"
+          style={{ color: "#1a4e7c" }}
+        >
           NETA - MTS 7.3.3
           <div className="mt-2">
             <div
               className={`pass-fail-status-box ${getPassFailBadgeClass(status)}`}
               style={{
-                display: 'inline-block',
-                padding: '4px 10px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                textAlign: 'center',
-                width: 'fit-content',
-                borderRadius: '6px',
-                border: status === 'PASS' ? '2px solid #16a34a' : '2px solid #dc2626',
-                backgroundColor: status === 'PASS' ? '#22c55e' : '#ef4444',
-                color: 'white',
-                WebkitPrintColorAdjust: 'exact',
-                printColorAdjust: 'exact',
-                boxSizing: 'border-box',
-                minWidth: '50px',
+                display: "inline-block",
+                padding: "4px 10px",
+                fontSize: "12px",
+                fontWeight: "bold",
+                textAlign: "center",
+                width: "fit-content",
+                borderRadius: "6px",
+                border:
+                  status === "PASS" ? "2px solid #16a34a" : "2px solid #dc2626",
+                backgroundColor: status === "PASS" ? "#22c55e" : "#ef4444",
+                color: "white",
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact",
+                boxSizing: "border-box",
+                minWidth: "50px",
               }}
             >
               {status}
@@ -382,22 +437,26 @@ const TanDeltaChartMTS: React.FC = () => {
         </div>
       </div>
       {/* End Print Header */}
-      
+
       <div className="p-6 flex justify-center bg-gray-50 dark:bg-dark-150">
         <div className="max-w-7xl w-full space-y-6">
           {/* Header with title and buttons */}
-          <div className={`${isPrintMode ? 'hidden' : ''} print:hidden`}>
+          <div className={`${isPrintMode ? "hidden" : ""} print:hidden`}>
             {renderHeader()}
           </div>
-          
+
           {/* Test Parameters */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Parameters</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Test Parameters
+            </h2>
             {/* On-screen form - hidden in print */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden test-params-onscreen">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">Test Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Test Date
+                </label>
                 <input
                   type="date"
                   value={testDate}
@@ -407,7 +466,9 @@ const TanDeltaChartMTS: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">Cable Type</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Cable Type
+                </label>
                 <input
                   type="text"
                   value={cableType}
@@ -417,7 +478,9 @@ const TanDeltaChartMTS: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">System Voltage (kV L-G)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  System Voltage (kV L-G)
+                </label>
                 <input
                   type="text"
                   value={systemVoltage}
@@ -431,28 +494,43 @@ const TanDeltaChartMTS: React.FC = () => {
             <div className="hidden print:block">
               <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
                 <colgroup>
-                  <col style={{ width: '33.33%' }} />
-                  <col style={{ width: '33.33%' }} />
-                  <col style={{ width: '33.33%' }} />
+                  <col style={{ width: "33.33%" }} />
+                  <col style={{ width: "33.33%" }} />
+                  <col style={{ width: "33.33%" }} />
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Test Date:</div><div className="mt-0">{testDate || ''}</div></td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Cable Type:</div><div className="mt-0">{cableType || ''}</div></td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">System Voltage (kV L-G):</div><div className="mt-0">{systemVoltage || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Test Date:</div>
+                      <div className="mt-0">{testDate || ""}</div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Cable Type:</div>
+                      <div className="mt-0">{cableType || ""}</div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">
+                        System Voltage (kV L-G):
+                      </div>
+                      <div className="mt-0">{systemVoltage || ""}</div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-          
+
           {/* Job Information */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Job Information</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Job Information
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 print:hidden">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">System Voltage Line to Ground (kV RMS):</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  System Voltage Line to Ground (kV RMS):
+                </label>
                 <input
                   type="number"
                   step="0.001"
@@ -463,7 +541,9 @@ const TanDeltaChartMTS: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">Cable Type:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Cable Type:
+                </label>
                 <input
                   type="text"
                   value={cableType}
@@ -473,7 +553,9 @@ const TanDeltaChartMTS: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">Test Date:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Test Date:
+                </label>
                 <input
                   type="date"
                   value={testDate}
@@ -487,11 +569,11 @@ const TanDeltaChartMTS: React.FC = () => {
               data={{
                 date: testDate,
                 identifier: cableType,
-                jobNumber: '',
-                technicians: '',
-                user: '',
-                substation: '',
-                eqptLocation: '',
+                jobNumber: "",
+                technicians: "",
+                user: "",
+                substation: "",
+                eqptLocation: "",
                 temperature: undefined,
               }}
             />
@@ -500,84 +582,142 @@ const TanDeltaChartMTS: React.FC = () => {
           {/* Test Equipment */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Test Equipment</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Test Equipment
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2 print:hidden test-eqpt-onscreen">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">Megohmmeter Name:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Megohmmeter Name:
+                </label>
                 <input
                   type="text"
                   value={equipment.megohmeterSerial}
-                  onChange={(e) => setEquipment(prev => ({ ...prev, megohmeterSerial: e.target.value }))}
+                  onChange={(e) =>
+                    setEquipment((prev) => ({
+                      ...prev,
+                      megohmeterSerial: e.target.value,
+                    }))
+                  }
                   disabled={!isEditing}
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">Megohmmeter Serial:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Megohmmeter Serial:
+                </label>
                 <input
                   type="text"
                   value={equipment.megohmeterSerial}
-                  onChange={(e) => setEquipment(prev => ({ ...prev, megohmeterSerial: e.target.value }))}
+                  onChange={(e) =>
+                    setEquipment((prev) => ({
+                      ...prev,
+                      megohmeterSerial: e.target.value,
+                    }))
+                  }
                   disabled={!isEditing}
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">Megohmmeter AMP ID:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Megohmmeter AMP ID:
+                </label>
                 <input
                   type="text"
                   value={equipment.megohmmeterAmpId}
-                  onChange={(e) => setEquipment(prev => ({ ...prev, megohmmeterAmpId: e.target.value }))}
+                  onChange={(e) =>
+                    setEquipment((prev) => ({
+                      ...prev,
+                      megohmmeterAmpId: e.target.value,
+                    }))
+                  }
                   disabled={!isEditing}
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">Megohmmeter Cal Date:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Megohmmeter Cal Date:
+                </label>
                 <input
                   type="text"
                   value={equipment.megohmmeterCalDate}
-                  onChange={(e) => setEquipment(prev => ({ ...prev, megohmmeterCalDate: e.target.value }))}
+                  onChange={(e) =>
+                    setEquipment((prev) => ({
+                      ...prev,
+                      megohmmeterCalDate: e.target.value,
+                    }))
+                  }
                   disabled={!isEditing}
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">VLF Hipot Name:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  VLF Hipot Name:
+                </label>
                 <input
                   type="text"
                   value={equipment.vlfHipotSerial}
-                  onChange={(e) => setEquipment(prev => ({ ...prev, vlfHipotSerial: e.target.value }))}
+                  onChange={(e) =>
+                    setEquipment((prev) => ({
+                      ...prev,
+                      vlfHipotSerial: e.target.value,
+                    }))
+                  }
                   disabled={!isEditing}
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">VLF Hipot Serial:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  VLF Hipot Serial:
+                </label>
                 <input
                   type="text"
                   value={equipment.vlfHipotSerial}
-                  onChange={(e) => setEquipment(prev => ({ ...prev, vlfHipotSerial: e.target.value }))}
+                  onChange={(e) =>
+                    setEquipment((prev) => ({
+                      ...prev,
+                      vlfHipotSerial: e.target.value,
+                    }))
+                  }
                   disabled={!isEditing}
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">VLF Hipot AMP ID:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  VLF Hipot AMP ID:
+                </label>
                 <input
                   type="text"
                   value={equipment.vlfHipotAmpId}
-                  onChange={(e) => setEquipment(prev => ({ ...prev, vlfHipotAmpId: e.target.value }))}
+                  onChange={(e) =>
+                    setEquipment((prev) => ({
+                      ...prev,
+                      vlfHipotAmpId: e.target.value,
+                    }))
+                  }
                   disabled={!isEditing}
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-white">VLF Hipot Cal Date:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  VLF Hipot Cal Date:
+                </label>
                 <input
                   type="text"
                   value={equipment.vlfHipotCalDate}
-                  onChange={(e) => setEquipment(prev => ({ ...prev, vlfHipotCalDate: e.target.value }))}
+                  onChange={(e) =>
+                    setEquipment((prev) => ({
+                      ...prev,
+                      vlfHipotCalDate: e.target.value,
+                    }))
+                  }
                   disabled={!isEditing}
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                 />
@@ -587,23 +727,63 @@ const TanDeltaChartMTS: React.FC = () => {
             <div className="hidden print:block">
               <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print:border text-[0.85rem]">
                 <colgroup>
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Megohmmeter:</div><div className="mt-0">{equipment.megohmeterSerial || ''}</div></td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Serial Number:</div><div className="mt-0">{equipment.megohmeterSerial || ''}</div></td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">AMP ID:</div><div className="mt-0">{equipment.megohmmeterAmpId || ''}</div></td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Cal Date:</div><div className="mt-0">{equipment.megohmmeterCalDate || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Megohmmeter:</div>
+                      <div className="mt-0">
+                        {equipment.megohmeterSerial || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Serial Number:</div>
+                      <div className="mt-0">
+                        {equipment.megohmeterSerial || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">AMP ID:</div>
+                      <div className="mt-0">
+                        {equipment.megohmmeterAmpId || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Cal Date:</div>
+                      <div className="mt-0">
+                        {equipment.megohmmeterCalDate || ""}
+                      </div>
+                    </td>
                   </tr>
                   <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">VLF Hipot:</div><div className="mt-0">{equipment.vlfHipotSerial || ''}</div></td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Serial Number:</div><div className="mt-0">{equipment.vlfHipotSerial || ''}</div></td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">AMP ID:</div><div className="mt-0">{equipment.vlfHipotAmpId || ''}</div></td>
-                    <td className="p-2 align-top border border-gray-300 print:border-black print:border"><div className="font-semibold">Cal Date:</div><div className="mt-0">{equipment.vlfHipotCalDate || ''}</div></td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">VLF Hipot:</div>
+                      <div className="mt-0">
+                        {equipment.vlfHipotSerial || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Serial Number:</div>
+                      <div className="mt-0">
+                        {equipment.vlfHipotSerial || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">AMP ID:</div>
+                      <div className="mt-0">
+                        {equipment.vlfHipotAmpId || ""}
+                      </div>
+                    </td>
+                    <td className="p-2 align-top border border-gray-300 print:border-black print:border">
+                      <div className="font-semibold">Cal Date:</div>
+                      <div className="mt-0">
+                        {equipment.vlfHipotCalDate || ""}
+                      </div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -611,9 +791,13 @@ const TanDeltaChartMTS: React.FC = () => {
           </div>
 
           {/* Comments */}
-          <div className={`mb-6 print:break-inside-avoid ${!comments?.trim() ? 'print:hidden' : ''}`}>
+          <div
+            className={`mb-6 print:break-inside-avoid ${!comments?.trim() ? "print:hidden" : ""}`}
+          >
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Comments</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Comments
+            </h2>
             <div className="print:hidden comments-onscreen">
               <textarea
                 value={comments}
@@ -621,60 +805,105 @@ const TanDeltaChartMTS: React.FC = () => {
                 readOnly={!isEditing}
                 rows={8}
                 placeholder="Enter any additional comments..."
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[150px] ${!isEditing ? 'bg-gray-100 dark:bg-dark-150' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[150px] ${!isEditing ? "bg-gray-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             {comments?.trim() && (
-            <div className="hidden print:block">
-              <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
-                <tbody>
-                  <tr>
-                    <td className="p-2 align-top border border-gray-300 print:border-black">
-                      <div className="mt-0 whitespace-pre-wrap break-words">{comments}</div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+              <div className="hidden print:block">
+                <table className="w-full table-fixed border-collapse border border-gray-300 print:border-black print-comment-table">
+                  <tbody>
+                    <tr>
+                      <td className="p-2 align-top border border-gray-300 print:border-black">
+                        <div className="mt-0 whitespace-pre-wrap break-words">
+                          {comments}
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 
           {/* Tan Delta Test Data */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Tan Delta Test Data</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Tan Delta Test Data
+            </h2>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                 <thead>
                   <tr>
-                    <th className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-150 text-left">Voltage Steps</th>
-                    <th className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-150 text-left">kV</th>
-                    <th colSpan={2} className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-150 text-center">A Phase</th>
-                    <th colSpan={2} className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-150 text-center">B Phase</th>
-                    <th colSpan={2} className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-150 text-center">C Phase</th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-150 text-left">
+                      Voltage Steps
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-150 text-left">
+                      kV
+                    </th>
+                    <th
+                      colSpan={2}
+                      className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-150 text-center"
+                    >
+                      A Phase
+                    </th>
+                    <th
+                      colSpan={2}
+                      className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-150 text-center"
+                    >
+                      B Phase
+                    </th>
+                    <th
+                      colSpan={2}
+                      className="border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-dark-150 text-center"
+                    >
+                      C Phase
+                    </th>
                   </tr>
                   <tr>
                     <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150"></th>
                     <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150"></th>
-                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">Tan Delta</th>
-                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">Std Dev</th>
-                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">Tan Delta</th>
-                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">Std Dev</th>
-                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">Tan Delta</th>
-                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">Std Dev</th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">
+                      Tan Delta
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">
+                      Std Dev
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">
+                      Tan Delta
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">
+                      Std Dev
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">
+                      Tan Delta
+                    </th>
+                    <th className="border border-gray-300 dark:border-gray-600 p-2 bg-gray-50 dark:bg-dark-150 text-center">
+                      Std Dev
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.map((point, index) => (
                     <tr key={index}>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">{point.voltageLabel}</td>
-                      <td className="border border-gray-300 dark:border-gray-600 p-2">{point.kV}</td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                        {point.voltageLabel}
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                        {point.kV}
+                      </td>
                       <td className="border border-gray-300 dark:border-gray-600 p-2">
                         <input
                           type="number"
                           step="0.001"
                           value={point.phaseA}
-                          onChange={(e) => handleDataChange(index, 'phaseA', parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            handleDataChange(
+                              index,
+                              "phaseA",
+                              parseFloat(e.target.value) || 0,
+                            )
+                          }
                           disabled={!isEditing}
                           className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
@@ -683,8 +912,18 @@ const TanDeltaChartMTS: React.FC = () => {
                         <input
                           type="number"
                           step="0.001"
-                          value={point.phaseAStdDev === null ? '' : String(point.phaseAStdDev)}
-                          onChange={(e) => handleDataChange(index, 'phaseAStdDev', e.target.value)}
+                          value={
+                            point.phaseAStdDev === null
+                              ? ""
+                              : String(point.phaseAStdDev)
+                          }
+                          onChange={(e) =>
+                            handleDataChange(
+                              index,
+                              "phaseAStdDev",
+                              e.target.value,
+                            )
+                          }
                           disabled={!isEditing}
                           className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
@@ -694,7 +933,13 @@ const TanDeltaChartMTS: React.FC = () => {
                           type="number"
                           step="0.001"
                           value={point.phaseB}
-                          onChange={(e) => handleDataChange(index, 'phaseB', parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            handleDataChange(
+                              index,
+                              "phaseB",
+                              parseFloat(e.target.value) || 0,
+                            )
+                          }
                           disabled={!isEditing}
                           className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
@@ -703,8 +948,18 @@ const TanDeltaChartMTS: React.FC = () => {
                         <input
                           type="number"
                           step="0.001"
-                          value={point.phaseBStdDev === null ? '' : String(point.phaseBStdDev)}
-                          onChange={(e) => handleDataChange(index, 'phaseBStdDev', e.target.value)}
+                          value={
+                            point.phaseBStdDev === null
+                              ? ""
+                              : String(point.phaseBStdDev)
+                          }
+                          onChange={(e) =>
+                            handleDataChange(
+                              index,
+                              "phaseBStdDev",
+                              e.target.value,
+                            )
+                          }
                           disabled={!isEditing}
                           className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
@@ -714,7 +969,13 @@ const TanDeltaChartMTS: React.FC = () => {
                           type="number"
                           step="0.001"
                           value={point.phaseC}
-                          onChange={(e) => handleDataChange(index, 'phaseC', parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            handleDataChange(
+                              index,
+                              "phaseC",
+                              parseFloat(e.target.value) || 0,
+                            )
+                          }
                           disabled={!isEditing}
                           className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
@@ -723,8 +984,18 @@ const TanDeltaChartMTS: React.FC = () => {
                         <input
                           type="number"
                           step="0.001"
-                          value={point.phaseCStdDev === null ? '' : String(point.phaseCStdDev)}
-                          onChange={(e) => handleDataChange(index, 'phaseCStdDev', e.target.value)}
+                          value={
+                            point.phaseCStdDev === null
+                              ? ""
+                              : String(point.phaseCStdDev)
+                          }
+                          onChange={(e) =>
+                            handleDataChange(
+                              index,
+                              "phaseCStdDev",
+                              e.target.value,
+                            )
+                          }
                           disabled={!isEditing}
                           className="mt-1 block w-20 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
                         />
@@ -739,30 +1010,46 @@ const TanDeltaChartMTS: React.FC = () => {
           {/* Tan Delta Chart */}
           <div className="mb-6">
             <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">Tan Delta Chart</h2>
-            <div className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700 p-6" style={{ height: '400px' }}>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2 print:text-black print:border-black print:font-bold">
+              Tan Delta Chart
+            </h2>
+            <div
+              className="bg-white dark:bg-dark-150 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
+              style={{ height: "400px" }}
+            >
               <ResponsiveContainer>
                 <LineChart
                   data={data}
                   margin={{ top: 30, right: 40, left: 30, bottom: 20 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="kV" 
-                    label={{ value: 'Test Voltage (kV)', position: 'bottom', offset: 10 }} 
+                  <XAxis
+                    dataKey="kV"
+                    label={{
+                      value: "Test Voltage (kV)",
+                      position: "bottom",
+                      offset: 10,
+                    }}
                     padding={{ left: 20, right: 20 }}
                   />
                   <YAxis
-                    label={{ value: 'Tan Delta (E-3)', angle: -90, position: 'insideLeft', offset: -10 }}
-                    domain={[0, 'auto']}
+                    label={{
+                      value: "Tan Delta (E-3)",
+                      angle: -90,
+                      position: "insideLeft",
+                      offset: -10,
+                    }}
+                    domain={[0, "auto"]}
                     padding={{ top: 20 }}
                   />
-                  <Tooltip formatter={(value) => [`${value}`, 'Tan Delta (E-3)']} />
-                  <Legend 
-                    layout="horizontal" 
-                    verticalAlign="top" 
+                  <Tooltip
+                    formatter={(value) => [`${value}`, "Tan Delta (E-3)"]}
+                  />
+                  <Legend
+                    layout="horizontal"
+                    verticalAlign="top"
                     align="center"
-                    wrapperStyle={{ paddingBottom: '20px' }}
+                    wrapperStyle={{ paddingBottom: "20px" }}
                   />
                   <Line
                     type="monotone"
@@ -802,59 +1089,59 @@ const TanDeltaChartMTS: React.FC = () => {
 };
 
 // Add print styles
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
   style.textContent = `
     @media print {
       /* Force all elements to print styles */
-      * { 
-        color: black !important; 
+      * {
+        color: black !important;
         background-color: white !important;
         box-sizing: border-box !important;
       }
-      
-      body { 
-        margin: 0 !important; 
-        padding: 20px !important; 
-        font-family: Arial, sans-serif !important; 
+
+      body {
+        margin: 0 !important;
+        padding: 20px !important;
+        font-family: Arial, sans-serif !important;
         font-size: 12px !important;
       }
-      
+
       /* Hide all navigation and header elements */
-      header, nav, .navigation, [class*="nav"], [class*="header"], 
-      .sticky, [class*="sticky"], .print\\:hidden { 
-        display: none !important; 
+      header, nav, .navigation, [class*="nav"], [class*="header"],
+      .sticky, [class*="sticky"], .print\\:hidden {
+        display: none !important;
       }
-      
+
       /* Hide Back to Job button and division headers specifically */
-      button[class*="Back"], 
-      *[class*="Back to Job"], 
+      button[class*="Back"],
+      *[class*="Back to Job"],
       h2[class*="Division"],
-      .mobile-nav-text { 
-        display: none !important; 
+      .mobile-nav-text {
+        display: none !important;
       }
-      
+
       /* Form elements - hide interactive indicators */
-      input, select, textarea { 
-        background-color: white !important; 
-        border: 1px solid black !important; 
+      input, select, textarea {
+        background-color: white !important;
+        border: 1px solid black !important;
         color: black !important;
-        padding: 2px !important; 
+        padding: 2px !important;
         font-size: 10px !important;
         -webkit-appearance: none !important;
         -moz-appearance: none !important;
         appearance: none !important;
-        width: 100% !important; 
+        width: 100% !important;
         min-width: 0 !important;
         box-sizing: border-box !important;
       }
-      
+
       /* Hide dropdown arrows and form control indicators */
       select {
         background-image: none !important;
         padding-right: 8px !important;
       }
-      
+
       /* Hide spin buttons on number inputs */
       input[type="number"]::-webkit-outer-spin-button,
       input[type="number"]::-webkit-inner-spin-button {
@@ -864,24 +1151,24 @@ if (typeof document !== 'undefined') {
       input[type="number"] {
         -moz-appearance: textfield !important;
       }
-      
+
       /* Hide on-screen elements in print */
       .test-params-onscreen, .test-params-onscreen * { display: none !important; }
       .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
       .comments-onscreen, .comments-onscreen * { display: none !important; }
 
       /* Table styling - Force all tables to have proper layout */
-      table { 
-        border-collapse: collapse !important; 
-        width: 100% !important; 
+      table {
+        border-collapse: collapse !important;
+        width: 100% !important;
         table-layout: fixed !important;
         margin: 0 !important;
         padding: 0 !important;
       }
-      
-      th, td { 
-        border: 1px solid black !important; 
-        padding: 3px !important; 
+
+      th, td {
+        border: 1px solid black !important;
+        padding: 3px !important;
         font-size: 8px !important;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
@@ -891,32 +1178,32 @@ if (typeof document !== 'undefined') {
         min-width: 0 !important;
         max-width: none !important;
       }
-      
-      th { 
-        background-color: #f0f0f0 !important; 
-        font-weight: bold !important; 
+
+      th {
+        background-color: #f0f0f0 !important;
+        font-weight: bold !important;
         font-size: 7px !important;
         text-align: center !important;
       }
-      
+
       /* Hide interactive elements */
       button:not(.print-visible) { display: none !important; }
-      
+
       /* Section styling */
       section { break-inside: avoid !important; margin-bottom: 20px !important; }
-      
+
       /* PRINT-SPECIFIC TABLE LAYOUT - Force override all existing styles */
-      
+
       /* Tan Delta Data Table - Optimize column widths */
       table th:first-child,
-      table td:first-child { 
-        width: 15% !important; 
+      table td:first-child {
+        width: 15% !important;
         min-width: 80px !important;
         max-width: 15% !important;
       }
       table th:nth-child(2),
-      table td:nth-child(2) { 
-        width: 8% !important; 
+      table td:nth-child(2) {
+        width: 8% !important;
         min-width: 50px !important;
         max-width: 8% !important;
       }
@@ -925,8 +1212,8 @@ if (typeof document !== 'undefined') {
       table th:nth-child(5),
       table td:nth-child(5),
       table th:nth-child(7),
-      table td:nth-child(7) { 
-        width: 12% !important; 
+      table td:nth-child(7) {
+        width: 12% !important;
         min-width: 70px !important;
         max-width: 12% !important;
       }
@@ -935,22 +1222,22 @@ if (typeof document !== 'undefined') {
       table th:nth-child(6),
       table td:nth-child(6),
       table th:nth-child(8),
-      table td:nth-child(8) { 
-        width: 12% !important; 
+      table td:nth-child(8) {
+        width: 12% !important;
         min-width: 70px !important;
         max-width: 12% !important;
       }
-      
+
       /* Force table layout for all tables */
-      table { 
-        table-layout: fixed !important; 
-        width: 100% !important; 
+      table {
+        table-layout: fixed !important;
+        width: 100% !important;
         min-width: 100% !important;
         max-width: 100% !important;
       }
-      
+
       /* Ensure text doesn't overflow in cells - Override all existing styles */
-      table td { 
+      table td {
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
         white-space: normal !important;
@@ -959,9 +1246,9 @@ if (typeof document !== 'undefined') {
         overflow: visible !important;
         text-overflow: clip !important;
       }
-      
+
       /* Make headers more compact - Override all existing styles */
-      table th { 
+      table th {
         font-size: 7px !important;
         line-height: 1.1 !important;
         padding: 2px !important;
@@ -969,11 +1256,11 @@ if (typeof document !== 'undefined') {
         overflow: hidden !important;
         text-overflow: ellipsis !important;
       }
-      
+
       /* Force input fields to fit properly in print */
       table input,
-      table select { 
-        width: 100% !important; 
+      table select {
+        width: 100% !important;
         min-width: 0 !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
@@ -984,13 +1271,13 @@ if (typeof document !== 'undefined') {
         background-color: white !important;
         color: black !important;
       }
-      
+
       /* Chart styling for print */
       .recharts-wrapper {
         page-break-inside: avoid !important;
         margin: 20px 0 !important;
       }
-      
+
       /* Ensure proper spacing between sections */
       .mb-6 {
         margin-bottom: 20px !important;
@@ -1001,4 +1288,4 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(style);
 }
 
-export default TanDeltaChartMTS; 
+export default TanDeltaChartMTS;

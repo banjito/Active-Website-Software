@@ -8,10 +8,11 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
-import { navigateAfterSave } from "./ReportUtils";
+
 import { getReportName, getAssetName } from "./reportMappings";
 import { ReportWrapper } from "./ReportWrapper";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
+import { ReportHeader } from "./common/ReportHeader";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -366,6 +367,13 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
     id: string;
     reportId?: string;
   }>();
+  const [currentReportId, setCurrentReportId] =
+    useState<string | undefined>(reportId);
+
+  useEffect(() => {
+    setCurrentReportId(reportId);
+  }, [reportId]);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -373,6 +381,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState<boolean>(!reportId);
   const [saving, setSaving] = useState<boolean>(false);
+  const [justSaved, setJustSaved] = useState(false);
 
   // Print Mode Detection
   const [searchParams] = useSearchParams();
@@ -690,6 +699,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
   };
 
   const handleFahrenheitChange = (fahrenheit: number) => {
+    setJustSaved(false);
     const celsius = Math.round(((fahrenheit - 32) * 5) / 9);
     const tcf = getTCF(celsius);
     setFormData((prev) => ({
@@ -699,6 +709,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
   };
 
   const handleCelsiusChange = (celsius: number) => {
+    setJustSaved(false);
     const roundedCelsius = Math.round(celsius);
     const fahrenheit = Math.round((roundedCelsius * 9) / 5 + 32);
     const tcf = getTCF(roundedCelsius);
@@ -754,6 +765,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
+    const wasExistingReport = Boolean(reportId);
     setSaving(true);
 
     const vmiArray = Object.entries(
@@ -816,14 +828,27 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
         }
       }
       if (result.error && result.error.code !== "PGRST116") throw result.error;
-      setIsEditing(false);
-      alert(`Report ${reportId ? "updated" : "saved"} successfully!`);
-      navigateAfterSave(navigate, jobId, location);
+      setJustSaved(true);
+      if (!wasExistingReport) {
+        setIsEditing(false);
+        const newId = (result as any)?.data?.id || (result as any)?.id;
+        if (newId) {
+          setCurrentReportId(newId);
+          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
+        }
+      }
     } catch (error) {
       console.error("Error saving report:", error);
       alert(`Failed to save report: ${(error as Error).message}`);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    if (currentReportId) {
+      setIsEditing(false);
     }
   };
 
@@ -835,62 +860,34 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
     );
 
   const renderHeader = () => (
-    <div className="flex justify-between items-center">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        {reportName}
-      </h1>
-      <div className="flex gap-2">
-        <button
-          onClick={() => {
-            if (isEditing) {
-              setFormData((prev) => ({
-                ...prev,
-                status:
-                  prev.status === "PASS"
-                    ? "FAIL"
-                    : prev.status === "FAIL"
-                      ? "LIMITED SERVICE"
-                      : "PASS",
-              }));
-            }
-          }}
-          className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-            formData.status === "PASS"
-              ? "bg-green-600 text-white focus:ring-green-500 hover:bg-green-700"
-              : formData.status === "FAIL"
-                ? "bg-red-600 text-white focus:ring-red-500 hover:bg-red-700"
-                : "bg-yellow-500 text-black focus:ring-yellow-400 hover:bg-yellow-600"
-          } ${!isEditing ? "opacity-70 cursor-not-allowed" : ""}`}
-        >
-          {formData.status}
-        </button>
-
-        {reportId && !isEditing ? (
-          <>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Edit Report
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Print Report
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={handleSave}
-            disabled={!isEditing || saving}
-            className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? "hidden" : "hover:bg-[#f26722]/90"}`}
-          >
-            {saving ? "Saving..." : reportId ? "Update Report" : "Save Report"}
-          </button>
-        )}
-      </div>
-    </div>
+    <ReportHeader
+      title={reportName}
+      isAutoSaving={false}
+      isEditing={isEditing}
+      justSaved={justSaved}
+      isSaving={saving}
+      status={formData.status}
+      hasReport={!!currentReportId}
+      onStatusToggle={() => {
+        if (isEditing) {
+          setFormData((prev) => ({
+            ...prev,
+            status:
+              prev.status === "PASS"
+                ? "FAIL"
+                : prev.status === "FAIL"
+                  ? "LIMITED SERVICE"
+                  : "PASS",
+          }));
+        }
+      }}
+      onSave={handleSave}
+      onSaveAndClose={handleSaveAndClose}
+      onEdit={() => setIsEditing(true)}
+      onBack={() => navigate(`/jobs/${jobId}`)}
+      onPrint={() => window.print()}
+      isPrintMode={isPrintMode}
+    />
   );
 
   const renderInput = (

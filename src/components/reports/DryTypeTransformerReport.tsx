@@ -8,7 +8,6 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
-import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { ReportWrapper } from "./ReportWrapper";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
@@ -17,6 +16,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import _ from "lodash";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ReportHeader } from "@/components/reports/common/ReportHeader";
 
 // Temperature conversion and TCF tables
 const tempConvTable = [
@@ -238,11 +238,31 @@ const DryTypeTransformerReport: React.FC = () => {
     initialReportId,
   );
   const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
+  const manualSavePendingRef = React.useRef(false);
   const reportIdRef = React.useRef<string | undefined>(initialReportId);
   const creatingRef = React.useRef(false);
   const pendingSaveRef = React.useRef(false);
+
+  const setActiveReportId = React.useCallback((newReportId: string) => {
+    reportIdRef.current = newReportId;
+    setCurrentReportId(newReportId);
+  }, []);
+
+  const waitForActiveReportId = React.useCallback(async () => {
+    if (reportIdRef.current) return reportIdRef.current;
+    if (!creatingRef.current) return undefined;
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      if (reportIdRef.current) return reportIdRef.current;
+    }
+
+    return undefined;
+  }, []);
 
   // Print Mode Detection
   const [searchParams] = useSearchParams();
@@ -549,6 +569,7 @@ const DryTypeTransformerReport: React.FC = () => {
 
   // Handle form field changes
   const handleChange = (section: string | null, field: string, value: any) => {
+    setJustSaved(false);
     setFormData((prev) => {
       if (section) {
         return {
@@ -572,6 +593,7 @@ const DryTypeTransformerReport: React.FC = () => {
     field: string | number,
     value: any,
   ) => {
+    setJustSaved(false);
     setFormData((prev) => {
       if (section === "visualInspectionItems") {
         const newItems = [...prev.visualInspectionItems];
@@ -601,6 +623,7 @@ const DryTypeTransformerReport: React.FC = () => {
     field: string,
     value: any,
   ) => {
+    setJustSaved(false);
     setFormData((prev) => ({
       ...prev,
       [section]: {
@@ -621,6 +644,7 @@ const DryTypeTransformerReport: React.FC = () => {
     field: "result" | "comments",
     value: string,
   ) => {
+    setJustSaved(false);
     setFormData((prev) => {
       const newItems = [...prev.visualInspectionItems];
       newItems[index] = { ...newItems[index], [field]: value };
@@ -951,9 +975,8 @@ const DryTypeTransformerReport: React.FC = () => {
 
           if (result.data) {
             const newReportId = result.data.id;
-            reportIdRef.current = newReportId;
             isAutoSaveCreatedRef.current = true;
-            setCurrentReportId(newReportId);
+            setActiveReportId(newReportId);
 
             const assetData = {
               name: getAssetName(
@@ -972,14 +995,11 @@ const DryTypeTransformerReport: React.FC = () => {
               .single();
 
             if (!assetError && assetResult) {
-              await supabase
-                .schema("neta_ops")
-                .from("job_assets")
-                .insert({
-                  job_id: jobId,
-                  asset_id: assetResult.id,
-                  user_id: user.id,
-                });
+              await supabase.schema("neta_ops").from("job_assets").insert({
+                job_id: jobId,
+                asset_id: assetResult.id,
+                user_id: user.id,
+              });
             }
 
             window.history.replaceState(
@@ -987,6 +1007,7 @@ const DryTypeTransformerReport: React.FC = () => {
               "",
               `/jobs/${jobId}/dry-type-transformer/${newReportId}`,
             );
+            creatingRef.current = false;
           } else {
             creatingRef.current = false;
           }
@@ -999,12 +1020,25 @@ const DryTypeTransformerReport: React.FC = () => {
       console.error("Autosave error:", error);
     } finally {
       setIsAutoSaving(false);
+      if (manualSavePendingRef.current) {
+        manualSavePendingRef.current = false;
+        handleSave();
+        return;
+      }
       if (pendingSaveRef.current) {
         pendingSaveRef.current = false;
         setTimeout(() => autoSave(), 0);
       }
     }
-  }, [jobId, user?.id, isEditing, isAutoSaving, formData, reportSlug]);
+  }, [
+    jobId,
+    user?.id,
+    isEditing,
+    isAutoSaving,
+    formData,
+    reportSlug,
+    setActiveReportId,
+  ]);
 
   // Autosave effect - triggers after user stops typing
   React.useEffect(() => {
@@ -1031,6 +1065,18 @@ const DryTypeTransformerReport: React.FC = () => {
   // Save report
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
+
+    const activeReportId = await waitForActiveReportId();
+    if (creatingRef.current && !activeReportId) {
+      manualSavePendingRef.current = true;
+      return;
+    }
+    const wasExistingReport = Boolean(activeReportId);
 
     const reportData = {
       job_id: jobId,
@@ -1060,21 +1106,26 @@ const DryTypeTransformerReport: React.FC = () => {
     };
     console.log("Saving transformer report data:", reportData);
 
+    let didStartCreate = false;
+
     try {
+      setIsSaving(true);
       let result;
 
-      if (currentReportId) {
+      if (activeReportId) {
         // Update existing report
-        console.log(`Updating transformer_reports with ID: ${currentReportId}`);
+        console.log(`Updating transformer_reports with ID: ${activeReportId}`);
         result = await supabase
           .schema("neta_ops")
           .from("transformer_reports") // <--- Use correct table name
           .update(reportData)
-          .eq("id", currentReportId)
+          .eq("id", activeReportId)
           .select()
           .single();
       } else {
         // Create new report
+        creatingRef.current = true;
+        didStartCreate = true;
         console.log(`Inserting into transformer_reports for job ID: ${jobId}`);
         result = await supabase
           .schema("neta_ops")
@@ -1085,7 +1136,7 @@ const DryTypeTransformerReport: React.FC = () => {
 
         if (result.data) {
           const newReportId = result.data.id;
-          setCurrentReportId(newReportId);
+          setActiveReportId(newReportId);
           console.log(`New report created with ID: ${newReportId}`);
           // Create asset entry
           const assetData = {
@@ -1123,14 +1174,19 @@ const DryTypeTransformerReport: React.FC = () => {
       }
 
       if (result.error) throw result.error;
+      setJustSaved(true);
 
       console.log(
         `transformer_reports saved/updated successfully. Result:`,
         result.data,
       );
-      setIsEditing(false); // Exit editing mode
-      alert(`Report ${reportId ? "updated" : "saved"} successfully!`);
-      navigateAfterSave(navigate, jobId, location);
+      if (!wasExistingReport) {
+        setIsEditing(false);
+        const newId = (result as any)?.data?.id || (result as any)?.id;
+        if (newId) {
+          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
+        }
+      }
 
       // Remove or comment out the URL history update since we're navigating away
       // if (!reportId && currentReportId) {
@@ -1139,6 +1195,18 @@ const DryTypeTransformerReport: React.FC = () => {
     } catch (error: any) {
       console.error("Error saving transformer report:", error);
       alert(`Failed to save report: ${error?.message || "Unknown error"}`);
+    } finally {
+      if (didStartCreate || !reportIdRef.current) {
+        creatingRef.current = false;
+      }
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    if (reportIdRef.current) {
+      setIsEditing(false);
     }
   };
 
@@ -1167,60 +1235,29 @@ const DryTypeTransformerReport: React.FC = () => {
 
   // Header render function
   const renderHeader = () => (
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        {reportName}
-      </h1>
-      <div className="flex gap-2 items-center">
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-          ✓ Auto Saving Enabled
-        </span>
-        {/* Pass/Fail Button */}
-        <button
-          onClick={() => {
-            if (isEditing) {
-              setFormData((prev) => ({
-                ...prev,
-                status: prev.status === "PASS" ? "FAIL" : "PASS",
-              }));
-            }
-          }}
-          className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-            formData.status === "PASS"
-              ? "bg-green-600 text-white focus:ring-green-500"
-              : "bg-red-600 text-white focus:ring-red-500"
-          } ${!isEditing ? "opacity-70 cursor-not-allowed" : "hover:opacity-90"}`}
-        >
-          {formData.status === "PASS" ? "PASS" : "FAIL"}
-        </button>
-
-        {/* Edit/Save/Print Buttons */}
-        {currentReportId && !isEditing ? (
-          <>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Edit Report
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Print Report
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={handleSave}
-            disabled={!isEditing}
-            className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? "hidden" : "hover:bg-[#f26722]/90"}`}
-          >
-            {reportId ? "Update Report" : "Save New Report"}
-          </button>
-        )}
-      </div>
-    </div>
+    <ReportHeader
+      title={reportName}
+      isAutoSaving={isAutoSaving}
+      isEditing={isEditing}
+      justSaved={justSaved}
+      isSaving={isSaving}
+      status={formData.status}
+      hasReport={!!currentReportId}
+      onStatusToggle={() => {
+        if (isEditing) {
+          setFormData((prev) => ({
+            ...prev,
+            status: prev.status === "PASS" ? "FAIL" : "PASS",
+          }));
+        }
+      }}
+      onSave={handleSave}
+      onSaveAndClose={handleSaveAndClose}
+      onEdit={() => setIsEditing(true)}
+      onBack={() => navigate(`/jobs/${jobId}`)}
+      onPrint={() => window.print()}
+      isPrintMode={isPrintMode}
+    />
   );
 
   return (
@@ -1267,60 +1304,7 @@ const DryTypeTransformerReport: React.FC = () => {
       </div>
       {/* End Print Header */}
       <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
-        {/* Header */}
-        <div className="print:hidden flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {reportName}
-          </h1>
-          <div className="flex gap-2 items-center">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-              ✓ Auto Saving Enabled
-            </span>
-            <button
-              onClick={() => {
-                if (isEditing) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    status: prev.status === "PASS" ? "FAIL" : "PASS",
-                  }));
-                }
-              }}
-              disabled={!isEditing}
-              className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                formData.status === "PASS"
-                  ? "bg-green-600 text-white focus:ring-green-500"
-                  : "bg-red-600 text-white focus:ring-red-500"
-              } ${!isEditing ? "opacity-70 cursor-not-allowed" : "hover:opacity-90 dark:bg-opacity-80"}`}
-            >
-              {formData.status}
-            </button>
-
-            {currentReportId && !isEditing ? (
-              <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Edit Report
-                </button>
-                <button
-                  onClick={() => window.print()}
-                  className="px-4 py-2 text-sm text-white bg-gray-600 hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                >
-                  Print Report
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={handleSave}
-                disabled={!isEditing}
-                className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditing ? "hidden" : "hover:bg-orange-700"}`}
-              >
-                Save Report
-              </button>
-            )}
-          </div>
-        </div>
+        {renderHeader()}
 
         {/* Job Information */}
         <div className="mb-6">

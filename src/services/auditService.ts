@@ -185,7 +185,8 @@ export const logRoleChange = async (data: {
     
     // Insert the log entry into the database
     const { data: result, error } = await supabase
-      .from('common.role_audit_logs')
+      .schema('common')
+      .from('role_audit_logs')
       .insert(logEntry)
       .select('id')
       .single();
@@ -211,7 +212,8 @@ export const getRoleAuditLogs = async (
 ): Promise<RoleAuditLog[]> => {
   try {
     let query = supabase
-      .from('common.role_audit_logs')
+      .schema('common')
+      .from('role_audit_logs')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(limit);

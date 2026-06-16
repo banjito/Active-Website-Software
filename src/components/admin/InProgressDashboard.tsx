@@ -23,6 +23,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/Chart';
+import { formatStatusLabel } from '@/utils/formatters';
 
 interface Job {
   id: string;
@@ -1033,7 +1034,7 @@ const InProgressDashboard: React.FC = () => {
                         </div>
                         <div className="text-right">
                           <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getJobStatusColor(job.status)}`}>
-                            {job.status.replace('_', ' ')}
+                            {formatStatusLabel(job.status)}
                           </div>
                         </div>
                       </div>
@@ -1111,10 +1112,10 @@ const InProgressDashboard: React.FC = () => {
                           </p>
                           <div className="flex items-center gap-2 flex-wrap">
                             <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getJobStatusColor(job.status)}`}>
-                              {job.status.replace('_', ' ')}
+                              {formatStatusLabel(job.status)}
                             </div>
                             <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(job.priority)}`}>
-                              {job.priority}
+                              {formatStatusLabel(job.priority)}
                             </div>
                             {job.job_number && (
                               <div className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
@@ -1278,4 +1279,3 @@ const InProgressDashboard: React.FC = () => {
 };
 
 export default InProgressDashboard;
-

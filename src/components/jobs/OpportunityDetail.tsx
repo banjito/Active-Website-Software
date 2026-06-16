@@ -824,7 +824,10 @@ export default function OpportunityDetail() {
           setQuotePreparedBy(preparedBy || null);
           setOpportunity((prev) =>
             prev
-              ? ({ ...prev, prepared_by: preparedBy } as OpportunityWithCustomer)
+              ? ({
+                  ...prev,
+                  prepared_by: preparedBy,
+                } as OpportunityWithCustomer)
               : prev,
           );
         }
@@ -905,6 +908,8 @@ export default function OpportunityDetail() {
       letter_number: string;
       net_30_price: number;
       opportunity_id: string;
+      title?: string;
+      html?: string;
     }>
   >([]);
   const [availableQuotes, setAvailableQuotes] = useState<
@@ -4085,6 +4090,56 @@ export default function OpportunityDetail() {
                   </div>
                 </div>
 
+                {letterProposals.length > 0 && (
+                  <div>
+                    <label
+                      htmlFor="selected_letter_proposal"
+                      className="block text-sm font-medium text-gray-700 dark:text-white"
+                    >
+                      Letter Proposal Source
+                    </label>
+                    <select
+                      id="selected_letter_proposal"
+                      name="selected_letter_proposal"
+                      value={editFormData.selected_letter_proposal}
+                      onChange={handleLetterProposalChange}
+                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    >
+                      <option
+                        value=""
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        None (manual entry)
+                      </option>
+                      {letterProposals.map((lp) => {
+                        const lpAmount =
+                          parseMoneyValue(lp.net_30_price) ||
+                          extractNet30FromLetterHtml(lp.html);
+                        const label = [
+                          lp.title ||
+                            `Letter ${lp.letter_number || lp.id?.slice(0, 8)}`,
+                          lpAmount ? `(${formatMoney(lpAmount)})` : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ");
+                        return (
+                          <option
+                            key={lp.id}
+                            value={lp.id}
+                            className="dark:bg-dark-150 dark:text-white"
+                          >
+                            {label}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Selecting a letter proposal will auto-fill the quoted
+                      amount below. You can still adjust it manually.
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <label
                     htmlFor="quoted_amount"
@@ -4101,6 +4156,13 @@ export default function OpportunityDetail() {
                     className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
                     placeholder="Enter NET 30 price"
                   />
+                  {editFormData.selected_letter_proposal &&
+                    !editFormData.quoted_amount && (
+                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                        Selected letter proposal has no NET 30 amount. Please
+                        enter manually.
+                      </p>
+                    )}
                 </div>
 
                 <div>
@@ -4801,47 +4863,56 @@ export default function OpportunityDetail() {
                                 (letter) => letter.id === selectedId,
                               )
                             : null;
-                          const lettersToTry = [
-                            selectedLetter,
-                            ...letterProposals,
-                          ].filter((letter, index, allLetters) => {
+
+                          // If a specific letter is selected, use it
+                          const sourceLetter =
+                            selectedLetter ||
+                            (letterProposals.length > 0
+                              ? letterProposals[0]
+                              : null);
+
+                          if (!sourceLetter) {
                             return (
-                              !!letter &&
-                              allLetters.findIndex(
-                                (item) => item?.id === letter.id,
-                              ) === index
+                              <span className="text-gray-400 dark:text-gray-500 italic">
+                                No letter proposal generated
+                              </span>
                             );
-                          }) as any[];
-
-                          for (const letter of lettersToTry) {
-                            const price =
-                              parseMoneyValue(letter.net_30_price) ||
-                              extractNet30FromLetterHtml(letter.html);
-
-                            if (price) {
-                              return formatMoney(price);
-                            }
                           }
 
-                          const quotedAmount = parseMoneyValue(
-                            (opportunity as any).quoted_amount,
-                          );
-                          if (quotedAmount) {
-                            return formatMoney(quotedAmount);
+                          const letterAmount =
+                            parseMoneyValue(sourceLetter.net_30_price) ||
+                            extractNet30FromLetterHtml(sourceLetter.html);
+
+                          const letterLabel =
+                            sourceLetter.title ||
+                            `Letter ${sourceLetter.letter_number || sourceLetter.id?.slice(0, 8)}`;
+
+                          const isSelected = !!selectedLetter;
+
+                          if (!letterAmount) {
+                            return (
+                              <span className="text-amber-600 dark:text-amber-400">
+                                No NET 30 amount found in{" "}
+                                {isSelected ? "selected" : "latest"} letter
+                                proposal
+                              </span>
+                            );
                           }
 
-                          const estimateWithAmount = availableQuotes.find(
-                            (quote) =>
-                              !!calculateEstimateNet30Amount(quote.data),
+                          return (
+                            <>
+                              <span className="text-lg font-semibold">
+                                {formatMoney(letterAmount)}
+                              </span>
+                              <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
+                                from {isSelected ? "" : "latest "}
+                                {letterLabel}
+                                {!isSelected && letterProposals.length > 1
+                                  ? " (use edit to select)"
+                                  : ""}
+                              </span>
+                            </>
                           );
-                          const estimateAmount = calculateEstimateNet30Amount(
-                            estimateWithAmount?.data,
-                          );
-                          if (estimateAmount) {
-                            return formatMoney(estimateAmount);
-                          }
-
-                          return "No quoted amount";
                         })()}
                       </p>
                     </div>

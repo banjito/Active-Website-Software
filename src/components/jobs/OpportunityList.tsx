@@ -127,6 +127,62 @@ function formatStatus(status: string) {
   return status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ");
 }
 
+function parseMoneyValue(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return Math.round(value * 100) / 100;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value.replace(/[$,\s]/g, ""));
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return Math.round(parsed * 100) / 100;
+    }
+  }
+  return null;
+}
+
+function extractNet30FromLetterHtml(
+  html: string | null | undefined,
+): number | null {
+  if (!html) return null;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const grandElement = doc.querySelector('.grand-price[data-kind="net30"]');
+    const grandAmount = parseMoneyValue(grandElement?.textContent?.trim());
+    if (grandAmount) return grandAmount;
+
+    // Fallback: look for NET 30 text in list items
+    let best = 0;
+    Array.from(doc.querySelectorAll("li")).forEach((li) => {
+      if (/NET\s*30/i.test(li.textContent || "")) {
+        const match = (li.textContent || "").match(/\$([0-9,]+\\.?[0-9]*)/);
+        const amount = parseMoneyValue(match?.[1]) || 0;
+        if (amount > best) best = amount;
+      }
+    });
+    return parseMoneyValue(best);
+  } catch {
+    return null;
+  }
+}
+
+function getQuotedAmountForList(opportunity: any): number | null {
+  const proposals = (opportunity as any).letter_proposals || [];
+  if (proposals.length === 0) return null;
+
+  // Prefer the selected letter proposal
+  const selectedId = (opportunity as any).selected_letter_proposal;
+  const source =
+    (selectedId ? proposals.find((p: any) => p.id === selectedId) : null) ||
+    proposals[0];
+
+  return (
+    parseMoneyValue(source.net_30_price) ||
+    extractNet30FromLetterHtml(source.html) ||
+    null
+  );
+}
+
 function getEstimateApprovalColor(status: string | null | undefined) {
   if (!status)
     return "bg-gray-100 text-gray-500 dark:bg-dark-200 dark:text-gray-500";
@@ -1299,7 +1355,9 @@ export default function OpportunityList() {
             await supabase
               .schema("business")
               .from("letter_proposals")
-              .select("id, opportunity_id, html, created_at")
+              .select(
+                "id, opportunity_id, html, net_30_price, title, letter_number, created_at",
+              )
               .in("opportunity_id", opportunityIds)
               .order("created_at", { ascending: false });
 
@@ -2900,12 +2958,9 @@ export default function OpportunityList() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900 dark:text-dark-900">
                           {(() => {
-                            // Use quoted_amount field (same as shown in Opportunity Overview)
-                            // This is the "Quoted Amount (NET 30)" from the opportunity record
-                            return (opportunity as any).quoted_amount
-                              ? `$${Number(
-                                  (opportunity as any).quoted_amount,
-                                ).toLocaleString("en-US", {
+                            const amount = getQuotedAmountForList(opportunity);
+                            return amount
+                              ? `$${amount.toLocaleString("en-US", {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
                                 })}`

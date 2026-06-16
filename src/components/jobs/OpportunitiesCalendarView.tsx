@@ -5,7 +5,7 @@ import { EventClickArg, DatesSetArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { supabase } from "@/lib/supabase";
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface OpportunityCalendarItem {
@@ -30,16 +30,31 @@ function parseDate(d: string | null): Date | null {
   return isNaN(parsed.getTime()) ? null : parsed;
 }
 
-// Calendar colors show estimate stage, not due-date urgency.
+// Calendar colors show estimate stage (matching the estimate approval status colors
+// used in OpportunityDetail and OpportunityList for visual consistency).
 function getEventColor(opportunity: OpportunityCalendarItem): string {
-  const status = (opportunity.estimate_approval_status || "").toLowerCase();
+  const status = (opportunity.estimate_approval_status || "")
+    .toLowerCase()
+    .trim();
   const dueDate = parseDate(opportunity.proposal_due_date);
   if (!dueDate) return "var(--cal-gray)";
 
-  if (status === "no_quote" || status === "no quote") return "var(--cal-gray)";
-  if (status === "sent") return "var(--cal-sent)";
-  if (!status) return "var(--cal-not-started)";
-  return "var(--cal-in-progress)";
+  switch (status) {
+    case "sent":
+      return "var(--cal-sent)";
+    case "approved_to_send":
+      return "var(--cal-approved-to-send)";
+    case "ready_for_review":
+      return "var(--cal-ready-for-review)";
+    case "in_progress":
+      return "var(--cal-in-progress)";
+    case "no_quote":
+    case "no quote":
+      return "var(--cal-gray)";
+    default:
+      // No estimate exists yet — not started
+      return "var(--cal-not-started)";
+  }
 }
 
 function getEventTitle(opportunity: OpportunityCalendarItem): string {
@@ -146,6 +161,14 @@ export function OpportunitiesCalendarView() {
     loadOpportunities();
   }, [loadOpportunities]);
 
+  // Refresh data when the user returns to this tab (e.g. after changing
+  // an estimate status in OpportunityDetail and navigating back).
+  useEffect(() => {
+    const handleFocus = () => loadOpportunities();
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [loadOpportunities]);
+
   const events = opportunities
     .map((opp) => {
       const due = parseDate(opp.proposal_due_date);
@@ -218,18 +241,6 @@ export function OpportunitiesCalendarView() {
   return (
     <div className="opportunities-calendar space-y-5">
       <style>{`
-        .opportunities-calendar {
-          --cal-not-started: #d97706;
-          --cal-sent: #059669;
-          --cal-in-progress: #2563eb;
-          --cal-gray: #64748b;
-        }
-        .dark .opportunities-calendar {
-          --cal-not-started: #f59e0b;
-          --cal-sent: #10b981;
-          --cal-in-progress: #3b82f6;
-          --cal-gray: #94a3b8;
-        }
         .opportunities-calendar .fc {
           font-family: inherit;
         }
@@ -334,24 +345,50 @@ export function OpportunitiesCalendarView() {
           </h1>
         </div>
         <div className="flex items-center gap-3 flex-wrap text-xs text-gray-500 dark:text-dark-400">
-          <span className="inline-flex items-center gap-1.5">
+          <span
+            className="inline-flex items-center gap-1.5"
+            title="No estimate has been started"
+          >
             <span
               className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-not-started)]"
               aria-hidden
             />{" "}
-            Not started
+            Not Started
           </span>
           <span
             className="inline-flex items-center gap-1.5"
-            title="Working on the estimate"
+            title="Estimate is being worked on"
           >
             <span
               className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-in-progress)]"
               aria-hidden
             />{" "}
-            In progress
+            In Progress
           </span>
-          <span className="inline-flex items-center gap-1.5">
+          <span
+            className="inline-flex items-center gap-1.5"
+            title="Estimate is ready for internal review"
+          >
+            <span
+              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-ready-for-review)]"
+              aria-hidden
+            />{" "}
+            Ready for Review
+          </span>
+          <span
+            className="inline-flex items-center gap-1.5"
+            title="Estimate has been approved to send to the customer"
+          >
+            <span
+              className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-approved-to-send)]"
+              aria-hidden
+            />{" "}
+            Approved to Send
+          </span>
+          <span
+            className="inline-flex items-center gap-1.5"
+            title="Estimate has been sent to the customer"
+          >
             <span
               className="w-2.5 h-2.5 rounded-sm bg-[var(--cal-sent)]"
               aria-hidden

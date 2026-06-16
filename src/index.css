@@ -29,6 +29,14 @@
         --input: 214.3 31.8% 91.4%;
         --ring: 222.2 84% 4.9%;
         --radius: 0.5rem;
+
+        /* Calendar – opportunity estimate status colors */
+        --cal-not-started: #9ca3af;
+        --cal-in-progress: #d97706;
+        --cal-ready-for-review: #2563eb;
+        --cal-approved-to-send: #db2777;
+        --cal-sent: #16a34a;
+        --cal-gray: #64748b;
     }
 
     .dark {
@@ -56,6 +64,14 @@
         --dark-100: #262626; /* Darker gray */
         --dark-150: #000000; /* Black */
         --dark-200: #262626; /* Darker gray */
+
+        /* Calendar – opportunity estimate status colors */
+        --cal-not-started: #9ca3af;
+        --cal-in-progress: #f59e0b;
+        --cal-ready-for-review: #3b82f6;
+        --cal-approved-to-send: #f472b6;
+        --cal-sent: #22c55e;
+        --cal-gray: #94a3b8;
     }
 }
 
@@ -152,7 +168,11 @@
     }
 
     .portal-click-card .portal-icon-bg {
-        background-color: color-mix(in srgb, currentColor 12%, transparent) !important;
+        background-color: color-mix(
+            in srgb,
+            currentColor 12%,
+            transparent
+        ) !important;
     }
 
     .portal-click-card:has(.text-rose-500):hover {

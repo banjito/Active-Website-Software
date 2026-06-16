@@ -9,6 +9,11 @@ import {
   List,
   ListOrdered,
   SeparatorHorizontal,
+  Save,
+  Check,
+  LogOut,
+  Trash,
+  Edit,
 } from "lucide-react";
 import {
   LetterImageHandler,
@@ -16,6 +21,7 @@ import {
 } from "./LetterImageHandler";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { useAuth } from "../../lib/AuthContext";
 import {
   getEstimatingPresets,
@@ -647,6 +653,7 @@ export default function EstimateSheet({
     | null
   >(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [showTravel, setShowTravel] = useState(false);
   const [isGettingData, setIsGettingData] = useState(true);
@@ -788,6 +795,12 @@ export default function EstimateSheet({
   const skipNextFocusRef = React.useRef<boolean>(false);
   const [isDirty, setIsDirty] = useState<boolean>(false);
   const [draftRestored, setDraftRestored] = useState<boolean>(false);
+
+  // Clear justSaved indicator when edits are made
+  useEffect(() => {
+    if (isDirty) setJustSaved(false);
+  }, [isDirty]);
+
   const [selectedSovItemIndexes, setSelectedSovItemIndexes] = useState<
     number[]
   >([]);
@@ -1868,6 +1881,7 @@ export default function EstimateSheet({
           // Clear any draft from Supabase after a successful save
           deletePreference(`drafts.${draftKey}`);
           setIsDirty(false);
+          setJustSaved(true);
           setDraftRestored(false);
 
           // Update prepared_by on the opportunity to include current user's name
@@ -1943,6 +1957,7 @@ export default function EstimateSheet({
           // Clear draft from Supabase after successful creation
           deletePreference(`drafts.${draftKey}`);
           setIsDirty(false);
+          setJustSaved(true);
           setDraftRestored(false);
 
           // Trigger prepared_by update for the opportunity
@@ -6789,7 +6804,7 @@ export default function EstimateSheet({
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
           <div className="relative bg-white dark:bg-dark-150 rounded-lg w-[98%] h-[95vh] mx-auto p-6 shadow-xl my-4 estimate-form">
-            <div className="absolute top-0 right-0 pt-4 pr-4 flex space-x-2">
+            <div className="absolute top-0 right-3 pt-4 pr-4 flex items-center gap-3">
               {isViewMode &&
               quotes.length === 0 &&
               isNewQuote ? null : isNewQuote ? (
@@ -6804,10 +6819,13 @@ export default function EstimateSheet({
               ) : isViewMode ? (
                 <>
                   <Button
-                    onClick={() => setIsViewMode(false)}
+                    onClick={() => {
+                      setJustSaved(false);
+                      setIsViewMode(false);
+                    }}
                     className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
                   >
-                    Edit
+                    <Edit className="h-6 w-6" />
                   </Button>
                   {selectedQuoteIndex >= 0 && quotes[selectedQuoteIndex] && (
                     <>
@@ -6817,11 +6835,12 @@ export default function EstimateSheet({
                         }
                         disabled={isSaving}
                         className="bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
-                        leftIcon={<Copy className="h-4 w-4" />}
+                        leftIcon={<Copy className="h-5 w-5" />}
                       >
                         Duplicate
                       </Button>
                       <Button
+                        type="button"
                         onClick={() => {
                           if (
                             confirm(
@@ -6831,23 +6850,39 @@ export default function EstimateSheet({
                             deleteQuoteById(quotes[selectedQuoteIndex].id);
                           }
                         }}
-                        className="bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        className="rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
                       >
-                        Delete
+                        <Trash className="h-6 w-6" />
                       </Button>
                     </>
                   )}
                 </>
               ) : (
                 <>
-                  <Button
+                  {/* Circular save button matching ReportHeader pattern */}
+                  <button
                     onClick={saveQuote}
                     disabled={isSaving}
-                    isLoading={isSaving}
-                    className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                    className={`flex h-10 w-10 items-center justify-center rounded-full text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      justSaved
+                        ? "bg-green-600 hover:bg-green-700 focus:ring-green-500"
+                        : "bg-[#f26722] hover:bg-[#f26722]/90 focus:ring-[#f26722]"
+                    }`}
+                    aria-label={justSaved ? "Saved" : "Save"}
+                    title={justSaved ? "Saved" : "Save"}
                   >
-                    Save Changes
-                  </Button>
+                    {isSaving ? (
+                      <LoadingSpinner
+                        className="h-5 w-5"
+                        size="xs"
+                        variant="light"
+                      />
+                    ) : justSaved ? (
+                      <Check className="h-6 w-6" />
+                    ) : (
+                      <Save className="h-6 w-6" />
+                    )}
+                  </button>
                   {selectedQuoteIndex >= 0 && quotes[selectedQuoteIndex] && (
                     <>
                       <Button
@@ -6856,7 +6891,7 @@ export default function EstimateSheet({
                         }
                         disabled={isSaving}
                         className="bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
-                        leftIcon={<Copy className="h-4 w-4" />}
+                        leftIcon={<Copy className="h-5 w-5" />}
                       >
                         Duplicate
                       </Button>
@@ -6870,22 +6905,35 @@ export default function EstimateSheet({
                             deleteQuoteById(quotes[selectedQuoteIndex].id);
                           }
                         }}
-                        className="bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        className="rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
                       >
-                        Delete
+                        <Trash className="h-6 w-6" />
                       </Button>
                     </>
                   )}
                 </>
               )}
-              <button
-                type="button"
-                className="text-gray-400 hover:text-gray-500 dark:text-dark-400 dark:hover:text-dark-300"
-                onClick={handleClose}
-              >
-                <span className="sr-only">Close</span>
-                <X className="h-6 w-6" />
-              </button>
+              {/* Swap: LogOut in edit mode, X otherwise */}
+              {!isViewMode && !isNewQuote ? (
+                <button
+                  type="button"
+                  onClick={() => setIsViewMode(true)}
+                  className="text-gray-600 hover:text-gray-500 dark:text-dark-400 dark:hover:text-dark-300"
+                  title="Done editing"
+                  aria-label="Done editing"
+                >
+                  <LogOut className="h-6 w-6" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="text-gray-600 hover:text-gray-500 dark:text-dark-400 dark:hover:text-dark-300"
+                  onClick={handleClose}
+                >
+                  <span className="sr-only">Close</span>
+                  <X className="h-6 w-6" />
+                </button>
+              )}
             </div>
 
             <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-dark-900 mb-6">
@@ -7320,7 +7368,9 @@ export default function EstimateSheet({
                             <th style={styles.tableHeader}>LABOR TOTAL</th>
                             <th style={styles.tableHeader}>SOV ITEM PRICE</th>
                             <th style={styles.tableHeader}>NOTES</th>
-                            <th style={styles.tableHeader}>CLEAR</th>
+                            {!isViewMode && (
+                              <th style={styles.tableHeader}>CLEAR</th>
+                            )}
                           </tr>
                         </thead>
                         <tbody>
@@ -7450,13 +7500,13 @@ export default function EstimateSheet({
                                       )}
                                     </div>
                                   </td>
-                                  <td
-                                    style={{
-                                      ...styles.tableCell,
-                                      backgroundColor: structuralBg,
-                                    }}
-                                  >
-                                    {!isViewMode && (
+                                  {!isViewMode && (
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        backgroundColor: structuralBg,
+                                      }}
+                                    >
                                       <button
                                         type="button"
                                         onClick={() =>
@@ -7475,21 +7525,18 @@ export default function EstimateSheet({
                                         data-estimate-row={index}
                                         data-estimate-col={12}
                                         style={{
-                                          backgroundColor: "#f87171",
-                                          color: "white",
+                                          background: "none",
                                           border: "none",
-                                          borderRadius: "4px",
-                                          padding: "4px 8px",
-                                          fontSize: "12px",
+                                          color: "#ef4444",
                                           cursor: "pointer",
-                                          fontWeight: "500",
+                                          padding: "2px",
                                         }}
                                         title="Delete this row"
                                       >
-                                        Delete
+                                        <Trash className="h-5 w-5" />
                                       </button>
-                                    )}
-                                  </td>
+                                    </td>
+                                  )}
                                 </tr>
                               );
                             }
@@ -7991,8 +8038,8 @@ export default function EstimateSheet({
                                     readOnly={isViewMode}
                                   />
                                 </td>
-                                <td style={styles.tableCell}>
-                                  {!isViewMode && (
+                                {!isViewMode && (
+                                  <td style={styles.tableCell}>
                                     <button
                                       type="button"
                                       onClick={() =>
@@ -8011,21 +8058,18 @@ export default function EstimateSheet({
                                       data-estimate-row={index}
                                       data-estimate-col={12}
                                       style={{
-                                        backgroundColor: "#f87171",
-                                        color: "white",
+                                        background: "none",
                                         border: "none",
-                                        borderRadius: "4px",
-                                        padding: "4px 8px",
-                                        fontSize: "12px",
+                                        color: "#ef4444",
                                         cursor: "pointer",
-                                        fontWeight: "500",
+                                        padding: "2px",
                                       }}
                                       title="Delete this row"
                                     >
-                                      Delete
+                                      <Trash className="h-5 w-5" />
                                     </button>
-                                  )}
-                                </td>
+                                  </td>
+                                )}
                               </tr>
                             );
                           })}
@@ -8133,7 +8177,7 @@ export default function EstimateSheet({
                                   !copyTargetQuoteId
                                 }
                                 className="h-9 bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
-                                leftIcon={<Copy className="h-4 w-4" />}
+                                leftIcon={<Copy className="h-5 w-5" />}
                               >
                                 {isCopyingSovItems
                                   ? "Copying..."
@@ -8149,7 +8193,7 @@ export default function EstimateSheet({
                           variant="outline"
                           onClick={() => handleAddLine("sov", "section")}
                           className="inline-flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                          leftIcon={<FileText className="h-4 w-4" />}
+                          leftIcon={<FileText className="h-5 w-5" />}
                           style={{
                             backgroundColor: "var(--cell-bg)",
                             borderColor: "var(--border-color)",
@@ -8162,7 +8206,7 @@ export default function EstimateSheet({
                           variant="outline"
                           onClick={() => handleAddLine("sov", "blank")}
                           className="inline-flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                          leftIcon={<SeparatorHorizontal className="h-4 w-4" />}
+                          leftIcon={<SeparatorHorizontal className="h-5 w-5" />}
                           style={{
                             backgroundColor: "var(--cell-bg)",
                             borderColor: "var(--border-color)",
@@ -8236,7 +8280,9 @@ export default function EstimateSheet({
                             <th style={styles.tableHeader}>LABOR UNIT</th>
                             <th style={styles.tableHeader}>LABOR TOTAL</th>
                             <th style={styles.tableHeader}>NOTES</th>
-                            <th style={styles.tableHeader}>CLEAR</th>
+                            {!isViewMode && (
+                              <th style={styles.tableHeader}>CLEAR</th>
+                            )}
                           </tr>
                         </thead>
                         <tbody>
@@ -8577,8 +8623,8 @@ export default function EstimateSheet({
                                     readOnly={isViewMode}
                                   />
                                 </td>
-                                <td style={styles.tableCell}>
-                                  {!isViewMode && (
+                                {!isViewMode && (
+                                  <td style={styles.tableCell}>
                                     <button
                                       type="button"
                                       onClick={() =>
@@ -8597,21 +8643,18 @@ export default function EstimateSheet({
                                       data-estimate-row={index}
                                       data-estimate-col={11}
                                       style={{
-                                        backgroundColor: "#f87171",
-                                        color: "white",
+                                        background: "none",
                                         border: "none",
-                                        borderRadius: "4px",
-                                        padding: "4px 8px",
-                                        fontSize: "12px",
+                                        color: "#ef4444",
                                         cursor: "pointer",
-                                        fontWeight: "500",
+                                        padding: "2px",
                                       }}
                                       title="Delete this row"
                                     >
-                                      Delete
+                                      <Trash className="h-5 w-5" />
                                     </button>
-                                  )}
-                                </td>
+                                  </td>
+                                )}
                               </tr>
                             );
                           })}
@@ -13673,7 +13716,7 @@ export default function EstimateSheet({
                   onChange={(e) =>
                     setIncludeMobilizationWhenZero(e.target.checked)
                   }
-                  className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                  className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                 />
                 <span className="text-sm text-gray-700">
                   Include mobilization in letter even when $0
@@ -13684,7 +13727,7 @@ export default function EstimateSheet({
                   type="checkbox"
                   checked={letterIncludeSovNotes}
                   onChange={(e) => setLetterIncludeSovNotes(e.target.checked)}
-                  className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                  className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                 />
                 <span className="text-sm text-gray-700">
                   Include SOV item notes
@@ -13700,7 +13743,7 @@ export default function EstimateSheet({
                       type="checkbox"
                       checked={letterIncludeMF}
                       onChange={(e) => setLetterIncludeMF(e.target.checked)}
-                      className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                      className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                     />
                     <span className="text-sm text-gray-700">
                       Monday - Friday
@@ -13716,7 +13759,7 @@ export default function EstimateSheet({
                         setLetterIncludeSaturday(e.target.checked)
                       }
                       disabled={!showSaturdayHours}
-                      className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                      className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                     />
                     <span className="text-sm text-gray-700">
                       Saturday
@@ -13733,7 +13776,7 @@ export default function EstimateSheet({
                       checked={letterIncludeSunday}
                       onChange={(e) => setLetterIncludeSunday(e.target.checked)}
                       disabled={!showSundayHours}
-                      className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                      className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                     />
                     <span className="text-sm text-gray-700">
                       Sunday / Holiday
@@ -13751,7 +13794,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={letterShowAllTerms}
                     onChange={(e) => setLetterShowAllTerms(e.target.checked)}
-                    className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                    className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                   />
                   <span className="text-sm text-gray-700">
                     Show all payment terms (NET 30, 60, 90)
@@ -13865,7 +13908,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={showIndividualPricing}
                     onChange={(e) => setShowIndividualPricing(e.target.checked)}
-                    className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                    className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     Show individual pricing for each scope
@@ -13876,7 +13919,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={showGrandTotalPricing}
                     onChange={(e) => setShowGrandTotalPricing(e.target.checked)}
-                    className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                    className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     Show grand total pricing for all scope
@@ -13889,7 +13932,7 @@ export default function EstimateSheet({
                     onChange={(e) =>
                       setIncludeMobilizationWhenZero(e.target.checked)
                     }
-                    className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                    className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     Include mobilization in letter even when $0
@@ -13900,7 +13943,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={letterIncludeSovNotes}
                     onChange={(e) => setLetterIncludeSovNotes(e.target.checked)}
-                    className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                    className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     Include SOV item notes
@@ -13916,7 +13959,7 @@ export default function EstimateSheet({
                         type="checkbox"
                         checked={letterIncludeMF}
                         onChange={(e) => setLetterIncludeMF(e.target.checked)}
-                        className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                        className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                       />
                       <span className="text-sm text-gray-700 dark:text-gray-300">
                         Monday - Friday
@@ -13932,7 +13975,7 @@ export default function EstimateSheet({
                           setLetterIncludeSaturday(e.target.checked)
                         }
                         disabled={!showSaturdayHours}
-                        className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                        className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                       />
                       <span className="text-sm text-gray-700 dark:text-gray-300">
                         Saturday
@@ -13949,7 +13992,7 @@ export default function EstimateSheet({
                           setLetterIncludeSunday(e.target.checked)
                         }
                         disabled={!showSundayHours}
-                        className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                        className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                       />
                       <span className="text-sm text-gray-700 dark:text-gray-300">
                         Sunday / Holiday
@@ -13967,7 +14010,7 @@ export default function EstimateSheet({
                       type="checkbox"
                       checked={letterShowAllTerms}
                       onChange={(e) => setLetterShowAllTerms(e.target.checked)}
-                      className="mr-2 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                      className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
                       Show all payment terms (NET 30, 60, 90)
@@ -14043,7 +14086,7 @@ export default function EstimateSheet({
                           });
                         }
                       }}
-                      className="mr-3 h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
+                      className="mr-3 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded"
                     />
                     <label
                       htmlFor={`quote-${idx}`}
@@ -14242,7 +14285,7 @@ export default function EstimateSheet({
                         }}
                         className="bg-red-600 text-white"
                       >
-                        Delete
+                        <Trash className="h-6 w-6" />
                       </Button>
                     </div>
                   </li>

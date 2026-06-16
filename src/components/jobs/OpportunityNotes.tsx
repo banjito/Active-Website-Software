@@ -396,19 +396,12 @@ export default function OpportunityNotes({
             <MessageCircle className="h-5 w-5 text-[#f26722]" />
             Opportunity notes
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Add notes and see who said what and when — so you know if details
-            still apply.
-          </p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {notes.length === 0 ? (
             <div className="text-center py-12">
               <MessageCircle className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
-              <h3 className="mt-4 text-sm font-medium text-gray-900 dark:text-white">
-                No notes yet
-              </h3>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 Be the first to add a note to this opportunity.
               </p>

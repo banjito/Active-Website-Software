@@ -146,6 +146,19 @@ export function Announcements() {
     null,
   );
   const [documentViewerTitle, setDocumentViewerTitle] = useState("");
+  const [tooltip, setTooltip] = useState<{
+    text: string;
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const showTooltip = (text: string) => (e: React.MouseEvent) =>
+    setTooltip({ text, x: e.clientX, y: e.clientY });
+  const moveTooltip = (e: React.MouseEvent) =>
+    setTooltip((prev) =>
+      prev ? { ...prev, x: e.clientX, y: e.clientY } : null,
+    );
+  const hideTooltip = () => setTooltip(null);
 
   const ATTACHMENT_MARKER = "📎 [Attachment](";
   const HELP_GUIDE_MARKER = "📘 [View Help Guide](";
@@ -746,75 +759,116 @@ export function Announcements() {
                     className="flex items-center gap-1 ml-4 flex-shrink-0"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <button
-                      onClick={() => togglePin(a)}
-                      className={`p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${a.is_pinned ? "text-[#f26722]" : "text-gray-400"}`}
-                      title={a.is_pinned ? "Unpin" : "Pin"}
+                    <div
+                      onMouseEnter={showTooltip(a.is_pinned ? "Unpin" : "Pin")}
+                      onMouseMove={moveTooltip}
+                      onMouseLeave={hideTooltip}
                     >
-                      {a.is_pinned ? (
-                        <PinOff className="h-4 w-4" />
-                      ) : (
-                        <Pin className="h-4 w-4" />
+                      <button
+                        onClick={() => togglePin(a)}
+                        className={`p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${a.is_pinned ? "text-[#f26722]" : "text-gray-400"}`}
+                      >
+                        {a.is_pinned ? (
+                          <PinOff className="h-4 w-4" />
+                        ) : (
+                          <Pin className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    <div
+                      onMouseEnter={showTooltip(
+                        a.is_published ? "Unpublish" : "Publish",
                       )}
-                    </button>
-                    <button
-                      onClick={() => togglePublish(a)}
-                      className={`p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${a.is_published ? "text-green-600" : "text-gray-400"}`}
-                      title={a.is_published ? "Unpublish" : "Publish"}
+                      onMouseMove={moveTooltip}
+                      onMouseLeave={hideTooltip}
                     >
-                      <Globe
-                        className={`h-4 w-4 ${a.is_published ? "" : "opacity-50"}`}
-                      />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const guideMatch = a.content.match(
-                          /📘 \[View Help Guide\]\(([^)]+)\)/,
-                        );
-                        const docMatch = a.content.match(
-                          /📄 \[View & Acknowledge Document\]\(([^)]+)\)/,
-                        );
-                        if (guideMatch) {
-                          const path = guideMatch[1];
-                          window.open(
-                            path.startsWith("/") ? path : `/${path}`,
-                            "_blank",
+                      <button
+                        onClick={() => togglePublish(a)}
+                        className={`p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${a.is_published ? "text-green-600" : "text-gray-400"}`}
+                      >
+                        <Globe
+                          className={`h-4 w-4 ${a.is_published ? "" : "opacity-50"}`}
+                        />
+                      </button>
+                    </div>
+                    <div
+                      onMouseEnter={showTooltip("View")}
+                      onMouseMove={moveTooltip}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const guideMatch = a.content.match(
+                            /📘 \[View Help Guide\]\(([^)]+)\)/,
                           );
-                        } else if (docMatch) {
-                          setDocumentViewerUrl(docMatch[1]);
-                          setDocumentViewerTitle(a.title);
-                          setDocumentViewerOpen(true);
-                        }
-                      }}
-                      className="p-1.5 rounded-md text-gray-400 hover:text-[#f26722] hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                      title="View attached document"
+                          const docMatch = a.content.match(
+                            /📄 \[View & Acknowledge Document\]\(([^)]+)\)/,
+                          );
+                          if (guideMatch) {
+                            const path = guideMatch[1];
+                            window.open(
+                              path.startsWith("/") ? path : `/${path}`,
+                              "_blank",
+                            );
+                          } else if (docMatch) {
+                            setDocumentViewerUrl(docMatch[1]);
+                            setDocumentViewerTitle(a.title);
+                            setDocumentViewerOpen(true);
+                          }
+                        }}
+                        className="p-1.5 rounded-md text-gray-400 hover:text-[#f26722] hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div
+                      onMouseEnter={showTooltip("Edit")}
+                      onMouseMove={moveTooltip}
+                      onMouseLeave={hideTooltip}
                     >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => openEditForm(a)}
-                      className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                      title="Edit"
+                      <button
+                        onClick={() => openEditForm(a)}
+                        className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div
+                      onMouseEnter={showTooltip("Delete")}
+                      onMouseMove={moveTooltip}
+                      onMouseLeave={hideTooltip}
                     >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDeleteId(a.id);
-                        setDeleteConfirmOpen(true);
-                      }}
-                      className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                      <button
+                        onClick={() => {
+                          setDeleteId(a.id);
+                          setDeleteConfirmOpen(true);
+                        }}
+                        className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* Floating tooltip */}
+      {tooltip && (
+        <span
+          className="pointer-events-none fixed z-50 whitespace-nowrap rounded-full bg-gray-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-gray-900"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y,
+            transform: "translateX(-100%)",
+          }}
+        >
+          {tooltip.text}
+        </span>
       )}
 
       {/* Create / Edit Dialog */}

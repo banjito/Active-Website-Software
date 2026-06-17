@@ -113,11 +113,14 @@ export default function OpportunityNotes({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const notesEndRef = useRef<HTMLDivElement>(null);
 
-  // Grow the note box with its content (one line min, ~4 lines max then scroll).
-  // Inline height wins over any class/flex/grid stretch that was forcing it tall.
+  // Grow the note box with its content. When empty, fall back to rows={1}
+  // (no pixel height) so it renders as a single clean line; only measure once
+  // there's text, capped at ~5 lines before scrolling.
   const resizeNoteTextarea = (el: HTMLTextAreaElement) => {
-    el.style.height = "0px";
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 38), 128)}px`;
+    el.style.height = "auto";
+    if (el.value) {
+      el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+    }
   };
 
   const fetchNotes = async () => {
@@ -578,57 +581,53 @@ export default function OpportunityNotes({
               </button>
             </div>
           )}
-          <form onSubmit={handleSubmit}>
-            <div className="relative">
-              <textarea
-                ref={(el) => {
-                  if (el) resizeNoteTextarea(el);
-                }}
-                value={newNote}
-                onChange={(e) => {
-                  setNewNote(e.target.value);
-                  resizeNoteTextarea(e.target);
-                }}
-                placeholder="Add a note..."
-                rows={1}
-                className="block w-full pl-4 pr-20 py-2 text-sm leading-normal rounded-3xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent resize-none overflow-y-auto"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                    e.preventDefault();
-                    handleSubmit(e);
-                  }
-                }}
-              />
-              <input
-                ref={fileInputRef}
-                type="file"
-                onChange={handleFileSelect}
-                className="hidden"
-                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-              />
-              <div className="absolute right-1.5 bottom-1.5 flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-100 rounded-full shrink-0"
-                  title="Attach file"
-                >
-                  <Paperclip className="w-5 h-5" />
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting || (!newNote.trim() && !selectedFile)}
-                  className="p-1 bg-[#f26722] text-white rounded-full hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                  title="Send"
-                >
-                  {submitting ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Send className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
+          <form onSubmit={handleSubmit} className="flex items-end gap-2">
+            <textarea
+              ref={(el) => {
+                if (el) resizeNoteTextarea(el);
+              }}
+              value={newNote}
+              onChange={(e) => {
+                setNewNote(e.target.value);
+                resizeNoteTextarea(e.target);
+              }}
+              placeholder="Add a note..."
+              rows={1}
+              className="flex-1 min-w-0 px-2 py-1.5 text-sm leading-normal rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent resize-none overflow-y-auto"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFileSelect}
+              className="hidden"
+              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="p-1.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 rounded shrink-0"
+              title="Attach file"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || (!newNote.trim() && !selectedFile)}
+              className="p-1.5 bg-[#f26722] text-white rounded hover:bg-[#e55611] disabled:opacity-50 shrink-0"
+              title="Send"
+            >
+              {submitting ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </button>
           </form>
           {uploading && (
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

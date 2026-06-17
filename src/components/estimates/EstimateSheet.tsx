@@ -3572,6 +3572,25 @@ export default function EstimateSheet({
     }
   };
 
+  const handleClearSelectedSovItems = () => {
+    if (selectedSovItemIndexes.length === 0) return;
+    if (
+      !confirm(
+        `Delete ${selectedSovItemIndexes.length} selected SOV item${
+          selectedSovItemIndexes.length === 1 ? "" : "s"
+        }? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    const toDelete = new Set(selectedSovItemIndexes);
+    setData((prev) => ({
+      ...prev,
+      sovItems: prev.sovItems.filter((_, i) => !toDelete.has(i)),
+    }));
+    setSelectedSovItemIndexes([]);
+  };
+
   const toggleTravel = () => {
     setShowTravel(!showTravel);
   };
@@ -8119,7 +8138,7 @@ export default function EstimateSheet({
                                   size="sm"
                                   onClick={() => setSelectedSovItemIndexes([])}
                                 >
-                                  Clear
+                                  Deselect
                                 </Button>
                               )}
                             </div>
@@ -8182,6 +8201,19 @@ export default function EstimateSheet({
                                   ? "Copying..."
                                   : "Copy SOV Items"}
                               </Button>
+                              {!isViewMode && (
+                                <Button
+                                  type="button"
+                                  onClick={handleClearSelectedSovItems}
+                                  disabled={
+                                    selectedSovItemIndexes.length === 0
+                                  }
+                                  className="h-9 bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center gap-1"
+                                  leftIcon={<Trash className="h-5 w-5" />}
+                                >
+                                  Delete Selected
+                                </Button>
+                              )}
                             </div>
                           </div>
                         );

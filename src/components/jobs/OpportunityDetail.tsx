@@ -1183,7 +1183,11 @@ export default function OpportunityDetail() {
         .from("estimates")
         .select("id, status")
         .eq("opportunity_id", opportunityId)
+        // Secondary sort by id so the "latest" estimate is chosen
+        // deterministically when two estimates share the same created_at.
+        // Must match OpportunitiesCalendarView and OpportunityList.
         .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
         .limit(1)
         .maybeSingle();
 

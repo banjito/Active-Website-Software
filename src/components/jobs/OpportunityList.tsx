@@ -1421,7 +1421,11 @@ export default function OpportunityList() {
             .from("estimates")
             .select("id, opportunity_id, status, created_at")
             .in("opportunity_id", opportunityIds)
-            .order("created_at", { ascending: false });
+            // Secondary sort by id so the "most recent" estimate is chosen
+            // deterministically when two estimates share the same created_at.
+            // Must match OpportunitiesCalendarView and OpportunityDetail.
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: false });
 
           if (!estimatesError && estimatesData && estimatesData.length > 0) {
             // One status and latest estimate id per opportunity: use the most recent estimate

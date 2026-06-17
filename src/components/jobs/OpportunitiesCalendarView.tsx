@@ -130,7 +130,12 @@ export function OpportunitiesCalendarView() {
         .from("estimates")
         .select("id, opportunity_id, status, created_at")
         .in("opportunity_id", ids)
-        .order("created_at", { ascending: false });
+        // Secondary sort by id so the "most recent" estimate is chosen
+        // deterministically when two estimates share the same created_at
+        // (e.g. from the duplicate-opportunity flow). Must match the ordering
+        // in OpportunityList and OpportunityDetail so all three views agree.
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false });
 
       const statusByOpp: Record<string, string> = {};
       if (!estErr && estData && estData.length > 0) {
@@ -163,10 +168,21 @@ export function OpportunitiesCalendarView() {
 
   // Refresh data when the user returns to this tab (e.g. after changing
   // an estimate status in OpportunityDetail and navigating back).
+  //
+  // `window` focus only fires when the browser tab/window regains focus, not
+  // on in-app (SPA) navigation, so it misses the common case of changing a
+  // status in OpportunityDetail/EstimateSheet/OpportunityList and navigating
+  // back to the calendar within the same tab. Those views dispatch an
+  // "estimateSaved" event on change, so listen for it to keep the calendar
+  // colors in sync with the opportunity's estimate approval status.
   useEffect(() => {
-    const handleFocus = () => loadOpportunities();
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
+    const handleRefresh = () => loadOpportunities();
+    window.addEventListener("focus", handleRefresh);
+    window.addEventListener("estimateSaved", handleRefresh);
+    return () => {
+      window.removeEventListener("focus", handleRefresh);
+      window.removeEventListener("estimateSaved", handleRefresh);
+    };
   }, [loadOpportunities]);
 
   const events = opportunities

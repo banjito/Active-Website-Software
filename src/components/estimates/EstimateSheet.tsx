@@ -556,6 +556,62 @@ interface QuoteData {
     | null;
 }
 
+/**
+ * Strip the invisible block "cruft" that bloats printed letter proposals.
+ *
+ * The letter editor runs inside the app, where Tailwind's Preflight resets
+ * <p>/<heading> margins to 0. So empty or <br>-only paragraphs — typically left
+ * behind when pasting from Word/Outlook, or after deleting text — collapse to a
+ * single modest line and look harmless while editing. The print window
+ * (handlePrintLetter) is a bare window.open with no Preflight, so the browser's
+ * default stylesheet restores ~1em top+bottom margins on every <p>, and a stack
+ * of those empty paragraphs balloons into page-sized gaps that are impossible to
+ * see (or delete) in the editor. We remove the Word cruft and collapse runs of
+ * empty blocks so the printed output matches what the user sees.
+ *
+ * Mutates `root` in place. Safe to run on the live editor or a detached clone.
+ */
+function sanitizeLetterHtmlNode(root: HTMLElement): void {
+  // Word/Outlook paste leftovers that never belong in the letter body.
+  root
+    .querySelectorAll("o\\:p, style, meta, link, xml, title")
+    .forEach((el) => el.remove());
+
+  // A block is "empty" when it carries no real content — only whitespace,
+  // non-breaking spaces, and/or <br> line breaks. Intentional structural
+  // elements (page breaks, scope spacers) and anything holding media/tables/
+  // lists are never treated as empty.
+  const isEmptyBlock = (el: Element): boolean => {
+    if (
+      el.classList.contains("amp-page-break") ||
+      el.classList.contains("amp-scope-spacer")
+    )
+      return false;
+    if (
+      el.querySelector("img, table, ul, ol, li, hr, svg, input, iframe")
+    )
+      return false;
+    return (el.textContent || "").replace(/[\u00a0\u200b\u200c\u200d\ufeff]/g, "").trim() === "";
+  };
+
+  // Collapse runs of consecutive empty blocks down to a single blank line, so
+  // even a pathological stack of pasted blank paragraphs can't open a page gap.
+  const blocks = Array.from(
+    root.querySelectorAll<HTMLElement>("p, div"),
+  );
+  for (const block of blocks) {
+    if (!block.isConnected || !isEmptyBlock(block)) continue;
+    let next = block.nextElementSibling;
+    while (next && isEmptyBlock(next)) {
+      const toRemove = next;
+      next = next.nextElementSibling;
+      toRemove.remove();
+    }
+    // Normalize the surviving blank line to a margin-free <br> placeholder.
+    block.replaceWith(document.createElement("br"));
+  }
+}
+
 /** Labor rates from each estimate's saved JSON — combined letters must not use the active tab's rates for every scope. */
 function getHourlyRatesForCombinedScope(parsedData: any): {
   straightTime: number;
@@ -5391,13 +5447,13 @@ export default function EstimateSheet({
     const signatureUrl =
       (window as any)?.AMP_SIGNATURE_URL || "/img/brian-rodgers-signature.jpg";
     const newLetterHtml = `
-      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.2;">
+      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.5;">
         <div style="display:flex;align-items:center;padding-bottom:6px;margin-bottom:12px;border-bottom:1px solid #ccc;">
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 24px; margin-right: 8px;" />
           <span style="font-size: 1em; font-weight: bold; color: #333;">AMP Quality Energy Services</span>
         </div>
-        <div class="amp-section"><b>${dateStr}</b></div>
-        <div class="amp-section" style="margin-bottom: 8px;"><b>Letter # ${letterQuoteNumber}</b></div>
+        <div class="amp-section"><b style="font-size: 1.2em;">Letter # ${letterQuoteNumber}</b></div>
+        <div class="amp-section" style="margin-bottom: 8px;"><b>${dateStr}</b></div>
         <div>
           ${contactName}<br/>
           ${customer.company_name || "Company"}<br/>
@@ -5410,10 +5466,10 @@ export default function EstimateSheet({
           <span id="neta-standard-text">${NETA_OPTIONS.find((o) => o.value === netaStandard)?.text || "[Select NETA Standard]"}</span>
         </div>
         <div class="amp-section amp-keep-with-next" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-          <b>Scope</b>
+          <b style="font-size: 1.15em;">Scope</b>
         </div>
         ${sovTableHtml}
-        <div class="amp-section" style="margin-top: 12px;"><b>Pricing & Terms</b></div>
+        <div class="amp-section" style="margin-top: 12px;"><b style="font-size: 1.15em;">Pricing & Terms</b></div>
         ${
           (singleLetterScopeQuantity || 1) > 1
             ? `
@@ -5437,7 +5493,7 @@ export default function EstimateSheet({
           <li>Arc flash analysis, short circuit, and coordination study to be quoted separately.</li>
           <li>All work performed by AMP will be in accordance with the safety policy attached</li>
         </ol>
-        <div style="margin-top: 12px;"><b>Conclusion</b></div>
+        <div style="margin-top: 12px;"><b style="font-size: 1.15em;">Conclusion</b></div>
         <div>This proposal is valid for 120 days.</div>
         <div style="margin-top: 8px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
         <div style="margin-top: 8px;"><b><i>Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</i></b></div>
@@ -5454,8 +5510,8 @@ export default function EstimateSheet({
           <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 4px; margin-bottom: 8px;">
             <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 32px; margin-right: 8px;" />
             <span style="font-size: 1.0em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
+            <span style="font-size: 1.0em; font-weight: bold; color: #333; margin-left: 12px;">&mdash; Safety Policy on Jobsites</span>
           </div>
-          <div style="font-size: 1.0em; font-weight: bold; margin-bottom: 6px;">Safety Policy on Jobsites</div>
           <div style="font-weight: bold; margin-bottom: 4px;">LOCKOUT / TAGOUT</div>
           <div>On a jobsite where the customer has an established Lockout program or there is a lockout procedure already established, AMP employees will follow local Lockout program provided that it does not expose the employee to greater risk than the AMP procedure below.</div>
           <div style="margin-top: 4px;">In the absence of a local lockout procedure, AMP employees will follow the following procedure.</div>
@@ -5905,7 +5961,7 @@ export default function EstimateSheet({
 
         const individualPricingHtml = `
         <div class="amp-individual-pricing" style="${showIndividualPricing ? "" : "display: none;"}">
-          <div class="amp-section" style="margin-top: 8px;"><b>Pricing & Terms</b></div>
+          <div class="amp-section" style="margin-top: 8px;"><b style="font-size: 1.15em;">Pricing & Terms</b></div>
           ${scopePricingLines}
           ${showScopeMobilization ? `<div class="amp-section">Mobilization costs of <b class="scope-price" data-base="${scopeMobilizationRaw}" data-kind="mobilization">${formatCurrency(scopeMobilizationRaw)}</b> shall be paid out of the above agreed upon price before the first day of work.</div>` : ""}
         </div>
@@ -5936,13 +5992,13 @@ export default function EstimateSheet({
       (window as any)?.AMP_SIGNATURE_URL || "/img/brian-rodgers-signature.jpg";
 
     const newCombinedLetterHtml = `
-      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.2;">
+      <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.5;">
         <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 6px; margin-bottom: 12px;">
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 36px; margin-right: 10px;" />
           <span style="font-size: 1.1em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
         </div>
-        <div><b>${dateStr}</b></div>
-        <div style="margin-bottom: 8px;"><b>Letter # ${(opportunityData as any)?.quote_number || "Multiple"}</b></div>
+        <div><b style="font-size: 1.2em;">Letter # ${(opportunityData as any)?.quote_number || "Multiple"}</b></div>
+        <div style="margin-bottom: 8px;"><b>${dateStr}</b></div>
         <div>
           ${contactName}<br/>
           ${customer.company_name || "Company"}<br/>
@@ -5954,7 +6010,7 @@ export default function EstimateSheet({
         <div style="margin: 8px 0;">
           <span id="neta-standard-text">${NETA_OPTIONS.find((o) => o.value === netaStandard)?.text || "[Select NETA Standard]"}</span>
         </div>
-        <div><b>Combined Scope of Work</b></div>
+        <div><b style="font-size: 1.15em;">Combined Scope of Work</b></div>
         ${sovTablesHtml}
         ${
           showGrandTotalPricing
@@ -6152,7 +6208,7 @@ export default function EstimateSheet({
           <li>Arc flash analysis, short circuit, and coordination study to be quoted separately.</li>
           <li>All work performed by AMP will be in accordance with the safety policy attached</li>
         </ol>
-        <div style="margin-top: 24px;"><b>Conclusion</b></div>
+        <div style="margin-top: 24px;"><b style="font-size: 1.15em;">Conclusion</b></div>
         <div>This proposal is valid for 120 days.</div>
         <div style="margin-top: 16px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
         <div style="margin-top: 16px;"><b><i>Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</i></b></div>
@@ -6234,10 +6290,31 @@ export default function EstimateSheet({
         tempDiv.querySelectorAll(".amp-sov-table th").forEach((th) => {
           th.textContent = (th.textContent || "").replace(/\s+/g, " ").trim();
         });
+        // Collapse the invisible empty-paragraph stacks that otherwise expand
+        // into page-sized gaps once the print window's default margins apply.
+        sanitizeLetterHtmlNode(tempDiv);
         bodyHtml = tempDiv.innerHTML;
       } catch {}
 
       const html = `<!DOCTYPE html><html><head><title>Letter Proposal</title><style>
+        /*
+         * Match the in-app editor, which runs under Tailwind's Preflight reset.
+         * Without this, the bare print window falls back to the browser's default
+         * stylesheet (~1em margins on every <p>/heading), so paragraphs the user
+         * typed or pasted — especially empty ones — open up gaps that never showed
+         * while editing. Zeroing these makes print render exactly like the editor;
+         * intended spacing comes from the inline margins on .amp-section blocks.
+         */
+        p, h1, h2, h3, h4, h5, h6, blockquote, figure, pre { margin: 0; }
+        /*
+         * Body line spacing. Forced with !important so it overrides the
+         * line-height baked inline into the letter wrapper of older saved
+         * proposals (the inline value would otherwise win). Single source of
+         * truth for printed spacing — keep this in sync with the editor rule in
+         * index.css (.letter-proposal-editor #letter-proposal). Elements that
+         * set their own line-height (SOV cells, .amp-scope-spacer) are unaffected.
+         */
+        #letter-proposal { line-height: 1.5 !important; }
         @media print {
           @page { size: letter; margin: 0.5in; }
           body {
@@ -14988,6 +15065,9 @@ export default function EstimateSheet({
                 minHeight: "1000px",
                 outline: "none",
                 background: "white",
+                // Match the printed letter's line spacing so the editor is WYSIWYG.
+                fontSize: "11pt",
+                lineHeight: 1.5,
                 padding: 32,
                 borderRadius: 8,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
@@ -15006,6 +15086,22 @@ export default function EstimateSheet({
               }}
               onPaste={(e) => {
                 if (imageHandlerRef.current?.handlePaste(e)) return;
+                // After the browser drops the pasted HTML in, strip Word/Outlook
+                // cruft and collapse the empty-paragraph stacks it brings along,
+                // so the gap-on-print problem never gets saved into the letter.
+                setTimeout(() => {
+                  const editor = letterEditorRef.current;
+                  if (!editor) return;
+                  sanitizeLetterHtmlNode(editor);
+                  letterUpdateSourceRef.current = "user";
+                  const newHtml = editor.innerHTML;
+                  if (newHtml !== letterHtml) {
+                    setLetterHtml(newHtml);
+                    if (newHtml.trim() !== savedLetterHtmlRef.current.trim()) {
+                      setIsLetterDirty(true);
+                    }
+                  }
+                }, 0);
               }}
               onBlur={() => {}}
             />

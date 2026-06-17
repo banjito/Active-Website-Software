@@ -236,6 +236,18 @@
     }
 }
 
+/*
+ * Body line spacing in the on-screen editor. Forced with !important so it
+ * overrides the line-height baked inline into the #letter-proposal wrapper of
+ * older saved proposals (otherwise the inline value wins and the editor never
+ * reflects the change). Keep in sync with the print rule in EstimateSheet.tsx
+ * (handlePrintLetter: #letter-proposal { line-height: ... }).
+ */
+.letter-proposal-editor,
+.letter-proposal-editor #letter-proposal {
+    line-height: 1.5 !important;
+}
+
 .letter-proposal-editor ul {
     list-style: disc outside !important;
     margin: 4px 0 4px 18px !important;

@@ -81,8 +81,10 @@ interface Job {
   opportunity?: {
     id: string;
     opportunity_type?: string;
+    quote_number?: string | null;
   } | null;
   contractValue?: number; // Remaining balance left to bill (matches JobDetail remainingBalance)
+  poNumbers?: string[]; // PO numbers from purchase_order job_contracts (for search)
 }
 
 interface Customer {
@@ -103,6 +105,9 @@ interface JobFormData {
   notes?: string;
   job_number?: string;
 }
+
+/** Strip non-alphanumerics + lowercase so "240123" matches "24-0123" and "PO #123" matches "123". */
+const normalizeId = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
 type StatusFilter = "all" | "in_progress" | "pending" | "completed" | "billed";
 type JobSortField = "status" | "budget" | "priority" | "job_number" | "title";
@@ -439,14 +444,26 @@ export default function JobList() {
     }
 
     const searchLower = searchTerm.toLowerCase();
+    // Format-forgiving variant for IDs (job/PO numbers): ignore dashes, spaces, "#", etc.
+    const searchNormalized = normalizeId(searchTerm);
     const filtered = base.filter((job) => {
       return (
         maskJobTitle(job.title)?.toLowerCase().includes(searchLower) ||
         job.customers?.company_name?.toLowerCase().includes(searchLower) ||
         job.customers?.name?.toLowerCase().includes(searchLower) ||
         job.job_number?.toLowerCase().includes(searchLower) ||
+        (searchNormalized !== "" &&
+          normalizeId(job.job_number || "").includes(searchNormalized)) ||
+        job.opportunity?.quote_number?.toLowerCase().includes(searchLower) ||
+        (searchNormalized !== "" &&
+          normalizeId(job.opportunity?.quote_number || "").includes(
+            searchNormalized,
+          )) ||
         (job.status || "").toLowerCase().includes(searchLower) ||
-        job.description?.toLowerCase().includes(searchLower)
+        job.description?.toLowerCase().includes(searchLower) ||
+        job.poNumbers?.some((po) => po.toLowerCase().includes(searchLower)) ||
+        (searchNormalized !== "" &&
+          job.poNumbers?.some((po) => normalizeId(po).includes(searchNormalized)))
       );
     });
     setFilteredJobs(sortJobsForDisplay(filtered));
@@ -596,7 +613,7 @@ export default function JobList() {
           const { data: opportunitiesData } = await supabase
             .schema("business")
             .from("opportunities")
-            .select("id, opportunity_type")
+            .select("id, opportunity_type, quote_number")
             .in("id", opportunityIds);
 
           if (opportunitiesData) {
@@ -648,13 +665,14 @@ export default function JobList() {
       // Fetch contract values for all jobs
       const jobIds = jobsWithCustomers.map((job) => job.id);
       let contractValueMap: Record<string, number> = {};
+      const poNumbersMap: Record<string, string[]> = {};
 
       if (jobIds.length > 0) {
         try {
           const { data: contractsData, error: contractsError } = await supabase
             .schema("neta_ops")
             .from("job_contracts")
-            .select("job_id, value, value_operation")
+            .select("job_id, value, value_operation, name, type")
             .in("job_id", jobIds);
 
           if (contractsError) {
@@ -677,6 +695,11 @@ export default function JobList() {
             };
             contractsData.forEach((row: any) => {
               const jobId = row.job_id;
+              // Collect PO numbers (purchase_order contracts) for search
+              if (row.type === "purchase_order" && row.name) {
+                if (!poNumbersMap[jobId]) poNumbersMap[jobId] = [];
+                poNumbersMap[jobId].push(String(row.name));
+              }
               const raw = row.value;
               if (raw === null || raw === undefined) return;
               const amount = Math.abs(
@@ -721,6 +744,7 @@ export default function JobList() {
       const jobsWithContractValues = jobsWithCustomers.map((job) => ({
         ...job,
         contractValue: contractValueMap[job.id] ?? 0,
+        poNumbers: poNumbersMap[job.id] ?? [],
       }));
 
       // Debug: log jobs with contract values
@@ -1643,7 +1667,7 @@ export default function JobList() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search jobs by title, customer, job number, status, or description..."
+              placeholder="Search jobs by title, customer, job number, quote number, PO number, status, or description..."
               className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

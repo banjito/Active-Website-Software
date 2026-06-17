@@ -12,6 +12,7 @@ import Dashboard from './app/dashboard/page';
 import PortalLanding from './app/portal/page';
 import UnifiedJobsPage from './app/all-jobs/page';
 import SalesDashboard from './app/sales-dashboard/page';
+import MobileLogInteraction from './app/sales-dashboard/mobile-log/page';
 
 import Login from './components/auth/Login';
 import ResetPassword from './components/auth/ResetPassword';
@@ -566,6 +567,7 @@ function App() {
                   
                   {/* === Sales Dashboard Routes === */}
                   <Route path="/sales-dashboard" element={<RequireAuth><SalesLayout><SalesDashboard /></SalesLayout></RequireAuth>} />
+                  <Route path="/sales-dashboard/mobile-log" element={<RequireAuth><MobileLogInteraction /></RequireAuth>} />
                   <Route path="/sales-dashboard/customers" element={<RequireAuth><SalesLayout><CustomerList /></SalesLayout></RequireAuth>} />
                   <Route path="/sales-dashboard/customers/:id" element={<RequireAuth><SalesLayout><CustomerDetail /></SalesLayout></RequireAuth>} />
                   <Route path="/sales-dashboard/contacts" element={<RequireAuth><SalesLayout><ContactList /></SalesLayout></RequireAuth>} />

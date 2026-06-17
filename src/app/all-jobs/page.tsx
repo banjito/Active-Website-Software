@@ -32,6 +32,9 @@ const DIVISION_BADGE_CLASS: Record<string, string> = {
   scavenger: 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300 border border-violet-300 dark:border-violet-700',
 };
 
+/** Strip non-alphanumerics + lowercase so "240123" matches "24-0123" and "PO #123" matches "123". */
+const normalizeId = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
 type StatusFilter = 'all' | 'in_progress' | 'pending' | 'completed' | 'billed';
 
 interface JobRow {
@@ -46,6 +49,8 @@ interface JobRow {
   customer_id: string | null;
   customers: { id: string; name: string; company_name: string } | null;
   contractValue?: number;
+  poNumbers?: string[];
+  quoteNumber?: string | null;
 }
 
 function getStatusColor(status: string): string {
@@ -113,15 +118,21 @@ export default function UnifiedJobsPage() {
 
       const jobIds = jobData.map((j: any) => j.id);
       let contractValueMap: Record<string, number> = {};
+      const poNumbersMap: Record<string, string[]> = {};
       try {
         const { data: contractsData } = await supabase
           .schema('neta_ops')
           .from('job_contracts')
-          .select('job_id, value, value_operation')
+          .select('job_id, value, value_operation, name, type')
           .in('job_id', jobIds);
         if (contractsData?.length) {
           contractsData.forEach((row: any) => {
             const jobId = row.job_id;
+            // Collect PO numbers (purchase_order contracts) for search
+            if (row.type === 'purchase_order' && row.name) {
+              if (!poNumbersMap[jobId]) poNumbersMap[jobId] = [];
+              poNumbersMap[jobId].push(String(row.name));
+            }
             const raw = row.value;
             if (raw === null || raw === undefined) return;
             const amount = Math.abs(typeof raw === 'number' ? raw : parseFloat(raw));
@@ -147,10 +158,29 @@ export default function UnifiedJobsPage() {
           customersData.forEach((c: any) => { customerMap[c.id] = c; });
         }
       }
+
+      // Batch-fetch quote numbers from linked opportunities (for search)
+      const opportunityIds = [...new Set(jobData.filter((j: any) => j.opportunity_id).map((j: any) => j.opportunity_id))];
+      const quoteNumberMap: Record<string, string | null> = {};
+      if (opportunityIds.length > 0) {
+        try {
+          const { data: opportunitiesData } = await supabase
+            .schema('business')
+            .from('opportunities')
+            .select('id, quote_number')
+            .in('id', opportunityIds);
+          if (opportunitiesData) {
+            opportunitiesData.forEach((o: any) => { quoteNumberMap[o.id] = o.quote_number ?? null; });
+          }
+        } catch (_) {}
+      }
+
       const jobsWithCustomers = jobData.map((job: any) => ({
         ...job,
         customers: job.customer_id ? (customerMap[job.customer_id] ?? null) : null,
         contractValue: contractValueMap[job.id] ?? 0,
+        poNumbers: poNumbersMap[job.id] ?? [],
+        quoteNumber: job.opportunity_id ? (quoteNumberMap[job.opportunity_id] ?? null) : null,
       } as JobRow));
       setJobs(jobsWithCustomers);
     } catch (err: any) {
@@ -193,13 +223,20 @@ export default function UnifiedJobsPage() {
     }
     if (!searchTerm.trim()) return base;
     const lower = searchTerm.toLowerCase();
+    // Format-forgiving variant for IDs (job/PO numbers): ignore dashes, spaces, "#", etc.
+    const normalized = normalizeId(searchTerm);
     return base.filter(
       (j) =>
         maskJobTitle(j.title)?.toLowerCase().includes(lower) ||
         j.customers?.company_name?.toLowerCase().includes(lower) ||
         j.customers?.name?.toLowerCase().includes(lower) ||
         j.job_number?.toLowerCase().includes(lower) ||
-        (j.status || '').toLowerCase().includes(lower)
+        (normalized !== '' && normalizeId(j.job_number || '').includes(normalized)) ||
+        j.quoteNumber?.toLowerCase().includes(lower) ||
+        (normalized !== '' && normalizeId(j.quoteNumber || '').includes(normalized)) ||
+        (j.status || '').toLowerCase().includes(lower) ||
+        j.poNumbers?.some((po) => po.toLowerCase().includes(lower)) ||
+        (normalized !== '' && j.poNumbers?.some((po) => normalizeId(po).includes(normalized)))
     );
   }, [jobs, statusFilter, searchTerm, filterByContractValue, showTotals, allTime, dateRangeStart, dateRangeEnd, maskJobTitle]);
 
@@ -407,7 +444,7 @@ export default function UnifiedJobsPage() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search jobs by title, customer, job number, status, or description..."
+              placeholder="Search jobs by title, customer, job number, quote number, PO number, status, or description..."
               className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-dark-150 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">

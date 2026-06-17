@@ -110,6 +110,16 @@ export default function CustomerDetail() {
     }
   }, [user, id, activeTab]);
 
+  // Refresh when an interaction is logged elsewhere (e.g. the top-bar widget)
+  useEffect(() => {
+    const handler = () => {
+      if (user && id && (activeTab === 'interactions' || activeTab === 'overview')) fetchNotes();
+    };
+    window.addEventListener('interactionLogged', handler);
+    return () => window.removeEventListener('interactionLogged', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, id, activeTab]);
+
   async function fetchNotes() {
     if (!id) return;
     setNotesLoading(true);

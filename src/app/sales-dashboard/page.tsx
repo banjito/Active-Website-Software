@@ -15,6 +15,7 @@ import { useAuth } from "../../lib/AuthContext";
 
 import BidsOverview from "../../components/sales/BidsOverview";
 import DailyReport from "../../components/sales/DailyReport";
+import InteractionsFeed from "../../components/sales/InteractionsFeed";
 
 export default function SalesDashboard() {
   const navigate = useNavigate();
@@ -103,6 +104,11 @@ export default function SalesDashboard() {
             </CardHeader>
           </Card>
         </div>
+      </div>
+
+      {/* Interactions Feed */}
+      <div className="mb-8">
+        <InteractionsFeed />
       </div>
     </main>
   );

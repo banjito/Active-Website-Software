@@ -7320,7 +7320,6 @@ export default function EstimateSheet({
                                 minWidth: "44px",
                               }}
                             >
-                              COPY
                             </th>
                             <th
                               ref={itemHeaderRef}

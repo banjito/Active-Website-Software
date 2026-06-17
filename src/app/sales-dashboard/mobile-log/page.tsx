@@ -3,8 +3,6 @@ import {
   Phone,
   Mail,
   User as UserIcon,
-  Search,
-  X,
   CheckCircle2,
   Feather,
 } from "lucide-react";
@@ -253,7 +251,7 @@ export default function MobileLogInteraction() {
         <h1 className="text-2xl font-semibold">Log Interaction</h1>
       </header>
 
-      <main className="flex-1 px-4 py-6 pb-16 max-w-lg w-full mx-auto space-y-7">
+      <main className="flex-1 px-4 py-6 pb-16 w-full space-y-7">
         {/* Step 1: Customer */}
         <div>
           <label className="block text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
@@ -276,27 +274,14 @@ export default function MobileLogInteraction() {
             </div>
           ) : (
             <div>
-              <div className="relative">
-                {customerTerm ? (
-                  <button
-                    onClick={() => setCustomerTerm("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    aria-label="Clear"
-                  >
-                    <X className="h-6 w-6" />
-                  </button>
-                ) : (
-                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400 pointer-events-none" />
-                )}
-                <input
-                  type="text"
-                  inputMode="search"
-                  value={customerTerm}
-                  onChange={(e) => setCustomerTerm(e.target.value)}
-                  placeholder="Search customers..."
-                  className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 pl-5 pr-12 py-4 text-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
-                />
-              </div>
+              <input
+                type="text"
+                inputMode="search"
+                value={customerTerm}
+                onChange={(e) => setCustomerTerm(e.target.value)}
+                placeholder="Search customers..."
+                className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+              />
               {customerTerm.trim() && (
                 <div className="mt-2 rounded-xl border border-gray-200 dark:border-dark-200 bg-white dark:bg-dark-150 overflow-hidden divide-y divide-gray-100 dark:divide-dark-200 max-h-80 overflow-y-auto">
                   {searching ? (

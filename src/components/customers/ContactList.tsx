@@ -306,10 +306,19 @@ export default function ContactList() {
         q: T,
       ): T => {
         if (debouncedSearch) {
-          const like = `%${debouncedSearch}%`;
-          q = q.or(
-            `first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`,
-          );
+          // Split into tokens so a full-name search ("Hunter Hearn") matches
+          // across first_name + last_name. Each token must match some column
+          // (AND across tokens), and within a token we OR across columns.
+          const tokens = debouncedSearch
+            .split(/\s+/)
+            .map((t) => t.replace(/[(),]/g, "").trim())
+            .filter(Boolean);
+          for (const token of tokens) {
+            const like = `%${token}%`;
+            q = q.or(
+              `first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`,
+            );
+          }
         }
         if (startsWithFilter) {
           q = q.ilike("last_name", `${startsWithFilter}%`);

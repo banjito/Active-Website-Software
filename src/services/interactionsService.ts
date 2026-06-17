@@ -41,6 +41,57 @@ export function interactionTypeLabel(type: string): string {
   return INTERACTION_TYPE_LABELS[type] || 'Note';
 }
 
+export interface AuthorProfile {
+  email: string;
+  displayName: string;
+  avatarUrl: string | null;
+  userId: string | null;
+}
+
+/**
+ * Resolve display name + avatar for a set of author emails (from common.profiles),
+ * keyed by lowercased email. Used to show who logged each interaction.
+ */
+export async function getAuthorProfilesByEmail(
+  emails: string[],
+): Promise<Map<string, AuthorProfile>> {
+  const unique = [
+    ...new Set(emails.map((e) => (e || '').toLowerCase().trim()).filter(Boolean)),
+  ];
+  const map = new Map<string, AuthorProfile>();
+  if (unique.length === 0) return map;
+
+  try {
+    const { data, error } = await supabase
+      .schema('common')
+      .from('profiles')
+      .select('id, full_name, email, avatar_url')
+      .in('email', unique);
+    if (error) {
+      console.warn('Failed to load author profiles:', error.message);
+      return map;
+    }
+    for (const row of data || []) {
+      const r = row as {
+        id: string;
+        full_name?: string | null;
+        email?: string | null;
+        avatar_url?: string | null;
+      };
+      if (!r.email) continue;
+      map.set(r.email.toLowerCase(), {
+        email: r.email,
+        displayName: r.full_name || r.email.split('@')[0],
+        avatarUrl: r.avatar_url || null,
+        userId: r.id || null,
+      });
+    }
+  } catch (e) {
+    console.warn('Failed to load author profiles', e);
+  }
+  return map;
+}
+
 /**
  * Fetch the most recent interactions across all customers/contacts, enriched
  * with the customer company name for display in the Interactions Feed.
